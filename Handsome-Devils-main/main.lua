@@ -1,12 +1,3 @@
---- STEAMODDED HEADER
---- MOD_NAME: Handsome Devils
---- MOD_ID: HandsomeDevils
---- MOD_AUTHOR: [Kars]
---- MOD_DESCRIPTION: Vanilla-esque mod that adds new Jokers, spectral cards, vouchers, decks and seals.
---- PREFIX: hnds
-----------------------------------------------
-------------MOD CODE--------------------------
-
 SMODS.Sound({
     key = 'madnesscolor',
     path = 'madnesscolor.ogg',

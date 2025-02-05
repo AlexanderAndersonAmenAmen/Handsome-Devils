@@ -1,0 +1,14 @@
+{
+	"id": "HandsomeDevils",
+	"name": "Handsome Devils",
+	"display_name": "",
+	"author": ["Kars"],
+	"description": "Vanilla-esque mod that adds new Jokers, spectral cards, vouchers, decks and seals.",
+	"prefix": "hnds",
+	"main_file": "main.lua",
+	"priority": 0,
+	"badge_colour": "",
+	"badge_text_colour": "",
+	"version": "1.0.0",
+	"dependencies": []
+}
