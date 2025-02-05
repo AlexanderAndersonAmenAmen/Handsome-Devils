@@ -26,18 +26,18 @@ return {
                     'create a {C:tarot}Charm{}, {C:planet}Meteor{}',
                     'or {C:spectral}Etehreal{} {C:attention}Tag{}',
                 }
+            },
+            j_hnds_bsplit = {
+                name = 'Banana Split',
+                text = {
+                    '{X:mult,C:white}X#1#{} Mult,',
+                    '{C:green}#2# in 6{} chance to {C:attention}Duplicate{}',
+                    'this Joker at end of round',
+                    '{C:inactive}(Must have room){}',
+                }
+            },
         },
-        j_hnds_bsplit = {
-            name = 'Banana Split',
-            text = {
-                '{X:mult,C:white}X#1#{} Mult,',
-                '{C:green}#2# in 6{} chance to {C:attention}Duplicate{}',
-                'this Joker at end of round',
-                '{C:inactive}(Must have room){}',
-            }
-    },
         Spectral={},
         Voucher={},
     },
-}
 }
