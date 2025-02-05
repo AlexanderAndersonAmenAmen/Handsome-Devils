@@ -36,8 +36,23 @@ return {
                     '{C:inactive}(Must have room){}',
                 }
             },
+            j_hnds_head_of_medusa = {
+                name = 'Head of Medusa',
+                text = {
+                    'This Joker gains {C:mult}+#2#{} Mult',
+                    'for each scoring {C:attention}face{} card,',
+                    'then enhances them into',
+                    '{C:attention}Stone Cards{}',
+                    '{C:inactive}(Currently {C:mult}+#1#{C:inactive} Mult)'
+                }
+            },
         },
         Spectral={},
         Voucher={},
     },
+    misc = {
+        dictionary = {
+            k_hnds_petrified = "Petrified!"
+        }
+    }
 }
