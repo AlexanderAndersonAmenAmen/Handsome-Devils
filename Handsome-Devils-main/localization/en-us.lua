@@ -39,11 +39,11 @@ return {
             j_hnds_head_of_medusa = {
                 name = 'Head of Medusa',
                 text = {
-                    'This Joker gains {C:mult}+#2#{} Mult',
+                    'This Joker gains {X:mult,C:white}X#2#{} Mult',
                     'for each scoring {C:attention}face{} card,',
                     'then enhances them into',
                     '{C:attention}Stone Cards{}',
-                    '{C:inactive}(Currently {C:mult}+#1#{C:inactive} Mult)'
+                    '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)'
                 }
             },
         },

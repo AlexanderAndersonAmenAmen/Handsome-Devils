@@ -253,13 +253,13 @@ SMODS.Joker {
 	key = "head_of_medusa",
 	config = {
 		extra = {
-			mult = 0,
-			scaling = 4,
+			x_mult = 1,
+			scaling = 0.2,
 		}
 	},
 	rarity = 2,
 	loc_vars = function(self, info_queue, card)
-		return {vars = {card.ability.extra.mult, card.ability.extra.scaling}}
+		return {vars = {card.ability.extra.x_mult, card.ability.extra.scaling}}
 	end,
 	atlas = "Jokers",
 	pos = { x = 6, y = 0 },
@@ -276,7 +276,7 @@ SMODS.Joker {
                 for k, v in ipairs(context.scoring_hand) do
                     if v:is_face() then 
                         faces[#faces+1] = v
-                        card.ability.extra.mult = card.ability.extra.mult + card.ability.extra.scaling
+                        card.ability.extra.x_mult = card.ability.extra.x_mult + card.ability.extra.scaling
                         v:set_ability(G.P_CENTERS.m_stone, nil, true)
                         G.E_MANAGER:add_event(Event({
                             func = function()
@@ -298,8 +298,8 @@ SMODS.Joker {
 			--Scoring
 			if context.joker_main and context.cardarea == G.jokers then
 				return {
-				  mult_mod = card.ability.extra.mult,
-				  message = localize { type = 'variable', key = 'a_mult', vars = { card.ability.extra.mult } },
+				  Xmult_mod = card.ability.extra.x_mult,
+				  message = localize { type = 'variable', key = 'a_xmult', vars = { card.ability.extra.x_mult } },
 				}
 			end
 		end
