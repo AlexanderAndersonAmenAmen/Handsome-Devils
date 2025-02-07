@@ -55,6 +55,15 @@ return {
                     'gives {C:mult}+#2#{} Mult',
                 }
             },
+            j_hnds_digital_circus = {
+                name = 'Digital Circus',
+                text = {
+                    'Sell this card to create',
+                    'a {V:1}#1#{} Joker, rarity',
+                    'increases every {C:attention}#3#{} rounds',
+                    '{C:inactive}(Currently {C:attention}#2#{C:inactive}/#3#)'
+                }
+            },
         },
         Spectral={},
         Voucher={},
