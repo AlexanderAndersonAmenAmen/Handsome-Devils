@@ -40,9 +40,9 @@ return {
                 name = 'Head of Medusa',
                 text = {
                     'This Joker gains {X:mult,C:white}X#2#{} Mult',
-                    'for each scoring {C:attention}face{} card,',
-                    'then enhances them into',
-                    '{C:attention}Stone Cards{}',
+                    'per scoring {C:attention}face card{} played,',
+                    'enhances scored face cards',
+                    'into {C:attention}Stone Cards{}',
                     '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)'
                 }
             },
