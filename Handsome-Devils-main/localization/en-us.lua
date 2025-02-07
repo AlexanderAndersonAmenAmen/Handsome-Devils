@@ -46,6 +46,15 @@ return {
                     '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)'
                 }
             },
+            j_hnds_deep_pockets = {
+                name = 'Deep Pockets',
+                text = {
+                    '{C:attention}+#1#{} consumeable slots,',
+                    'each card in your',
+                    '{C:attention}consumable area{}',
+                    'gives {C:mult}+#2#{} Mult',
+                }
+            },
         },
         Spectral={},
         Voucher={},
