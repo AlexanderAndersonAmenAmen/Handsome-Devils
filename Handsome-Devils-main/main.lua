@@ -202,6 +202,17 @@ SMODS.Joker {
     end
 }
 
+--Coffee Break
+local set_cost_ref = Card.set_cost
+function Card.set_cost(self)
+    if self.config.center.key == "j_hnds_coffee" then
+        self.sell_cost = 0
+        return
+    end
+
+    set_cost_ref(self)
+end
+
 SMODS.Joker {
     key = 'coffee',
     atlas = 'Jokers',
@@ -251,6 +262,9 @@ SMODS.Joker {
                 dollars = card.ability.extra.money
             }
         end
+    end,
+    add_to_deck = function(self, card, from_debuff)
+        card:set_cost()
     end
 }
 
