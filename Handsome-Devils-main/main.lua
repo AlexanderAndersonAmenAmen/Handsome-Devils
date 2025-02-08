@@ -231,8 +231,7 @@ SMODS.Joker {
                     message = '-$1',
                     colour = G.C.RED,
                     message_card = card,
-                    juice_card = played_card
-                }, card)
+                }, played_card)
             end
         end
         if context.end_of_round and context.main_eval then
