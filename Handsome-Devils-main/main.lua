@@ -215,34 +215,41 @@ SMODS.Joker {
     perishable_compat = true,
     config =
     { extra = {
+        money = 50,
         coffee_rounds = 0,
-        target = 3,
-        money = 50
+        target = 3
     }
     },
     loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.target, card.ability.coffee_rounds } }
+        return { vars = { card.ability.extra.target, card.ability.extra.coffee_rounds, card.ability.extra.money } }
     end,
     calculate = function(self, card, context)
-        if context.selling_self and (card.ability.coffee_rounds >= card.ability.extra.target) and not context.blueprint then
-            local eval = function(card) return (card.ability.loyalty_remaining == 0) and not G.RESET_JIGGLES end
-            juice_card_until(card, eval, true)
-            ease_dollars(card.ability.extra.money)
-            card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil,
-                { message = localize('$') .. card.ability.extra.money, colour = G.C.MONEY, delay = 0.45 })
-            return true
+        if context.before then
+            for _, played_card in pairs(context.full_hand) do
+                card.ability.extra.money = card.ability.extra.money - 1
+                SMODS.calculate_effect({
+                    message = '-$1',
+                    colour = G.C.RED,
+                    message_card = card,
+                    juice_card = played_card
+                }, card)
+            end
         end
-        if context.end_of_round and context.main_eval and not context.blueprint then
-            card.ability.coffee_rounds = card.ability.coffee_rounds + 1
+        if context.end_of_round and context.main_eval then
+            card.ability.extra.coffee_rounds = card.ability.extra.coffee_rounds + 1
             if card.ability.extra.coffee_rounds == card.ability.extra.target then
-                local eval = function(_card) return not card.REMOVED end
+                card.ability.extra.active = true
+                local eval = function() return card.ability.extra.active end
                 juice_card_until(card, eval, true)
             end
             return {
-                message = (card.ability.extra.coffee_rounds < card.ability.extra.target) and
-                    (card.ability.extra.coffee_rounds .. '/' .. card.ability.extra.target) or
-                    localize('k_active_ex'),
+                message = card.ability.extra.active and localize('k_active_ex') or card.ability.extra.coffee_rounds .. '/' .. card.ability.extra.target,
                 colour = G.C.FILTER
+            }
+        end
+        if context.selling_self and card.ability.extra.active then
+            return {
+                dollars = card.ability.extra.money
             }
         end
     end
