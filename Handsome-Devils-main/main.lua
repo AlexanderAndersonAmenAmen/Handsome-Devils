@@ -366,7 +366,7 @@ SMODS.Joker {
 	key = "digital_circus",
 	config = {
 		extra = {
-			max_rounds = 2,
+			max_rounds = 3,
             current_rounds = 0,
             current_rarity = 1,
             rarity_strings = {"Common", "Uncommon", "Rare", "Legendary"}
