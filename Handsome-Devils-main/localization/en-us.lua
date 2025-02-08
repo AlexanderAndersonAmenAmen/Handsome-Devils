@@ -64,7 +64,15 @@ return {
                     '{C:inactive}(Currently {C:attention}#2#{C:inactive}/#3#)'
                 }
             },
+            j_hnds_coffee = {
+                name = 'Coffee Break',
+                text = {
+                    'After {C:attention}3{} rounds, sell this',
+                    'card to earn {C:money}$#3#{}, earn {C:money}$1{}',
+                    'less per card played',
+                    '{C:inactive}(Currently {C:attention}#2#{C:inactive}/#1#)'
         },
+    },
         Spectral={},
         Voucher={},
     },
@@ -73,4 +81,5 @@ return {
             k_hnds_petrified = "Petrified!"
         }
     }
+}
 }
