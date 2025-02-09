@@ -30,7 +30,7 @@ return {
             j_hnds_bsplit = {
                 name = 'Banana Split',
                 text = {
-                    '{X:mult,C:white}X#1#{} Mult',
+                    '{X:mult,C:white}X#1#{} Mult,',
                     '{C:green}#2# in 6{} chance to {C:attention}Duplicate{}',
                     'this Joker at end of round',
                     '{C:inactive}(Must have room){}',
@@ -74,6 +74,15 @@ return {
         },
     },
         Spectral={},
+        Other = {
+            hnds_black_seal = {
+                name = 'Balck Seal',
+                text = {
+                    'ggg',
+
+                }
+            }
+        },
         Voucher={},
     },
     misc = {
