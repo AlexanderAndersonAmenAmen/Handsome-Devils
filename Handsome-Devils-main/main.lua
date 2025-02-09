@@ -439,7 +439,7 @@ SMODS.Joker {
                             card.ability.extra.current_rounds = 0
                         end
                     end
-                    if card.ability.extra.current_rounds == 1 then
+                    if card.ability.extra.current_rounds ~= 0 and card.ability.extra.current_rounds ~= card.ability.extra.max_rounds then
                         return {
                             message = card.ability.extra.current_rounds..'/'..card.ability.extra.max_rounds,
                             colour = G.C.FILTER
