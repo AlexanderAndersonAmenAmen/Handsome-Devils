@@ -10,16 +10,10 @@ SMODS.Consumable {
 	loc_vars = function(self, info_queue, card)
 		-- Handle creating a tooltip with set args.
 		info_queue[#info_queue + 1] =
-			{ set = "Other", key = "black"}
+			{ set = "Other", key = "hnds_black_seal", specific_vars = {} }
 		return { 
 			vars = { card.ability.max_highlighted } 
 		}
-	end,
-	can_use = function(self, card)
-		if G.hand and (get_consumable_use_hand_count(card, G.hand.highlighted) >= 1) and (get_consumable_use_hand_count(card, G.hand.highlighted) <= card.ability.extra.count) then
-			return true
-		end
-		return false
 	end,
 	use = function(self, card, area, copier) --Good enough
 		for i = 1, #G.hand.highlighted do
@@ -52,4 +46,11 @@ SMODS.Consumable {
 			}))
 		end
 	end,
+	can_use = function(self, card, area)
+		if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] and (not G.hand.highlighted[1].seal) then
+			return true
+		else
+			return false
+		end
+	end
 }

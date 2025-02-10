@@ -41,6 +41,20 @@ SMODS.Atlas {
     py = 95              -- height of one card
 }
 
+SMODS.Atlas {
+    key = 'Spectrals',      --atlas key
+    path = 'TarotsHD.png', --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
+    px = 71,             --width of one card
+    py = 95              -- height of one card
+}
+
+SMODS.Atlas {
+    key = 'Extras',      --atlas key
+    path = 'EHD.png', --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
+    px = 71,             --width of one card
+    py = 95              -- height of one card
+}
+
 SMODS.Joker {
     key = 'com',               --joker key
     atlas = 'Jokers',          --atlas' key
@@ -493,3 +507,16 @@ SMODS.Joker {
     end
 }
 
+HD = SMODS.current_mod
+HD.load_table = {
+    jokers = true,
+    spectrals = true,
+    seals = true,
+}
+--[[]
+for k, v in pairs(HD.load_table) do
+    if v then assert(SMODS.load_file('objects/'..k..'.lua'))() end
+end
+]]
+assert(SMODS.load_file('objects/consumables/spectrals.lua'))()
+assert(SMODS.load_file('objects/seals/blk_seal.lua'))()

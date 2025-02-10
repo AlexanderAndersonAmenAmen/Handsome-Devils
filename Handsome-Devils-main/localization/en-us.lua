@@ -82,19 +82,33 @@ return {
                 },
             },
         },
-        Spectral = {
+        Spectral={
             c_hnds_abyss = {
                 name = 'Abyss',
                 text = {
-                    'ggg',
-                },
-            },
+                    'Add a {C:dark_edition}Black Seal{}',
+                    'to {C:attention}1{} selected',
+                    'card in your hand.'
+                } 
+            }
+        },
+        Other = {
+            hnds_black_seal = {
+                name = 'Black Seal',
+                text = {
+                    'Counts in scoring',
+                    'if {C:attention}held{} in hand'
+                }
+            }
         },
         Voucher = {},
     },
     misc = {
         dictionary = {
             k_hnds_petrified = "Petrified!"
+        },
+        labels = {
+            hnds_black_seal = "Black Seal"
         }
     }
 }
