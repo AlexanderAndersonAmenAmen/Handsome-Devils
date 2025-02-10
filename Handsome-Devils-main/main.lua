@@ -19,21 +19,6 @@ for i = 1, #consumable_files do
     if consumable_files[i] then assert(SMODS.load_file('objects/consumables/'.. consumable_files[i] ..'.lua'))() end
 end
 
-
-SMODS.Atlas {
-    key = 'enhancer',
-    path = 'EHD.png',
-    px = 71,
-    py = 95
-}
-
-SMODS.Atlas {
-    key = 'tarot',
-    path = 'THD.png',
-    px = 71,
-    py = 95
-}
-
 SMODS.Atlas {
     key = 'Jokers',      --atlas key
     path = 'Jokers.png', --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
@@ -42,8 +27,8 @@ SMODS.Atlas {
 }
 
 SMODS.Atlas {
-    key = 'Spectrals',      --atlas key
-    path = 'TarotsHD.png', --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
+    key = 'Consumables',      --atlas key
+    path = 'THD.png', --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
     px = 71,             --width of one card
     py = 95              -- height of one card
 }

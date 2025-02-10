@@ -5,7 +5,7 @@ SMODS.Consumable {
 	key = "abyss",
 	order = 1,
 	cost = 4,
-	atlas = "tarot",
+	atlas = "Consumables",
 	pos = { x = 0, y = 0 },
 	loc_vars = function(self, info_queue, card)
 		-- Handle creating a tooltip with set args.
