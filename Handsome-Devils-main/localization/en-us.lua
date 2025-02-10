@@ -1,5 +1,13 @@
 return {
     descriptions = {
+        Other = {
+            hnds_black_seal = {
+                name = 'Black Seal',
+                text = {
+                    'ggg',
+                }
+            }
+        },
         -- this key should match the set ("object type") of your object,
         -- e.g. Voucher, Tarot, or the key of a modded consumable type
         Joker = {
@@ -14,8 +22,8 @@ return {
                 }
                 -- only needed when this object is locked by default
                 -- unlock = {
-                    --'This is a condition',
-                    --'for unlocking this card',
+                --'This is a condition',
+                --'for unlocking this card',
                 --},
             },
             j_hnds_occ = {
@@ -30,7 +38,7 @@ return {
             j_hnds_bsplit = {
                 name = 'Banana Split',
                 text = {
-                    '{X:mult,C:white}X#1#{} Mult',
+                    '{X:mult,C:white}X#1#{} Mult,',
                     '{C:green}#2# in 6{} chance to {C:attention}Duplicate{}',
                     'this Joker at end of round',
                     '{C:inactive}(Must have room){}',
@@ -71,15 +79,36 @@ return {
                     'card to earn {C:money}$#3#{}, earn',
                     '{C:money}$1{} less per card played',
                     '{C:inactive}(Currently {C:attention}#2#{C:inactive}/#1#)'
+                },
+            },
         },
-    },
-        Spectral={},
-        Voucher={},
+        Spectral={
+            c_hnds_abyss = {
+                name = 'Abyss',
+                text = {
+                    'Add a {C:dark_edition}Black Seal{}',
+                    'to {C:attention}1{} selected',
+                    'card in your hand.'
+                } 
+            }
+        },
+        Other = {
+            hnds_black_seal = {
+                name = 'Black Seal',
+                text = {
+                    'Counts in scoring',
+                    'if {C:attention}held{} in hand'
+                }
+            }
+        },
+        Voucher = {},
     },
     misc = {
         dictionary = {
             k_hnds_petrified = "Petrified!"
+        },
+        labels = {
+            hnds_black_seal = "Black Seal"
         }
     }
-}
 }
