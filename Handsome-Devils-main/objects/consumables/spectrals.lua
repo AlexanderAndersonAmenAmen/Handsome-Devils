@@ -30,7 +30,7 @@ SMODS.Consumable {
 				delay = 0.1,
 				func = function()
 					if highlighted then
-						highlighted:set_seal("minty_cement")
+						highlighted:set_seal("hnds_black")
 					end
 					return true
 				end,
