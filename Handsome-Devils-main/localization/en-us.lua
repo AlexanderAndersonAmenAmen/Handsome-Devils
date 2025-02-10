@@ -1,5 +1,13 @@
 return {
     descriptions = {
+        Other = {
+            hnds_black_seal = {
+                name = 'Black Seal',
+                text = {
+                    'ggg',
+                }
+            }
+        },
         -- this key should match the set ("object type") of your object,
         -- e.g. Voucher, Tarot, or the key of a modded consumable type
         Joker = {
@@ -14,8 +22,8 @@ return {
                 }
                 -- only needed when this object is locked by default
                 -- unlock = {
-                    --'This is a condition',
-                    --'for unlocking this card',
+                --'This is a condition',
+                --'for unlocking this card',
                 --},
             },
             j_hnds_occ = {
@@ -71,24 +79,22 @@ return {
                     'card to earn {C:money}$#3#{}, earn',
                     '{C:money}$1{} less per card played',
                     '{C:inactive}(Currently {C:attention}#2#{C:inactive}/#1#)'
+                },
+            },
         },
-    },
-        Spectral={},
-        Other = {
-            hnds_black_seal = {
-                name = 'Balck Seal',
+        Spectral = {
+            c_hnds_abyss = {
+                name = 'Abyss',
                 text = {
                     'ggg',
-
-                }
-            }
+                },
+            },
         },
-        Voucher={},
+        Voucher = {},
     },
     misc = {
         dictionary = {
             k_hnds_petrified = "Petrified!"
         }
     }
-}
 }

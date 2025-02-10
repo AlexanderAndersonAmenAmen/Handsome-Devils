@@ -3,19 +3,24 @@ SMODS.Consumable {
 	set = "Spectral",
 	name = "Abyss",
 	key = "abyss",
-	config = {},
+	order = 1,
+	cost = 4,
+	atlas = "tarot",
+	pos = { x = 0, y = 0 },
 	loc_vars = function(self, info_queue, card)
 		-- Handle creating a tooltip with set args.
 		info_queue[#info_queue + 1] =
-			{ set = "Other", key = "black", specific_vars = {} }
+			{ set = "Other", key = "black"}
 		return { 
-			key = key,
 			vars = { card.ability.max_highlighted } 
 		}
 	end,
-	cost = 4,
-	atlas = "THD",
-	pos = { x = 0, y = 0 },
+	can_use = function(self, card)
+		if G.hand and (get_consumable_use_hand_count(card, G.hand.highlighted) >= 1) and (get_consumable_use_hand_count(card, G.hand.highlighted) <= card.ability.extra.count) then
+			return true
+		end
+		return false
+	end,
 	use = function(self, card, area, copier) --Good enough
 		for i = 1, #G.hand.highlighted do
 			local highlighted = G.hand.highlighted[i]
@@ -31,7 +36,7 @@ SMODS.Consumable {
 				delay = 0.1,
 				func = function()
 					if highlighted then
-						highlighted:set_seal("hnds_black")
+						highlighted:set_seal("minty_cement")
 					end
 					return true
 				end,

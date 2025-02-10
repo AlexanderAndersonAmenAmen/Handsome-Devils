@@ -3,12 +3,44 @@ SMODS.Sound({
     path = 'madnesscolor.ogg',
 })
 
+local seal_files = {
+    "blk_seal",
+}
+
+for i = 1, #seal_files do
+    if seal_files[i] then assert(SMODS.load_file('objects/seals/'.. seal_files[i] ..'.lua'))() end
+end
+
+local consumable_files = {
+    "spectrals",
+}
+
+for i = 1, #consumable_files do
+    if consumable_files[i] then assert(SMODS.load_file('objects/consumables/'.. consumable_files[i] ..'.lua'))() end
+end
+
+
+SMODS.Atlas {
+    key = 'enhancer',
+    path = 'EHD.png',
+    px = 71,
+    py = 95
+}
+
+SMODS.Atlas {
+    key = 'tarot',
+    path = 'THD.png',
+    px = 71,
+    py = 95
+}
+
 SMODS.Atlas {
     key = 'Jokers',      --atlas key
     path = 'Jokers.png', --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
     px = 71,             --width of one card
     py = 95              -- height of one card
 }
+
 SMODS.Joker {
     key = 'com',               --joker key
     atlas = 'Jokers',          --atlas' key
@@ -461,16 +493,3 @@ SMODS.Joker {
     end
 }
 
-HD = SMODS.current_mod
-HD.load_table = {
-    jokers = true,
-    spectrals = true,
-    seals = true,
-}
-
-for k, v in pairs(HD.load_table) do
-    if v then assert(SMODS.load_file('objects/'..k..'.lua'))() end
-end
-
-assert(SMODS.load_file('consumables/spectrals.lua'))()
-assert(SMODS.load_file('seals/blk_seal.lua'))()
