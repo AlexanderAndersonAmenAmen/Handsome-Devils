@@ -235,7 +235,7 @@ SMODS.Joker {
 
 local set_cost_ref = Card.set_cost
 function Card.set_cost(self)
-    if self.config.center.key == "j_hnds_coffee" then
+    if self.config.center.key == "j_hnds_coffee" or self.config.center.key == "j_hnds_digital_circus" then
         self.sell_cost = 0
         return
     end
@@ -403,16 +403,6 @@ SMODS.Joker {
 }
 
 --Digital Circus
-local set_cost_ref = Card.set_cost
-function Card.set_cost(self)
-    if self.config.center.key == "j_hnds_digital_circus" then
-        self.sell_cost = 0
-        return
-    end
-
-    set_cost_ref(self)
-end
-
 SMODS.Joker {
     key = "digital_circus",
     config = {
