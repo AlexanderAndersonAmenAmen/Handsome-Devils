@@ -26,6 +26,7 @@ SMODS.Atlas {
 
 local seal_files = {
     "blk_seal",
+    "grn_seal"
 }
 
 for i = 1, #seal_files do
