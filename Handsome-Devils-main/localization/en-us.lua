@@ -1,13 +1,5 @@
 return {
     descriptions = {
-        Other = {
-            hnds_black_seal = {
-                name = 'Black Seal',
-                text = {
-                    'ggg',
-                }
-            }
-        },
         -- this key should match the set ("object type") of your object,
         -- e.g. Voucher, Tarot, or the key of a modded consumable type
         Joker = {
@@ -98,7 +90,15 @@ return {
                     'Add a {C:dark_edition}Black Seal{}',
                     'to {C:attention}1{} selected',
                     'card in your hand.'
-                } 
+                }
+            },
+            c_hnds_growth = {
+                name = 'Growth',
+                text = {
+                    'Add a {C:green}Green Seal{}',
+                    'to {C:attention}1{} selected',
+                    'card in your hand.'
+                }
             }
         },
         Other = {
@@ -108,6 +108,14 @@ return {
                     'Counts in scoring',
                     'if {C:attention}held{} in hand'
                 }
+            },
+            hnds_green_seal = {
+                name = 'Green Seal',
+                text = {
+                    'Draw {C:attention}#1#{} extra',
+                    'cards when {C:attention}scored',
+                    'or {C:attention}discarded'
+                }
             }
         },
         Voucher = {},
@@ -115,11 +123,13 @@ return {
     misc = {
         dictionary = {
             k_hnds_petrified = "Petrified!",
+            k_hnds_green = "Draw!",
             k_hnds_jackpot = "Jackpot!",
-            k_hnds_probinc = "Increased!"
+            k_hnds_probinc = "Increased!",
         },
         labels = {
-            hnds_black_seal = "Black Seal"
+            hnds_black_seal = "Black Seal",
+            hnds_green_seal = "Green Seal"
         }
     }
 }

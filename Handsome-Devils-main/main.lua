@@ -24,8 +24,18 @@ SMODS.Atlas {
     py = 95              -- height of one card
 }
 
+local old_game_init = Game.init_game_object
+Game.init_game_object = function(self)
+    local ret = old_game_init(self)
+
+    ret.green_seal_draws = 0
+
+    return ret
+end
+
 local seal_files = {
     "blk_seal",
+    "grn_seal"
 }
 
 for i = 1, #seal_files do

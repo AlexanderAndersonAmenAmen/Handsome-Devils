@@ -1,0 +1,33 @@
+[manifest]
+version = "1.0.0"
+priority = 0
+
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''
+if G.GAME.current_round.hands_played == 0 and
+'''
+position = "before"
+payload = '''
+if G.GAME.green_seal_draws > 0 then
+    G.FUNCS.draw_from_deck_to_hand(G.GAME.green_seal_draws)
+    G.GAME.green_seal_draws = 0
+end
+'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = '''
+G.GAME.current_round.used_packs = {}
+'''
+position = "before"
+payload = '''
+G.GAME.green_seal_draws = 0
+'''
+match_indent = true
+times = 1
