@@ -73,6 +73,15 @@ return {
                     '{C:inactive}(Currently {C:attention}#2#{C:inactive}/#1#)'
                 },
             },
+            j_hnds_jackpot = {
+                name = "Jackpot",
+                text = {
+                    "{C:green}#1# in #2#{} chance to win {C:money}$#3#{} and",
+                    "{C:red}destroy{} this card at end of round",
+                    "Listed {C:green}probability{} increased by #4# per",
+                    "scoring {C:attention}7{} played"
+                }
+            }
         },
         Spectral={
             c_hnds_abyss = {
@@ -115,6 +124,8 @@ return {
         dictionary = {
             k_hnds_petrified = "Petrified!",
             k_hnds_green = "Draw!"
+            k_hnds_jackpot = "Jackpot!",
+            k_hnds_probinc = "Increased!"
         },
         labels = {
             hnds_black_seal = "Black Seal",
