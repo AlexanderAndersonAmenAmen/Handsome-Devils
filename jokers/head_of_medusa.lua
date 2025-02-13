@@ -26,7 +26,7 @@ SMODS.Joker {
                     if v:is_face() then
                         faces[#faces + 1] = v
                         card.ability.extra.x_mult = card.ability.extra.x_mult + card.ability.extra.scaling
-                        v:set_ability(G.P_CENTERS.m_stone, nil, true)
+                        v:set_ability(G.P_CENTERS.m_stone)
                         G.E_MANAGER:add_event(Event({
                             func = function()
                                 v:juice_up()
