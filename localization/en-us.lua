@@ -76,10 +76,11 @@ return {
             j_hnds_jackpot = {
                 name = "Jackpot",
                 text = {
-                    "{C:green}#1# in #2#{} chance to win {C:money}$#3#{} and",
-                    "{C:red}destroy{} this card at end of round",
-                    "Listed {C:green}probability{} increased by #4# per",
-                    "scoring {C:attention}7{} played"
+                    '{C:green}#1# in #2#{} chance',
+                    'to win {C:money}$#3#{} and {C:red}destroy{}',
+                    'this card at end of round,',
+                    'increases {C:attention}listed{} {C:green}probability{}',
+                    'by {C:attention}#4#{} per scoring {C:attention}7{} played'
                 }
             }
         },
@@ -89,7 +90,7 @@ return {
                 text = {
                     'Add a {C:dark_edition}Black Seal{}',
                     'to {C:attention}1{} selected',
-                    'card in your hand.'
+                    'card in your hand'
                 }
             },
             c_hnds_growth = {
@@ -97,7 +98,15 @@ return {
                 text = {
                     'Add a {C:green}Green Seal{}',
                     'to {C:attention}1{} selected',
-                    'card in your hand.'
+                    'card in your hand'
+                }
+            },
+            c_hnds_petrify = {
+                name = 'Petrify',
+                text = {
+                    'Enhaces all cards in hand',
+                    'into {C:attention}Stone Cards{}, but gain',
+                    '{C:money}$5{} for each {C:attention}petrified{}'
                 }
             }
         },
