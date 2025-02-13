@@ -67,7 +67,7 @@ SMODS.Consumable {
 	loc_vars = function(self, info_queue, card)
 		-- Handle creating a tooltip with set args.
 		info_queue[#info_queue + 1] =
-			{ set = "Other", key = "hnds_black_seal", specific_vars = {} }
+			{ set = "Other", key = "hnds_green_seal", specific_vars = {} }
 		return { 
 			vars = { card.ability.max_highlighted } 
 		}

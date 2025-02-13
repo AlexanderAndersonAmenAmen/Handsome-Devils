@@ -86,7 +86,7 @@ return {
             c_hnds_growth = {
                 name = 'Growth',
                 text = {
-                    'Add a {C:money}Green Seal{}',
+                    'Add a {C:green}Green Seal{}',
                     'to {C:attention}1{} selected',
                     'card in your hand.'
                 }
@@ -103,7 +103,9 @@ return {
             hnds_green_seal = {
                 name = 'Green Seal',
                 text = {
-                    'ggg',
+                    'Draw {C:attention}#1#{} extra',
+                    'cards when {C:attention}scored',
+                    'or {C:attention}discarded'
                 }
             }
         },
@@ -111,10 +113,12 @@ return {
     },
     misc = {
         dictionary = {
-            k_hnds_petrified = "Petrified!"
+            k_hnds_petrified = "Petrified!",
+            k_hnds_green = "Draw!"
         },
         labels = {
-            hnds_black_seal = "Black Seal"
+            hnds_black_seal = "Black Seal",
+            hnds_green_seal = "Green Seal"
         }
     }
 }
