@@ -11,7 +11,8 @@ local joker_files = {
     "digital_circus",
     "head_of_medusa",
     "jackpot",
-    "occultist"
+    "occultist",
+    "pot_of_greed"
 }
 
 local seal_files = {

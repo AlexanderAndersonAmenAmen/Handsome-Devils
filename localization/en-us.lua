@@ -82,7 +82,15 @@ return {
                     'increases {C:attention}listed{} {C:green}probability{}',
                     'by {C:attention}#4#{} per scoring {C:attention}7{} played'
                 }
-            }
+            },
+            j_hnds_pot_of_greed = {
+                name = "Pot of Greed",
+                text = {
+                    'When you use a {C:attention}consumable card',
+                    'during a round, draw {C:attention}#1#{} cards',
+                    '{C:inactive}(Max of {C:attention}#2#{C:inactive} per round)'
+                }
+            },
         },
         Spectral={
             c_hnds_abyss = {
