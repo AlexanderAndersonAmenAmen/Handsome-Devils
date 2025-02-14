@@ -31,3 +31,20 @@ G.GAME.green_seal_draws = 0
 '''
 match_indent = true
 times = 1
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''
+    self.children.front:draw_shader('dissolve')
+end
+'''
+position = "at"
+payload = '''
+    self.children.front:draw_shader('dissolve')
+elseif self.ability.effect == 'Stone Card' and self.hnds_petrifying then
+    self.children.front:draw_shader('dissolve')
+end
+'''
+match_indent = true
+times = 1
