@@ -139,6 +139,7 @@ SMODS.Consumable {
 			end,
 		}))
 		for i = 1, #G.hand.cards do
+			if G.hand.cards[i].config.center_key ~= 'm_stone' and not G.hand.cards[i].ability.eternal then
 			local percent = 1.15 - (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
 			G.E_MANAGER:add_event(Event({
 				trigger = "after",
@@ -170,6 +171,7 @@ SMODS.Consumable {
 
 
 		for i = 1, #G.hand.cards do
+			if G.hand.cards[i].config.center_key ~= 'm_stone' and not G.hand.cards[i].ability.eternal then
 			local percent = 0.85 + (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
 			G.E_MANAGER:add_event(Event({
 				trigger = "after",
