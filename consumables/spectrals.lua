@@ -121,6 +121,8 @@ SMODS.Consumable {
 	cost = 4,
 	atlas = "Consumables",
 	pos = { x = 3, y = 0 },
+	loc_vars = function(self, info_queue, card)
+	end,
 	can_use = function(self, card)
 		return #G.hand.cards > 0
 	end,
@@ -138,18 +140,18 @@ SMODS.Consumable {
 		}))
 		for i = 1, #G.hand.cards do
 			if G.hand.cards[i].config.center_key ~= 'm_stone' and not G.hand.cards[i].ability.eternal then
-				local percent = 1.15 - (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
-				G.E_MANAGER:add_event(Event({
-					trigger = "after",
-					delay = 0.15,
-					func = function()
-						G.hand.cards[i]:flip()
-						play_sound("card1", percent)
-						G.hand.cards[i]:juice_up(0.3, 0.3)
-						return true
-					end,
-				}))
-			end
+			local percent = 1.15 - (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
+			G.E_MANAGER:add_event(Event({
+				trigger = "after",
+				delay = 0.15,
+				func = function()
+					G.hand.cards[i]:flip()
+					play_sound("card1", percent)
+					G.hand.cards[i]:juice_up(0.3, 0.3)
+					return true
+				end,
+			}))
+		end
 		end
 
 		G.E_MANAGER:add_event(Event({
@@ -171,18 +173,18 @@ SMODS.Consumable {
 
 		for i = 1, #G.hand.cards do
 			if G.hand.cards[i].config.center_key ~= 'm_stone' and not G.hand.cards[i].ability.eternal then
-				local percent = 0.85 + (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
-				G.E_MANAGER:add_event(Event({
-					trigger = "after",
-					delay = 0.15,
-					func = function()
-						G.hand.cards[i]:flip()
-						play_sound("tarot2", percent, 0.6)
-						G.hand.cards[i]:juice_up(0.3, 0.3)
-						return true
-					end,
-				}))
-			end
+			local percent = 0.85 + (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
+			G.E_MANAGER:add_event(Event({
+				trigger = "after",
+				delay = 0.15,
+				func = function()
+					G.hand.cards[i]:flip()
+					play_sound("tarot2", percent, 0.6)
+					G.hand.cards[i]:juice_up(0.3, 0.3)
+					return true
+				end,
+			}))
+		end
 		end
 	end
 }

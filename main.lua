@@ -11,8 +11,7 @@ local joker_files = {
     "digital_circus",
     "head_of_medusa",
     "jackpot",
-    "occultist",
-    "pot_of_greed"
+    "occultist"
 }
 
 local seal_files = {
@@ -22,8 +21,12 @@ local seal_files = {
 
 local consumable_files = {
     "spectrals",
+    "planets"
 }
 
+local pokerhands_files = {
+    "stone_ocean"
+}
 
 --[[---------------------------
 Atlases and other resources
@@ -93,5 +96,9 @@ end
 
 for i = 1, #consumable_files do
     if consumable_files[i] then assert(SMODS.load_file('consumables/'.. consumable_files[i] ..'.lua'))() end
+end
+
+for i = 1, #pokerhands_files do
+    if pokerhands_files[i] then assert(SMODS.load_file('poker_hands/'.. pokerhands_files[i] ..'.lua'))() end
 end
 
