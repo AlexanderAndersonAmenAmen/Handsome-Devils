@@ -8,7 +8,7 @@ if hnds_config.enableStoneOcean then
 		pos = { x = 4, y = 1 },
 		order = 6,
 		cost = 4,
-		atlas = "Jokers",
+		atlas = "Consumables",
 		unlocked = true,
 		discovered = false,
 		generate_ui = 0,
