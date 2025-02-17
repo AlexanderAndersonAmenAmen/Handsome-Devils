@@ -104,7 +104,6 @@ elseif _c.set == 'Planet' then
 position = "at"
 payload = '''
 elseif _c.set == 'Planet' then
-    print(_c.key)
     if _c.key == "c_hnds_makemake" then
         loc_vars = {
             G.GAME.hands[cfg.hand_type].level,localize(cfg.hand_type, 'poker_hands'), G.GAME.hands[cfg.hand_type].l_mult, G.GAME.hands[cfg.hand_type].l_chips,
