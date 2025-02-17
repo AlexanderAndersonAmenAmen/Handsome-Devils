@@ -144,7 +144,7 @@ return {
                     "{C:attention}#2#",
                     "{C:chips}+#4#{} chips, {C:chips}+#6#{} extra",
                     "for each {C:attention}Stone Card{}",
-                    "scored this ante {C:inactive}[#5#]"
+                    "scored this Ante {C:inactive}[#5#]"
                 },
             },
         }
