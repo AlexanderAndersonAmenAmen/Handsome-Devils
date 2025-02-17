@@ -2,23 +2,19 @@ SMODS.PokerHand {
   key = "stone_ocean",
   name = "Stone Ocean",
   above_hand = "Two Pair",
-  loc_txt = {
-    name = "Stone Ocean",
-    description = {
-        "A hand consisting of 5 Stone cards"
-    }
-},
   visible = false,
   chips = 50,
   mult = 1,
-  l_chips = 10,
+  l_chips = 50,
   l_mult = 0,
+  l_chips_base = 50,
+  l_chips_scaling = 10,
   example = {
-    { "S_2", true, "m_stone" },
-    { "S_2", true, "m_stone" },
-    { "S_2", true, "m_stone" },
-    { "S_2", true, "m_stone" },
-    { "S_2", true, "m_stone" }
+    { "S_2", true, enhancement = "m_stone" },
+    { "S_2", true, enhancement = "m_stone" },
+    { "S_2", true, enhancement = "m_stone" },
+    { "S_2", true, enhancement = "m_stone" },
+    { "S_2", true, enhancement = "m_stone" }
   },
   evaluate = function(parts)
     return parts.hnds_so_base

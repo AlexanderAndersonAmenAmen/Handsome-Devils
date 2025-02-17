@@ -65,11 +65,12 @@ Function hooks
 
 local old_game_init = Game.init_game_object
 Game.init_game_object = function(self)
-    local ret = old_game_init(self)
+    old_ret = old_game_init(self)
 
-    ret.green_seal_draws = 0
+    old_ret.green_seal_draws = 0
+    old_ret.ante_stones_scored = 0
 
-    return ret
+    return old_ret
 end
 
 local set_cost_ref = Card.set_cost
