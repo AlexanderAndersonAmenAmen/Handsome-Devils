@@ -136,6 +136,18 @@ return {
             }
         },
         Voucher = {},
+        Planet={
+            c_hnds_makemake={
+                name="Makemake",
+                text={
+                    "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+                    "{C:attention}#2#",
+                    "{C:chips}+#4#{} chips, {C:chips}+#6#{} extra",
+                    "for each {C:attention}Stone Card{}",
+                    "scored this ante {C:inactive}[#5#]"
+                },
+            },
+        }
     },
     misc = {
         dictionary = {
@@ -147,6 +159,12 @@ return {
         labels = {
             hnds_black_seal = "Black Seal",
             hnds_green_seal = "Green Seal"
+        },
+        poker_hands = {
+            hnds_stone_ocean = "Stone Ocean"
+        },
+        poker_hand_descriptions = {
+            hnds_stone_ocean = "A hand consisting of 5 Stone cards"
         }
     }
 }
