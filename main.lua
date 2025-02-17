@@ -1,4 +1,40 @@
 --[[---------------------------
+Config tab
+--]]---------------------------
+
+hnds_config = SMODS.current_mod.config
+
+SMODS.current_mod.config_tab = function()
+	return {n = G.UIT.ROOT, config = {
+		align = "tm",
+		padding = 0.2,
+		minw = 8,
+		minh = 2,
+		colour = G.C.BLACK,
+		r = 0.1,
+		hover = true,
+		shadow = true,
+		emboss = 0.05
+	}, nodes = {
+		{n = G.UIT.R, config = {padding = 0, align = "cm", minh = 0.1}, nodes = {
+			{n = G.UIT.C, config = { align = "c", padding = 0, minh = 0.1}, nodes = {
+                {n = G.UIT.R, config = {padding = 0, align = "cm", minh = 0}, nodes = {
+                    { n = G.UIT.T, config = { text = "Enable Stone Ocean hand", scale = 0.45, colour = G.C.UI.TEXT_LIGHT }},
+                }},
+                {n = G.UIT.R, config = {padding = 0, align = "cm", minh = 0}, nodes = {
+                    { n = G.UIT.T, config = { text = "Requires restart", scale = 0.35, colour = G.C.JOKER_GREY }},
+                }}
+            }},
+			{n = G.UIT.C, config = { align = "cl", padding = 0.05 }, nodes = {
+                create_toggle{ col = true, label = "", scale = 1, w = 0, shadow = true, ref_table = hnds_config, ref_value = "enableStoneOcean" },
+            }},
+		}},
+        
+	}}
+end
+
+
+--[[---------------------------
 Script names
 --]]---------------------------
 
@@ -25,8 +61,9 @@ local consumable_files = {
 }
 
 local pokerhands_files = {
-    "stone_ocean"
+    --"stone_ocean"
 }
+if hnds_config.enableStoneOcean then table.insert(pokerhands_files, "stone_ocean") end
 
 --[[---------------------------
 Atlases and other resources
