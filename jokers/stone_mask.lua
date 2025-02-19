@@ -10,8 +10,8 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = true,
     calculate = function(self, card, context)
-        if context.cardarea == G.play and context.individual then
-            if context.other_card and context.other_card.config.center == G.P_CENTERS.m_stone and not context.other_card.edition and not context.repetition then
+        if context.cardarea == G.play and context.individual and #context.full_hand == 1 and G.GAME.current_round.hands_played == 0 then
+            if context.other_card and context.other_card.ability.set == "Enhanced" and not context.other_card.edition and not context.repetition then
                 local othercard = context.other_card
                 local edition = poll_edition('standard_edition' .. G.GAME.round_resets.ante, nil, true, true,
                     { 'e_holo', 'e_foil', 'e_polychrome' })
@@ -24,3 +24,4 @@ SMODS.Joker {
         end
     end
 }
+
