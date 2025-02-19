@@ -13,7 +13,8 @@ SMODS.Joker {
     { extra = {
         money = 50,
         coffee_rounds = 0,
-        target = 3
+        target = 3,
+        money_loss = 1
     }
     },
     loc_vars = function(self, info_queue, card)
