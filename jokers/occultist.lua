@@ -58,7 +58,7 @@ SMODS.Joker {
                     colour = G.C.BLUE,
                     card = card,
                     message = 'Study!',
-                    sound = 'madnesscolor'
+                    sound = 'hnds_madnesscolor'
                 }
             end
         end
