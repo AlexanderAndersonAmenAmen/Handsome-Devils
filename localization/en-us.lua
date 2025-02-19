@@ -103,10 +103,9 @@ return {
             j_hnds_stone_mask = {
                 name = "Stone Mask",
                 text = {
-                    'Add {C:dark_edition}Foil, Holographic or',
-                    '{C:dark_edition}Polychrome{} edition to',
-                    'played {C:attention}Stone Cards',
-                    '{C:inactive}(Chosen randomly)'
+                    'If {C:attention}first hand{} of round is',
+                    'a single Enhanced card, add',
+                    'a random {C:attention}edition{} to it',
                 }
             },
         },
