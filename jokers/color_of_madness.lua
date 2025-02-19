@@ -4,12 +4,12 @@ SMODS.Joker {
     pos = { x = 4, y = 2 },
     rarity = 2,                --rarity: 1 = Common, 2 = Uncommon, 3 = Rare, 4 = Legendary
     --soul_pos = { x = 0, y = 0 },
-    cost = 6,                  --cost
+    cost = 7,                  --cost
     unlocked = true,           --whether it is unlocked or not
     discovered = true,         --whether or not it starts discovered
     blueprint_compat = false,  --can it be blueprinted/brainstormed/other
-    eternal_compat = false,    --can it be eternal
-    perishable_compat = false, --can it be perishable
+    eternal_compat = true,    --can it be eternal
+    perishable_compat = true, --can it be perishable
     calculate = function(card, card, context)
         if context.before and context.cardarea == G.jokers and not context.blueprint and G.GAME.current_round.hands_played == 0 then
             local suits = {

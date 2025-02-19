@@ -8,14 +8,16 @@ priority = 0
 
 [[patches]]
 [patches.pattern]
-target = "functions/state_events.lua"
+target = "game.lua"
 pattern = '''
-for i=1, hand_space do --draw cards from deckL
+if G.GAME.current_round.hands_played == 0 and
 '''
 position = "before"
 payload = '''
-hand_space = hand_space + G.GAME.green_seal_draws
-G.GAME.green_seal_draws = 0
+if G.GAME.green_seal_draws > 0 then
+    G.FUNCS.draw_from_deck_to_hand(G.GAME.green_seal_draws)
+    G.GAME.green_seal_draws = 0
+end
 '''
 match_indent = true
 times = 1

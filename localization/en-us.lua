@@ -31,8 +31,9 @@ return {
                 name = 'Banana Split',
                 text = {
                     '{X:mult,C:white}X#1#{} Mult,',
-                    '{C:green}#2# in 6{} chance to {C:attention}Duplicate{}',
-                    'this Joker at end of round',
+                    '{C:green}#2# in 6{} chance to',
+                    '{C:attention}Duplicate{} this card',
+                    'at end of round',
                     '{C:inactive}(Must have room){}',
                 }
             },
@@ -49,7 +50,7 @@ return {
             j_hnds_deep_pockets = {
                 name = 'Deep Pockets',
                 text = {
-                    '{C:attention}+#1#{} consumeable slots,',
+                    '{C:attention}+#1#{} consumable slots,',
                     'each card in your',
                     '{C:attention}consumable area{}',
                     'gives {C:mult}+#2#{} Mult',
@@ -67,7 +68,7 @@ return {
             j_hnds_coffee_break = {
                 name = 'Coffee Break',
                 text = {
-                    'After {C:attention}3{} rounds, sell this',
+                    'After {C:attention}2{} rounds, sell this',
                     'card to earn {C:money}$#3#{}, earn',
                     '{C:money}$1{} less per card played',
                     '{C:inactive}(Currently {C:attention}#2#{C:inactive}/#1#)'
@@ -86,13 +87,30 @@ return {
             j_hnds_pot_of_greed = {
                 name = "Pot of Greed",
                 text = {
-                    'When you use a {C:attention}consumable card',
-                    'during a round, draw {C:attention}#1#{} cards',
+                    'When you use a',
+                    '{C:attention}consumable card{} during',
+                    'a round, draw {C:attention}#1#{} cards',
                     '{C:inactive}(Max of {C:attention}#2#{C:inactive} per round)'
                 }
             },
+            j_hnds_seismic_activity = {
+                name = "Seismic Activity",
+                text = {
+                    'Retrigger all',
+                    '{C:attention}Stone cards'
+                }
+            },
+            j_hnds_stone_mask = {
+                name = "Stone Mask",
+                text = {
+                    'Add {C:dark_edition}Foil, Holographic or',
+                    '{C:dark_edition}Polychrome{} edition to',
+                    'played {C:attention}Stone Cards',
+                    '{C:inactive}(Chosen randomly)'
+                }
+            },
         },
-        Spectral={
+        Spectral = {
             c_hnds_abyss = {
                 name = 'Abyss',
                 text = {
@@ -112,9 +130,9 @@ return {
             c_hnds_petrify = {
                 name = 'Petrify',
                 text = {
-                    'Enhaces all cards in hand',
-                    'into {C:attention}Stone Cards{}, but gain',
-                    '{C:money}$5{} for each {C:attention}petrified{}'
+                    'Enhaces all {C:attention}face{} cards in',
+                    'hand into {C:attention}Stone Cards{}, but',
+                    'gain {C:money}$5{} for each {C:attention}petrified{}'
                 }
             }
         },
@@ -155,7 +173,8 @@ return {
             k_hnds_green = "Draw!",
             k_hnds_jackpot = "Jackpot!",
             k_hnds_probinc = "Increased!",
-            k_hnds_coffee = "Cold!"
+            k_hnds_coffee = "Cold!",
+            k_hnds_seismic = "Tremor!"
         },
         labels = {
             hnds_black_seal = "Black Seal",

@@ -1,7 +1,7 @@
 --[[---------------------------
 Config tab
 --]]---------------------------
-
+HD = SMODS.current_mod
 hnds_config = SMODS.current_mod.config
 
 SMODS.current_mod.config_tab = function()
@@ -47,7 +47,10 @@ local joker_files = {
     "digital_circus",
     "head_of_medusa",
     "jackpot",
-    "occultist"
+    "occultist",
+    "seismic_activity",
+    "pot_of_greed",
+    "stone_mask"
 }
 
 local seal_files = {
@@ -117,6 +120,9 @@ function Card.set_cost(self)
     if self.config.center.key == "j_hnds_coffee_break" or self.config.center.key == "j_hnds_digital_circus" then
         self.sell_cost = 0
     end
+    if self.config.center.key == "j_hnds_banana_split" then
+        self.sell_cost = 10
+    end
 end
 
 
@@ -139,4 +145,3 @@ end
 for i = 1, #pokerhands_files do
     if pokerhands_files[i] then assert(SMODS.load_file('poker_hands/'.. pokerhands_files[i] ..'.lua'))() end
 end
-
