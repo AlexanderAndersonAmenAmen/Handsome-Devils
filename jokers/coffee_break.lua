@@ -17,17 +17,30 @@ SMODS.Joker {
     }
     },
     loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.target, card.ability.extra.coffee_rounds, card.ability.extra.money } }
+        return { vars = { card.ability.extra.target, card.ability.extra.coffee_rounds, card.ability.extra.money, card.ability.extra.money_loss } }
     end,
     calculate = function(self, card, context)
         if context.before then
-            for _, played_card in pairs(context.full_hand) do
-                card.ability.extra.money = card.ability.extra.money - 1
-                SMODS.calculate_effect({
-                    message = '-$1',
-                    colour = G.C.RED,
-                    message_card = card,
-                }, played_card)
+            if card.ability.extra.money - card.ability.extra.money_loss == 0 then
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        card:set_debuff(true)
+                        return true
+                    end
+                }))
+                return {
+                    message = localize('k_hnds_coffee'),
+                    colour = G.C.CHIPS
+                }
+            else
+                for _, played_card in pairs(context.full_hand) do
+                    card.ability.extra.money = card.ability.extra.money - card.ability.extra.money_loss
+                    SMODS.calculate_effect({
+                        message = '-$1',
+                        colour = G.C.RED,
+                        message_card = card,
+                    }, played_card)
+                end
             end
         end
         if context.end_of_round and context.main_eval then
