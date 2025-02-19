@@ -165,7 +165,7 @@ return {
             hnds_stone_ocean = "Stone Ocean"
         },
         poker_hand_descriptions = {
-            hnds_stone_ocean = "A hand consisting of 5 Stone cards"
+            hnds_stone_ocean = { "A hand consisting of 5 Stone cards" }
         }
     }
 }
