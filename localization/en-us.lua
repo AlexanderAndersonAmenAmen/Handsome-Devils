@@ -155,6 +155,7 @@ return {
             k_hnds_green = "Draw!",
             k_hnds_jackpot = "Jackpot!",
             k_hnds_probinc = "Increased!",
+            k_hnds_coffee = "Cold!"
         },
         labels = {
             hnds_black_seal = "Black Seal",
