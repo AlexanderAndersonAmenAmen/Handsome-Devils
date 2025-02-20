@@ -7,8 +7,8 @@ SMODS.Joker {
     unlocked = true,
     discovered = true,
     blueprint_compat = true,
-    eternal_compat = false,
-    perishable_compat = false,
+    eternal_compat = true,
+    perishable_compat = true,
     calculate = function(card, card, context)
         if context.joker_main and context.cardarea == G.jokers and not context.blueprint and G.GAME.current_round.hands_played == 0 then
             local suits = {

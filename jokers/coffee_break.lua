@@ -11,9 +11,9 @@ SMODS.Joker {
     perishable_compat = true,
     config =
     { extra = {
-        money = 50,
+        money = 30,
         coffee_rounds = 0,
-        target = 3,
+        target = 2,
         money_loss = 1
     }
     },
@@ -53,7 +53,7 @@ SMODS.Joker {
             end
             return {
                 message = card.ability.extra.active and localize('k_active_ex') or
-                card.ability.extra.coffee_rounds .. '/' .. card.ability.extra.target,
+                    card.ability.extra.coffee_rounds .. '/' .. card.ability.extra.target,
                 colour = G.C.FILTER
             }
         end

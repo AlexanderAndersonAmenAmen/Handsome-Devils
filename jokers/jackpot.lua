@@ -8,13 +8,13 @@ SMODS.Joker {
             prob = 1
         }
     },
-    rarity = 1,
+    rarity = 2,
     loc_vars = function(self, info_queue, card)
         return { vars = { ((G.GAME.probabilities.normal or 1) * card.ability.extra.prob), card.ability.extra.base_chance, card.ability.extra.money, card.ability.extra.prob_inc } }
     end,
     atlas = "Jokers",
     pos = { x = 8, y = 0},
-    cost = 5,
+    cost = 4,
     unlocked = true,
     discovered = true,
     blueprint_compat = false,
