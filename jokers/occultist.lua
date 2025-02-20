@@ -10,7 +10,7 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = true,
     calculate = function(card, card, context)
-        if context.joker_main and context.cardarea == G.jokers and not context.blueprint and G.GAME.current_round.hands_played == 0 then
+        if context.before and context.cardarea == G.jokers and not context.blueprint and G.GAME.current_round.hands_played == 0 then
             local suits = {
                 ['Hearts'] = 0,
                 ['Diamonds'] = 0,
@@ -46,21 +46,24 @@ SMODS.Joker {
             if suits["Hearts"] > 0 and
                 suits["Diamonds"] > 0 and
                 suits["Spades"] > 0 and
-                suits["Clubs"] > 0 then
+                suits["Clubs"] > 0 and
+                context.scoring_hand then
                 local tag_name = pseudorandom_element({ 'tag_meteor', 'tag_charm', 'tag_ethereal' },
                     pseudoseed('occ_pool'))
                 add_tag(Tag(tag_name))
-                for i, v in ipairs(context.scoring_hand) do
-                    play_sound('hnds_madnesscolor', 1.25, 0.05)
+            G.E_MANAGER:add_event(Event({
+                func = function()
+                    play_sound('hnds_madnesscolor', 1.25, 0.25)
+                    return true
                 end
-                return
-                {
-                    colour = G.C.BLUE,
-                    card = card,
-                    message = 'Study!',
-                    sound = 'hnds_madnesscolor'
-                }
-            end
+            }))
+            return
+            {
+                colour = G.C.BLUE,
+                card = card,
+                message = 'Study!',
+            }
         end
     end
+end
 }

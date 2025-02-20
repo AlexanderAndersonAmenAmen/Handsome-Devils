@@ -1,13 +1,13 @@
 SMODS.Joker {
-    key = 'color_of_madness',               --joker key
-    atlas = 'Jokers',          --atlas' key
+    key = 'color_of_madness', --joker key
+    atlas = 'Jokers',         --atlas' key
     pos = { x = 4, y = 2 },
-    rarity = 2,                --rarity: 1 = Common, 2 = Uncommon, 3 = Rare, 4 = Legendary
+    rarity = 2,               --rarity: 1 = Common, 2 = Uncommon, 3 = Rare, 4 = Legendary
     --soul_pos = { x = 0, y = 0 },
-    cost = 7,                  --cost
-    unlocked = true,           --whether it is unlocked or not
-    discovered = true,         --whether or not it starts discovered
-    blueprint_compat = false,  --can it be blueprinted/brainstormed/other
+    cost = 7,                 --cost
+    unlocked = true,          --whether it is unlocked or not
+    discovered = true,        --whether or not it starts discovered
+    blueprint_compat = false, --can it be blueprinted/brainstormed/other
     eternal_compat = true,    --can it be eternal
     perishable_compat = true, --can it be perishable
     calculate = function(card, card, context)
@@ -50,14 +50,18 @@ SMODS.Joker {
                 suits["Clubs"] > 0 then
                 for i, v in ipairs(context.scoring_hand) do
                     v:set_ability(G.P_CENTERS.m_wild, nil, true)
-                    play_sound('hnds_madnesscolor', 1.25, 0.05)
                 end
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        play_sound('hnds_madnesscolor', 1.25, 0.25)
+                        return true
+                    end
+                }))
                 return
                 {
                     colour = G.C.GREEN,
                     card = card,
                     message = 'Madness!',
-                    sound = 'hnds_madnesscolor'
                 }
             end
         end

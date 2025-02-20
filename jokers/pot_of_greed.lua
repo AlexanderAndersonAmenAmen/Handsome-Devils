@@ -33,7 +33,11 @@ SMODS.Joker {
                     return true
                 end
             }))
-            
+            return {
+                message = localize('k_hnds_IPLAYPOTOFGREED'),
+                colour = G.C.GREEN,
+                card = card
+            }
         end
     end
 }

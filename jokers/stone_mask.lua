@@ -10,13 +10,13 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = true,
     loc_vars = function(self, info_queue, card)
-		info_queue[#info_queue+1] = G.P_CENTERS.e_foil
-		info_queue[#info_queue+1] = G.P_CENTERS.e_holo
-		info_queue[#info_queue+1] = G.P_CENTERS.e_polychrome
-		return {
-			vars = { card.ability.max_highlighted }
-		}
-	end,
+        info_queue[#info_queue + 1] = G.P_CENTERS.e_foil
+        info_queue[#info_queue + 1] = G.P_CENTERS.e_holo
+        info_queue[#info_queue + 1] = G.P_CENTERS.e_polychrome
+        return {
+            vars = { card.ability.max_highlighted }
+        }
+    end,
     calculate = function(self, card, context)
         if context.cardarea == G.play and context.individual and #context.full_hand == 1 and G.GAME.current_round.hands_played == 0 then
             if context.other_card and context.other_card.ability.set == "Enhanced" and not context.other_card.edition and not context.repetition then
@@ -27,8 +27,14 @@ SMODS.Joker {
                     func = function()
                         othercard:set_edition(edition, true)
                         return true
-                    end }))
+                    end
+                }))
             end
+            return {
+                message = localize('k_hnds_awaken'),
+                colour = G.C.GREY,
+                card = card
+            }
         end
     end
 }
