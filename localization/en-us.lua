@@ -173,7 +173,9 @@ return {
             k_hnds_jackpot = "Jackpot!",
             k_hnds_probinc = "Increased!",
             k_hnds_coffee = "Cold!",
-            k_hnds_seismic = "Tremor!"
+            k_hnds_seismic = "Tremor!",
+            k_hnds_awaken = "Awaken!",
+            k_hnds_IPLAYPOTOFGREED = "I PLAY!..."
         },
         labels = {
             hnds_black_seal = "Black Seal",
