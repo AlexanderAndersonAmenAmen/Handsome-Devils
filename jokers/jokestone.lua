@@ -30,19 +30,28 @@ SMODS.Joker {
                         end
                     end
                     if #_cards > 0 then
-                        local _card = pseudorandom_element(_cards, pseudoseed("j_hnds_jokestone"))
-                        _card.ability.hnds_drawing = true
+                        local cards_to_draw = {}
+                        for i = 1, card.ability.extra.draw do
+                            if _cards[i] then
+                                cards_to_draw[i] = _cards[i]
+                                cards_to_draw[i].ability.hnds_drawing = true
+                            end
+                        end
                         card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {
                             message = 'tour guide',
                             colour = G.C.PURPLE,
                             instant = true
                         })
-                        draw_card(G.deck, G.hand, nil, 'up', true, _card)
+                        for i = 1, #cards_to_draw do
+                            draw_card(G.deck, G.hand, nil, 'up', true, cards_to_draw[i])
+                        end
                         G.E_MANAGER:add_event(Event({
                             trigger = 'before',
                             delay = 0.1,
                             func = function()
-                                _card.ability.hnds_drawing = nil
+                                for i = 1, #cards_to_draw do
+                                    cards_to_draw[i].ability.hnds_drawing = nil
+                                end
                                 return true
                             end
                         }))
