@@ -108,6 +108,14 @@ return {
                     'a random {C:attention}edition{} to it',
                 }
             },
+            j_hnds_jokestone = {
+                name = "Jokestone",
+                text = {
+                    'At the start of round,',
+                    'draw {C:attention}2{} Enhanced cards',
+                    'from your deck',
+                }
+            },
         },
         Spectral = {
             c_hnds_abyss = {
