@@ -38,7 +38,7 @@ SMODS.Joker {
                             end
                         end
                         card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {
-                            message = 'tour guide',
+                            message = localize('k_hnds_goldfish'),
                             colour = G.C.PURPLE,
                             instant = true
                         })

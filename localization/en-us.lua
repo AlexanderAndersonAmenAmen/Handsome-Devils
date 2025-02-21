@@ -177,6 +177,7 @@ return {
     misc = {
         dictionary = {
             k_hnds_petrified = "Petrified!",
+            k_hnds_goldfish = "Goldfish!",
             k_hnds_green = "Draw!",
             k_hnds_jackpot = "Jackpot!",
             k_hnds_probinc = "Increased!",
