@@ -50,7 +50,8 @@ local joker_files = {
     "occultist",
     "seismic_activity",
     "pot_of_greed",
-    "stone_mask"
+    "stone_mask",
+    "jokestone"
 }
 
 local seal_files = {
