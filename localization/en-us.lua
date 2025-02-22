@@ -24,7 +24,7 @@ return {
                     'If {C:attention}first hand{} of round has',
                     'a scoring card of each {C:attention}suit{},',
                     'create a {C:tarot}Charm{}, {C:planet}Meteor{}',
-                    'or {C:spectral}Etehreal{} {C:attention}Tag{}',
+                    'or {C:spectral}Ethereal{} {C:attention}Tag{}',
                 }
             },
             j_hnds_banana_split = {
