@@ -116,6 +116,15 @@ return {
                     'from your deck',
                 }
             },
+            j_hnds_meme = {
+                name = "Meme",
+                text = {
+                    'This Joker gains',
+                    '{X:mult,C:white}X0.05{} Mult for each unique',
+                    '{C:attention}suit{} in played poker hand',
+                    '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)',
+                }
+            },
         },
         Spectral = {
             c_hnds_abyss = {
