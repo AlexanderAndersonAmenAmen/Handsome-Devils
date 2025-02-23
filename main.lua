@@ -40,18 +40,19 @@ Script names
 
 local joker_files = {
     --You can rearrange the joker order in the collection by changing the order here
-    "banana_split",
     "coffee_break",
-    "color_of_madness",
-    "deep_pockets",
-    "digital_circus",
+    "pot_of_greed",
+    "banana_split",
     "head_of_medusa",
     "jackpot",
-    "occultist",
+    "jokestone",
+    "color_of_madness",
+    "deep_pockets",
     "seismic_activity",
-    "pot_of_greed",
+    "occultist",
     "stone_mask",
-    "jokestone"
+    "meme",
+    "digital_circus",
 }
 
 local seal_files = {
