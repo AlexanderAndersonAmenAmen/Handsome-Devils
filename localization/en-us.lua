@@ -125,6 +125,15 @@ return {
                     '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)',
                 }
             },
+            j_hnds_balloons = {
+                name = "Balloons",
+                text = {
+                    "When round ends without any",
+                    "{C:blue}hands{} left, {C:red}lose{} a {C:attention}Balloon{}",
+                    "and create a random {C:attention}Tag",
+                    "{C:inactive}({C:attention}#1#{C:inactive}/#2# Balloons left)"
+                }
+            },
         },
         Spectral = {
             c_hnds_abyss = {
@@ -193,7 +202,8 @@ return {
             k_hnds_coffee = "Cold!",
             k_hnds_seismic = "Tremor!",
             k_hnds_awaken = "Awaken!",
-            k_hnds_IPLAYPOTOFGREED = "I PLAY!..."
+            k_hnds_IPLAYPOTOFGREED = "I PLAY!...",
+            k_hnds_balloons = "All gone!",
         },
         labels = {
             hnds_black_seal = "Black Seal",

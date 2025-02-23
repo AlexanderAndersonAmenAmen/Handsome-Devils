@@ -42,6 +42,7 @@ local joker_files = {
     --You can rearrange the joker order in the collection by changing the order here
     "coffee_break",
     "pot_of_greed",
+    "balloons",
     "banana_split",
     "head_of_medusa",
     "jackpot",
