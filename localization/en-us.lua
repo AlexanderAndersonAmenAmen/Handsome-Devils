@@ -7,10 +7,10 @@ return {
             j_hnds_color_of_madness = {
                 name = 'Color of Madness',
                 text = {
-                    'If {C:attention}first hand{} of round has',
-                    '{C:attention}4{} or more scoring cards with',
-                    'unique {C:attention}suit{}, enhances one of',
-                    'them into a {C:attention}Wild Card{}',
+                    'If {C:attention}first hand{} of round',
+                    'has {C:attention}4{} unique suits, the',
+                    '{C:attention}first{} scored card',
+                    'becomes a {C:attention}Wild Card{}'
                 }
                 -- only needed when this object is locked by default
                 -- unlock = {
