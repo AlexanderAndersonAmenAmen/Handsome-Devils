@@ -88,8 +88,8 @@ return {
                 name = "Pot of Greed",
                 text = {
                     'When you use a',
-                    '{C:attention}consumable card{} during',
-                    'a round, draw {C:attention}#1#{} cards',
+                    '{C:attention}consumable card{},',
+                    'draw {C:attention}#1#{} cards',
                     '{C:inactive}(Max of {C:attention}#2#{C:inactive} per round)'
                 }
             },
