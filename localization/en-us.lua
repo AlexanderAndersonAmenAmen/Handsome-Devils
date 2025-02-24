@@ -8,9 +8,9 @@ return {
                 name = 'Color of Madness',
                 text = {
                     'If {C:attention}first hand{} of round has',
-                    'a scoring card of each {C:attention}suit{},',
-                    'enhances one of the scored',
-                    'cards into a {C:attention}Wild Card{}',
+                    '{C:attention}4{} or more scoring cards with',
+                    'unique {C:attention}suit{}, enhances one of',
+                    'them into a {C:attention}Wild Card{}',
                 }
                 -- only needed when this object is locked by default
                 -- unlock = {
@@ -22,9 +22,9 @@ return {
                 name = 'Occultist',
                 text = {
                     'If {C:attention}first hand{} of round has',
-                    'a scoring card of each {C:attention}suit{},',
-                    'create a {C:tarot}Charm{}, {C:planet}Meteor{}',
-                    'or {C:spectral}Ethereal{} {C:attention}Tag{}',
+                    '{C:attention}4{} or more scoring cards with',
+                    'unique {C:attention}suit{}, create a {C:tarot}Charm{},',
+                    '{C:planet}Meteor{} or {C:spectral}Ethereal{} {C:attention}Tag{}',
                 }
             },
             j_hnds_banana_split = {
