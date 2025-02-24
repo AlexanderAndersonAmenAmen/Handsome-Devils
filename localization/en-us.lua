@@ -21,8 +21,8 @@ return {
             j_hnds_occultist = {
                 name = 'Occultist',
                 text = {
-                    'If {C:attention}first hand{} of round has',
-                    'a scoring card of each {C:attention}suit{},',
+                    'If {C:attention}first hand{} of the round',
+                    'has at least {C:attention}#1#{} scoring suits,',
                     'create a {C:tarot}Charm{}, {C:planet}Meteor{}',
                     'or {C:spectral}Ethereal{} {C:attention}Tag{}',
                 }
