@@ -17,6 +17,7 @@ SMODS.Joker {
         money_loss = 1
     }
     },
+    pools = { Food = true },
     loc_vars = function(self, info_queue, card)
         return { vars = { card.ability.extra.target, card.ability.extra.coffee_rounds, card.ability.extra.money, card.ability.extra.money_loss } }
     end,

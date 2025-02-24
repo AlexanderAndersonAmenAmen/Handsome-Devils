@@ -14,6 +14,7 @@ SMODS.Joker {
         Xmult = 1.5
     }
     },
+    pools = { Food = true },
     loc_vars = function(card, info_queue, center)
         return { vars = { center.ability.extra.Xmult, G.GAME.probabilities.normal } }
     end,
