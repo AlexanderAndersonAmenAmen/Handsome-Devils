@@ -40,7 +40,7 @@ SMODS.Joker {
                 {
                     colour = G.C.GREEN,
                     card = card,
-                    message = 'Madness!',
+                    message = localize("k_hnds_color_of_madness"),
                 }
             end
         end

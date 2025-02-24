@@ -43,7 +43,7 @@ SMODS.Joker {
                     {
                         colour = G.C.ORNAGE,
                         card = card,
-                        message = 'Split!',
+                        message = localize("k_hnds_banana_split"),
                     }
                 else
                     return {

@@ -204,6 +204,9 @@ return {
             k_hnds_awaken = "Awaken!",
             k_hnds_IPLAYPOTOFGREED = "I PLAY!...",
             k_hnds_balloons = "All gone!",
+            k_hnds_banana_split = "Split!",
+            k_hnds_color_of_madness = "Madness!",
+            k_hnds_occultist = "Study!"
         },
         labels = {
             hnds_black_seal = "Black Seal",
