@@ -21,10 +21,10 @@ return {
             j_hnds_occultist = {
                 name = 'Occultist',
                 text = {
-                    'If {C:attention}first hand{} of round has',
-                    '{C:attention}4{} or more scoring cards with',
-                    'unique {C:attention}suit{}, create a {C:tarot}Charm{},',
-                    '{C:planet}Meteor{} or {C:spectral}Ethereal{} {C:attention}Tag{}',
+                    'If {C:attention}first hand{} of round',
+                    'has {C:attention}4{} unique suits,',
+                    'create a {C:tarot}Charm{}, {C:planet}Meteor{}',
+                    'or {C:spectral}Ethereal{} {C:attention}Tag{}',
                 }
             },
             j_hnds_banana_split = {
