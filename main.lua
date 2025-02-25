@@ -43,11 +43,11 @@ Script names
 local joker_files = {
     --You can rearrange the joker order in the collection by changing the order here
     "coffee_break",
-    "pot_of_greed",
+    "jackpot",
     "balloons",
     "banana_split",
     "head_of_medusa",
-    "jackpot",
+    "pot_of_greed",
     "jokestone",
     "color_of_madness",
     "deep_pockets",
@@ -127,7 +127,7 @@ function Card.set_cost(self)
         self.sell_cost = 0
     end
     if self.config.center.key == "j_hnds_banana_split" then
-        self.sell_cost = 10
+        self.sell_cost = 15
     end
 end
 
