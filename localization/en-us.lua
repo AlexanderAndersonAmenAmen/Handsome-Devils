@@ -137,9 +137,9 @@ return {
             j_hnds_jokes_aside = {
                 name = "Jokes Aside!",
                 text = {
-                    'This Joker gains {X:mult,C:white}X#2#{} Mult',
-                    'for each Joker {C:attention}sold{}',
-                    'during a round',
+                    'This Joker gains',
+                    '{X:mult,C:white}X#2#{} Mult for each Joker',
+                    '{C:attention}sold{} during a round',
                     '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)'
                 }
             },
@@ -164,9 +164,9 @@ return {
             c_hnds_petrify = {
                 name = 'Petrify',
                 text = {
-                    'Enhaces all {C:attention}face{} cards in',
-                    'hand into {C:attention}Stone Cards{}, but',
-                    'gain {C:money}$5{} for each {C:attention}petrified{}'
+                    'Enhaces all {C:attention}face{} cards',
+                    'in hand into {C:attention}Stone Cards{},',
+                    'gain {C:money}$5{} for each petrified'
                 }
             }
         },
