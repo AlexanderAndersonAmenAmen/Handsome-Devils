@@ -134,6 +134,15 @@ return {
                     "{C:inactive}({C:attention}#1#{C:inactive}/#2# Balloons left)"
                 }
             },
+            j_hnds_jokes_aside = {
+                name = "Jokes Aside!",
+                text = {
+                    'This Joker gains {X:mult,C:white}X#2#{} Mult',
+                    'for each Joker {C:attention}sold{}',
+                    'during a round',
+                    '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)'
+                }
+            },
         },
         Spectral = {
             c_hnds_abyss = {

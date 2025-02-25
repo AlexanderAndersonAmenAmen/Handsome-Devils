@@ -56,6 +56,7 @@ local joker_files = {
     "stone_mask",
     "meme",
     "digital_circus",
+    "jokes_aside"
 }
 
 local seal_files = {
