@@ -7,9 +7,9 @@ return {
             j_hnds_color_of_madness = {
                 name = 'Color of Madness',
                 text = {
-                    'If {C:attention}first hand{} of round',
-                    'has {C:attention}4{} unique suits, the',
-                    '{C:attention}first{} scored card',
+                    'If {C:attention}first poker hand{} of',
+                    'round contains {C:attention}4{} unique',
+                    'suits, {C:attention}first{} scored card',
                     'becomes a {C:attention}Wild Card{}'
                 }
                 -- only needed when this object is locked by default
@@ -21,10 +21,10 @@ return {
             j_hnds_occultist = {
                 name = 'Occultist',
                 text = {
-                    'If {C:attention}first hand{} of round',
-                    'has {C:attention}4{} unique suits,',
-                    'create a {C:tarot}Charm{}, {C:planet}Meteor{}',
-                    'or {C:spectral}Ethereal{} {C:attention}Tag{}',
+                    'If {C:attention}first poker hand{} of',
+                    'round contains {C:attention}4{} unique',
+                    'suits, create a {C:planet}Meteor{},',
+                    '{C:tarot}Charm{} or {C:spectral}Ethereal{} {C:attention}Tag{}',
                 }
             },
             j_hnds_banana_split = {
