@@ -21,11 +21,15 @@ SMODS.Joker {
         if context.cardarea == G.play and context.individual and #context.full_hand == 1 and G.GAME.current_round.hands_played == 0 then
             if context.other_card and context.other_card.ability.set == "Enhanced" and not context.other_card.edition and not context.repetition then
                 local othercard = context.other_card
-                local edition = poll_edition('standard_edition' .. G.GAME.round_resets.ante, nil, true, true,
-                    { 'e_holo', 'e_foil', 'e_polychrome' })
                 G.E_MANAGER:add_event(Event({
                     func = function()
-                        othercard:set_edition(edition, true)
+                        othercard:set_edition(poll_edition('tag', nil, false, true,
+                            {
+                                { name = 'e_foil',       weight = 32, },
+                                { name = 'e_holo',       weight = 32, },
+                                { name = 'e_polychrome', weight = 32, },
+                                { name = 'e_negative',   weight = 4, }
+                            }))
                         return true
                     end
                 }))
