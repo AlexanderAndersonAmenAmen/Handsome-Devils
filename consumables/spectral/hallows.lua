@@ -1,0 +1,52 @@
+SMODS.Consumable {
+	key = 'hallows',
+	set = 'Spectral',
+	config = {
+        extra = {
+            value_multiplier = 4,
+			max_payout = 100
+        }
+    },
+	loc_vars = function(self, info_queue, card)
+		return {vars = {card.ability.extra.value_multiplier, card.ability.extra.max_payout * (G.GAME.gambler_mod or 1)}}
+	end,
+	rarity = 4,
+	atlas = 'Consumables',
+	pos = { x = 4, y = 0 },
+	cost = 4,
+    use = function(self, card, context, copier)
+		local used_consumable = copier or card
+        local destroyable_jokers = {}
+		if #G.jokers.cards > 1 then
+			for i = 2, #G.jokers.cards do
+				if not G.jokers.cards[i].ability.eternal then table.insert(destroyable_jokers, G.jokers.cards[i]) end
+			end
+		end
+		local no_sound = false
+		local value = 0
+		G.E_MANAGER:add_event(Event({trigger = 'before', delay = 0.75, func = function()
+            for k, v in pairs(destroyable_jokers) do
+				value = value + (v.sell_cost * card.ability.extra.value_multiplier)
+				v:start_dissolve(nil, no_sound)
+				no_sound = true
+            end
+            return true end }))
+        G.E_MANAGER:add_event(Event({trigger = 'before', delay = 0.4, func = function()
+            ease_dollars(math.min(value, card.ability.extra.max_payout * (G.GAME.gambler_mod or 1)))
+            return true end }))
+    end,
+    can_use = function(self, card)
+		if #G.jokers.cards > 1 then
+			--Check that all jokers that would be destroyed are not eternal
+			local all_eternal = true
+			for i = 2, #G.jokers.cards do
+				if not G.jokers.cards[i].ability.eternal then
+					all_eternal = false
+					break
+				end
+			end
+			if not all_eternal then return true end
+		end
+		return false
+    end,
+}

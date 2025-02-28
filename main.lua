@@ -64,39 +64,58 @@ end
 Script names
 --]] ---------------------------
 
-local joker_files = {
-  --You can rearrange the joker order in the collection by changing the order here
-  "coffee_break",
-  "jackpot",
-  "balloons",
-  "banana_split",
-  "head_of_medusa",
-  "pot_of_greed",
-  "jokestone",
-  "color_of_madness",
-  "deep_pockets",
-  "seismic_activity",
-  "occultist",
-  "stone_mask",
-  "meme",
-  "digital_circus",
-  "jokes_aside"
+local files = {
+  jokers = {
+    list = {
+      --You can rearrange the joker order in the collection by changing the order here
+      "coffee_break",
+      "jackpot",
+      "balloons",
+      "banana_split",
+      "head_of_medusa",
+      "pot_of_greed",
+      "jokestone",
+      "color_of_madness",
+      "deep_pockets",
+      "seismic_activity",
+      "occultist",
+      "stone_mask",
+      "meme",
+      "digital_circus",
+      "jokes_aside"
+    },
+    directory = 'jokers/'
+  },
+  seals = {
+    list = {
+      "black_seal",
+      "green_seal"
+    },
+    directory = 'seals/'
+  },
+  spectrals = {
+    list = {
+      "abyss",
+      "exchange",
+      "growth",
+      "hallows",
+      "petrify",
+    },
+    directory = 'consumables/spectral/'
+  },
+  planets = {
+    list = {
+      "makemake",
+    },
+    directory = 'consumables/planet/'
+  },
+  poker_hands = {
+    list = {},
+    directory = 'poker_hands/'
+  },
 }
 
-local seal_files = {
-  "black_seal",
-  "green_seal"
-}
-
-local consumable_files = {
-  "spectrals",
-  "planets"
-}
-
-local pokerhands_files = {
-  --"stone_ocean"
-}
-if hnds_config.enableStoneOcean then table.insert(pokerhands_files, "stone_ocean") end
+if hnds_config.enableStoneOcean then table.insert(files.poker_hands.list, "stone_ocean") end
 
 --[[---------------------------
 Atlases and other resources
@@ -206,18 +225,14 @@ end
 Load files
 --]] ---------------------------
 
-for i = 1, #joker_files do
-  if joker_files[i] then assert(SMODS.load_file('jokers/' .. joker_files[i] .. '.lua'))() end
+local function load_files(set)
+    for i = 1, #files[set].list do
+        if files[set].list[i] then assert(SMODS.load_file(files[set].directory .. files[set].list[i] .. '.lua'))() end
+    end
 end
 
-for i = 1, #seal_files do
-  if seal_files[i] then assert(SMODS.load_file('seals/' .. seal_files[i] .. '.lua'))() end
-end
-
-for i = 1, #consumable_files do
-  if consumable_files[i] then assert(SMODS.load_file('consumables/' .. consumable_files[i] .. '.lua'))() end
-end
-
-for i = 1, #pokerhands_files do
-  if pokerhands_files[i] then assert(SMODS.load_file('poker_hands/' .. pokerhands_files[i] .. '.lua'))() end
-end
+load_files("jokers")
+load_files("spectrals")
+load_files("planets")
+load_files("poker_hands")
+load_files("seals")

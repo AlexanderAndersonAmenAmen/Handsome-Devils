@@ -182,7 +182,7 @@ return {
                 text = {
                     "Destroy all but the leftmost",
                     "Joker, earn {C:attention}X#1#{} the sell value",
-                    "of destroyed jokers.",
+                    "of destroyed jokers",
                     "{C:inactive}(Max of {C:money}$#2#{C:inactive})",
                 }
             },
