@@ -7,7 +7,7 @@ SMODS.Joker {
     cost = 7,                 --cost
     unlocked = true,          --whether it is unlocked or not
     discovered = true,        --whether or not it starts discovered
-    blueprint_compat = true, --can it be blueprinted/brainstormed/other
+    blueprint_compat = false, --can it be blueprinted/brainstormed/other
     eternal_compat = true,    --can it be eternal
     perishable_compat = true, --can it be perishable
     config ={ 
@@ -19,7 +19,7 @@ SMODS.Joker {
         return { vars = { card.ability.extra.suits_needed } }
     end,
     calculate = function(card, card, context)
-        if context.before and context.cardarea == G.jokers and G.GAME.current_round.hands_played == 0 then
+        if context.before and context.cardarea == G.jokers and G.GAME.current_round.hands_played == 0 and not context.blueprint then
             if HNDS.get_unique_suits(context.scoring_hand) >= card.ability.extra.suits_needed then
                 --[[
                 local unenhanced_cards = {}
