@@ -31,7 +31,7 @@ return {
                 name = 'Banana Split',
                 text = {
                     '{X:mult,C:white}X#1#{} Mult,',
-                    '{C:green}#2# in 6{} chance to',
+                    '{C:green}#2# in #3#{} chance to',
                     '{C:attention}Duplicate{} this card',
                     'at end of round',
                     '{C:inactive}(Must have room){}',

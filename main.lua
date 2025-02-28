@@ -252,6 +252,13 @@ function HNDS.poll_tag(seed, options)
   return tag
 end
 
+--For cross-mod compatibility with Maximus
+if not Card.scale_value then
+	function Card:scale_value(applied_value, scalar)
+		return applied_value + scalar
+	end
+end
+
 --[[---------------------------
 Load files
 --]] ---------------------------

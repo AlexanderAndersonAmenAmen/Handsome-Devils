@@ -32,7 +32,7 @@ SMODS.Joker {
             end]]
             local boost = card.ability.extra.scaling * HNDS.get_unique_suits(context.scoring_hand)
             if boost > 0 then
-                card.ability.extra.x_mult = card.ability.extra.x_mult + boost
+                card.ability.extra.x_mult = card:scale_value(card.ability.extra.x_mult, card.ability.extra.scaling)
                 return {
                     message = localize('k_upgrade_ex')
                 }

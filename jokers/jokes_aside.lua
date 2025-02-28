@@ -21,7 +21,7 @@ SMODS.Joker {
     calculate = function(self, card, context)
         if not card.debuff then
             if not context.blueprint and context.selling_card and context.card ~= card and G.STATE == G.STATES.SELECTING_HAND and context.card.ability.set == "Joker" then
-                card.ability.extra.x_mult = card.ability.extra.x_mult + card.ability.extra.scaling
+                card.ability.extra.x_mult = card:scale_value(card.ability.extra.x_mult, card.ability.extra.scaling)
                 return {
                     message = localize('k_upgrade_ex')
                 }

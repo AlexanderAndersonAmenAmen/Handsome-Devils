@@ -11,12 +11,13 @@ SMODS.Joker {
     perishable_compat = false,
     config =
     { extra = {
-        Xmult = 1.5
+        Xmult = 1.5,
+        odds = 6,
     }
     },
     pools = { Food = true },
-    loc_vars = function(card, info_queue, center)
-        return { vars = { center.ability.extra.Xmult, G.GAME.probabilities.normal } }
+    loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.Xmult, G.GAME.probabilities.normal, card.ability.extra.odds } }
     end,
     calculate = function(card, card, context)
         if context.joker_main then
@@ -29,7 +30,7 @@ SMODS.Joker {
         end
 
         if context.end_of_round and context.main_eval and not context.blueprint then
-            if pseudorandom('banan') < G.GAME.probabilities.normal / 6 then
+            if pseudorandom('banan') < G.GAME.probabilities.normal / card.ability.extra.odds then
                 if #G.jokers.cards < G.jokers.config.card_limit then
                     local _card = copy_card(card, nil, nil, nil, card.edition and card.edition.negative)
                     G.E_MANAGER:add_event(Event({
@@ -50,7 +51,7 @@ SMODS.Joker {
                         message = localize("k_no_room_ex")
                     }
                 end
-            end
+            elseif mxms_scale_pessimistics then mxms_scale_pessimistics(G.GAME.probabilities.normal, card.ability.extra.odds) end
         end
     end
 }
