@@ -253,6 +253,7 @@ function HNDS.poll_tag(seed, options)
 end
 
 --For cross-mod compatibility with Maximus
+--Use this function when adding to a joker's value
 if not Card.scale_value then
 	function Card:scale_value(applied_value, scalar)
 		return applied_value + scalar
