@@ -31,7 +31,7 @@ return {
                 name = 'Banana Split',
                 text = {
                     '{X:mult,C:white}X#1#{} Mult,',
-                    '{C:green}#2# in #3#{} chance to',
+                    '{C:green}#2# in 6{} chance to',
                     '{C:attention}Duplicate{} this card',
                     'at end of round',
                     '{C:inactive}(Must have room){}',
@@ -172,26 +172,27 @@ return {
             c_hnds_exchange = {
                 name = 'Exchange',
                 text = {
-                    "Add {C:dark_edition}Negative{} to up",
-                    "to {C:attention}#1#{} selected cards",
-                    "{C:blue}-#2#{} hand per round",
+                    "Add {C:dark_edition}Negative{} to",
+                    "{C:attention}#1#{} selected cards,",
+                    "{C:blue}-#2#{} hand each round",
                 }
             },
             c_hnds_hallows = {
                 name = 'Hallows',
                 text = {
-                    "Destroy all but the leftmost",
-                    "Joker, earn {C:attention}X#1#{} the sell value of",
-                    "destroyed jokers {C:inactive}(Max of {C:money}$#2#{C:inactive})",
+                    "Destroy all but the",
+                    "leftmost Joker, gives {C:attention}X#1#{}",
+                    "the sell value of destroyed",
+                    "Jokers {C:inactive}(Max of {C:money}$#2#{C:inactive})",
                     "{C:inactive}(Currently {C:money}$#3#{C:inactive})",
                 }
             },
             c_hnds_dream = {
                 name = 'Dream',
                 text = {
-                    "Create a random {C:attention}Tag{} for",
-                    "every {C:money}$#1#{} you have, then",
-                    "set money to {C:money}$0{}",
+                    "Creates a random {C:attention}Tag{}",
+                    "for every {C:money}$#1#{} you have,",
+                    "sets money to {C:money}$0{}",
                     "{C:inactive}(Max of {C:attention}#2#{C:inactive} Tags)",
                 }
             },
