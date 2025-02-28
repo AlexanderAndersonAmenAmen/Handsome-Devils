@@ -176,7 +176,16 @@ return {
                     "to {C:attention}#1#{} selected cards",
                     "{C:blue}-#2#{} hand per round",
                 }
-            }
+            },
+            c_hnds_hallows = {
+                name = 'Hallows',
+                text = {
+                    "Destroy all but the leftmost",
+                    "Joker, earn {C:attention}X#1#{} the sell value",
+                    "of destroyed jokers.",
+                    "{C:inactive}(Max of {C:money}$#2#{C:inactive})",
+                }
+            },
         },
         Other = {
             hnds_black_seal = {
