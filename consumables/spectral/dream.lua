@@ -19,6 +19,10 @@ SMODS.Consumable {
     use = function(self, card, context, copier)
 		local used_consumable = copier or card
 		local tags_to_make = math.min(math.floor(G.GAME.dollars / card.ability.extra.dollars_per_tag), card.ability.extra.max_tags)
+		ease_dollars(-G.GAME.dollars)
+		G.E_MANAGER:add_event(Event({trigger = 'before', delay = 0.75, func = function()
+			--empty event for timing purposes
+			return true end }))
 		for i = 1, tags_to_make do
 			G.E_MANAGER:add_event(Event({trigger = 'before', delay = 0.5, func = function()
 				used_consumable:juice_up()
@@ -26,9 +30,7 @@ SMODS.Consumable {
 				add_tag(HNDS.poll_tag("dream_"..i))
 				return true end }))
 		end
-		G.E_MANAGER:add_event(Event({trigger = 'before', delay = 0.75, func = function()
-			ease_dollars(-G.GAME.dollars)
-			return true end }))
+		
     end,
 	can_use = function(self, card)
 		return true
