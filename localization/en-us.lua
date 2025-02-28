@@ -168,6 +168,14 @@ return {
                     'in hand into {C:attention}Stone Cards{},',
                     'gain {C:money}$5{} for each petrified'
                 }
+            },
+            c_hnds_exchange = {
+                name = 'Exchange',
+                text = {
+                    "Add {C:dark_edition}Negative{} to up",
+                    "to {C:attention}#1#{} selected cards",
+                    "{C:blue}-#2#{} hand per round",
+                }
             }
         },
         Other = {
