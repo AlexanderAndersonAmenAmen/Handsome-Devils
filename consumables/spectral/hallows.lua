@@ -8,7 +8,18 @@ SMODS.Consumable {
         }
     },
 	loc_vars = function(self, info_queue, card)
-		return {vars = {card.ability.extra.value_multiplier, card.ability.extra.max_payout * (G.GAME.gambler_mod or 1)}}
+		local value = 0
+		local destroyable_jokers = {}
+		if G.jokers and G.jokers.cards and #G.jokers.cards > 1 then
+			for i = 2, #G.jokers.cards do
+				if not G.jokers.cards[i].ability.eternal then table.insert(destroyable_jokers, G.jokers.cards[i]) end
+			end
+		end
+		for k, v in pairs(destroyable_jokers) do
+			value = value + (v.sell_cost * card.ability.extra.value_multiplier)
+		end
+		local modified_max = card.ability.extra.max_payout * (G.GAME.gambler_mod or 1)
+		return {vars = {card.ability.extra.value_multiplier, modified_max, math.min(value, modified_max)}}
 	end,
 	rarity = 4,
 	atlas = 'Consumables',
@@ -17,7 +28,7 @@ SMODS.Consumable {
     use = function(self, card, context, copier)
 		local used_consumable = copier or card
         local destroyable_jokers = {}
-		if #G.jokers.cards > 1 then
+		if G.jokers and G.jokers.cards and #G.jokers.cards > 1 then
 			for i = 2, #G.jokers.cards do
 				if not G.jokers.cards[i].ability.eternal then table.insert(destroyable_jokers, G.jokers.cards[i]) end
 			end
@@ -36,7 +47,7 @@ SMODS.Consumable {
             return true end }))
     end,
     can_use = function(self, card)
-		if #G.jokers.cards > 1 then
+		if G.jokers and G.jokers.cards and #G.jokers.cards > 1 then
 			--Check that all jokers that would be destroyed are not eternal
 			local all_eternal = true
 			for i = 2, #G.jokers.cards do

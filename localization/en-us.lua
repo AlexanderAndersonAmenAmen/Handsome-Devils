@@ -181,9 +181,9 @@ return {
                 name = 'Hallows',
                 text = {
                     "Destroy all but the leftmost",
-                    "Joker, earn {C:attention}X#1#{} the sell value",
-                    "of destroyed jokers",
-                    "{C:inactive}(Max of {C:money}$#2#{C:inactive})",
+                    "Joker, earn {C:attention}X#1#{} the sell value of",
+                    "destroyed jokers {C:inactive}(Max of {C:money}$#2#{C:inactive})",
+                    "{C:inactive}(Currently {C:money}$#3#{C:inactive})",
                 }
             },
             c_hnds_dream = {
