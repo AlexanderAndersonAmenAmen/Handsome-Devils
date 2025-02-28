@@ -100,6 +100,7 @@ local files = {
       "growth",
       "hallows",
       "petrify",
+      "dream",
     },
     directory = 'consumables/spectral/'
   },
@@ -219,6 +220,36 @@ function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
   end
 
   return num_suits
+end
+
+---Gets a pseudorandom tag from the Tag pool - Also from Paperback. Go play it!!!!!
+function HNDS.poll_tag(seed, options)
+  -- This part is basically a copy of how the base game does it
+  -- Look at get_next_tag_key in common_events.lua
+  local pool = options or get_current_pool('Tag')
+  local tag_key = pseudorandom_element(pool, pseudoseed(seed))
+
+  while tag_key == 'UNAVAILABLE' do
+    tag_key = pseudorandom_element(pool, pseudoseed(seed))
+  end
+
+  local tag = Tag(tag_key)
+
+  -- The way the hand for an orbital tag in the base game is selected could cause issues
+  -- with mods that modify blinds, so we randomly pick one from all visible hands
+  if tag_key == "tag_orbital" then
+    local available_hands = {}
+
+    for k, hand in pairs(G.GAME.hands) do
+      if hand.visible then
+        available_hands[#available_hands + 1] = k
+      end
+    end
+
+    tag.ability.orbital_hand = pseudorandom_element(available_hands, pseudoseed(seed .. '_orbital'))
+  end
+
+  return tag
 end
 
 --[[---------------------------

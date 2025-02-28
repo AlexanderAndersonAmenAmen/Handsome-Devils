@@ -186,6 +186,15 @@ return {
                     "{C:inactive}(Max of {C:money}$#2#{C:inactive})",
                 }
             },
+            c_hnds_dream = {
+                name = 'Dream',
+                text = {
+                    "Create a random {C:attention}Tag{} for",
+                    "every {C:money}$#1#{} you have, then",
+                    "set money to {C:money}$0{}",
+                    "{C:inactive}(Max of {C:attention}#2#{C:inactive} Tags)",
+                }
+            },
         },
         Other = {
             hnds_black_seal = {
