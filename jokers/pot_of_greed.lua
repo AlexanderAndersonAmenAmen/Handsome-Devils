@@ -12,7 +12,6 @@ SMODS.Joker {
     config =
     { extra = {
         draw_per_use = 2,
-        max_drawn = 6,
         currently_drawn = 0
     }
     },
@@ -24,7 +23,7 @@ SMODS.Joker {
             card.ability.extra.currently_drawn = 0
         end
 
-        if context.using_consumeable and G.hand and G.hand.cards and #G.hand.cards > 0 and card.ability.extra.currently_drawn < card.ability.extra.max_drawn then
+        if context.using_consumeable and G.hand and G.hand.cards and #G.hand.cards > 0 then
             card.ability.extra.currently_drawn = card.ability.extra.currently_drawn + card.ability.extra.draw_per_use
             G.E_MANAGER:add_event(Event({
                 func = function()

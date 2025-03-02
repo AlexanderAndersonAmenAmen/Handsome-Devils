@@ -11,7 +11,7 @@ SMODS.Joker {
     perishable_compat = true,
     config =
     { extra = {
-        money = 30,
+        money = 35,
         coffee_rounds = 0,
         target = 2,
         money_loss = 1
