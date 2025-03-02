@@ -19,7 +19,7 @@ SMODS.Joker{
     eternal_compat = false,
     calculate = function(self, card, context)
         if context.end_of_round and context.main_eval and G.GAME.current_round.hands_left == 0 and card.ability.extra.balloons > 0 then
-            local tag = Tag(get_next_tag_key("balloons"))
+            local tag = HNDS.poll_tag("hnds_balloons")
             add_tag(tag)
             card:juice_up()
             card.ability.extra.balloons = card.ability.extra.balloons - 1
