@@ -30,7 +30,7 @@ SMODS.Joker {
                                 { name = 'e_holo',       weight = 32, },
                                 { name = 'e_polychrome', weight = 32, },
                                 { name = 'e_negative',   weight = 4, }
-                            }))
+                            }), true)
                         return true
                     end
                 }))
