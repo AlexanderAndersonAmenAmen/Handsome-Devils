@@ -27,6 +27,9 @@ SMODS.Consumable {
 		G.GAME.round_resets.hands = G.GAME.round_resets.hands - card.ability.extra.hand_reduction
     end,
     can_use = function(self, card)
+		if G.STATE == G.STATES.SELECTING_HAND and G.GAME.current_round.hands_left <= 1 then
+			return false
+		end
 		if G.hand and #G.hand.highlighted <= card.ability.extra.cards and #G.hand.highlighted > 0 then
 			--Check that all selected cards are not editioned
 			local all_uneditioned = true
