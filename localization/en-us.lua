@@ -31,7 +31,7 @@ return {
                 name = 'Banana Split',
                 text = {
                     '{X:mult,C:white}X#1#{} Mult,',
-                    '{C:green}#2# in #3#{} chance to',
+                    '{C:green}#2# in 6{} chance to',
                     '{C:attention}Duplicate{} this card',
                     'at end of round',
                     '{C:inactive}(Must have room){}',
@@ -89,8 +89,7 @@ return {
                 text = {
                     'When you use a',
                     '{C:attention}consumable card{},',
-                    'draw {C:attention}#1#{} cards',
-                    '{C:inactive}(Max of {C:attention}#2#{C:inactive} per round)'
+                    'draw {C:attention}#1#{} cards'
                 }
             },
             j_hnds_seismic_activity = {
@@ -112,8 +111,8 @@ return {
                 name = "Jokestone",
                 text = {
                     'At the start of round,',
-                    'draw {C:attention}2{} Enhanced cards',
-                    'from your deck',
+                    'draw up to {C:attention}4{} Enhanced',
+                    'cards from your deck',
                 }
             },
             j_hnds_meme = {
