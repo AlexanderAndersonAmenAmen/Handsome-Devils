@@ -1,9 +1,9 @@
 SMODS.PokerHand {
   key = "stone_ocean",
   name = "Stone Ocean",
-  above_hand = "Two Pair",
+  above_hand = "Flush Five",
   visible = false,
-  chips = 50,
+  chips = 250,
   mult = 1,
   l_chips = 50,
   l_mult = 0,
