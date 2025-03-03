@@ -127,7 +127,7 @@ return {
             j_hnds_balloons = {
                 name = "Balloons",
                 text = {
-                    "When round ends without any",
+                    "When round ends with no",
                     "{C:blue}hands{} left, {C:red}lose{} a {C:attention}Balloon{}",
                     "and create a random {C:attention}Tag",
                     "{C:inactive}({C:attention}#1#{C:inactive}/#2# Balloons left)"
@@ -189,10 +189,8 @@ return {
             c_hnds_dream = {
                 name = 'Dream',
                 text = {
-                    "Creates a random {C:attention}Tag{}",
-                    "for every {C:money}$#1#{} you have,",
-                    "sets money to {C:money}$0{}",
-                    "{C:inactive}(Max of {C:attention}#2#{C:inactive} Tags)",
+                    "Creates {C:attention}10{} random",
+                    "{C:attention}Joker Tags{}"
                 }
             },
         },
