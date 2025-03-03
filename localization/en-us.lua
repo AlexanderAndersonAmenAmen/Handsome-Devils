@@ -111,7 +111,7 @@ return {
                 name = "Jokestone",
                 text = {
                     'At the start of round,',
-                    'draw up to {C:attention}4{} Enhanced',
+                    'draw up to {C:attention}3{} Enhanced',
                     'cards from your deck',
                 }
             },
