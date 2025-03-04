@@ -20,7 +20,7 @@ SMODS.Joker {
     perishable_compat = false,
     calculate = function(self, card, context)
         if not card.debuff then
-            if context.other_consumeable then
+            if context.other_consumeable and not context.other_consumeable.debuff then
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         context.other_consumeable:juice_up(0.5, 0.5)
