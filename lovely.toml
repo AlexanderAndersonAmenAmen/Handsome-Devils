@@ -24,9 +24,9 @@ times = 1
 [patches.pattern]
 target = "functions/state_events.lua"
 pattern = '''
-G.GAME.current_round.used_packs = {}
+-- TARGET: main end_of_round evaluation
 '''
-position = "before"
+position = "after"
 payload = '''
 G.GAME.green_seal_draws = 0
 '''
