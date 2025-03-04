@@ -42,8 +42,4 @@ SMODS.Consumable {
 	can_use = function(self, card)
 		return true
 	end,
-	in_pool = function(self, args)
-		if G.GAME.dollars >= 30 then return true end
-		return false
-	end
 }
