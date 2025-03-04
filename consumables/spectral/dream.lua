@@ -33,7 +33,7 @@ SMODS.Consumable {
 				func = function()
 					used_consumable:juice_up()
 					play_sound('generic1', 0.9 + math.random() * 0.1, 0.8)
-					add_tag(HNDS.poll_tag("dream_",  {"tag_foil", "tag_holo", "tag_polychrome", "tag_negative", "tag_rare", "tag_uncommon","tag_buffoon"}))
+					add_tag(HNDS.poll_tag("dream_",  HNDS.get_shop_joker_tags()))
 					return true
 				end
 			}))

@@ -260,6 +260,32 @@ if not Card.scale_value then
 	end
 end
 
+--Return a list of all the jokers that create jokers in shop
+function HNDS.get_shop_joker_tags()
+  local tag_list = {
+    "tag_foil",
+    "tag_holo",
+    "tag_polychrome",
+    "tag_negative",
+    "tag_rare",
+    "tag_uncommon",
+    "tag_buffoon"
+  }
+
+  --Add tags from other mods
+  if next(SMODS.find_mod("paperback")) then
+    table.insert(tag_list, "tag_paperback_dichrome")
+  end
+
+  if next(SMODS.find_mod("Pokermon")) then
+    table.insert(tag_list, "tag_poke_shiny_tag")
+    table.insert(tag_list, "tag_poke_stage_one_tag")
+    table.insert(tag_list, "tag_poke_safari_tag")
+  end
+
+  return tag_list
+end
+
 --[[---------------------------
 Load files
 --]] ---------------------------
