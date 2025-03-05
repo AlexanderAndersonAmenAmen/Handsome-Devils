@@ -60,7 +60,8 @@ return {
                 name = 'Digital Circus',
                 text = {
                     'Sell this card to create',
-                    'a {V:1}#1#{} Joker, rarity',
+                    'a {V:1}#1#{} Joker with',
+                    'a random edition, rarity',
                     'increases every {C:attention}#3#{} rounds',
                     '{C:inactive}(Currently {C:attention}#2#{C:inactive}/#3#)'
                 }

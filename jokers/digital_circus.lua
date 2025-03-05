@@ -34,13 +34,13 @@ SMODS.Joker {
         if not card.debuff then
             if context.selling_self and not context.blueprint then
                 if #G.jokers.cards <= G.jokers.config.card_limit then
-                    local rarity_vals = { 0, 0.8, 1 }
+                    local rarity_vals = { "Common", "Uncommon", "Rare" }
                     SMODS.add_card({
                         set = 'Joker',
                         area = G.jokers,
                         legendary = (card.ability.extra.current_rarity == 4) or nil,
-                        rarity = (card.ability.extra.current_rarity ~= 4) and
-                        rarity_vals[card.ability.extra.current_rarity] or nil
+                        rarity = (card.ability.extra.current_rarity ~= 4) and rarity_vals[card.ability.extra.current_rarity] or nil,
+                        edition = poll_edition("digital_circus", 1, false, true),
                     })
                 else
                     card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil,
