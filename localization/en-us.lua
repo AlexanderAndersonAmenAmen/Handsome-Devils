@@ -103,9 +103,9 @@ return {
             j_hnds_stone_mask = {
                 name = "Stone Mask",
                 text = {
-                    'If {C:attention}first hand{} of round is',
-                    'a single Enhanced card, add',
-                    'a random {C:attention}edition{} to it',
+                    'If {C:attention}first hand{} of round',
+                    'is a single Enhanced card,',
+                    'add a random {C:attention}edition{} to it',
                 }
             },
             j_hnds_jokestone = {
