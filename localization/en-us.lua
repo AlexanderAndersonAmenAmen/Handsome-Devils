@@ -228,6 +228,22 @@ return {
                     "every {C:attention}#1#{} skips"
                 },
             },
+            v_hnds_beginners_luck = {
+                name = "Beginner's Luck",
+                text = {
+                    "Double all {C:attention}listed",
+                    "{C:green,E:1,S:1.1}probabilities",
+                    "{C:inactive}(ex: {C:green}1 in 3{C:inactive} -> {C:green}2 in 3{C:inactive})",
+                },
+            },
+            v_hnds_rigged = {
+                name = 'Rigged',
+                text = {
+                    "Increase all {C:attention}listed{}",
+                    "{C:green}probabilities{} by {C:attention}X1.5{}",
+                    "{C:inactive}(ex: {C:green}2 in 6{C:inactive} -> {C:green}3 in 6{C:inactive})",
+                },
+            }
         },
         Planet={
             c_hnds_makemake={
