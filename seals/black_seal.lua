@@ -1,9 +1,3 @@
---[[
-SMODS.Sound {
-    key = "blk_seal_obtained",
-    path = "madnesscolor.ogg"
-}]]
-
 SMODS.Seal {
     key = "black",
     badge_colour = HEX("545454"),
@@ -20,7 +14,12 @@ SMODS.Seal {
     -- card - card this seal is applied to
     calculate = function(self, card, context)
         if context.cardarea == G.hand and context.before then
+            table.insert(context.full_hand, card)
             table.insert(context.scoring_hand, card)
+        end
+        if context.cardarea == G.hand and context.after then
+            table.remove(context.full_hand)
+            table.remove(context.scoring_hand)
         end
     end
 }
