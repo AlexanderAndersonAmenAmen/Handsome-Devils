@@ -104,6 +104,13 @@ local files = {
     },
     directory = 'consumables/spectral/'
   },
+  vouchers = {
+    list = {
+      "tag_hunter",
+      "hashtag_skip"
+    },
+    directory = 'vouchers/'
+  },
   planets = {
     list = {
       "makemake",
@@ -144,6 +151,13 @@ SMODS.Atlas {
 SMODS.Atlas {
   key = 'Consumables', --atlas key
   path = 'THD.png',    --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
+  px = 71,             --width of one card
+  py = 95              -- height of one card
+}
+
+SMODS.Atlas {
+  key = 'Vouchers', --atlas key
+  path = 'VHD.png',    --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
   px = 71,             --width of one card
   py = 95              -- height of one card
 }
@@ -315,8 +329,6 @@ local function load_files(set)
     end
 end
 
-load_files("jokers")
-load_files("spectrals")
-load_files("planets")
-load_files("poker_hands")
-load_files("seals")
+for key, value in pairs(files) do
+  load_files(key)
+end

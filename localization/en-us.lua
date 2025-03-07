@@ -212,7 +212,21 @@ return {
                 }
             }
         },
-        Voucher = {},
+        Voucher = {
+            v_hnds_tag_hunter={
+                name="Tag Hunter",
+                text={
+                    "Create a random {C:attention}Tag{} when",
+                    "{C:attention}Boss Blind{} is defeated"
+                },
+            },
+            v_hnds_hashtag_skip={
+                name="#2#skip",
+                text={
+                    "{C:attention}-1{} Ante for every {C:attention}#1#{} skips"
+                },
+            },
+        },
         Planet={
             c_hnds_makemake={
                 name="Makemake",
