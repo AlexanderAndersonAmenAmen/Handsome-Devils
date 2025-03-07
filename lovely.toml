@@ -34,6 +34,23 @@ match_indent = true
 times = 1
 
 # -----------------------------------
+# Black Seal
+# -----------------------------------
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = '''
+SMODS.calculate_context({full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, before = true})
+'''
+position = "before"
+payload = '''
+SMODS.calculate_context({full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, hnds_pre_before = true})
+'''
+match_indent = true
+times = 1
+
+# -----------------------------------
 # Head of Medusa
 # -----------------------------------
 

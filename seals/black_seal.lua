@@ -13,7 +13,7 @@ SMODS.Seal {
     -- self - this seal prototype
     -- card - card this seal is applied to
     calculate = function(self, card, context)
-        if context.cardarea == G.hand and context.before then
+        if context.cardarea == G.hand and context.hnds_pre_before then
             table.insert(context.full_hand, card)
             table.insert(context.scoring_hand, card)
         end
