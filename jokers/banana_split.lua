@@ -53,5 +53,11 @@ SMODS.Joker {
                 end
             elseif mxms_scale_pessimistics then mxms_scale_pessimistics(G.GAME.probabilities.normal, card.ability.extra.odds) end
         end
+    end,
+    add_to_deck = function(self, card, from_debuff)
+        if not from_debuff then
+            card.base_cost = 30
+            card:set_cost()
+        end
     end
 }
