@@ -127,6 +127,13 @@ SMODS.Sound({
   path = 'madnesscolor.ogg',
 })
 
+SMODS.Atlas({
+	key = "modicon",
+	path = "hd_icon.png",
+	px = 32,
+	py = 32
+})
+
 SMODS.Atlas {
   key = 'Jokers',      --atlas key
   path = 'Jokers.png', --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
