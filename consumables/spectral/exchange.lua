@@ -11,6 +11,7 @@ SMODS.Consumable {
 		info_queue[#info_queue+1] = {key = 'e_negative_playing_card', set = 'Edition', config = {extra = G.P_CENTERS['e_negative'].config.card_limit}}
 		return {vars = {card.ability.extra.cards, card.ability.extra.hand_reduction}}
 	end,
+	discovered = true,
 	rarity = 4,
 	atlas = 'Consumables',
 	pos = { x = 2, y = 0 },

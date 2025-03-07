@@ -21,6 +21,7 @@ SMODS.Consumable {
 		local modified_max = card.ability.extra.max_payout * (G.GAME.gambler_mod or 1)
 		return {vars = {card.ability.extra.value_multiplier, modified_max, math.min(value, modified_max)}}
 	end,
+	discovered = true,
 	rarity = 4,
 	atlas = 'Consumables',
 	pos = { x = 4, y = 0 },
