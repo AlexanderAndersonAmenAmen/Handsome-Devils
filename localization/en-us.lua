@@ -120,8 +120,8 @@ return {
                 name = "Meme",
                 text = {
                     'This Joker gains',
-                    '{X:mult,C:white}X0.05{} Mult for each unique',
-                    '{C:attention}suit{} in played poker hand',
+                    '{X:mult,C:white}X0.05{} Mult per unique',
+                    '{C:attention}suit{} in scored hand',
                     '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)',
                 }
             },
@@ -216,14 +216,16 @@ return {
             v_hnds_tag_hunter={
                 name="Tag Hunter",
                 text={
-                    "Create a random {C:attention}Tag{} when",
-                    "{C:attention}Boss Blind{} is defeated"
+                    "Create a random {C:attention}Tag{}",
+                    "when {C:attention}Boss Blind{}",
+                    "is defeated"
                 },
             },
             v_hnds_hashtag_skip={
                 name="#2#skip",
                 text={
-                    "{C:attention}-1{} Ante for every {C:attention}#1#{} skips"
+                    "{C:attention}-1{} Ante for",
+                    "every {C:attention}#1#{} skips"
                 },
             },
         },
