@@ -6,6 +6,7 @@ SMODS.Voucher({
 	cost = 10,
 	unlocked = true,
 	discovered = true,
+	requires = { "v_beginners_luck" },
 	available = true,
 	redeem = function(self)
 			G.GAME.probabilities.normal = G.GAME.probabilities.normal * 1.5
