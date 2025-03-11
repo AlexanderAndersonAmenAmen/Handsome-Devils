@@ -321,6 +321,33 @@ function HNDS.get_shop_joker_tags()
   return tag_list
 end
 
+function HNDS.get_shop_hunter_tags()
+  local tag_list = {
+    "tag_foil",
+    "tag_holo",
+    "tag_polychrome",
+    "tag_negative",
+    "tag_rare",
+    "tag_uncommon",
+    "tag_investment",
+    "tag_voucher",
+    "tag_standard",
+    "tag_charm",
+    "tag_meteor",
+    "tag_buffoon",
+    "tag_ethereal",
+    "tag_coupon",
+    "tag_double",
+    "tag_d_six",
+    "tag_skip",
+    "tag_orbital",
+    "tag_economy",
+    "tag_handy",
+    "tag_garbage"
+  }
+  return tag_list
+end
+
 --[[---------------------------
 Load files
 --]] ---------------------------
