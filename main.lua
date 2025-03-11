@@ -107,7 +107,9 @@ local files = {
   vouchers = {
     list = {
       "tag_hunter",
-      "hashtag_skip"
+      "hashtag_skip",
+      "beginners_luck",
+      "rigged"
     },
     directory = 'vouchers/'
   },
