@@ -11,7 +11,6 @@ if hnds_config.enableStoneOcean then
 		atlas = "Consumables",
 		unlocked = true,
 		discovered = false,
-		generate_ui = 0,
 		set_card_type_badge = function(self, card, badges)
 			badges[1] = create_badge("Dwarf Planet", get_type_colour(self or card.config, card), nil, 1.2)
 		end
