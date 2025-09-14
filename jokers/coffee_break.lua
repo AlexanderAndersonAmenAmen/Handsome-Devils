@@ -24,12 +24,17 @@ SMODS.Joker {
     calculate = function(self, card, context)
         if context.before then
             for _, played_card in pairs(context.full_hand) do
-                card.ability.extra.money = card.ability.extra.money - card.ability.extra.money_loss
-                SMODS.calculate_effect({
-                    message = '-$1',
-                    colour = G.C.RED,
-                    message_card = card,
-                }, played_card)
+                SMODS.scale_card(card, {
+                    ref_table = card.ability.extra,
+                    ref_value = "money",
+                    scalar_value = "money_loss",
+                    operation = "-",
+                    scaling_message = {
+                        message = "-$"..card.ability.extra.money_loss,
+                        colour = G.C.RED,
+                        message_card = played_card
+                    }
+                })
             end
         end
         if context.after and (card.ability.extra.money - card.ability.extra.money_loss <= 0) then
@@ -63,8 +68,5 @@ SMODS.Joker {
                 dollars = card.ability.extra.money
             }
         end
-    end,
-    add_to_deck = function(self, card, from_debuff)
-        --card:set_cost()
     end
 }
