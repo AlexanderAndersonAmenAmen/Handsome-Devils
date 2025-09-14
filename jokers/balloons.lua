@@ -30,7 +30,6 @@ SMODS.Joker{
                         card:start_dissolve()
                         return true end
                 }))
-                return true
             end
         end
     end
