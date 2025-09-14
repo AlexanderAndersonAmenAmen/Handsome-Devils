@@ -160,7 +160,7 @@ return {
                 name = 'Abyss',
                 text = {
                     'Add a {C:dark_edition}Black Seal{}',
-                    'to {C:attention}1{} selected',
+                    'to {C:attention}#1#{} selected',
                     'card in your hand'
                 }
             },
@@ -168,7 +168,7 @@ return {
                 name = 'Growth',
                 text = {
                     'Add a {C:green}Green Seal{}',
-                    'to {C:attention}1{} selected',
+                    'to {C:attention}#1#{} selected',
                     'card in your hand'
                 }
             },

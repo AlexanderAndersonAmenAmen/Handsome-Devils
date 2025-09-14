@@ -8,10 +8,10 @@ SMODS.Consumable {
 	cost = 4,
 	atlas = "Consumables",
 	pos = { x = 0, y = 0 },
+	config = { max_highlighted = 1 },
 	loc_vars = function(self, info_queue, card)
 		-- Handle creating a tooltip with set args.
-		info_queue[#info_queue + 1] =
-		{ set = "Other", key = "hnds_black_seal", specific_vars = {} }
+		info_queue[#info_queue + 1] = G.P_SEALS["hnds_black"]
 		return {
 			vars = { card.ability.max_highlighted }
 		}
@@ -47,8 +47,8 @@ SMODS.Consumable {
 			}))
 		end
 	end,
-	can_use = function(self, card, area)
-		if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] and (not G.hand.highlighted[1].seal) then
+	can_use = function(self, card)
+		if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] then
 			return true
 		else
 			return false

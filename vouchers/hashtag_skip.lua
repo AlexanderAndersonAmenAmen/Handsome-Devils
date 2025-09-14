@@ -23,9 +23,6 @@ SMODS.Voucher {
           card.ability.extra.skips = 0
         end
       end
-    end,
-    redeem = function(self, card)
-      G.localization.descriptions.Voucher.v_hnds_hashtag_skip.name = "#skip"
-    end,
+    end
   }
   
