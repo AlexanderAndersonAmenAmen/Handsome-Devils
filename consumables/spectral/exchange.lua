@@ -20,7 +20,7 @@ SMODS.Consumable {
 		local used_consumable = copier or card
         G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
 			for i = 1, #G.hand.highlighted do
-				G.hand.highlighted[i]:set_edition({negative = true}, true, i == 1 and true or false)
+				G.hand.highlighted[i]:set_edition("e_negative", true, i == 1 and true or false)
 			end
 			used_consumable:juice_up(0.3, 0.5)
         return true end }))
