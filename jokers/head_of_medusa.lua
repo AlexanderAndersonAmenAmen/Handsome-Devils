@@ -19,40 +19,44 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = false,
     calculate = function(self, card, context)
-        if not card.debuff then
-            if context.cardarea == G.jokers and context.before and not (context.individual or context.repetition) and not context.blueprint then
-                local faces = {}
-                for k, v in ipairs(context.scoring_hand) do
-                    if v:is_face() then
-                        faces[#faces + 1] = v
-                        card.ability.extra.x_mult = card:scale_value(card.ability.extra.x_mult, card.ability.extra.scaling)
-                        v.hnds_petrifying = true
-                        v:set_ability(G.P_CENTERS.m_stone, nil, true)
-                        G.E_MANAGER:add_event(Event({
-                            func = function()
-                                v:juice_up()
-                                v.hnds_petrifying = nil
-                                return true
-                            end
-                        }))
-                    end
-                end
-                if #faces > 0 then
-                    return {
-                        message = localize('k_hnds_petrified'),
-                        colour = G.C.GREY,
-                        card = card
-                    }
+        if context.before and not context.blueprint then
+            local faces = 0
+            for k, v in ipairs(context.scoring_hand) do
+                if v:is_face() then
+                    faces = faces + 1
+                    v.hnds_petrifying = true
+                    v:set_ability(G.P_CENTERS.m_stone, nil, true)
+                    G.E_MANAGER:add_event(Event({
+                        func = function()
+                            v:juice_up()
+                            v.hnds_petrifying = nil
+                            return true
+                        end
+                    }))
                 end
             end
-
-            --Scoring
-            if context.joker_main and context.cardarea == G.jokers then
+            if faces > 0 then
+                SMODS.scale_card(card, {
+                    ref_table = card.ability.extra,
+                    ref_value = "x_mult",
+                    scalar_value = "scaling",
+                    operation = function(ref_table, ref_value, initial, change)
+                        ref_table[ref_value] = initial + faces * change
+                    end
+                })
                 return {
-                    Xmult_mod = card.ability.extra.x_mult,
-                    message = localize { type = 'variable', key = 'a_xmult', vars = { card.ability.extra.x_mult } },
+                    message = localize('k_hnds_petrified'),
+                    colour = G.C.GREY,
+                    card = card
                 }
             end
+        end
+
+        --Scoring
+        if context.joker_main and context.cardarea == G.jokers then
+            return {
+                xmult = card.ability.extra.x_mult,
+            }
         end
     end
 }
