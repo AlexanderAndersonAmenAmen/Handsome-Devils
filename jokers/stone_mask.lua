@@ -37,8 +37,7 @@ SMODS.Joker {
             end
             return {
                 message = localize('k_hnds_awaken'),
-                colour = G.C.GREY,
-                card = card
+                colour = G.C.GREY
             }
         end
     end
