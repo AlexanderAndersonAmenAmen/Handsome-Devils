@@ -31,7 +31,6 @@ SMODS.Joker {
             return
             {
                 colour = G.C.BLUE,
-                card = card,
                 message = localize("k_hnds_occultist"),
             }
         end

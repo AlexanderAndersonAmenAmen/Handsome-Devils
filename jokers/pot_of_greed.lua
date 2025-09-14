@@ -11,12 +11,11 @@ SMODS.Joker {
     perishable_compat = true,
     config =
     { extra = {
-        draw_per_use = 2,
-        currently_drawn = 0
+        draw_per_use = 2
     }
     },
     loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.draw_per_use, card.ability.extra.max_drawn } }
+        return { vars = { card.ability.extra.draw_per_use } }
     end,
     calculate = function(self, card, context)
         if context.setting_blind then
@@ -24,7 +23,6 @@ SMODS.Joker {
         end
 
         if context.using_consumeable and G.hand and G.hand.cards and #G.hand.cards > 0 then
-            card.ability.extra.currently_drawn = card.ability.extra.currently_drawn + card.ability.extra.draw_per_use
             G.E_MANAGER:add_event(Event({
                 func = function()
                     card:juice_up()
@@ -35,7 +33,6 @@ SMODS.Joker {
             return {
                 message = localize('k_hnds_IPLAYPOTOFGREED'),
                 colour = G.C.GREEN,
-                card = card
             }
         end
     end
