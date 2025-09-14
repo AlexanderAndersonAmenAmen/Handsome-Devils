@@ -38,8 +38,7 @@ SMODS.Joker {
                     scalar_value = "scaling",
                     operation = function(ref_table, ref_value, initial, change) --errors but should work
                         ref_table[ref_value] = initial + boost * change
-                    end,
-                    message_key = "a_xmult"
+                    end
                 })
             end
         elseif context.joker_main then
