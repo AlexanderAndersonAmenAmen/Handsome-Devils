@@ -19,21 +19,19 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = false,
     calculate = function(self, card, context)
-        if not card.debuff then
-            if not context.blueprint and context.selling_card and context.card ~= card and G.STATE == G.STATES.SELECTING_HAND and context.card.ability.set == "Joker" then
-                card.ability.extra.x_mult = card:scale_value(card.ability.extra.x_mult, card.ability.extra.scaling)
-                return {
-                    message = localize('k_upgrade_ex')
-                }
-            end
+        if not context.blueprint and context.selling_card and context.card ~= card and G.STATE == G.STATES.SELECTING_HAND and context.card.ability.set == "Joker" then
+            SMODS.scale_card(card, {
+                ref_table = card.ability.extra,
+                ref_value = "x_mult",
+                scalar_value = "scaling"
+            })
+        end
 
-            --Scoring
-            if context.joker_main and context.cardarea == G.jokers then
-                return {
-                    Xmult_mod = card.ability.extra.x_mult,
-                    message = localize { type = 'variable', key = 'a_xmult', vars = { card.ability.extra.x_mult } },
-                }
-            end
+        --Scoring
+        if context.joker_main then
+            return {
+                xmult = card.ability.extra.x_mult,
+            }
         end
     end
 }

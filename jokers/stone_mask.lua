@@ -19,9 +19,9 @@ SMODS.Joker {
         }
     end,
     calculate = function(self, card, context)
-        if context.cardarea == G.play and context.individual and #context.full_hand == 1 and G.GAME.current_round.hands_played == 0 then
-            if context.other_card and context.other_card.ability.set == "Enhanced" and not context.other_card.edition and not context.repetition then
-                local othercard = context.other_card
+        if context.before and #context.full_hand == 1 and G.GAME.current_round.hands_played == 0 then
+            local othercard = G.play.cards[1]
+            if othercard and othercard.ability.set == "Enhanced" and not othercard.edition then
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         othercard:set_edition(poll_edition('tag', nil, false, true,
@@ -37,8 +37,7 @@ SMODS.Joker {
             end
             return {
                 message = localize('k_hnds_awaken'),
-                colour = G.C.GREY,
-                card = card
+                colour = G.C.GREY
             }
         end
     end
