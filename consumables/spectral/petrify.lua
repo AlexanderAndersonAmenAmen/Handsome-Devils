@@ -26,7 +26,7 @@ SMODS.Consumable {
 			end,
 		}))
 		for i = 1, #G.hand.cards do
-			if G.hand.cards[i]:is_face() and not G.hand.cards[i].ability.eternal then
+			if G.hand.cards[i]:is_face() then
 				local percent = 1.15 - (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
 				G.E_MANAGER:add_event(Event({
 					trigger = "after",
@@ -49,7 +49,7 @@ SMODS.Consumable {
 				local faces = {}
 				for k, v in pairs(G.hand.cards) do
 					faces[#faces + 1] = v
-					if v.config.center_key ~= 'm_stone' and not v.ability.eternal and v:is_face() then
+					if v.config.center_key ~= 'm_stone' and v:is_face() then
 						v:set_ability(G.P_CENTERS.m_stone)
 						converted = converted + 1
 					end
@@ -61,7 +61,7 @@ SMODS.Consumable {
 
 
 		for i = 1, #G.hand.cards do
-			if G.hand.cards[i]:is_face() and not G.hand.cards[i].ability.eternal then
+			if G.hand.cards[i]:is_face() then
 				local percent = 0.85 + (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
 				G.E_MANAGER:add_event(Event({
 					trigger = "after",
