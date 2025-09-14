@@ -8,11 +8,10 @@ SMODS.Voucher({
 	discovered = true,
 	available = true,
 	calculate = function(self, card, context)
-		if context.setting_blind and G.GAME.blind and (G.GAME.blind.name == 'Small Blind') and not self.getting_sliced then
-			G.GAME.probabilities.normal = G.GAME.probabilities.normal * 2
-		end
-		if context.end_of_round and context.main_eval and G.GAME.blind and (G.GAME.blind.name == 'Small Blind') then
-			G.GAME.probabilities.normal = G.GAME.probabilities.normal / 2
+		if context.mod_probability and G.GAME.blind and G.GAME.blind:get_type() == "Small" and not G.GAME.used_vouchers.v_hnds_rigged then
+			return {
+				numerator = context.numerator * 2
+			}
 		end
 	end
 })

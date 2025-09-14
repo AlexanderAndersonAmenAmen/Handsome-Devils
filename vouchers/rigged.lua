@@ -8,7 +8,11 @@ SMODS.Voucher({
 	discovered = true,
 	requires = { "v_beginners_luck" },
 	available = true,
-	redeem = function(self)
-			G.GAME.probabilities.normal = G.GAME.probabilities.normal * 2
+	calculate = function (self, card, context)
+		if context.mod_probability then
+			return {
+				numerator = context.numerator * 2
+			}
+		end
 	end
 })
