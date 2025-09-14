@@ -17,21 +17,19 @@ SMODS.Joker {
     },
     pools = { Food = true },
     loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.Xmult, G.GAME.probabilities.normal, card.ability.extra.odds } }
+        local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_banana_split")
+        return { vars = { card.ability.extra.Xmult, numerator, denominator } }
     end,
     calculate = function(card, card, context)
         if context.joker_main then
             return {
-                card = card,
-                Xmult_mod = card.ability.extra.Xmult,
-                message = 'X' .. card.ability.extra.Xmult,
-                color = G.C.MULT
+                xmult = card.ability.extra.Xmult
             }
         end
 
         if context.end_of_round and context.main_eval and not context.blueprint then
-            if pseudorandom('banan') < G.GAME.probabilities.normal / card.ability.extra.odds then
-                if #G.jokers.cards < G.jokers.config.card_limit then
+            if #G.jokers.cards < G.jokers.config.card_limit then
+                if SMODS.pseudorandom_probability(card, "banan", 1, card.ability.extra.odds, "hnds_banana_split") then
                     local _card = copy_card(card, nil, nil, nil, card.edition and card.edition.negative)
                     G.E_MANAGER:add_event(Event({
                         func = function()
@@ -46,18 +44,8 @@ SMODS.Joker {
                         card = card,
                         message = localize("k_hnds_banana_split"),
                     }
-                else
-                    return {
-                        message = localize("k_no_room_ex")
-                    }
                 end
             elseif mxms_scale_pessimistics then mxms_scale_pessimistics(G.GAME.probabilities.normal, card.ability.extra.odds) end
-        end
-    end,
-    add_to_deck = function(self, card, from_debuff)
-        if not from_debuff then
-            card.base_cost = 30
-            card:set_cost()
         end
     end
 }
