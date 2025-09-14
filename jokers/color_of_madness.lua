@@ -45,9 +45,5 @@ SMODS.Joker {
                 }
             end
         end
-    end,
-    in_pool = function(card, wawa, wawa2)
-        --whether or not this card is in the pool, return true if it is, return false if its not
-        return true
     end
 }
