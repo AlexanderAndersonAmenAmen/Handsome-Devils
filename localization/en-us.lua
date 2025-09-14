@@ -143,6 +143,17 @@ return {
                     '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)'
                 }
             },
+            j_hnds_ms_fortune = {
+                name = "Ms. Fortune",
+                text = {
+                    'Increases all listed',
+                    '{C:green}probabilities{} by {C:attention}X#1#{},',
+                    'but at the end',
+                    'of {C:attention}shop{}, sets money',
+                    'to {C:money}$#2#{}',
+                    '{C:inactive}(e.x. {}{C:green}1 in 3{} {C:inactive}->{} {C:green}#1# in 3{}{C:inactive}){}'
+                }
+            },
         },
         Spectral = {
             c_hnds_abyss = {

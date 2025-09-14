@@ -82,7 +82,8 @@ local files = {
       "stone_mask",
       "meme",
       "digital_circus",
-      "jokes_aside"
+      "jokes_aside",
+      "ms_fortune"
     },
     directory = 'jokers/'
   },
