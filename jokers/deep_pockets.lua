@@ -19,19 +19,16 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = false,
     calculate = function(self, card, context)
-        if not card.debuff then
-            if context.other_consumeable and not context.other_consumeable.debuff then
-                G.E_MANAGER:add_event(Event({
-                    func = function()
-                        context.other_consumeable:juice_up(0.5, 0.5)
-                        return true
-                    end
-                }))
-                return {
-                    message = localize { type = 'variable', key = 'a_mult', vars = { card.ability.extra.consumeable_mult } },
-                    mult_mod = card.ability.extra.consumeable_mult
-                }
-            end
+        if context.other_consumeable and not context.other_consumeable.debuff then
+            G.E_MANAGER:add_event(Event({
+                func = function()
+                    context.other_consumeable:juice_up(0.5, 0.5)
+                    return true
+                end
+            }))
+            return {
+                mult = card.ability.extra.consumeable_mult
+            }
         end
     end,
     add_to_deck = function(self, card, from_debuff)
