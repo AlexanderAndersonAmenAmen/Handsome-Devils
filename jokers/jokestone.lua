@@ -36,6 +36,7 @@ local jokestone_draw = function(self, card, context)
                     end
                 }))
             end
+            save_run()
             return true
         end
     }))
@@ -63,11 +64,6 @@ SMODS.Joker {
     calculate = function(self, card, context)
         if context.first_hand_drawn and #G.deck.cards > 0 then
             jokestone_draw(self, card, context)
-        end
-    end,
-    load = function(self, card, card_table, other_card)
-        if G.GAME.current_round.discards_used == 0 and G.GAME.current_round.hands_played == 0 then
-            jokestone_draw(self, card)
         end
     end
 }
