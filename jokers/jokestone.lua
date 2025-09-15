@@ -62,7 +62,7 @@ SMODS.Joker {
         return { vars = { card.ability.extra.draw } }
     end,
     calculate = function(self, card, context)
-        if (context.first_hand_drawn and #G.deck.cards > 0) or context.forcetrigger then
+        if context.first_hand_drawn or context.forcetrigger and #G.deck.cards > 0  then
             jokestone_draw(self, card, context)
             if not context.forcetrigger then
                 G.E_MANAGER:add_event(Event({

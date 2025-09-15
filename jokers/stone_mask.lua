@@ -14,12 +14,9 @@ SMODS.Joker {
         info_queue[#info_queue + 1] = G.P_CENTERS.e_holo
         info_queue[#info_queue + 1] = G.P_CENTERS.e_polychrome
         info_queue[#info_queue + 1] = {key = 'e_negative_playing_card', set = 'Edition', config = {extra = G.P_CENTERS['e_negative'].config.card_limit}}
-        return {
-            vars = { card.ability.max_highlighted }
-        }
     end,
     calculate = function(self, card, context)
-        if context.before and #context.full_hand == 1 and G.GAME.current_round.hands_played == 0 then
+        if (context.before and #context.full_hand == 1 and G.GAME.current_round.hands_played == 0) or (context.forcetrigger and #G.play > 0) then
             local othercard = G.play.cards[1]
             if othercard and othercard.ability.set == "Enhanced" and not othercard.edition then
                 G.E_MANAGER:add_event(Event({

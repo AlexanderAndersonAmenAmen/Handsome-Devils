@@ -7,6 +7,7 @@ SMODS.Joker {
     unlocked = true,
     discovered = true,
     blueprint_compat = true,
+    demicoloncompat = true,
     eternal_compat = true,
     perishable_compat = true,
     config ={ 
@@ -18,7 +19,7 @@ SMODS.Joker {
         return { vars = { card.ability.extra.suits_needed } }
     end,
     calculate = function(card, card, context)
-        if context.before and context.cardarea == G.jokers and G.GAME.current_round.hands_played == 0 then
+        if (context.before and context.cardarea == G.jokers and G.GAME.current_round.hands_played == 0) or context.forcetrigger then
             if HNDS.get_unique_suits(context.scoring_hand) >= card.ability.extra.suits_needed then
                 local tag_name = pseudorandom_element({ 'tag_meteor', 'tag_charm', 'tag_ethereal' }, pseudoseed('occ_pool'))
             G.E_MANAGER:add_event(Event({
