@@ -42,14 +42,27 @@ SMODS.Joker {
                     scalar_value = "scaling",
                     operation = function(ref_table, ref_value, initial, change)
                         ref_table[ref_value] = initial + faces * change
-                    end
+                    end,
+                    scaling_message = {
+                        message_key = "k_hnds_petrified",
+                        colour = G.C.GREY
+                    }
                 })
-                return {
-                    message = localize('k_hnds_petrified'),
-                    colour = G.C.GREY,
-                    card = card
-                }
             end
+        end
+        if context.forcetrigger then
+            SMODS.scale_card(card, {
+                ref_table = card.ability.extra,
+                ref_value = "x_mult",
+                scalar_value = "scaling",
+                scaling_message = {
+                    message_key = "k_hnds_petrified",
+                    colour = G.C.GREY
+                }
+            })
+            return {
+                xmult = card.ability.extra.x_mult
+            }
         end
 
         --Scoring

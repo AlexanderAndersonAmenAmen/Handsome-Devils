@@ -59,14 +59,11 @@ times = 1
 target = "card.lua"
 pattern = '''
     self.children.front:draw_shader('dissolve')
-end
 '''
 position = "at"
 payload = '''
-    self.children.front:draw_shader('dissolve')
 elseif self.ability.effect == 'Stone Card' and self.hnds_petrifying then
     self.children.front:draw_shader('dissolve')
-end
 '''
 match_indent = true
 times = 1

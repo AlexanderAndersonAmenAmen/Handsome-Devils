@@ -30,7 +30,7 @@ SMODS.Joker {
     eternal_compat = false,
     perishable_compat = true,
     calculate = function(self, card, context)
-        if context.selling_self and not context.blueprint then
+        if context.selling_self or context.forcetrigger and not context.blueprint then
             if #G.jokers.cards <= G.jokers.config.card_limit then
                 local rarity_vals = { "Common", "Uncommon", "Rare" }
                 SMODS.add_card({
@@ -47,7 +47,7 @@ SMODS.Joker {
             end
         end
 
-        if context.end_of_round and context.cardarea == G.jokers then
+        if (context.end_of_round and context.main_eval) or context.forcetrigger then
             if card.ability.extra.current_rarity ~= 4 then
                 card.ability.extra.current_rounds = card.ability.extra.current_rounds + 1
                 if card.ability.extra.current_rounds >= card.ability.extra.max_rounds then

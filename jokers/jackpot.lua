@@ -35,7 +35,7 @@ SMODS.Joker {
     end,
 
     calculate = function(self, card, context)
-        if context.cardarea == G.play and context.individual then
+        if (context.cardarea == G.play and context.individual) or context.forcetrigger then
             if context.other_card:get_id() == 7 then
                 SMODS.scale_card(card, {
                     ref_table = card.ability.extra,
@@ -47,6 +47,11 @@ SMODS.Joker {
                     }
                 })
             end
+        end
+        if context.forcetrigger and SMODS.pseudorandom_probability(card, "hnds_jackpot", card.ability.extra.prob, card.ability.extra.base_chance, "hnds_jackpot") then
+            return {
+                dollars = card.ability.extra.money
+            }
         end
     end
 }
