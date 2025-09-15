@@ -19,11 +19,15 @@ if hnds_config.enableStoneOcean then
 				vars = {
 					G.GAME.hands[card.ability.hand_type].level,
 					localize(card.ability.hand_type, 'poker_hands'),
-					G.GAME.hands[card.ability.hand_type].l_mult,
-					G.GAME.hands[card.ability.hand_type].l_chips,
+					G.GAME.hands[card.ability.hand_type].l_chips + (G.GAME.ante_stones_scored or 0) * G.GAME.hands[card.ability.hand_type].l_chips_scaling,
+					G.GAME.hands[card.ability.hand_type].l_chips_scaling,
+					G.GAME.ante_stones_scored or 0,
 					colours = { (G.GAME.hands[card.ability.hand_type].level == 1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, G.GAME.hands[card.ability.hand_type].level)]) }
 				}
 			}
+		end,
+		use = function (self, card, area, copier)
+			HNDS.dyn_level_up(card, card.ability.hand_type, 1, G.GAME.hands[card.ability.hand_type].l_chips + (G.GAME.ante_stones_scored or 0) * G.GAME.hands[card.ability.hand_type].l_chips_scaling, 0)
 		end,
 		force_use = function(self, card, area)
 			card:use_consumeable(area)

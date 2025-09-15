@@ -142,10 +142,10 @@ SMODS.Sound({
 })
 
 SMODS.Atlas({
-	key = "modicon",
-	path = "hd_icon.png",
-	px = 32,
-	py = 32
+  key = "modicon",
+  path = "hd_icon.png",
+  px = 32,
+  py = 32
 })
 
 SMODS.Atlas {
@@ -164,9 +164,9 @@ SMODS.Atlas {
 
 SMODS.Atlas {
   key = 'Vouchers', --atlas key
-  path = 'VHD.png',    --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
-  px = 71,             --width of one card
-  py = 95              -- height of one card
+  path = 'VHD.png', --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
+  px = 71,          --width of one card
+  py = 95           -- height of one card
 }
 
 SMODS.Atlas {
@@ -205,9 +205,9 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
   if _c.set == "Joker" and _c.key == 'j_hnds_banana_split' then
     if card.edition and card.edition.negative then
       main_end = {}
-      localize{type = 'other', key = 'remove_negative', nodes = main_end, vars = {}}
+      localize { type = 'other', key = 'remove_negative', nodes = main_end, vars = {} }
       main_end = main_end[1]
-    end 
+    end
   end
 
   old_ret = old_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
@@ -305,9 +305,40 @@ end
 --For cross-mod compatibility with Maximus
 --Use this function when adding to a joker's value
 if not Card.scale_value then
-	function Card:scale_value(applied_value, scalar)
-		return applied_value + scalar
-	end
+  function Card:scale_value(applied_value, scalar)
+    return applied_value + scalar
+  end
+end
+
+function HNDS.dyn_level_up(card, hand, level, chips, mult, instant)
+  level = level or 1
+  chips = chips or G.GAME.hands[hand].l_chips * level
+  mult = mult or G.GAME.hands[hand].l_mult * level
+  G.GAME.hands[hand].level = G.GAME.hands[hand].level + level
+  if not instant then 
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
+            play_sound('tarot1')
+            if card then card:juice_up(0.8, 0.5) end
+            G.TAROT_INTERRUPT_PULSE = true
+            return true end }))
+        update_hand_text({delay = 0}, {mult = G.GAME.hands[hand].mult, StatusText = true})
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.9, func = function()
+            play_sound('tarot1')
+            if card then card:juice_up(0.8, 0.5) end
+            return true end }))
+        update_hand_text({delay = 0}, {chips = G.GAME.hands[hand].chips, StatusText = true})
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.9, func = function()
+            play_sound('tarot1')
+            if card then card:juice_up(0.8, 0.5) end
+            G.TAROT_INTERRUPT_PULSE = nil
+            return true end }))
+        update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level=G.GAME.hands[hand].level})
+        delay(1.3)
+    end
+    G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = (function() check_for_unlock{type = 'upgrade_hand', hand = hand, level = G.GAME.hands[hand].level} return true end)
+    }))
 end
 
 --Return a list of all the jokers that create jokers in shop
@@ -377,7 +408,7 @@ function HNDS.get_shop_joker_tags()
   end
 
   if next(SMODS.find_mod("MoreFluff")) then --morefluff tags
-  table.insert(tag_list, "tag_mf_moddedpack")
+    table.insert(tag_list, "tag_mf_moddedpack")
     if Entropy then table.insert(tag_list, "tag_mf_absolute") end
   end
 
@@ -417,9 +448,9 @@ Load files
 --]] ---------------------------
 
 local function load_files(set)
-    for i = 1, #files[set].list do
-        if files[set].list[i] then assert(SMODS.load_file(files[set].directory .. files[set].list[i] .. '.lua'))() end
-    end
+  for i = 1, #files[set].list do
+    if files[set].list[i] then assert(SMODS.load_file(files[set].directory .. files[set].list[i] .. '.lua'))() end
+  end
 end
 
 for key, value in pairs(files) do

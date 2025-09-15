@@ -83,7 +83,6 @@ payload = '''
 
 if card.ability.name == "Stone Card" then
     G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
-    G.GAME.hands['hnds_stone_ocean'].l_chips = G.GAME.hands['hnds_stone_ocean'].l_chips_base + (G.GAME.hands['hnds_stone_ocean'].l_chips_scaling * G.GAME.ante_stones_scored)
 end
 '''
 match_indent = true
@@ -98,55 +97,19 @@ check_and_set_high_score('furthest_ante', G.GAME.round_resets.ante)
 position = "after"
 payload = '''
 G.GAME.ante_stones_scored = 0
-G.GAME.hands['hnds_stone_ocean'].l_chips = G.GAME.hands['hnds_stone_ocean'].l_chips_base
 '''
 match_indent = true
 times = 1
 
 [[patches]]
 [patches.pattern]
-target = "functions/common_events.lua"
+target = '''=[SMODS _ "src/game_object.lua"]'''
 pattern = '''
-elseif _c.set == 'Planet' then
-        loc_vars = {
-            G.GAME.hands[cfg.hand_type].level,localize(cfg.hand_type, 'poker_hands'), G.GAME.hands[cfg.hand_type].l_mult, G.GAME.hands[cfg.hand_type].l_chips,
-            colours = {(G.GAME.hands[cfg.hand_type].level==1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, G.GAME.hands[cfg.hand_type].level)])}
-        }
+hand[self.key] = math.max(hand['s_'..self.key] + hand['l_'..self.key]*(hand.level - 1), 0)
 '''
 position = "at"
 payload = '''
-elseif _c.set == 'Planet' then
-    if _c.key == "c_hnds_makemake" then
-        loc_vars = {
-            G.GAME.hands[cfg.hand_type].level,localize(cfg.hand_type, 'poker_hands'), G.GAME.hands[cfg.hand_type].l_mult, G.GAME.hands[cfg.hand_type].l_chips,
-            G.GAME.ante_stones_scored, G.GAME.hands[cfg.hand_type].l_chips_scaling,
-            colours = {(G.GAME.hands[cfg.hand_type].level==1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, G.GAME.hands[cfg.hand_type].level)])}
-        }
-    else
-        loc_vars = {
-            G.GAME.hands[cfg.hand_type].level,localize(cfg.hand_type, 'poker_hands'), G.GAME.hands[cfg.hand_type].l_mult, G.GAME.hands[cfg.hand_type].l_chips,
-            colours = {(G.GAME.hands[cfg.hand_type].level==1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, G.GAME.hands[cfg.hand_type].level)])}
-        }
-    end
-'''
-match_indent = true
-times = 1
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = '''
-G.GAME.hands[hand].mult = math.max(G.GAME.hands[hand].s_mult + G.GAME.hands[hand].l_mult*(G.GAME.hands[hand].level - 1), 1)
-    G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].s_chips + G.GAME.hands[hand].l_chips*(G.GAME.hands[hand].level - 1), 0)
-'''
-position = "at"
-payload = '''
-G.GAME.hands[hand].mult = math.max(G.GAME.hands[hand].s_mult + G.GAME.hands[hand].l_mult*(G.GAME.hands[hand].level - 1), 1)
-if hand == "hnds_stone_ocean" then
-    G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].chips + G.GAME.hands[hand].l_chips*amount, 0)
-else
-    G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].s_chips + G.GAME.hands[hand].l_chips*(G.GAME.hands[hand].level - 1), 0)
-end
+hand[self.key] = math.max(hand[self.key] + hand['l_'..self.key]*amount, 0)
 '''
 match_indent = true
 times = 1
