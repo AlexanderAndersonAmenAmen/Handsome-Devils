@@ -1,7 +1,7 @@
 SMODS.Voucher {
     key = "top_shelf",
     atlas = "Voucher",
-    pos = { x = 2,  y = 0 },
+    pos = { x = 2,  y = 1 },
     config = { extra = { rate_mod = 2 } },
     loc_vars = function (self, info_queue, card)
         return { vars = { card.ability.extra.rate_mod } }

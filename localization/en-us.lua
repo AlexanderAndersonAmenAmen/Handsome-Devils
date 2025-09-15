@@ -269,6 +269,13 @@ return {
                     "{C:rare}Rare{} jokers appear",
                     "{C:attention}#1#X{} as often"
                 }
+            },
+            v_hnds_extra_filling = {
+                name = "Extra Filling",
+                text = {
+                    "All {C:attention}booster packs",
+                    "offer {C:attention}+#1#{} card"
+                }
             }
         },
         Planet={
