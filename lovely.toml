@@ -81,7 +81,7 @@ pattern = '''
 position = "after"
 payload = '''
 
-if card.ability.name == "Stone Card" then
+if SMODS.has_enhancement(card, "m_stone") then
     G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
 end
 '''

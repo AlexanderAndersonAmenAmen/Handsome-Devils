@@ -291,7 +291,7 @@ return {
                 text={
                     "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
                     "{C:attention}#2#",
-                    "{C:chips}+#3#{} chips. Increases by {C:chips}+#4#{}",
+                    "{C:chips}+#3#{} chips. {C:chips}+#4#{} extra",
                     "for each {C:attention}Stone Card{}",
                     "scored this Ante {C:inactive}[#5#]"
                 },
