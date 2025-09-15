@@ -2,7 +2,7 @@
 	"id": "HandsomeDevils",
 	"name": "Handsome Devils",
 	"display_name": "Handsome Devils",
-	"author": ["Kars", "sup3p"],
+	"author": ["Kars", "sup3p", "Eris H. Nova"],
 	"description": "Vanilla-inspired mod that aims to enhance gameplay experience by adding new content such as Jokers, spectral cards, vouchers, seals (and more to come!) >>>SPECIAL THANKS: trif, Gappie, eremel_, BepisFever, baliame, Victin and other folks from the official Balatro Discord!",
 	"prefix": "hnds",
 	"main_file": "main.lua",
