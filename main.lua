@@ -119,7 +119,9 @@ local files = {
     directory = 'vouchers/'
   },
   planets = {
-    list = {},
+    list = {
+      "makemake"
+    },
     directory = 'consumables/planet/'
   },
   poker_hands = {
@@ -128,7 +130,7 @@ local files = {
   },
 }
 
-if hnds_config.enableStoneOcean then table.insert(files.poker_hands.list, "stone_ocean"); table.insert(files.planets.list, "makemake") end
+if hnds_config.enableStoneOcean then table.insert(files.poker_hands.list, "stone_ocean") end
 
 --[[---------------------------
 Atlases and other resources
