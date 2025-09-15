@@ -177,7 +177,7 @@ return {
                 text = {
                     'Enhaces all {C:attention}face{} cards',
                     'in hand into {C:attention}Stone Cards{}',
-                    'Gain {C:money}$5{} for each petrified'
+                    'Gain {C:money}$#1#{} for each petrified'
                 }
             },
             c_hnds_exchange = {

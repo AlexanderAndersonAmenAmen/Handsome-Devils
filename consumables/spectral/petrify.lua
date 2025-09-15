@@ -8,7 +8,9 @@ SMODS.Consumable {
 	cost = 4,
 	atlas = "Consumables",
 	pos = { x = 3, y = 0 },
+	config = { extra = { multiplier = 8 }},
 	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.multiplier } }
 	end,
 	can_use = function(self, card)
 		return #G.hand.cards > 0
@@ -52,7 +54,7 @@ SMODS.Consumable {
 						converted = converted + 1
 					end
 				end
-				ease_dollars(converted * 5)
+				ease_dollars(converted * card.ability.extra.multiplier)
 				return true
 			end
 		}))
