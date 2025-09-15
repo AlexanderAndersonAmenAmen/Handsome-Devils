@@ -4,7 +4,7 @@ SMODS.Voucher {
     pos = { x = 0, y = 0 },
     config = { extra = { size_mod = 1 } },
     loc_vars = function (self, info_queue, card)
-        return { vars = card.ability.extra.size_mod }
+        return { vars = { card.ability.extra.size_mod } }
     end,
     cost = 10,
 	unlocked = true,
