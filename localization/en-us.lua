@@ -30,7 +30,7 @@ return {
             j_hnds_banana_split = {
                 name = 'Banana Split',
                 text = {
-                    '{X:mult,C:white}X#1#{} Mult,',
+                    '{X:mult,C:white}X#1#{} Mult',
                     '{C:green}#2# in #3#{} chance to',
                     '{C:attention}Duplicate{} this card',
                     'at end of round',
@@ -41,8 +41,8 @@ return {
                 name = 'Head of Medusa',
                 text = {
                     'This Joker gains {X:mult,C:white}X#2#{} Mult',
-                    'per scoring {C:attention}face card{} played,',
-                    'enhances scored face cards',
+                    'per scoring {C:attention}face card{} played',
+                    'Enhances scored face cards',
                     'into {C:attention}Stone Cards{}',
                     '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)'
                 }
@@ -50,8 +50,8 @@ return {
             j_hnds_deep_pockets = {
                 name = 'Deep Pockets',
                 text = {
-                    '{C:attention}+#1#{} consumable slots,',
-                    'each card in your',
+                    '{C:attention}+#1#{} consumable slots',
+                    'Each card in your',
                     '{C:attention}consumable area{}',
                     'gives {C:mult}+#2#{} Mult',
                 }
@@ -80,8 +80,8 @@ return {
                 text = {
                     '{C:green}#1# in #2#{} chance',
                     'to win {C:money}$#3#{} and {C:red}destroy{}',
-                    'this card at end of round,',
-                    'increases {C:attention}listed{} {C:green}probability{}',
+                    'this card at end of round',
+                    'Increases {C:attention}listed{} {C:green}probability{}',
                     'by {C:attention}#4#{} per scoring {C:attention}7{} played'
                 }
             },
@@ -176,15 +176,15 @@ return {
                 name = 'Petrify',
                 text = {
                     'Enhaces all {C:attention}face{} cards',
-                    'in hand into {C:attention}Stone Cards{},',
-                    'gain {C:money}$5{} for each petrified'
+                    'in hand into {C:attention}Stone Cards{}',
+                    'Gain {C:money}$5{} for each petrified'
                 }
             },
             c_hnds_exchange = {
                 name = 'Exchange',
                 text = {
                     "Add {C:dark_edition}Negative{} to",
-                    "{C:attention}#1#{} selected cards,",
+                    "{C:attention}#1#{} selected cards",
                     "{C:blue}-#2#{} hand each round",
                 }
             },
