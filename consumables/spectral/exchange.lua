@@ -17,12 +17,11 @@ SMODS.Consumable {
 	pos = { x = 2, y = 0 },
 	cost = 4,
     use = function(self, card, context, copier)
-		local used_consumable = copier or card
         G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
 			for i = 1, #G.hand.highlighted do
 				G.hand.highlighted[i]:set_edition("e_negative", true, i == 1 and true or false)
 			end
-			used_consumable:juice_up(0.3, 0.5)
+			card:juice_up(0.3, 0.5)
         return true end }))
 		ease_hands_played(-card.ability.extra.hand_reduction)
 		G.GAME.round_resets.hands = G.GAME.round_resets.hands - card.ability.extra.hand_reduction
@@ -44,4 +43,15 @@ SMODS.Consumable {
 		end
 		return false
     end,
+	force_use = function (self, card, area)
+		local cards = Cryptid and Cryptid.get_highlighted_cards({G.hand}, {}, 1, card.ability.extra.cards)
+		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
+			for i = 1, #cards do
+				cards[i]:set_edition("e_negative", true, i == 1 and true or false)
+			end
+			card:juice_up(0.3, 0.5)
+        return true end }))
+		ease_hands_played(-card.ability.extra.hand_reduction)
+		G.GAME.round_resets.hands = G.GAME.round_resets.hands - card.ability.extra.hand_reduction
+	end
 }

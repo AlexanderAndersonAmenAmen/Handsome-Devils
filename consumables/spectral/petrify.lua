@@ -14,14 +14,12 @@ SMODS.Consumable {
 		return #G.hand.cards > 0
 	end,
 	use = function(self, card, area, copier)
-		local used_consumable = copier or card
-
 		G.E_MANAGER:add_event(Event({
 			trigger = "after",
 			delay = 0.4,
 			func = function()
 				play_sound("tarot1")
-				used_consumable:juice_up(0.3, 0.5)
+				card:juice_up(0.3, 0.5)
 				return true
 			end,
 		}))

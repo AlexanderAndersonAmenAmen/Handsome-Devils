@@ -57,7 +57,7 @@ SMODS.Consumable {
 	end,
 	force_use = function (self, card, area)
 ---@diagnostic disable-next-line: undefined-global
-		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, 1 )
+		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, card.ability.max_highlighted )
 		for i = 1, #cards do
 			local highlighted = cards[i]
 			G.E_MANAGER:add_event(Event({

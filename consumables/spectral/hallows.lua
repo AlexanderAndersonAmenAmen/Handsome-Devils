@@ -27,7 +27,6 @@ SMODS.Consumable {
 	pos = { x = 4, y = 0 },
 	cost = 4,
     use = function(self, card, context, copier)
-		local used_consumable = copier or card
         local destroyable_jokers = {}
 		if G.jokers and G.jokers.cards and #G.jokers.cards > 1 then
 			for i = 2, #G.jokers.cards do
