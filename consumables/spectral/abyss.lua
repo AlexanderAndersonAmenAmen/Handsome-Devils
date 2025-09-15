@@ -36,7 +36,9 @@ SMODS.Consumable {
 					return true
 				end,
 			}))
-			delay(0.5)
+			
+		end
+		delay(0.5)
 			G.E_MANAGER:add_event(Event({
 				trigger = "after",
 				delay = 0.2,
@@ -45,7 +47,6 @@ SMODS.Consumable {
 					return true
 				end,
 			}))
-		end
 	end,
 	can_use = function(self, card)
 		if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] then
@@ -53,5 +54,38 @@ SMODS.Consumable {
 		else
 			return false
 		end
+	end,
+	force_use = function (self, card, area)
+---@diagnostic disable-next-line: undefined-global
+		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, 1 )
+		for i = 1, #cards do
+			local highlighted = cards[i]
+			G.E_MANAGER:add_event(Event({
+				func = function()
+					play_sound("tarot1")
+					highlighted:juice_up(0.3, 0.5)
+					return true
+				end,
+			}))
+			G.E_MANAGER:add_event(Event({
+				trigger = "after",
+				delay = 0.1,
+				func = function()
+					if highlighted then
+						highlighted:set_seal("hnds_black")
+					end
+					return true
+				end,
+			}))
+		end
+		delay(0.5)
+		G.E_MANAGER:add_event(Event({
+				trigger = "after",
+				delay = 0.2,
+				func = function()
+					G.hand:unhighlight_all()
+					return true
+				end,
+			}))
 	end
 }

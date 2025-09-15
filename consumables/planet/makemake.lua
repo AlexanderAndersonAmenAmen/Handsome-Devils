@@ -13,7 +13,9 @@ if hnds_config.enableStoneOcean then
 		discovered = false,
 		set_card_type_badge = function(self, card, badges)
 			badges[1] = create_badge("Dwarf Planet", get_type_colour(self or card.config, card), nil, 1.2)
+		end,
+		force_use = function (self, card, area)
+			card:use_consumeable(area)
 		end
-
 	}
 end
