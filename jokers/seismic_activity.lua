@@ -1,7 +1,7 @@
 SMODS.Joker {
     key = 'seismic_activity',
     atlas = 'Jokers',
-    pos = { x = 5, y = 3 },
+    pos = { x = 6, y = 1 },
     rarity = 2,
     cost = 5,
     unlocked = true,
