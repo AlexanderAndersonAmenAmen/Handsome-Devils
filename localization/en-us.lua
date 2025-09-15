@@ -255,6 +255,20 @@ return {
                     "{C:green}probabilities{}",
                     "{C:inactive}(ex: {C:green}1 in 3{C:inactive} -> {C:green}2 in 3{C:inactive})",
                 },
+            },
+            v_hnds_premium = {
+                name = "Premium",
+                text = {
+                    "{C:uncommon}Uncommon{} jokers appear",
+                    "{C:attention}#1#X{} as often"
+                }
+            },
+            v_hnds_top_shelf = {
+                name = "Top Shelf",
+                text = {
+                    "{C:rare}Rare{} jokers appear",
+                    "{C:attention}#1#X{} as often"
+                }
             }
         },
         Planet={
