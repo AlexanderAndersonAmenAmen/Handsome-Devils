@@ -53,5 +53,6 @@ SMODS.Consumable {
         return true end }))
 		ease_hands_played(-card.ability.extra.hand_reduction)
 		G.GAME.round_resets.hands = G.GAME.round_resets.hands - card.ability.extra.hand_reduction
-	end
+	end,
+	demicoloncompat = true,
 }

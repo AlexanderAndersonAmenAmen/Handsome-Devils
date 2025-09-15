@@ -38,22 +38,22 @@ SMODS.Consumable {
 			}))
 		end
 		delay(0.5)
-			G.E_MANAGER:add_event(Event({
-				trigger = "after",
-				delay = 0.2,
-				func = function()
-					G.hand:unhighlight_all()
-					return true
-				end,
-			}))
+		G.E_MANAGER:add_event(Event({
+			trigger = "after",
+			delay = 0.2,
+			func = function()
+				G.hand:unhighlight_all()
+				return true
+			end,
+		}))
 	end,
 	can_use = function(self, card)
 		if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] then
 			return true
 		end
 	end,
-	force_use = function (self, card, area)
-		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, card.ability.max_highlighted )
+	force_use = function(self, card, area)
+		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, card.ability.max_highlighted)
 		for i = 1, #cards do
 			local highlighted = cards[i]
 			G.E_MANAGER:add_event(Event({
@@ -76,12 +76,13 @@ SMODS.Consumable {
 		end
 		delay(0.5)
 		G.E_MANAGER:add_event(Event({
-				trigger = "after",
-				delay = 0.2,
-				func = function()
-					G.hand:unhighlight_all()
-					return true
-				end,
-			}))
-	end
+			trigger = "after",
+			delay = 0.2,
+			func = function()
+				G.hand:unhighlight_all()
+				return true
+			end,
+		}))
+	end,
+	demicoloncompat = true,
 }

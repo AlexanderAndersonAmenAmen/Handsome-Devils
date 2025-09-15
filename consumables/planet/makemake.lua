@@ -31,6 +31,7 @@ if hnds_config.enableStoneOcean then
 		end,
 		force_use = function(self, card, area)
 			card:use_consumeable(area)
-		end
+		end,
+		demicoloncompat = true,
 	}
 end

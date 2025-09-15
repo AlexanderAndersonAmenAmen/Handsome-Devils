@@ -86,5 +86,6 @@ SMODS.Consumable {
 					return true
 				end,
 			}))
-	end
+	end,
+	demicoloncompat = true,
 }
