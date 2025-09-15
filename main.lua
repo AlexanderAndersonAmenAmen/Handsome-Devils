@@ -319,14 +319,66 @@ function HNDS.get_shop_joker_tags()
   }
 
   --Add tags from other mods
-  if next(SMODS.find_mod("paperback")) then
+  if next(SMODS.find_mod("paperback")) then --paperback tags
     table.insert(tag_list, "tag_paperback_dichrome")
   end
 
-  if next(SMODS.find_mod("Pokermon")) then
+  if next(SMODS.find_mod("Pokermon")) then --pokermon tags
     table.insert(tag_list, "tag_poke_shiny_tag")
     table.insert(tag_list, "tag_poke_stage_one_tag")
     table.insert(tag_list, "tag_poke_safari_tag")
+  end
+
+  if next(SMODS.find_mod("Cryptid")) then --cryptid tags (why are there so fucking many)
+    table.insert(tag_list, "tag_cry_epic")
+    table.insert(tag_list, "tag_cry_glitched")
+    table.insert(tag_list, "tag_cry_mosaic")
+    table.insert(tag_list, "tag_cry_oversat")
+    table.insert(tag_list, "tag_cry_glass")
+    table.insert(tag_list, "tag_cry_gold")
+    table.insert(tag_list, "tag_cry_blur")
+    table.insert(tag_list, "tag_cry_astral")
+    table.insert(tag_list, "tag_cry_m")
+    table.insert(tag_list, "tag_cry_double_m")
+    table.insert(tag_list, "tag_cry_gourmand")
+    table.insert(tag_list, "tag_cry_schematic")
+  end
+
+  if next(SMODS.find_mod("entr")) then --entropy tags
+    table.insert(tag_list, "tag_entr_sunny")
+    table.insert(tag_list, "tag_entr_solar")
+    table.insert(tag_list, "tag_entr_fractured")
+    table.insert(tag_list, "tag_entr_freaky")
+    table.insert(tag_list, "tag_entr_neon")
+    table.insert(tag_list, "tag_entr_lowres")
+    table.insert(tag_list, "tag_entr_kaleidoscopic")
+  end
+
+  if next(SMODS.find_mod("GARBPACK")) then --garbshit tags
+    table.insert(tag_list, "tag_garb_carnival")
+  end
+
+  if next(SMODS.find_mod("ortalab")) then --ortalab patches
+    table.insert(tag_list, "tag_ortalab_common")
+    table.insert(tag_list, "tag_ortalab_anaglyphic")
+    table.insert(tag_list, "tag_ortalab_fluorescent")
+    table.insert(tag_list, "tag_ortalab_greyscale")
+    table.insert(tag_list, "tag_ortalab_overexposed")
+    table.insert(tag_list, "tag_ortalab_soul")
+  end
+
+  if next(SMODS.find_mod("MoreFluff")) then --morefluff tags
+  table.insert(tag_list, "tag_mf_moddedpack")
+    if Entropy then table.insert(tag_list, "tag_mf_absolute") end
+  end
+
+  if next(SMODS.find_mod("Bunco")) then --bunco tags
+    table.insert(tag_list, "tag_bunc_glitter")
+    table.insert(tag_list, "tag_bunc_fuorescent")
+  end
+
+  if next(SMODS.find_mod("JoyousSpring")) then --joyousspring tags
+    table.insert(tag_list, "tag_joy_monster")
   end
 
   return tag_list
