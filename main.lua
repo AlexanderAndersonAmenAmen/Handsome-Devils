@@ -315,7 +315,8 @@ function HNDS.get_shop_joker_tags()
     "tag_negative",
     "tag_rare",
     "tag_uncommon",
-    "tag_buffoon"
+    "tag_buffoon",
+    "tag_top_up"
   }
 
   --Add tags from other mods
@@ -340,8 +341,12 @@ function HNDS.get_shop_joker_tags()
     table.insert(tag_list, "tag_cry_astral")
     table.insert(tag_list, "tag_cry_m")
     table.insert(tag_list, "tag_cry_double_m")
+    table.insert(tag_list, "tag_cry_gambler")
+    table.insert(tag_list, "tag_cry_bettertop_up")
     table.insert(tag_list, "tag_cry_gourmand")
     table.insert(tag_list, "tag_cry_schematic")
+    table.insert(tag_list, "tag_cry_banana")
+    table.insert(tag_list, "tag_cry_loss")
   end
 
   if next(SMODS.find_mod("entr")) then --entropy tags
@@ -379,6 +384,12 @@ function HNDS.get_shop_joker_tags()
 
   if next(SMODS.find_mod("JoyousSpring")) then --joyousspring tags
     table.insert(tag_list, "tag_joy_monster")
+  end
+
+  if next(SMODS.find_mod("allinjest")) then --all in jest
+    table.insert(tag_list, "tag_aij_soulbound")
+    table.insert(tag_list, "tag_aij_glimmer")
+    table.insert(tag_list, "tag_aij_stellar")
   end
 
   return tag_list
