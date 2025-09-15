@@ -1,6 +1,6 @@
 SMODS.Voucher {
     key = "wholesale",
-    atlas = "Voucher",
+    atlas = "Vouchers",
     pos = { x = 0, y = 1 },
     config = { extra = { boosters = 1 } },
     loc_vars = function (self, info_queue, card)

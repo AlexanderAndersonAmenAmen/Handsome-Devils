@@ -1,6 +1,6 @@
 SMODS.Voucher {
     key = "extra_filling",
-    atlas = "Voucher",
+    atlas = "Vouchers",
     pos = { x = 0, y = 0 },
     config = { extra = { size_mod = 1 } },
     loc_vars = function (self, info_queue, card)
