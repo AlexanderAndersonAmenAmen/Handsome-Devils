@@ -30,6 +30,11 @@ SMODS.Joker {
                 mult = card.ability.extra.consumeable_mult
             }
         end
+        if context.forcetrigger then
+            return {
+                mult = card.ability.extra.consumeable_mult
+            }
+        end
     end,
     add_to_deck = function(self, card, from_debuff)
         G.consumeables.config.card_limit = G.consumeables.config.card_limit + card.ability.extra.slots

@@ -45,5 +45,38 @@ SMODS.Joker {
                 }
             end
         end
+        if context.forcetrigger then
+            local did_a_thing
+            if #G.play > 0 then
+                local card_to_enhance = G.play[1]
+                did_a_thing = true
+                card_to_enhance:set_ability(G.P_CENTERS.m_wild, nil, true)
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        card_to_enhance:juice_up()
+                        play_sound('hnds_madnesscolor', 1.25, 0.25)
+                        return true
+                    end
+                }))
+            elseif #G.hand > 0 then
+                local card_to_enhance = G.hand[1]
+                did_a_thing = true
+                card_to_enhance:set_ability(G.P_CENTERS.m_wild, nil, true)
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        card_to_enhance:juice_up()
+                        play_sound('hnds_madnesscolor', 1.25, 0.25)
+                        return true
+                    end
+                }))
+            end
+            if did_a_thing then
+                return {
+                    colour = G.C.GREEN,
+                    card = card,
+                    message = localize("k_hnds_color_of_madness"),
+                }
+            end
+        end
     end
 }

@@ -8,7 +8,7 @@ SMODS.Voucher({
 	discovered = true,
 	available = true,
 	calculate = function(self, card, context)
-		if context.mod_probability and G.GAME.blind and G.GAME.blind:get_type() == "Small" and not G.GAME.used_vouchers.v_hnds_rigged then
+		if context.mod_probability and G.GAME.blind and G.GAME.blind:get_type() == "Small" then
 			return {
 				numerator = context.numerator * 2
 			}
