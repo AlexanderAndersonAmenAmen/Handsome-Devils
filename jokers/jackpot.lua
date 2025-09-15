@@ -31,7 +31,7 @@ SMODS.Joker {
                     return true end
             }))
             return card.ability.extra.money
-        elseif mxms_scale_pessimistics then mxms_scale_pessimistics(G.GAME.probabilities.normal * card.ability.extra.prob, card.ability.extra.base_chance) end
+        end
     end,
 
     calculate = function(self, card, context)

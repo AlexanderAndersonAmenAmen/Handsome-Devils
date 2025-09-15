@@ -27,25 +27,23 @@ SMODS.Joker {
             }
         end
 
-        if context.end_of_round and context.main_eval and not context.blueprint then
-            if #G.jokers.cards < G.jokers.config.card_limit then
-                if SMODS.pseudorandom_probability(card, "banan", 1, card.ability.extra.odds, "hnds_banana_split") then
-                    local _card = copy_card(card, nil, nil, nil, card.edition and card.edition.negative)
-                    G.E_MANAGER:add_event(Event({
-                        func = function()
-                            _card:add_to_deck()
-                            G.jokers:emplace(_card)
-                            return true
-                        end
-                    }))
-                    return
-                    {
-                        colour = G.C.ORNAGE,
-                        card = card,
-                        message = localize("k_hnds_banana_split"),
-                    }
-                end
-            elseif mxms_scale_pessimistics then mxms_scale_pessimistics(G.GAME.probabilities.normal, card.ability.extra.odds) end
+        if (context.end_of_round and context.main_eval) or context.forcetrigger and not context.blueprint and #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
+            if context.forcetrigger or SMODS.pseudorandom_probability(card, "banan", 1, card.ability.extra.odds, "hnds_banana_split") then
+                local _card = copy_card(card, nil, nil, nil, card.edition and card.edition.negative)
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        _card:add_to_deck()
+                        G.jokers:emplace(_card)
+                        return true
+                    end
+                }))
+                return
+                {
+                    colour = G.C.ORANGE,
+                    card = card,
+                    message = localize("k_hnds_banana_split"),
+                }
+            end
         end
     end
 }
