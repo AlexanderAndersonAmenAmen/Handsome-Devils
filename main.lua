@@ -392,6 +392,19 @@ function HNDS.get_shop_joker_tags()
     table.insert(tag_list, "tag_aij_stellar")
   end
 
+  if next(SMODS.find_mod("Yahimod")) then --yahimod
+    table.insert(tag_list, "tag_yahimod_tag_yahimodrare")
+  end
+
+  if next(SMODS.find_mod("Bakery")) then
+    table.insert(tag_list, "tag_Bakery_RetriggerTag")
+  end
+
+  if next(SMODS.find_mod("RevosVault")) then
+    table.insert(tag_list, "tag_crv_pst")
+    table.insert(tag_list, "tag_crv_reintag")
+  end
+
   return tag_list
 end
 
