@@ -44,7 +44,7 @@ end
 SMODS.Joker {
     key = 'jokestone',
     atlas = 'Jokers',
-    pos = { x = 6, y = 3 },
+    pos = { x = 6, y = 1 },
     rarity = 1,
     cost = 5,
     unlocked = true,
