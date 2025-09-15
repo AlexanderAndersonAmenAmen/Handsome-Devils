@@ -73,5 +73,8 @@ SMODS.Consumable {
 				}))
 			end
 		end
+	end,
+	force_use = function (self, card, area)
+		card:use_consumeable()
 	end
 }
