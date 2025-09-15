@@ -350,8 +350,7 @@ function HNDS.get_shop_joker_tags()
     "tag_negative",
     "tag_rare",
     "tag_uncommon",
-    "tag_buffoon",
-    "tag_top_up"
+    "tag_buffoon"
   }
 
   --Add tags from other mods
