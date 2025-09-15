@@ -112,7 +112,9 @@ local files = {
       "beginners_luck",
       "rigged",
       "premium",
-      "top_shelf"
+      "top_shelf",
+      "extra_filling",
+      "wholesale"
     },
     directory = 'vouchers/'
   },

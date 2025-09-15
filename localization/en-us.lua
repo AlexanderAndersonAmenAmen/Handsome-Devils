@@ -273,8 +273,15 @@ return {
             v_hnds_extra_filling = {
                 name = "Extra Filling",
                 text = {
-                    "All {C:attention}booster packs",
+                    "All {C:attention}Booster Packs",
                     "offer {C:attention}+#1#{} card"
+                }
+            },
+            v_hnds_wholesale = {
+                name = "Wholesale",
+                text = {
+                    "{C:attention}+1{} Booster Pack slot",
+                    "in the shop"
                 }
             }
         },
