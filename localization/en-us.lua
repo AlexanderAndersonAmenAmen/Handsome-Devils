@@ -147,7 +147,7 @@ return {
                 name = "Ms. Fortune",
                 text = {
                     'Increases all listed',
-                    '{C:green}probabilities{} by {C:attention}X#1#{},',
+                    '{C:green,E:1}probabilities{} by {C:attention}X#1#{},',
                     'but at the end',
                     'of {C:attention}shop{}, sets money',
                     'to {C:money}$#2#{}',
