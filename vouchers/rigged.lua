@@ -6,7 +6,7 @@ SMODS.Voucher({
 	cost = 10,
 	unlocked = true,
 	discovered = true,
-	requires = { "v_beginners_luck" },
+	requires = { "v_hnds_beginners_luck" },
 	available = true,
 	calculate = function (self, card, context)
 		if context.mod_probability then

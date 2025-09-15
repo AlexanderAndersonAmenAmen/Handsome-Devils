@@ -110,7 +110,8 @@ local files = {
       "tag_hunter",
       "hashtag_skip",
       "beginners_luck",
-      "rigged"
+      "rigged",
+      "premium"
     },
     directory = 'vouchers/'
   },
