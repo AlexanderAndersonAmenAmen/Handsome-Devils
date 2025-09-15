@@ -27,6 +27,7 @@ SMODS.Joker {
     unlocked = true,
     discovered = true,
     blueprint_compat = false,
+    demicoloncompat = true,
     eternal_compat = false,
     perishable_compat = true,
     calculate = function(self, card, context)

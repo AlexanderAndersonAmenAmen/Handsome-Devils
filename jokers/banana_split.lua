@@ -7,6 +7,7 @@ SMODS.Joker {
     unlocked = true,
     discovered = true,
     blueprint_compat = false,
+    demicoloncompat = true,
     eternal_compat = false,
     perishable_compat = false,
     config =
@@ -21,10 +22,10 @@ SMODS.Joker {
         return { vars = { card.ability.extra.Xmult, numerator, denominator } }
     end,
     calculate = function(card, card, context)
-        if context.joker_main then
-            return {
+        if context.joker_main or context.forcetrigger then
+            SMODS.calculate_effect({
                 xmult = card.ability.extra.Xmult
-            }
+            }, card)
         end
 
         if (context.end_of_round and context.main_eval) or context.forcetrigger and not context.blueprint and #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then

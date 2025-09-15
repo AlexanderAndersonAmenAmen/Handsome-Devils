@@ -16,6 +16,7 @@ SMODS.Joker{
     unlocked = true,
     discovered = true,
     blueprint_compat = false,
+    demicoloncompat = true,
     eternal_compat = false,
     calculate = function(self, card, context)
         if (context.end_of_round and context.main_eval and G.GAME.current_round.hands_left == 0) or context.forcetrigger and card.ability.extra.balloons > 0 then

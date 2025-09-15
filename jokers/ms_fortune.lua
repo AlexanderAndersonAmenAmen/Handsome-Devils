@@ -13,13 +13,14 @@ SMODS.Joker {
     cost = 7,
     atlas = "Jokers",
     pos = { x = 1, y = 1 },
+    demicoloncompat = true,
     calculate = function(self, card, context)
         if context.mod_probability and not context.blueprint then
             return {
                 numerator = context.numerator * card.ability.extra.numerator
             }
         end
-        if context.ending_shop then
+        if context.ending_shop or context.forcetrigger and not context.blueprint then
             return {
                 dollars = -G.GAME.dollars
             }

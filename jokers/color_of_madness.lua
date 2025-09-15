@@ -8,6 +8,7 @@ SMODS.Joker {
     unlocked = true,          --whether it is unlocked or not
     discovered = true,        --whether or not it starts discovered
     blueprint_compat = false, --can it be blueprinted/brainstormed/other
+    demicoloncompat = true,
     eternal_compat = true,    --can it be eternal
     perishable_compat = true, --can it be perishable
     config ={ 

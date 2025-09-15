@@ -7,6 +7,7 @@ SMODS.Joker {
     unlocked = true,
     discovered = true,
     blueprint_compat = true,
+    demicoloncompat = true,
     eternal_compat = true,
     perishable_compat = true,
     config = {
@@ -19,7 +20,7 @@ SMODS.Joker {
         return { vars = { card.ability.extra.x_mult, card.ability.extra.scaling } }
     end,
     calculate = function(self, card, context)
-        if context.before and not context.blueprint then
+        if context.before or context.forcetrigger and not context.blueprint then
             --[[
             local suits = {}
             for i, other_card in ipairs(context.scoring_hand) do
@@ -31,6 +32,7 @@ SMODS.Joker {
                 end
             end]]
             local boost = card.ability.extra.scaling * HNDS.get_unique_suits(context.scoring_hand)
+            if context.forcetrigger then boost = boost or 1 end
             if boost > 0 then
                 SMODS.scale_card(card, {
                     ref_table = card.ability.extra,
@@ -41,7 +43,7 @@ SMODS.Joker {
                     end
                 })
             end
-        elseif context.joker_main then
+        elseif context.joker_main or context.forcetrigger then
             return {
                 xmult = card.ability.extra.x_mult
             }

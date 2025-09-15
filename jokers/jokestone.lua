@@ -36,7 +36,6 @@ local jokestone_draw = function(self, card, context)
                     end
                 }))
             end
-            save_run()
             return true
         end
     }))
@@ -51,6 +50,7 @@ SMODS.Joker {
     unlocked = true,
     discovered = true,
     blueprint_compat = true,
+    demicoloncompat = true,
     eternal_compat = true,
     perishable_compat = true,
     config =
@@ -62,8 +62,15 @@ SMODS.Joker {
         return { vars = { card.ability.extra.draw } }
     end,
     calculate = function(self, card, context)
-        if context.first_hand_drawn and #G.deck.cards > 0 then
+        if (context.first_hand_drawn and #G.deck.cards > 0) or context.forcetrigger then
             jokestone_draw(self, card, context)
+            if not context.forcetrigger then
+                G.E_MANAGER:add_event(Event({
+                    func = function ()
+                        save_run()
+                    end
+                }))
+            end
         end
     end
 }
