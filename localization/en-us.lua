@@ -60,18 +60,19 @@ return {
                 name = 'Digital Circus',
                 text = {
                     'Sell this card to create',
-                    'a {V:1}#1#{} Joker with',
-                    'a random edition, rarity',
-                    'increases every {C:attention}#3#{} rounds',
+                    'a random {V:1}#1#{} Joker',
+                    'with a random {C:dark_edition}Edition',
+                    '{s:0.8}Upgrades every {s:0.8}{C:attention}#3#{} {s:0.8}rounds',
                     '{C:inactive}(Currently {C:attention}#2#{C:inactive}/#3#)'
                 }
             },
             j_hnds_coffee_break = {
                 name = 'Coffee Break',
                 text = {
-                    'After {C:attention}2{} rounds, sell this',
-                    'card to earn {C:money}$#3#{}, earn',
-                    '{C:money}$1{} less per card played',
+                    'After {C:attention}2{} rounds, sell',
+                    'this card to earn {C:money}$#3#{}',
+                    'Payout decreases by {C:money}$1{}',
+                    'for every card played',
                     '{C:inactive}(Currently {C:attention}#2#{C:inactive}/#1#)'
                 },
             },
@@ -137,8 +138,8 @@ return {
             j_hnds_jokes_aside = {
                 name = "Jokes Aside!",
                 text = {
-                    'This Joker gains',
-                    '{X:mult,C:white}X#2#{} Mult for each Joker',
+                    'Gains {X:mult,C:white}X#2#{} Mult',
+                    'for every Joker',
                     '{C:attention}sold{} during a round',
                     '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)'
                 }
