@@ -2,7 +2,7 @@ SMODS.Enhancement {
     key = "antimatter",
     atlas = "Extras",
     pos = { x = 2, y = 1 },
-    config = { extra = { base = 1, odds = 5, scaling = 1 } },
+    config = { extra = { base = 1, odds = 5 } },
     loc_vars = function (self, info_queue, card)
         local numerator, denominator = SMODS.get_probability_vars(card, card.ability.extra.base, card.ability.extra.odds, "hnds_antimatter")
         return { numerator, denominator }
@@ -12,13 +12,6 @@ SMODS.Enhancement {
             return {
                 remove = true
             }
-        end
-        if context.setting_ability and context.other_card == card and context.unchanged then
-            SMODS.scale_card(card,{
-                ref_table = card.ability.extra,
-                ref_value = "base",
-                scalar_value = "scaling"
-            })
         end
     end,
     weight = 2.5
@@ -40,6 +33,9 @@ function Card:set_ability(center, initial, delay_sprites)
             if center.config.p_dollars then self.ability.perma_p_dollars = (self.ability.perma_p_dollars or 0) + center.config.p_dollars end
             if center.config.h_dollars then self.ability.perma_h_dollars = (self.ability.perma_h_dollars or 0) + center.config.h_dollars end
             if center.config.repetitions then self.ability.perma_repetitions = (self.ability.perma_repetitions or 0) + center.config.repetitions end
+            if self.ability.extra then
+                self.ability.extra.base = self.ability.extra.base + 0
+            end
         end
     else
         setabilityref(self, center, initial, delay_sprites)
