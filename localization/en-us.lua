@@ -318,10 +318,9 @@ return {
                 text = {
                     "Cannot change enhancement",
                     "{C:green}#1# in #2#{} chance to be {C:red}destroyed",
-                    "when played or held after hand",
-                    "When this would change enhancement",
-                    "instead gain the effects {C:attention}permanently,",
-                    "but {C:attention}increase {C:red}self-destruct{} chance",
+                    "Stack the effect of the next",
+                    "applied enhancement infinitely",
+                    "(Currently #3#)"
                 }
             },
             m_hnds_obsidian = {

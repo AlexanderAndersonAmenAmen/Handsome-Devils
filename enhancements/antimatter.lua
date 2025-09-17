@@ -2,10 +2,10 @@ SMODS.Enhancement {
     key = "antimatter",
     atlas = "Extras",
     pos = { x = 2, y = 1 },
-    config = { extra = { base = 1, odds = 5 } },
+    config = { extra = { base = 1, odds = 4 } },
     loc_vars = function (self, info_queue, card)
         local numerator, denominator = SMODS.get_probability_vars(card, card.ability.extra.base, card.ability.extra.odds, "hnds_antimatter")
-        return { numerator, denominator }
+        return { vars = {numerator, denominator, (card.ability.extra.stack_choice and localize({ type = 'name_text', set = 'Enhanced', key = card.ability.extra.stack_choice })) or localize('k_none')} }
     end,
     calculate = function (self, card, context)
         if context.destroy_card and context.cardarea == G.play and context.destroy_card == card and SMODS.pseudorandom_probability(card, "hnds_antimatter", card.ability.extra.base, card.ability.extra.odds) then
@@ -20,7 +20,7 @@ SMODS.Enhancement {
 local setabilityref = Card.set_ability
 ---@diagnostic disable-next-line: duplicate-set-field
 function Card:set_ability(center, initial, delay_sprites)
-    if center and self.config.center.key == "m_hnds_antimatter" and center.key ~= "m_hnds_antimatter" then
+    if center and self.config.center.key == "m_hnds_antimatter" and center.key ~= "m_hnds_antimatter" and self.ability and (self.ability.extra.stack_choice == nil or self.ability.extra.stack_choice == center.key) then
         if center.set == "Enhanced" then
             if center.config.bonus then self.ability.perma_bonus = (self.ability.perma_bonus or 0) + center.config.bonus end
             if center.config.mult then self.ability.perma_mult = (self.ability.perma_mult or 0) + center.config.mult end
@@ -35,6 +35,7 @@ function Card:set_ability(center, initial, delay_sprites)
             if center.config.repetitions then self.ability.perma_repetitions = (self.ability.perma_repetitions or 0) + center.config.repetitions end
             if self.ability and self.ability.extra then
                 self.ability.extra.base = self.ability.extra.base + 0
+                self.ability.extra.stack_choice = center.key
             end
         end
     else
