@@ -248,8 +248,8 @@ return {
                     "Nie można zmienić ulepszenia",
                     "{C:green}#1# na #2#{} szans by być {C:red}zniszczonym{}",
                     "po zagraniu. Nałóż efekt następnego",
-                    "ulepszenia nieskończenie",
-                    "(Currently #3#)"
+                    "ulepszenia na wszystkie poprzednie",
+                    "(obecnie {C:attention}#3#{}, #4# warstw)"
                 }
             },
             m_hnds_obsidian = {
