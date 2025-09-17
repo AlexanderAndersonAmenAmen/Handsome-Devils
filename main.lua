@@ -102,6 +102,7 @@ local files = {
       "hallows",
       "petrify",
       "dream",
+      "collision",
     },
     directory = 'consumables/spectral/'
   },
@@ -128,6 +129,12 @@ local files = {
     list = {},
     directory = 'poker_hands/'
   },
+  enhancements = {
+    list = {
+      "antimatter"
+    },
+    directory = 'enhancements/'
+  }
 }
 
 if hnds_config.enableStoneOcean then table.insert(files.poker_hands.list, "stone_ocean") end
