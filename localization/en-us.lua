@@ -316,16 +316,17 @@ return {
             m_hnds_antimatter = {
                 name = "Antimatter Card",
                 text = {
-                    "{X:mult,C:white}X#1#{} Mult",
-                    "{C:green}#2# in #3#{} chance to",
-                    "upgrade by {X:mult,C:white}X#4#{} Mult",
-                    "{C:inactive}(Max of {X:mult,C:white}X#5#{C:inactive} Mult)"
+                    "Cannot change enhancement",
+                    "{C:green}#1# in #2#{} chance to be {C:red}destroyed",
+                    "Stack the effect of the next",
+                    "applied enhancement infinitely",
+                    "(Currently #3#)"
                 }
             },
             m_hnds_obsidian = {
                 name = "Obsidian Card",
                 text = {
-                    "Lose {C:red}#1#{}",
+                    "Lose {C:red}$#1#{}",
                     "{C:green}#2# in #3#{} chance to create",
                     "a {C:dark_edition}Negative",
                     "consumable card"

@@ -1,5 +1,5 @@
 SMODS.Enhancement {
-    key = "Obsidian",
+    key = "obsidian",
     atlas = "Extras",
     pos = { x = 3, y = 1 },
     config = { p_dollars = -1, extra = { odds = 3 } },
@@ -16,7 +16,8 @@ SMODS.Enhancement {
                 func = function ()
                     SMODS.add_card({
                         set = 'Consumeables',
-                        edition = "e_negative"
+                        edition = "e_negative",
+                        area = G.consumeables
                     })
                     G.GAME.consumeable_buffer = 0
                     return true
