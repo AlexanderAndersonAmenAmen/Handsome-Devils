@@ -206,6 +206,20 @@ return {
                     "{C:attention}Joker Tags{}"
                 }
             },
+            c_hnds_collision = {
+                name = "Collision",
+                text = {
+                    "Enhances {C:attention}#1#{} selected cards",
+                    "to {C:dark_edition}#2#s"
+                }
+            },
+            c_hnds_gateway = {
+                name = "Gateway",
+                text = {
+                    "Enhances {C:attention}#1#{} selected cards",
+                    "to {C:dark_edition}#2#s"
+                }
+            }
         },
         Other = {
             hnds_black_seal = {
@@ -297,6 +311,26 @@ return {
                     "scored this Ante {C:inactive}[#5#]"
                 },
             },
+        },
+        Enhanced = {
+            m_hnds_antimatter = {
+                name = "Antimatter Card",
+                text = {
+                    "{X:mult,C:white}X#1#{} Mult",
+                    "{C:green}#2# in #3#{} chance to",
+                    "upgrade by {X:mult,C:white}X#4#{} Mult",
+                    "{C:inactive}(Max of {X:mult,C:white}X#5#{C:inactive} Mult)"
+                }
+            },
+            m_hnds_obsidian = {
+                name = "Obsidian Card",
+                text = {
+                    "Lose {C:red}#1#{}",
+                    "{C:green}#2# in #3#{} chance to create",
+                    "a {C:dark_edition}Negative",
+                    "consumable card"
+                }
+            }
         }
     },
     misc = {
