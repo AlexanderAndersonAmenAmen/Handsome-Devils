@@ -33,10 +33,10 @@ function Card:set_ability(center, initial, delay_sprites)
             if center.config.mult then self.ability.perma_mult = (self.ability.perma_mult or 0) + center.config.mult end
             if center.config.h_chips then self.ability.perma_h_chips = (self.ability.perma_h_chips or 0) + center.config.h_chips end
             if center.config.h_mult then self.ability.perma_h_chips = (self.ability.perma_h_mult or 0) + center.config.h_mult end
-            if center.config.x_mult or center.config.Xmult then self.ability.perma_x_mult = (self.ability.perma_x_mult or 0) + (center.config.x_mult or center.config.Xmult) end
-            if center.config.x_chips then self.ability.perma_x_chips = (self.ability.perma_x_chips or 0) + center.config.x_chips end
-            if center.config.h_x_mult then self.ability.perma_h_x_mult = (self.ability.perma_h_x_mult or 0) + center.config.h_x_mult end
-            if center.config.h_x_chips then self.ability.perma_h_x_chips = (self.ability.perma_h_x_chips or 0) + center.config.h_x_chips end
+            if center.config.x_mult or center.config.Xmult then self.ability.perma_x_mult = ((self.ability.perma_x_mult ~= 1 and self.ability.perma_h_x_mult) or 0) + (center.config.x_mult or center.config.Xmult) end
+            if center.config.x_chips then self.ability.perma_x_chips = ((self.ability.perma_x_chips ~= 1 and self.ability.perma_x_chips) or 0) + center.config.x_chips end
+            if center.config.h_x_mult then self.ability.perma_h_x_mult = ((self.ability.perma_h_x_mult ~= 1 and self.ability.perma_h_x_mult) or 0) + center.config.h_x_mult end
+            if center.config.h_x_chips then self.ability.perma_h_x_chips = ((self.ability.perma_h_x_chips ~= 1 and self.ability.perma_h_x_chips) or 0) + center.config.h_x_chips end
             if center.config.p_dollars then self.ability.perma_p_dollars = (self.ability.perma_p_dollars or 0) + center.config.p_dollars end
             if center.config.h_dollars then self.ability.perma_h_dollars = (self.ability.perma_h_dollars or 0) + center.config.h_dollars end
             if center.config.repetitions then self.ability.perma_repetitions = (self.ability.perma_repetitions or 0) + center.config.repetitions end

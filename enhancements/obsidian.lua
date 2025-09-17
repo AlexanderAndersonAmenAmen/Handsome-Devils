@@ -16,7 +16,8 @@ SMODS.Enhancement {
                 func = function ()
                     SMODS.add_card({
                         set = 'Consumeables',
-                        edition = "e_negative"
+                        edition = "e_negative",
+                        area = G.consumeables
                     })
                     G.GAME.consumeable_buffer = 0
                     return true

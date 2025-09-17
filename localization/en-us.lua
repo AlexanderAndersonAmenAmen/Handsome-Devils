@@ -317,17 +317,17 @@ return {
                 name = "Antimatter Card",
                 text = {
                     "Cannot change enhancement",
-                    "#1# in #2# chance to be destroyed",
+                    "{C:green}#1# in #2#{} chance to be {C:red}destroyed",
                     "when played or held after hand",
                     "When this would change enhancement",
-                    "instead gain the effects permanently,",
-                    "but increase self-destruct chance",
+                    "instead gain the effects {C:attention}permanently,",
+                    "but {C:attention}increase {C:red}self-destruct{} chance",
                 }
             },
             m_hnds_obsidian = {
                 name = "Obsidian Card",
                 text = {
-                    "Lose {C:red}#1#{}",
+                    "Lose {C:red}$#1#{}",
                     "{C:green}#2# in #3#{} chance to create",
                     "a {C:dark_edition}Negative",
                     "consumable card"
