@@ -316,11 +316,10 @@ return {
             m_hnds_antimatter = {
                 name = "Antimatter Card",
                 text = {
-                    "Cannot change enhancement",
                     "{C:green}#1# in #2#{} chance to be {C:red}destroyed",
                     "Stack the effect of the next",
                     "applied enhancement infinitely",
-                    "(Currently #3#)"
+                    "(Currently {C:attention}#3#{}, #4# stacks)"
                 }
             },
             m_hnds_obsidian = {

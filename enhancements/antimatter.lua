@@ -2,10 +2,10 @@ SMODS.Enhancement {
     key = "antimatter",
     atlas = "Extras",
     pos = { x = 2, y = 1 },
-    config = { extra = { base = 1, odds = 4 } },
+    config = { extra = { base = 1, odds = 4, stacks = 0 } },
     loc_vars = function (self, info_queue, card)
         local numerator, denominator = SMODS.get_probability_vars(card, card.ability.extra.base, card.ability.extra.odds, "hnds_antimatter")
-        return { vars = {numerator, denominator, (card.ability.extra.stack_choice and localize({ type = 'name_text', set = 'Enhanced', key = card.ability.extra.stack_choice })) or localize('k_none')} }
+        return { vars = {numerator, denominator, (card.ability.extra.stack_choice and localize({ type = 'name_text', set = 'Enhanced', key = card.ability.extra.stack_choice })) or localize('k_none'), card.ability.extra.stacks} }
     end,
     calculate = function (self, card, context)
         if context.destroy_card and context.cardarea == G.play and context.destroy_card == card and SMODS.pseudorandom_probability(card, "hnds_antimatter", card.ability.extra.base, card.ability.extra.odds) then
@@ -36,6 +36,7 @@ function Card:set_ability(center, initial, delay_sprites)
             if self.ability and self.ability.extra then
                 self.ability.extra.base = self.ability.extra.base + 0
                 self.ability.extra.stack_choice = center.key
+                self.ability.extra.stacks = self.ability.extra.stacks + 1
             end
         end
     else
