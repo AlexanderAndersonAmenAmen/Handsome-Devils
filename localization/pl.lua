@@ -207,6 +207,22 @@ return {
                     "{C:attention}jokerowych znacznikówe{}"
                 }
             },
+            c_hnds_collision = {
+                name = "Kolizja",
+                text = {
+                    "Ulepsza {C:attention}#1#{} wybrane",
+                    "karty do:"
+                    "{C:dark_edition}#2#s"
+                }
+            },
+            c_hnds_gateway = {
+                name = "Wejście",
+                text = {
+                    "Ulepsza {C:attention}#1#{} wybrane",
+                    "karty do:"
+                    "{C:dark_edition}#2#s"
+                }
+            }
         },
         Other = {
             hnds_black_seal = {
@@ -222,6 +238,26 @@ return {
                     'Dobierasz {C:attention}2{} dodatkowe',
                     'karty gdy ta karta jest {C:attention}punktowana',
                     'lub {C:attention}odrzucona'
+                }
+            }
+        },
+        Enhanced = {
+            m_hnds_antimatter = {
+                name = "Karta czarnej materii",
+                text = {
+                    "Mnoż. {X:mult,C:white}X#1#{}",
+                    "{C:green}#2# na #3#{} szansa by",
+                    "ulepszyć o {X:mult,C:white}X#4#{} Mult",
+                    "{C:inactive}(maks. {X:mult,C:white}X#5#{C:inactive} mnoż.)"
+                }
+            },
+            m_hnds_obsidian = {
+                name = "Obsidianowa karta",
+                text = {
+                    "Strać {C:red}#1#{}",
+                    "{C:green}#2# na #3#{} szans by",
+                    "stworzyć {C:dark_edition}negatywm",
+                    "kartę zużywalną"
                 }
             }
         },
