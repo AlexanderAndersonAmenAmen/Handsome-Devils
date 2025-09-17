@@ -20,7 +20,7 @@ SMODS.Enhancement {
 local setabilityref = Card.set_ability
 ---@diagnostic disable-next-line: duplicate-set-field
 function Card:set_ability(center, initial, delay_sprites)
-    if self.config.center.key == "m_hnds_antimatter" then
+    if self.config.center.key == "m_hnds_antimatter" and center.key ~= "m_hnds_antimatter" then
         if center.set == "Enhanced" then
             if center.config.bonus then self.ability.perma_bonus = (self.ability.perma_bonus or 0) + center.config.bonus end
             if center.config.mult then self.ability.perma_mult = (self.ability.perma_mult or 0) + center.config.mult end
@@ -33,7 +33,7 @@ function Card:set_ability(center, initial, delay_sprites)
             if center.config.p_dollars then self.ability.perma_p_dollars = (self.ability.perma_p_dollars or 0) + center.config.p_dollars end
             if center.config.h_dollars then self.ability.perma_h_dollars = (self.ability.perma_h_dollars or 0) + center.config.h_dollars end
             if center.config.repetitions then self.ability.perma_repetitions = (self.ability.perma_repetitions or 0) + center.config.repetitions end
-            if self.ability.extra then
+            if self.ability and self.ability.extra then
                 self.ability.extra.base = self.ability.extra.base + 0
             end
         end
