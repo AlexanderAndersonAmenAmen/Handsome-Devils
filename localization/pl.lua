@@ -254,7 +254,7 @@ return {
             m_hnds_obsidian = {
                 name = "Obsidianowa karta",
                 text = {
-                    "Strać {C:red}#1#{}",
+                    "Strać {C:red}#1#${}",
                     "{C:green}#2# na #3#{} szans by",
                     "stworzyć {C:dark_edition}negatywm",
                     "kartę zużywalną"
