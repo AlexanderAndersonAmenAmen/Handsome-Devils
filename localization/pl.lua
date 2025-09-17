@@ -243,12 +243,13 @@ return {
         },
         Enhanced = {
             m_hnds_antimatter = {
-                name = "Karta czarnej materii",
+                name = "Karta antymaterii",
                 text = {
-                    "Mnoż. {X:mult,C:white}X#1#{}",
-                    "{C:green}#2# na #3#{} szansa by",
-                    "ulepszyć o {X:mult,C:white}X#4#{} Mult",
-                    "{C:inactive}(maks. {X:mult,C:white}X#5#{C:inactive} mnoż.)"
+                    "Nie można zmienić ulepszenia",
+                    "{C:green}#1# na #2#{} szans by być {C:red}zniszczonym{}",
+                    "po zagraniu. Nałóż efekt następnego",
+                    "ulepszenia nieskończenie",
+                    "(Currently #3#)"
                 }
             },
             m_hnds_obsidian = {
