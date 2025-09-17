@@ -316,10 +316,12 @@ return {
             m_hnds_antimatter = {
                 name = "Antimatter Card",
                 text = {
-                    "{X:mult,C:white}X#1#{} Mult",
-                    "{C:green}#2# in #3#{} chance to",
-                    "upgrade by {X:mult,C:white}X#4#{} Mult",
-                    "{C:inactive}(Max of {X:mult,C:white}X#5#{C:inactive} Mult)"
+                    "Cannot change enhancement",
+                    "#1# in #2# chance to be destroyed",
+                    "when played or held after hand",
+                    "When this would change enhancement",
+                    "instead gain the effects permanently,",
+                    "but increase self-destruct chance",
                 }
             },
             m_hnds_obsidian = {
