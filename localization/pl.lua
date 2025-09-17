@@ -288,7 +288,7 @@ return {
                 },
             },
             v_hnds_rigged = {
-                name = 'Ustawione', as well as I can
+                name = 'Ustawione'
                 text = {
                     "Podwaja wszystkie {C:attention}podane{}",
                     "{C:green}prawdopodobieństwa{}",
