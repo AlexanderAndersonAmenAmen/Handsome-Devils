@@ -103,6 +103,7 @@ local files = {
       "petrify",
       "dream",
       "collision",
+      "gateway"
     },
     directory = 'consumables/spectral/'
   },
@@ -131,7 +132,8 @@ local files = {
   },
   enhancements = {
     list = {
-      "antimatter"
+      "antimatter",
+      "obsidian"
     },
     directory = 'enhancements/'
   }

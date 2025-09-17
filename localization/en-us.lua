@@ -212,6 +212,13 @@ return {
                     "Enhances {C:attention}#1#{} selected cards",
                     "to {C:dark_edition}#2#s"
                 }
+            },
+            c_hnds_gateway = {
+                name = "Gateway",
+                text = {
+                    "Enhances {C:attention}#1#{} selected cards",
+                    "to {C:dark_edition}#2#s"
+                }
             }
         },
         Other = {
@@ -313,6 +320,15 @@ return {
                     "{C:green}#2# in #3#{} chance to",
                     "upgrade by {X:mult,C:white}X#4#{} Mult",
                     "{C:inactive}(Max of {X:mult,C:white}X#5#{C:inactive} Mult)"
+                }
+            },
+            m_hnds_obsidian = {
+                name = "Obsidian Card",
+                text = {
+                    "Lose {C:red}#1#{}",
+                    "{C:green}#2# in #3#{} chance to create",
+                    "a {C:dark_edition}Negative",
+                    "consumable card"
                 }
             }
         }
