@@ -7,13 +7,6 @@ SMODS.Enhancement {
         local numerator, denominator = SMODS.get_probability_vars(card, card.ability.extra.base, card.ability.extra.odds, "hnds_antimatter")
         return { vars = {numerator, denominator, (card.ability.extra.stack_choice and localize({ type = 'name_text', set = 'Enhanced', key = card.ability.extra.stack_choice })) or localize('k_none'), card.ability.extra.stacks} }
     end,
-    calculate = function (self, card, context)
-        if context.destroy_card and context.cardarea == G.play and context.destroy_card == card and SMODS.pseudorandom_probability(card, "hnds_antimatter", card.ability.extra.base, card.ability.extra.odds) then
-            return {
-                remove = true
-            }
-        end
-    end,
     weight = 2.5
 }
 
@@ -21,7 +14,14 @@ local setabilityref = Card.set_ability
 ---@diagnostic disable-next-line: duplicate-set-field
 function Card:set_ability(center, initial, delay_sprites)
     if center and self.config.center.key == "m_hnds_antimatter" and center.key ~= "m_hnds_antimatter" and self.ability and (self.ability.extra.stack_choice == nil or self.ability.extra.stack_choice == center.key) then
-        if center.set == "Enhanced" then
+        if SMODS.pseudorandom_probability(self, "hnds_antimatter", self.ability.extra.base, self.ability.extra.odds) then
+            self.getting_sliced = true
+            G.E_MANAGER:add_event(Event({
+                func = function ()
+                    self:start_dissolve(G.C.DARK_EDITION)
+                end
+            }))
+        elseif center.set == "Enhanced" then
             if center.config.bonus then self.ability.bonus = (self.ability.bonus or 0) + center.config.bonus end
             if center.config.mult then self.ability.mult = (self.ability.mult or 0) + center.config.mult end
             if center.config.h_chips then self.ability.h_chips = (self.ability.h_chips or 0) + center.config.h_chips end
