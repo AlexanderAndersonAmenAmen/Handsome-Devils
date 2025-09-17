@@ -22,17 +22,17 @@ local setabilityref = Card.set_ability
 function Card:set_ability(center, initial, delay_sprites)
     if center and self.config.center.key == "m_hnds_antimatter" and center.key ~= "m_hnds_antimatter" and self.ability and (self.ability.extra.stack_choice == nil or self.ability.extra.stack_choice == center.key) then
         if center.set == "Enhanced" then
-            if center.config.bonus then self.ability.perma_bonus = (self.ability.perma_bonus or 0) + center.config.bonus end
-            if center.config.mult then self.ability.perma_mult = (self.ability.perma_mult or 0) + center.config.mult end
-            if center.config.h_chips then self.ability.perma_h_chips = (self.ability.perma_h_chips or 0) + center.config.h_chips end
-            if center.config.h_mult then self.ability.perma_h_chips = (self.ability.perma_h_mult or 0) + center.config.h_mult end
-            if center.config.x_mult or center.config.Xmult then self.ability.perma_x_mult = ((self.ability.perma_x_mult ~= 1 and self.ability.perma_h_x_mult) or 0) + (center.config.x_mult or center.config.Xmult) end
-            if center.config.x_chips then self.ability.perma_x_chips = ((self.ability.perma_x_chips ~= 1 and self.ability.perma_x_chips) or 0) + center.config.x_chips end
-            if center.config.h_x_mult then self.ability.perma_h_x_mult = ((self.ability.perma_h_x_mult ~= 1 and self.ability.perma_h_x_mult) or 0) + center.config.h_x_mult end
-            if center.config.h_x_chips then self.ability.perma_h_x_chips = ((self.ability.perma_h_x_chips ~= 1 and self.ability.perma_h_x_chips) or 0) + center.config.h_x_chips end
-            if center.config.p_dollars then self.ability.perma_p_dollars = (self.ability.perma_p_dollars or 0) + center.config.p_dollars end
-            if center.config.h_dollars then self.ability.perma_h_dollars = (self.ability.perma_h_dollars or 0) + center.config.h_dollars end
-            if center.config.repetitions then self.ability.perma_repetitions = (self.ability.perma_repetitions or 0) + center.config.repetitions end
+            if center.config.bonus then self.ability.bonus = (self.ability.bonus or 0) + center.config.bonus end
+            if center.config.mult then self.ability.mult = (self.ability.mult or 0) + center.config.mult end
+            if center.config.h_chips then self.ability.h_chips = (self.ability.h_chips or 0) + center.config.h_chips end
+            if center.config.h_mult then self.ability.h_chips = (self.ability.h_mult or 0) + center.config.h_mult end
+            if center.config.x_mult or center.config.Xmult then self.ability.x_mult = (self.ability.h_x_mult or 0) + (center.config.x_mult or center.config.Xmult) end
+            if center.config.x_chips then self.ability.x_chips = (self.ability.x_chips or 0) + center.config.x_chips end
+            if center.config.h_x_mult then self.ability.h_x_mult = (self.ability.h_x_mult or 0) + center.config.h_x_mult end
+            if center.config.h_x_chips then self.ability.h_x_chips = (self.ability.h_x_chips or 0) + center.config.h_x_chips end
+            if center.config.p_dollars then self.ability.p_dollars = (self.ability.p_dollars or 0) + center.config.p_dollars end
+            if center.config.h_dollars then self.ability.h_dollars = (self.ability.h_dollars or 0) + center.config.h_dollars end
+            if center.config.repetitions then self.ability.repetitions = (self.ability.repetitions or 0) + center.config.repetitions end
             if self.ability and self.ability.extra then
                 self.ability.extra.base = self.ability.extra.base + 0
                 self.ability.extra.stack_choice = center.key
