@@ -20,7 +20,7 @@ SMODS.Joker {
                 numerator = context.numerator * card.ability.extra.numerator
             }
         end
-        if context.ending_shop or context.forcetrigger and not context.blueprint then
+        if context.setting_blind or context.forcetrigger and not context.blueprint then
             return {
                 dollars = -G.GAME.dollars
             }
