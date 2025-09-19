@@ -160,7 +160,7 @@ return {
                     "When hand is played, {c:red}destroy",
                     "a random {C:attention}held in hand{} card",
                     "and gain its {C:mult}Mult{} and {C:chips}Chips",
-                    "(Currently {C:mult}+#2#{} Mult, {C:chips}+#1#{} Chips)"
+                    "{C:inactive}(Currently{} {C:mult}+#2#{} {C:inactive}Mult,{} {C:chips}+#1#{} {C:inactive}Chips)"
                 }
             }
         },
