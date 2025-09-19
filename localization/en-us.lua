@@ -149,9 +149,8 @@ return {
                 text = {
                     'Increases all listed',
                     '{C:green,E:1}probabilities{} by {C:attention}X#1#{},',
-                    'but at the end',
-                    'of {C:attention}shop{}, sets money',
-                    'to {C:money}$#2#{}',
+                    'Sets money to {C:money}$0',
+                    'when {C:attention}Blind{} is selected',
                     '{C:inactive}(e.x. {}{C:green}1 in 3{} {C:inactive}->{} {C:green}#1# in 3{}{C:inactive}){}'
                 }
             },
