@@ -155,6 +155,15 @@ return {
                     '{C:inactive}(e.x. {}{C:green}1 in 3{} {C:inactive}->{} {C:green}#1# in 3{}{C:inactive}){}'
                 }
             },
+            j_hnds_dark_humor = {
+                name = "Dark Humor",
+                text = {
+                    "When hand is played, {c:red}destroy",
+                    "a random {C:attention}held in hand{} card",
+                    "and gain its {C:mult}Mult{} and {C:chips}Chips",
+                    "(Currently {C:mult}+#2#{} Mult, {C:chips}+#1#{} Chips)"
+                }
+            }
         },
         Spectral = {
             c_hnds_abyss = {
