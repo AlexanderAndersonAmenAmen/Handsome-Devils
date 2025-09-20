@@ -452,6 +452,22 @@ function HNDS.get_shop_joker_tags()
   return tag_list
 end
 
+SMODS.ObjectType { --vanilla foods, modded foods are added in their joker def
+  key = "Food",
+  default = "j_ice_cream",
+  cards = {
+    j_gros_michel = true,
+    j_egg = true,
+    j_ice_cream = true,
+    j_cavendish = true,
+    j_turtle_bean = true,
+    j_diet_cola = true,
+    j_popcorn = true,
+    j_ramen = true,
+    j_selzer = true,
+  }
+}
+
 --[[---------------------------
 Load files
 --]] ---------------------------
