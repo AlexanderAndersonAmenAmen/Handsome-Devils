@@ -68,6 +68,7 @@ SMODS.Joker {
                 G.E_MANAGER:add_event(Event({
                     func = function ()
                         save_run()
+                        return true
                     end
                 }))
             end
