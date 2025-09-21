@@ -103,7 +103,6 @@ local files = {
       "hallows",
       "petrify",
       "dream",
-      "collision",
       "gateway"
     },
     directory = 'consumables/spectral/'
@@ -133,7 +132,6 @@ local files = {
   },
   enhancements = {
     list = {
-      "antimatter",
       "obsidian"
     },
     directory = 'enhancements/'
