@@ -1,32 +1,41 @@
-SMODS.Consumable {
-	key = 'exchange',
-	set = 'Spectral',
+SMODS.Consumable({
+	key = "exchange",
+	set = "Spectral",
 	config = {
-        extra = {
-            cards = 2,
-			hand_reduction = 1
-        }
-    },
+		extra = {
+			cards = 2,
+			hand_reduction = 1,
+		},
+	},
 	loc_vars = function(self, info_queue, card)
-		info_queue[#info_queue+1] = {key = 'e_negative_playing_card', set = 'Edition', config = {extra = G.P_CENTERS['e_negative'].config.card_limit}}
-		return {vars = {card.ability.extra.cards, card.ability.extra.hand_reduction}}
+		info_queue[#info_queue + 1] = {
+			key = "e_negative_playing_card",
+			set = "Edition",
+			config = { extra = G.P_CENTERS["e_negative"].config.card_limit },
+		}
+		return { vars = { card.ability.extra.cards, card.ability.extra.hand_reduction } }
 	end,
 	discovered = true,
 	rarity = 4,
-	atlas = 'Consumables',
+	atlas = "Consumables",
 	pos = { x = 2, y = 0 },
 	cost = 4,
-    use = function(self, card, context, copier)
-        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
-			for i = 1, #G.hand.highlighted do
-				G.hand.highlighted[i]:set_edition("e_negative", true, i == 1 and true or false)
-			end
-			card:juice_up(0.3, 0.5)
-        return true end }))
+	use = function(self, card, context, copier)
+		G.E_MANAGER:add_event(Event({
+			trigger = "after",
+			delay = 0.4,
+			func = function()
+				for i = 1, #G.hand.highlighted do
+					G.hand.highlighted[i]:set_edition("e_negative", true, i == 1 and true or false)
+				end
+				card:juice_up(0.3, 0.5)
+				return true
+			end,
+		}))
 		ease_hands_played(-card.ability.extra.hand_reduction)
 		G.GAME.round_resets.hands = G.GAME.round_resets.hands - card.ability.extra.hand_reduction
-    end,
-    can_use = function(self, card)
+	end,
+	can_use = function(self, card)
 		if G.STATE == G.STATES.SELECTING_HAND and G.GAME.current_round.hands_left <= 1 then
 			return false
 		end
@@ -39,20 +48,27 @@ SMODS.Consumable {
 					break
 				end
 			end
-			if all_uneditioned then return true end
+			if all_uneditioned then
+				return true
+			end
 		end
 		return false
-    end,
-	force_use = function (self, card, area)
-		local cards = Cryptid and Cryptid.get_highlighted_cards({G.hand}, {}, 1, card.ability.extra.cards)
-		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
-			for i = 1, #cards do
-				cards[i]:set_edition("e_negative", true, i == 1 and true or false)
-			end
-			card:juice_up(0.3, 0.5)
-        return true end }))
+	end,
+	force_use = function(self, card, area)
+		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, card.ability.extra.cards)
+		G.E_MANAGER:add_event(Event({
+			trigger = "after",
+			delay = 0.4,
+			func = function()
+				for i = 1, #cards do
+					cards[i]:set_edition("e_negative", true, i == 1 and true or false)
+				end
+				card:juice_up(0.3, 0.5)
+				return true
+			end,
+		}))
 		ease_hands_played(-card.ability.extra.hand_reduction)
 		G.GAME.round_resets.hands = G.GAME.round_resets.hands - card.ability.extra.hand_reduction
 	end,
 	demicoloncompat = true,
-}
+})

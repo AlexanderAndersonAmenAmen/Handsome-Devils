@@ -10,8 +10,8 @@ SMODS.Voucher({
 	calculate = function(self, card, context)
 		if context.mod_probability and G.GAME.blind and G.GAME.blind:get_type() == "Small" then
 			return {
-				numerator = context.numerator * 2
+				numerator = context.numerator * 2,
 			}
 		end
-	end
+	end,
 })

@@ -1,18 +1,20 @@
-SMODS.Consumable {
-	key = 'hallows',
-	set = 'Spectral',
+SMODS.Consumable({
+	key = "hallows",
+	set = "Spectral",
 	config = {
 		extra = {
 			value_multiplier = 4,
-			max_payout = 100
-		}
+			max_payout = 100,
+		},
 	},
 	loc_vars = function(self, info_queue, card)
 		local value = 0
 		local destroyable_jokers = {}
 		if G.jokers and G.jokers.cards and #G.jokers.cards > 1 then
 			for i = 2, #G.jokers.cards do
-				if not G.jokers.cards[i].ability.eternal then table.insert(destroyable_jokers, G.jokers.cards[i]) end
+				if not G.jokers.cards[i].ability.eternal then
+					table.insert(destroyable_jokers, G.jokers.cards[i])
+				end
 			end
 		end
 		for k, v in pairs(destroyable_jokers) do
@@ -23,20 +25,22 @@ SMODS.Consumable {
 	end,
 	discovered = true,
 	rarity = 4,
-	atlas = 'Consumables',
+	atlas = "Consumables",
 	pos = { x = 4, y = 0 },
 	cost = 4,
 	use = function(self, card, context, copier)
 		local destroyable_jokers = {}
 		if G.jokers and G.jokers.cards and #G.jokers.cards > 1 then
 			for i = 2, #G.jokers.cards do
-				if not G.jokers.cards[i].ability.eternal then table.insert(destroyable_jokers, G.jokers.cards[i]) end
+				if not G.jokers.cards[i].ability.eternal then
+					table.insert(destroyable_jokers, G.jokers.cards[i])
+				end
 			end
 		end
 		local no_sound = false
 		local value = 0
 		G.E_MANAGER:add_event(Event({
-			trigger = 'before',
+			trigger = "before",
 			delay = 0.75,
 			func = function()
 				for k, v in pairs(destroyable_jokers) do
@@ -45,15 +49,15 @@ SMODS.Consumable {
 					no_sound = true
 				end
 				return true
-			end
+			end,
 		}))
 		G.E_MANAGER:add_event(Event({
-			trigger = 'before',
+			trigger = "before",
 			delay = 0.4,
 			func = function()
 				ease_dollars(math.min(value, card.ability.extra.max_payout * (G.GAME.gambler_mod or 1)))
 				return true
-			end
+			end,
 		}))
 	end,
 	can_use = function(self, card)
@@ -66,7 +70,9 @@ SMODS.Consumable {
 					break
 				end
 			end
-			if not all_eternal then return true end
+			if not all_eternal then
+				return true
+			end
 		end
 		return false
 	end,
@@ -74,4 +80,4 @@ SMODS.Consumable {
 		card:use_consumeable()
 	end,
 	demicoloncompat = true,
-}
+})

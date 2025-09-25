@@ -1,4 +1,4 @@
-SMODS.Consumable {
+SMODS.Consumable({
 	object_type = "Consumable",
 	set = "Spectral",
 	name = "Growth",
@@ -13,7 +13,7 @@ SMODS.Consumable {
 		-- Handle creating a tooltip with set args.
 		info_queue[#info_queue + 1] = G.P_SEALS["hnds_green"]
 		return {
-			vars = { card.ability.max_highlighted }
+			vars = { card.ability.max_highlighted },
 		}
 	end,
 	use = function(self, card, area, copier) --Good enough
@@ -85,4 +85,4 @@ SMODS.Consumable {
 		}))
 	end,
 	demicoloncompat = true,
-}
+})

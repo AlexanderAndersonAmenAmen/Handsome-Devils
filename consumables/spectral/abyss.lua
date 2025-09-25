@@ -1,4 +1,4 @@
-SMODS.Consumable {
+SMODS.Consumable({
 	object_type = "Consumable",
 	set = "Spectral",
 	name = "Abyss",
@@ -13,7 +13,7 @@ SMODS.Consumable {
 		-- Handle creating a tooltip with set args.
 		info_queue[#info_queue + 1] = G.P_SEALS["hnds_black"]
 		return {
-			vars = { card.ability.max_highlighted }
+			vars = { card.ability.max_highlighted },
 		}
 	end,
 	use = function(self, card, area, copier) --Good enough
@@ -36,17 +36,16 @@ SMODS.Consumable {
 					return true
 				end,
 			}))
-			
 		end
 		delay(0.5)
-			G.E_MANAGER:add_event(Event({
-				trigger = "after",
-				delay = 0.2,
-				func = function()
-					G.hand:unhighlight_all()
-					return true
-				end,
-			}))
+		G.E_MANAGER:add_event(Event({
+			trigger = "after",
+			delay = 0.2,
+			func = function()
+				G.hand:unhighlight_all()
+				return true
+			end,
+		}))
 	end,
 	can_use = function(self, card)
 		if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] then
@@ -55,8 +54,8 @@ SMODS.Consumable {
 			return false
 		end
 	end,
-	force_use = function (self, card, area)
-		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, card.ability.max_highlighted )
+	force_use = function(self, card, area)
+		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, card.ability.max_highlighted)
 		for i = 1, #cards do
 			local highlighted = cards[i]
 			G.E_MANAGER:add_event(Event({
@@ -79,13 +78,13 @@ SMODS.Consumable {
 		end
 		delay(0.5)
 		G.E_MANAGER:add_event(Event({
-				trigger = "after",
-				delay = 0.2,
-				func = function()
-					G.hand:unhighlight_all()
-					return true
-				end,
-			}))
+			trigger = "after",
+			delay = 0.2,
+			func = function()
+				G.hand:unhighlight_all()
+				return true
+			end,
+		}))
 	end,
 	demicoloncompat = true,
-}
+})
