@@ -163,6 +163,13 @@ return {
 					"{C:inactive}(Currently{} {C:mult}+#2#{} {C:inactive}Mult,{} {C:chips}+#1#{} {C:inactive}Chips)",
 				},
 			},
+			j_hnds_krusty = {
+				name = "Clown Krusty",
+				text = {
+					"Adds {C:dark_edition}Negative{} to {C:attention}Food Jokers",
+					"Create one when {C:attention}Blind{} is selected"
+				}
+			}
 		},
 		Spectral = {
 			c_hnds_abyss = {

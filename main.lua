@@ -103,6 +103,7 @@ local files = {
 			"jokes_aside",
 			"ms_fortune",
 			"dark_humor",
+      "krusty",
 		},
 		directory = "jokers/",
 	},
