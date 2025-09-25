@@ -31,4 +31,5 @@ function create_card(_type, area, legendary, _rarity, skip_materialize, soulable
     if card and next(SMODS.find_card("j_hnds_krusty")) and card.config and G.P_CENTER_POOLS.Food[card.config.center.key] then
         card:set_edition("e_negative", true)
     end
+    return card
 end
