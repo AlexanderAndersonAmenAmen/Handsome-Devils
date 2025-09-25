@@ -15,7 +15,8 @@ SMODS.Joker {
                 func = function ()
                     SMODS.add_card({
                         set = "Food",
-                        edition = 'e_negative'
+                        edition = 'e_negative',
+                        allow_duplicates = false --this shouldnt be needed but like maybe?
                     })
                     return true
                 end
