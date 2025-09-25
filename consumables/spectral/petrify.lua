@@ -1,4 +1,4 @@
-SMODS.Consumable {
+SMODS.Consumable({
 	object_type = "Consumable",
 	set = "Spectral",
 	name = "Petrify",
@@ -8,7 +8,7 @@ SMODS.Consumable {
 	cost = 4,
 	atlas = "Consumables",
 	pos = { x = 3, y = 0 },
-	config = { extra = { multiplier = 8 }},
+	config = { extra = { multiplier = 8 } },
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.multiplier } }
 	end,
@@ -49,16 +49,15 @@ SMODS.Consumable {
 				local faces = {}
 				for k, v in pairs(G.hand.cards) do
 					faces[#faces + 1] = v
-					if v.config.center_key ~= 'm_stone' and v:is_face() then
+					if v.config.center_key ~= "m_stone" and v:is_face() then
 						v:set_ability(G.P_CENTERS.m_stone)
 						converted = converted + 1
 					end
 				end
 				ease_dollars(converted * card.ability.extra.multiplier)
 				return true
-			end
+			end,
 		}))
-
 
 		for i = 1, #G.hand.cards do
 			if G.hand.cards[i]:is_face() then
@@ -76,8 +75,8 @@ SMODS.Consumable {
 			end
 		end
 	end,
-	force_use = function (self, card, area)
+	force_use = function(self, card, area)
 		card:use_consumeable()
 	end,
 	demicoloncompat = true,
-}
+})
