@@ -21,9 +21,6 @@ SMODS.Joker {
                 end
             }))
         end
-        if context.setting_ability and G.P_CENTER_POOLS.Food and G.P_CENTER_POOLS.Food[context.new] and not (context.other_card.edition and context.other_card.edition == "e_negative") and not context.blueprint then
-            context.other_card:set_edition("e_negative", nil, true)
-        end
     end
 }
 
