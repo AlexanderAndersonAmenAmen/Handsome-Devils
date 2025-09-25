@@ -4,6 +4,8 @@ SMODS.Joker {
     discovered = true,
     blueprint_compat = true,
     demicoloncompat = true,
+    rarity = 4,
+    cost = 20,
     atlas = "Jokers",
     pos = { x = 7, y = 2 },
     soul_pos = { x = 2, y = 3 },
@@ -28,8 +30,13 @@ SMODS.Joker {
 create_card_ref = create_card
 function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
     local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
-    if card and next(SMODS.find_card("j_hnds_krusty")) and card.config and G.P_CENTER_POOLS.Food[card.config.center.key] then
-        card:set_edition("e_negative", true)
+    if card and next(SMODS.find_card("j_hnds_krusty")) and card.config then
+        for _, t in ipairs(G.P_CENTER_POOLS.Food) do
+            if t.key == card.config.center.key then
+                card:set_edition("e_negative")
+                break
+            end
+        end
     end
     return card
 end
