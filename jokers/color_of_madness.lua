@@ -23,7 +23,6 @@ SMODS.Joker({
 		if
 			context.before
 			and context.cardarea == G.jokers
-			and G.GAME.current_round.hands_played == 0
 			and not context.blueprint
 		then
 			if HNDS.get_unique_suits(context.scoring_hand) >= card.ability.extra.suits_needed then

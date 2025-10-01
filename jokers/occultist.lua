@@ -25,7 +25,7 @@ SMODS.Joker({
 		then
 			if HNDS.get_unique_suits(context.scoring_hand) >= card.ability.extra.suits_needed then
 				local tag_name =
-					pseudorandom_element({ "tag_meteor", "tag_charm", "tag_ethereal" }, pseudoseed("occ_pool"))
+					pseudorandom_element({ "tag_meteor", "tag_charm", "tag_ethereal", "tag_buffoon" }, pseudoseed("occ_pool"))
 				G.E_MANAGER:add_event(Event({
 					func = function()
 						add_tag(Tag(tag_name))

@@ -5,7 +5,7 @@ SMODS.Joker({
 	blueprint_compat = false,
 	eternal_compat = true,
 	perishable_compat = true,
-	config = { extra = { numerator = 5 } },
+	config = { extra = { numerator = 4 } },
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.numerator, 0 } }
 	end,

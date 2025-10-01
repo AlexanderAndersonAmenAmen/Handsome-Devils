@@ -7,10 +7,10 @@ return {
 			j_hnds_color_of_madness = {
 				name = "Color of Madness",
 				text = {
-					"If {C:attention}first poker hand{} of",
-					"round contains {C:attention}4{} unique",
-					"suits, {C:attention}first{} scored card",
-					"becomes a {C:attention}Wild Card{}",
+					"Enhances {C:attention}first{} scored",
+					"card into a {C:attention}Wild Card{} if",
+					"poker hand contains",
+					"{C:attention}4{} different suits",
 				},
 				-- only needed when this object is locked by default
 				-- unlock = {
@@ -21,10 +21,10 @@ return {
 			j_hnds_occultist = {
 				name = "Occultist",
 				text = {
-					"If {C:attention}first poker hand{} of",
-					"round contains {C:attention}4{} unique",
-					"suits, create a {C:planet}Meteor{},",
-					"{C:tarot}Charm{} or {C:spectral}Ethereal{} {C:attention}Tag{}",
+					"If {C:attention}first hand{} of round",
+					"scores {C:attention}4{} different suits,",
+					"create a {C:tarot}Charm{}, {C:spectral}Ethereal{},",
+					"{C:planet}Meteor{} or {C:attention}Buffoon{} {C:attention}Tag{}",
 				},
 			},
 			j_hnds_banana_split = {
@@ -40,10 +40,9 @@ return {
 			j_hnds_head_of_medusa = {
 				name = "Head of Medusa",
 				text = {
-					"This Joker gains {X:mult,C:white}X#2#{} Mult",
-					"per scoring {C:attention}face card{} played",
-					"Enhances scored face cards",
-					"into {C:attention}Stone Cards{}",
+					"Gains {X:mult,C:white}X#2#{} Mult per",
+					"scoring {C:attention}face card{} played,",
+					"but turns them to {C:attention}Stone{}",
 					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
 				},
 			},
@@ -79,9 +78,8 @@ return {
 			j_hnds_jackpot = {
 				name = "Jackpot",
 				text = {
-					"{C:green}#1# in #2#{} chance",
-					"to win {C:money}$#3#{} and {C:red}destroy{}",
-					"this card at end of round",
+					"{C:green}#1# in #2#{} chance to win {C:money}$#3#{} and",
+					"{C:red}self destruct{} at end of round",
 					"Increases {C:attention}listed{} {C:green}probability{}",
 					"by {C:attention}#4#{} per scoring {C:attention}7{} played",
 				},
@@ -147,9 +145,9 @@ return {
 			j_hnds_ms_fortune = {
 				name = "Ms. Fortune",
 				text = {
-					"Increases all listed",
-					"{C:green,E:1}probabilities{} by {C:attention}X#1#{},",
-					"Sets money to {C:money}$0",
+					"Quadruples all",
+					"{C:attention}listed{} {C:green,E:1}probabilities{}",
+					"Sets your money to {C:money}$0",
 					"when {C:attention}Blind{} is selected",
 					"{C:inactive}(e.x. {}{C:green}1 in 3{} {C:inactive}->{} {C:green}#1# in 3{}{C:inactive}){}",
 				},
@@ -166,8 +164,10 @@ return {
 			j_hnds_krusty = {
 				name = "Clown Krusty",
 				text = {
-					"Adds {C:dark_edition}Negative{} to {C:attention}Food Jokers",
-					"Create one when {C:attention}Blind{} is selected"
+					"Adds {C:dark_edition}Negative{}",
+					"to {C:attention}Food Jokers",
+					"Creates one when",
+					"{C:attention}Blind{} is selected",
 				}
 			}
 		},
