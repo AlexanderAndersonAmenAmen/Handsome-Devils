@@ -26,9 +26,10 @@ SMODS.Joker({
 				card.ability.extra.chips = card.ability.extra.chips
 					+ target:get_chip_bonus()
 					+ target:get_chip_h_bonus()
-				card.ability.extra.mult = card.ability.extra.mult + target:get_chip_mult() + target:get_chip_h_mult()
 				if SMODS.has_enhancement(target, "m_lucky") then
-					card.ability.extra.mult = card.ability.extra.mult - target.ability.mult
+					card.ability.extra.mult = card.ability.extra.mult + target:get_chip_mult() + target:get_chip_h_mult() - target.ability.mult
+				else
+					card.ability.extra.mult = card.ability.extra.mult + target:get_chip_mult() + target:get_chip_h_mult()
 				end
 				SMODS.destroy_cards(target)
 				SMODS.calculate_effect({ message = localize("k_upgrade_ex") }, card)
