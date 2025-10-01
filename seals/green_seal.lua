@@ -13,7 +13,7 @@ SMODS.Seal({
 	-- card - card this seal is applied to
 	calculate = function(self, card, context)
 		if
-			(context.main_scoring and context.cardarea == G.play) or (context.discard and context.other_card == card)
+			(context.main_scoring and context.cardarea == G.play)
 		then
 			local options = {}
 			for _, _card in ipairs(G.deck.cards) do
