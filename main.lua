@@ -77,6 +77,29 @@ SMODS.current_mod.config_tab = function()
 	}
 end
 
+SMODS.current_mod.reset_game_globals = function(run_start)
+	if run_start then
+		G.GAME.green_seal_draws = {}
+		G.GAME.ante_stones_scored = 0
+	end
+end
+
+SMODS.current_mod.calculate = function(self, context)
+	if context.hand_drawn and #G.GAME.green_seal_draws > 0 then --green seal effect
+		G.E_MANAGER:add_event(Event({
+			func = function()
+				for _, card in ipairs(G.GAME.green_seal_draws) do
+					if card.area == G.deck then
+						draw_card(G.deck, G.hand, nil, "up", true, card)
+					end
+				end
+				G.GAME.green_seal_draws = {}
+				save_run()
+			end
+		}))
+	end
+end
+
 --[[---------------------------
 Script names
 --]]
@@ -103,7 +126,7 @@ local files = {
 			"jokes_aside",
 			"ms_fortune",
 			"dark_humor",
-      "krusty",
+			"krusty",
 		},
 		directory = "jokers/",
 	},
@@ -179,31 +202,31 @@ SMODS.Atlas({
 })
 
 SMODS.Atlas({
-	key = "Jokers", --atlas key
+	key = "Jokers",   --atlas key
 	path = "Jokers.png", --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
-	px = 71, --width of one card
-	py = 95, -- height of one card
+	px = 71,          --width of one card
+	py = 95,          -- height of one card
 })
 
 SMODS.Atlas({
 	key = "Consumables", --atlas key
 	path = "THD.png", --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
-	px = 71, --width of one card
-	py = 95, -- height of one card
+	px = 71,          --width of one card
+	py = 95,          -- height of one card
 })
 
 SMODS.Atlas({
 	key = "Vouchers", --atlas key
 	path = "VHD.png", --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
-	px = 71, --width of one card
-	py = 95, -- height of one card
+	px = 71,       --width of one card
+	py = 95,       -- height of one card
 })
 
 SMODS.Atlas({
 	key = "Extras", --atlas key
 	path = "EHD.png", --atlas' path in (yourMod)/assets/1x or (yourMod)/assets/2x
-	px = 71, --width of one card
-	py = 95, -- height of one card
+	px = 71,       --width of one card
+	py = 95,       -- height of one card
 })
 
 --[[---------------------------
@@ -214,9 +237,6 @@ Function hooks
 local old_game_init = Game.init_game_object
 Game.init_game_object = function(self)
 	old_ret = old_game_init(self)
-
-	old_ret.green_seal_draws = 0
-	old_ret.ante_stones_scored = 0
 
 	return old_ret
 end

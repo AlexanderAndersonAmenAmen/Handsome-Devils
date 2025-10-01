@@ -2,36 +2,6 @@
 version = "1.0.0"
 priority = 0
 
-# -----------------------------------
-# Green Seal
-# -----------------------------------
-
-[[patches]]
-[patches.pattern]
-target = "functions/state_events.lua"
-pattern = '''
-for i=1, hand_space do --draw cards from deckL
-'''
-position = "before"
-payload = '''
-hand_space = hand_space + G.GAME.green_seal_draws
-G.GAME.green_seal_draws = 0
-'''
-match_indent = true
-times = 1
-
-[[patches]]
-[patches.pattern]
-target = "functions/state_events.lua"
-pattern = '''
--- TARGET: main end_of_round evaluation
-'''
-position = "after"
-payload = '''
-G.GAME.green_seal_draws = 0
-'''
-match_indent = true
-times = 1
 
 # -----------------------------------
 # Black Seal
