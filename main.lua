@@ -85,7 +85,7 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 end
 
 SMODS.current_mod.calculate = function(self, context)
-	if context.hand_drawn and #G.GAME.green_seal_draws > 0 then --green seal effect
+	if context.drawing_cards and #G.GAME.green_seal_draws > 0 then --green seal effect
 		G.E_MANAGER:add_event(Event({
 			func = function()
 				for _, card in ipairs(G.GAME.green_seal_draws) do
