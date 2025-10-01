@@ -17,7 +17,13 @@ SMODS.Seal({
 		then
 			local options = {}
 			for _, _card in ipairs(G.deck.cards) do
-				if _card:get_id() == card:get_id() then options[#options + 1] = _card end
+				if _card:get_id() == card:get_id() then
+					local dupe = false
+					for _, _dupe in ipairs(G.GAME.green_seal_draws) do
+						if _dupe == _card then dupe = true end
+					end
+					if not dupe then options[#options + 1] = _card end
+				end
 			end
 			if #options > 0 then
 				G.GAME.green_seal_draws[#G.GAME.green_seal_draws + 1] = pseudorandom_element(options, "green_seal_draw")
