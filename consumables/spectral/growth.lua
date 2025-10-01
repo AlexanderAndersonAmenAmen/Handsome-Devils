@@ -31,7 +31,7 @@ SMODS.Consumable({
 				delay = 0.1,
 				func = function()
 					if highlighted then
-						highlighted:set_seal("hnds_green")
+						highlighted:set_seal("hnds_green", nil, true)
 					end
 					return true
 				end,

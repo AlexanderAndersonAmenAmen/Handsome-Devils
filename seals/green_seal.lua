@@ -15,17 +15,13 @@ SMODS.Seal({
 		if
 			(context.main_scoring and context.cardarea == G.play) or (context.discard and context.other_card == card)
 		then
-			G.E_MANAGER:add_event(Event({
-				func = function ()
-					local options = {}
-					for _, _card in ipairs(G.deck.cards) do
-						if _card:get_id() == card:get_id() then options[#options+1] = _card end
-					end
-					if #options > 0 then
-						G.GAME.green_seal_draws[#G.GAME.green_seal_draws+1] = pseudorandom_element(options, "green_seal_draw")
-					end
-				end
-			}))
+			local options = {}
+			for _, _card in ipairs(G.deck.cards) do
+				if _card:get_id() == card:get_id() then options[#options + 1] = _card end
+			end
+			if #options > 0 then
+				G.GAME.green_seal_draws[#G.GAME.green_seal_draws + 1] = pseudorandom_element(options, "green_seal_draw")
+			end
 			return {
 				message = localize("k_hnds_green"),
 				colour = G.C.GREEN,
