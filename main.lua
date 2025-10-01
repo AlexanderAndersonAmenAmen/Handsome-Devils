@@ -87,9 +87,10 @@ end
 SMODS.current_mod.calculate = function(self, context)
 	if context.drawing_cards and #G.GAME.green_seal_draws > 0 then --green seal effect
 		G.E_MANAGER:add_event(Event({
+			blockable = true,
 			func = function()
 				for _, card in ipairs(G.GAME.green_seal_draws) do
-					if card.area == G.deck then
+					if card.area == G.deck and card.config then
 						draw_card(G.deck, G.hand, nil, "up", true, card)
 					end
 				end
