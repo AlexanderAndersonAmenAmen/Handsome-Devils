@@ -247,9 +247,9 @@ return {
 			hnds_green_seal = {
 				name = "Green Seal",
 				text = {
-					"Draw {C:attention}2{} extra",
-					"cards when {C:attention}scored",
-					"or {C:attention}discarded",
+					"Draw an extra card with",
+					"the same rank as this card",
+					"when this card scores"
 				},
 			},
 		},
