@@ -96,7 +96,7 @@ return {
 				name = "Seismic Activity",
 				text = {
 					"Retrigger all",
-					"{C:attention}Stone cards",
+					"{C:attention}Stone Cards",
 				},
 			},
 			j_hnds_stone_mask = {
@@ -104,7 +104,7 @@ return {
 				text = {
 					"If {C:attention}first hand{} of round",
 					"is a single Enhanced card,",
-					"add a random {C:attention}edition{} to it",
+					"add a random {C:dark_edition}Edition{} to it",
 				},
 			},
 			j_hnds_jokestone = {
@@ -247,9 +247,9 @@ return {
 			hnds_green_seal = {
 				name = "Green Seal",
 				text = {
-					"Draw an extra card with",
-					"the same rank as this card",
-					"when this card scores"
+					"When scored, draw a",
+					"card of the same {C:attention}rank{}",
+					"after {C:attention}refilling{} your hand"
 				},
 			},
 		},
