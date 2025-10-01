@@ -95,6 +95,7 @@ SMODS.current_mod.calculate = function(self, context)
 				end
 				G.GAME.green_seal_draws = {}
 				save_run()
+				return true
 			end
 		}))
 	end
