@@ -82,6 +82,7 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 		G.GAME.ante_stones_scored = 0
 	end
 	G.GAME.green_seal_draws = {}
+	reset_supersuit_card()
 end
 
 SMODS.current_mod.calculate = function(self, context)
@@ -128,6 +129,7 @@ local files = {
 			"jokes_aside",
 			"ms_fortune",
 			"dark_humor",
+			"supersuit",
 			"krusty",
 		},
 		directory = "jokers/",
@@ -271,6 +273,21 @@ end
 Utility functions
 --]]
 ---------------------------
+
+function reset_supersuit_card()
+	local supersuit_suits = {}
+    G.GAME.current_round.supersuit_card = G.GAME.current_round.supersuit_card or {}
+	for k, suit in pairs(SMODS.Suits) do
+		if
+			k ~= G.GAME.current_round.supersuit_card.suit
+			and (type(suit.in_pool) ~= "function" or suit:in_pool({ rank = "" }))
+		then
+			supersuit_suits[#supersuit_suits + 1] = k
+		end
+	end
+	local supersuit_card = pseudorandom_element(supersuit_suits, pseudoseed("tux" .. G.GAME.round_resets.ante))
+	G.GAME.current_round.supersuit_card.suit = supersuit_card
+end
 
 ---Gets the number of unique suits in a provided scoring hand - code from Paperback, try it if you haven't!
 function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
