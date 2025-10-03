@@ -27,6 +27,14 @@ return {
 					"{C:planet}Meteor{} or {C:attention}Buffoon{} {C:attention}Tag{}",
 				},
 			},
+			j_hnds_supersuit = {
+				name = "Supersuit",
+				text = {
+					"{C:attention}Retrigger{} all cards",
+					"with {V:1}#1#{} suit",
+					"{s:0.8}Suit changes every round",
+				},
+			},
 			j_hnds_banana_split = {
 				name = "Banana Split",
 				text = {
