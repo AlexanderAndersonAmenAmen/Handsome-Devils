@@ -285,7 +285,7 @@ function reset_supersuit_card()
 			supersuit_suits[#supersuit_suits + 1] = k
 		end
 	end
-	local supersuit_card = pseudorandom_element(supersuit_suits, pseudoseed("tux" .. G.GAME.round_resets.ante))
+	local supersuit_card = pseudorandom_element(supersuit_suits, pseudoseed("sup" .. G.GAME.round_resets.ante))
 	G.GAME.current_round.supersuit_card.suit = supersuit_card
 end
 
