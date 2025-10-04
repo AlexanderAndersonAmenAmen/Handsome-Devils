@@ -349,8 +349,8 @@ return {
 				name = "Obsidian Card",
 				text = {
 					"Lose {C:red}$#1#{}",
-					"{C:green}#2# in #3#{} chance to create",
-					"a {C:dark_edition}Negative",
+					"{C:green}#2# in #3#{} chance to",
+					"create a {C:dark_edition}Negative",
 					"consumable card",
 				},
 			},
