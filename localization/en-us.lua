@@ -35,6 +35,25 @@ return {
 					"{s:0.8}Suit changes every round",
 				},
 			},
+			j_hnds_dark_idol = {
+                name = "The Dark Idol",
+                text = {
+                    "Gains {X:mult,C:white}X#1#{} Mult per",
+                    "scoring {C:attention}#2#{} of {V:1}#3#{}",
+                    "played and destroys them",
+                    "{s:0.8}Card changes at end of round",
+                    "{C:inactive}(Currently {X:mult,C:white}X#4#{C:inactive} Mult)"
+                },
+            },
+			j_hnds_perfectionist = {
+				name = "Perfectionist",
+				text = {
+					"When you Enhance",
+					"an Enhanced card,",
+					"it permanently",
+					"gains {C:mult}+#1#{} Mult",
+				},
+			},
 			j_hnds_banana_split = {
 				name = "Banana Split",
 				text = {
@@ -104,7 +123,7 @@ return {
 				name = "Seismic Activity",
 				text = {
 					"Retrigger all",
-					"{C:attention}Stone Cards",
+					"{C:attention}Stone cards",
 				},
 			},
 			j_hnds_stone_mask = {

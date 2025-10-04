@@ -83,6 +83,21 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	end
 	G.GAME.green_seal_draws = {}
 	reset_supersuit_card()
+
+-- The suit changes every round, so we use reset_game_globals to choose a suit.
+	G.GAME.current_round.dark_idol = { suit = 'Spades', rank = 'Ace' }
+	local valid_dark_idol_cards = {}
+	for _, v in ipairs(G.playing_cards) do
+		if not SMODS.has_no_suit(v) then -- Abstracted enhancement check for jokers being able to give cards additional enhancements
+			valid_dark_idol_cards[#valid_dark_idol_cards + 1] = v
+		end
+	end
+	if valid_dark_idol_cards[1] then
+		local dark_idol_card = pseudorandom_element(valid_dark_idol_cards, pseudoseed('dark_idol' .. G.GAME.round_resets.ante))
+		G.GAME.current_round.dark_idol.suit = dark_idol_card.base.suit
+        G.GAME.current_round.dark_idol.rank = dark_idol_card.base.value
+        G.GAME.current_round.dark_idol.id = dark_idol_card.base.id
+	end
 end
 
 SMODS.current_mod.calculate = function(self, context)
@@ -129,6 +144,7 @@ local files = {
 			"jokes_aside",
 			"ms_fortune",
 			"dark_humor",
+			"dark_idol",
 			"supersuit",
 			"krusty",
 		},
