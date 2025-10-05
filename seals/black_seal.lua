@@ -51,7 +51,7 @@ SMODS.Seal({
 			local eval, post = eval_card(card, new_context)
 			local remove
 			for k,v in pairs(eval) do
-				if v.remove then remove = true end
+				if v.remove then remove = true; print("haha i am destroying cards") end
 			end
 			return {
 				remove = remove
@@ -64,7 +64,6 @@ local get_areas_ref = SMODS.get_card_areas
 SMODS.get_card_areas = function (_type, _context)
 	local ret = get_areas_ref(_type, _context)
 	if _type == 'playing_cards' and _context == 'destroying_cards' then
-		print("haha johnathan i am destroying cards held in hand")
 		ret[#ret+1] = G.hand
 	end
 	return ret
