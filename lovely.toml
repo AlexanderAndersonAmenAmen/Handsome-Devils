@@ -18,32 +18,34 @@ end
 position = "before"
 payload = '''
 for i=1, #G.hand.cards do
-    local destroyed = nil
+    if G.hand.cards[i].seal == "hnds_black" then
+        local destroyed = nil
     
-    for j = 1, #G.jokers.cards do
-        local eval, post = eval_card(G.jokers.cards[j], {destroying_card = G.hand.cards[i], full_hand = G.play.cards})
-        SMODS.trigger_effects({eval, post}, G.hand.cards[i])
-        if eval.jokers then destroyed = true end
-    end
+        for j = 1, #G.jokers.cards do
+            local eval, post = eval_card(G.jokers.cards[j], {destroying_card = G.hand.cards[i], full_hand = G.play.cards})
+            SMODS.trigger_effects({eval, post}, G.hand.cards[i])
+            if eval.jokers then destroyed = true end
+        end
 
-    if SMODS.has_enhancement(G.hand.cards[i], 'm_glass') and G.hand.cards[i]:can_calculate() and SMODS.pseudorandom_probability(G.hand.cards[i], 'glass', 1, G.hand.cards[i].ability.name == 'Glass Card' and G.hand.cards[i].ability.extra or G.P_CENTERS.m_glass.config.extra) then
-        destroyed = true
-    end
+        if SMODS.has_enhancement(G.hand.cards[i], 'm_glass') and G.hand.cards[i]:can_calculate() and SMODS.pseudorandom_probability(G.hand.cards[i], 'glass', 1, G.hand.cards[i].ability.name == 'Glass Card' and G.hand.cards[i].ability.extra or G.P_CENTERS.m_glass.config.extra) then
+            destroyed = true
+        end
 
-    local eval, post = eval_card(G.hand.cards[i], {destroying_card = G.hand.cards[i], full_hand = G.play.cards, G.hand.cards = G.hand.cards, scoring_name = text, poker_hands = poker_hands, cardarea = G.play})
-    local self_destroy = false
-    for key, effect in pairs(eval) do
-        self_destroy = SMODS.calculate_effect(effect, G.hand.cards[i])
-    end
-    SMODS.trigger_effects({post}, G.hand.cards[i])
-    if self_destroy then destroyed = true end
-    if destroyed then 
-        if G.hand.cards[i].ability.name == 'Glass Card' then 
-            G.hand.cards[i].shattered = true
-        else 
-            G.hand.cards[i].destroyed = true
-        end 
-        cards_destroyed[#cards_destroyed+1] = G.hand.cards[i]
+        local eval, post = eval_card(G.hand.cards[i], {destroying_card = G.hand.cards[i], full_hand = G.play.cards, G.hand.cards = G.hand.cards, scoring_name = text, poker_hands = poker_hands, cardarea = G.play})
+        local self_destroy = false
+        for key, effect in pairs(eval) do
+            self_destroy = SMODS.calculate_effect(effect, G.hand.cards[i])
+        end
+        SMODS.trigger_effects({post}, G.hand.cards[i])
+        if self_destroy then destroyed = true end
+        if destroyed then 
+            if G.hand.cards[i].ability.name == 'Glass Card' then 
+                G.hand.cards[i].shattered = true
+            else 
+                G.hand.cards[i].destroyed = true
+            end 
+            cards_destroyed[#cards_destroyed+1] = G.hand.cards[i]
+        end
     end
 end
 '''

@@ -43,3 +43,12 @@ SMODS.Seal({
 		end
 	end,
 })
+
+local get_areas_ref = SMODS.get_card_areas
+SMODS.get_card_areas = function (_type, _context)
+	local ret = get_areas_ref(_type, _context)
+	if _type == 'playing_cards' and _context == 'destroying_cards' then
+		ret[#ret+1] = G.hand
+	end
+	return ret
+end
