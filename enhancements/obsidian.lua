@@ -12,6 +12,7 @@ SMODS.Enhancement({
 			context.main_scoring
 			and #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit
 			and SMODS.pseudorandom_probability(card, "hnds_obsidian", 1, card.ability.extra.odds)
+			and context.cardarea == G.play
 		then
 			G.GAME.consumeable_buffer = (G.GAME.consumeable_buffer or 0) + 1
 			G.E_MANAGER:add_event(Event({
