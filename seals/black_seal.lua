@@ -41,7 +41,7 @@ SMODS.Seal({
 			end
 			SMODS.trigger_effects(effects, card)
 		end
-		if context.destroying_card and context.other_card == card and context.cardarea == G.hand and not context.black_trigger then
+		if context.destroying_card and context.destroy_card == card and context.cardarea == G.hand and not context.black_trigger then
 			local new_context = {}
 			for k, v in pairs(context) do
 				new_context[k] = v
@@ -51,7 +51,7 @@ SMODS.Seal({
 			local eval, post = eval_card(card, new_context)
 			local remove
 			for k,v in pairs(eval) do
-				if v.remove then remove = true; print("haha i am destroying cards") end
+				if v.remove then remove = true end
 			end
 			return {
 				remove = remove

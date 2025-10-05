@@ -4,7 +4,7 @@ priority = 0
 
 
 # -----------------------------------
-# Black Seal (shouldnt be needed anymore)
+# Black Seal (shouldnt be needed anymore) (also doesnt work)
 # -----------------------------------
 
 [[patches]]
