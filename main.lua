@@ -146,6 +146,7 @@ local files = {
 			"dark_humor",
 			"dark_idol",
 			"supersuit",
+			"perfectionist",
 			"krusty",
 		},
 		directory = "jokers/",

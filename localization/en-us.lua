@@ -30,9 +30,9 @@ return {
 			j_hnds_supersuit = {
 				name = "Supersuit",
 				text = {
-					"{C:attention}Retrigger{} all cards",
-					"with {V:1}#1#{} suit",
-					"{s:0.8}Suit changes every round",
+					"{C:attention}Retrigger{} all",
+					"cards with {V:1}#1#{} suit,",
+					"{s:0.8}suit changes at end of round",
 				},
 			},
 			j_hnds_dark_idol = {
