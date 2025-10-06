@@ -2,6 +2,33 @@
 version = "1.0.0"
 priority = 0
 
+# -----------------------------------
+# Perfectionist
+# -----------------------------------
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "self.ability.hands_played_at_create = G.GAME and G.GAME.hands_played or 0"
+position = "after"
+match_indent = true
+payload = '''
+if old_center and old_center.set == "Enhanced" and center.set == "Enhanced" and self.area ~= G.deck then
+    if G.jokers.cards then for i = 1, #G.jokers.cards do
+        if G.jokers.cards[i].config.center.key == "j_hnds_perfectionist" then
+            self.ability.perma_mult = self.ability.perma_mult or 0
+            self.ability.perma_mult = self.ability.perma_mult + G.P_CENTERS["j_hnds_perfectionist"].config.extra.mult
+            card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.MULT})
+            G.E_MANAGER:add_event(Event({
+                func = function()
+                    G.jokers.cards[i]:juice_up(0.6)
+                return true end
+            }))
+        end
+    end
+    end
+end
+'''
 
 # -----------------------------------
 # Black Seal (shouldnt be needed anymore) (also doesnt work)
