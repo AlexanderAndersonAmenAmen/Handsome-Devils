@@ -1,6 +1,6 @@
 SMODS.Consumable({
 	key = "possess",
-	name = "Possess"
+	name = "Possess",
 	set = "Spectral",
 	config = {
 		extra = {

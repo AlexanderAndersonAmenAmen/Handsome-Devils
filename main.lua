@@ -560,6 +560,33 @@ function HNDS.get_shop_joker_tags()
 	return tag_list
 end
 
+HNDS.rarity_cycle = {
+	1,
+	2,
+	3,
+	"val_renowned",
+	"cry_epic",
+	4,
+	"entr_reverse_legendary",
+	"valk_exquisite",
+	"cry_exotic", --maybe a bit unbalanced youre playing cryptid already anyway so :shrug:
+	"entr_entropic",
+	"valk_prestigious",
+	"ast_empyrean"
+}
+
+HNDS.get_next_rarity = function (rarity_key)
+	local found = false
+	for i = 1, #HNDS.rarity_cycle do
+		if HNDS.rarity_cycle[i] == rarity_key then --check to find the current rarity, will attempt to find the next existing rarity in the table after
+			found = true
+		elseif found and G.P_JOKER_RARITY_POOLS[HNDS.rarity_cycle[i]] then --check if the current rarity has been found and the table rarity actually exists
+			return HNDS.rarity_cycle[i]
+		end
+	end
+	return 1 --default to common when no upgrade found
+end
+
 SMODS.ObjectType({ --vanilla foods, modded foods are added in their joker def
 	key = "Food",
 	default = "j_ice_cream",
