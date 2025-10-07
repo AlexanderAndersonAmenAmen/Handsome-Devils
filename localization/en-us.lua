@@ -207,8 +207,8 @@ return {
 					"card in your hand",
 				},
 			},
-			c_hnds_growth = {
-				name = "Growth",
+			c_hnds_cycle = {
+				name = "Cycle",
 				text = {
 					"Add a {C:green}Green Seal{}",
 					"to {C:attention}#1#{} selected",
@@ -231,8 +231,8 @@ return {
 					"{C:blue}-#2#{} hand each round",
 				},
 			},
-			c_hnds_hallows = {
-				name = "Hallows",
+			c_hnds_possess = {
+				name = "Possess",
 				text = {
 					"Destroy all but the",
 					"leftmost Joker, gives {C:attention}X#1#{}",

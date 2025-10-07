@@ -1,8 +1,8 @@
 SMODS.Consumable({
 	object_type = "Consumable",
 	set = "Spectral",
-	name = "Growth",
-	key = "growth",
+	name = "Cycle",
+	key = "cycle",
 	discovered = true,
 	order = 1,
 	cost = 4,

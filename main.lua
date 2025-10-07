@@ -162,8 +162,8 @@ local files = {
 		list = {
 			"abyss",
 			"exchange",
-			"growth",
-			"hallows",
+			"cycle",
+			"possess",
 			"petrify",
 			"dream",
 			"gateway",

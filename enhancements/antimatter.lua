@@ -1,7 +1,7 @@
 SMODS.Enhancement({
 	key = "antimatter",
 	atlas = "Extras",
-	pos = { x = 2, y = 1 },
+	pos = { x = 2, y = 0 },
 	config = { extra = { base = 1, odds = 4, stacks = 0 } },
 	loc_vars = function(self, info_queue, card)
 		local numerator, denominator =
