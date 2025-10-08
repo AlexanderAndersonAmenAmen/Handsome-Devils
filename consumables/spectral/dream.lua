@@ -18,6 +18,7 @@ SMODS.Consumable({
 	soul_set = "Joker",
 	atlas = "Consumables",
 	pos = { x = 1, y = 1 },
+	soul_pos = { x = 1, y = 2 },
 	cost = 4,
 	use = function(self, card, context, copier)
 		local tags_to_make = card.ability.extra.max_tags
