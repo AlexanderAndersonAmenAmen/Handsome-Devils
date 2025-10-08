@@ -36,15 +36,15 @@ return {
 				},
 			},
 			j_hnds_dark_idol = {
-                name = "The Dark Idol",
-                text = {
-                    "Gains {X:mult,C:white}X#1#{} Mult per",
-                    "scoring {C:attention}#2#{} of {V:1}#3#{}",
-                    "played and destroys them",
-                    "{s:0.8}Card changes at end of round",
-                    "{C:inactive}(Currently {X:mult,C:white}X#4#{C:inactive} Mult)"
-                },
-            },
+				name = "The Dark Idol",
+				text = {
+					"Gains {X:mult,C:white}X#1#{} Mult per",
+					"scoring {C:attention}#2#{} of {V:1}#3#{}",
+					"played and destroys them",
+					"{s:0.8}Card changes at end of round",
+					"{C:inactive}(Currently {X:mult,C:white}X#4#{C:inactive} Mult)"
+				},
+			},
 			j_hnds_perfectionist = {
 				name = "Perfectionist",
 				text = {
@@ -197,6 +197,17 @@ return {
 					"{C:attention}Blind{} is selected",
 				}
 			}
+		},
+		Back = {
+			b_hnds_premiumdeck = {
+				name = "Premium Deck",
+				text = {
+					"Start run with",
+					"{C:green}Premium{} and {C:red}Top Shelf{}",
+					"Jokers cost extra {C:money}${}",
+					"equal to your {C:attention}Ante{}",
+				},
+			},
 		},
 		Spectral = {
 			c_hnds_abyss = {

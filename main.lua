@@ -84,7 +84,7 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	G.GAME.green_seal_draws = {}
 	reset_supersuit_card()
 
--- The suit changes every round, so we use reset_game_globals to choose a suit.
+	-- The suit changes every round, so we use reset_game_globals to choose a suit.
 	G.GAME.current_round.dark_idol = { suit = 'Spades', rank = 'Ace' }
 	local valid_dark_idol_cards = {}
 	for _, v in ipairs(G.playing_cards) do
@@ -93,10 +93,11 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 		end
 	end
 	if valid_dark_idol_cards[1] then
-		local dark_idol_card = pseudorandom_element(valid_dark_idol_cards, pseudoseed('dark_idol' .. G.GAME.round_resets.ante))
+		local dark_idol_card = pseudorandom_element(valid_dark_idol_cards,
+			pseudoseed('dark_idol' .. G.GAME.round_resets.ante))
 		G.GAME.current_round.dark_idol.suit = dark_idol_card.base.suit
-        G.GAME.current_round.dark_idol.rank = dark_idol_card.base.value
-        G.GAME.current_round.dark_idol.id = dark_idol_card.base.id
+		G.GAME.current_round.dark_idol.rank = dark_idol_card.base.value
+		G.GAME.current_round.dark_idol.id = dark_idol_card.base.id
 	end
 end
 
@@ -199,6 +200,12 @@ local files = {
 		},
 		directory = "enhancements/",
 	},
+	decks = {
+		list = {
+			"premiumdeck",
+		},
+		directory = "decks/",
+	},
 }
 
 if hnds_config.enableStoneOcean then
@@ -255,19 +262,14 @@ Function hooks
 --]]
 ---------------------------
 
-local old_game_init = Game.init_game_object
-Game.init_game_object = function(self)
-	old_ret = old_game_init(self)
-
-	return old_ret
-end
-
 local set_cost_ref = Card.set_cost
 function Card.set_cost(self)
 	set_cost_ref(self)
-
 	if self.config.center.key == "j_hnds_coffee_break" then
 		self.sell_cost = 0
+	end
+	if G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_premiumdeck" and self.config.center.set == "Joker" then
+		self.cost = math.floor(self.cost + G.GAME.round_resets.ante)
 	end
 end
 
@@ -282,7 +284,6 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
 	end
 
 	old_ret = old_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
-
 	return old_ret
 end
 
@@ -293,7 +294,7 @@ Utility functions
 
 function reset_supersuit_card()
 	local supersuit_suits = {}
-    G.GAME.current_round.supersuit_card = G.GAME.current_round.supersuit_card or {}
+	G.GAME.current_round.supersuit_card = G.GAME.current_round.supersuit_card or {}
 	for k, suit in pairs(SMODS.Suits) do
 		if
 			k ~= G.GAME.current_round.supersuit_card.suit
@@ -575,10 +576,10 @@ HNDS.rarity_cycle = {
 	"ast_empyrean"
 }
 
-HNDS.get_next_rarity = function (rarity_key)
+HNDS.get_next_rarity = function(rarity_key)
 	local found = false
 	for i = 1, #HNDS.rarity_cycle do
-		if HNDS.rarity_cycle[i] == rarity_key then --check to find the current rarity, will attempt to find the next existing rarity in the table after
+		if HNDS.rarity_cycle[i] == rarity_key then                   --check to find the current rarity, will attempt to find the next existing rarity in the table after
 			found = true
 		elseif found and G.P_JOKER_RARITY_POOLS[HNDS.rarity_cycle[i]] then --check if the current rarity has been found and the table rarity actually exists
 			return HNDS.rarity_cycle[i]
