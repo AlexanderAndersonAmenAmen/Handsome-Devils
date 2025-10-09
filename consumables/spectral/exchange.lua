@@ -16,7 +16,6 @@ SMODS.Consumable({
 		return { vars = { card.ability.extra.cards, card.ability.extra.hand_reduction } }
 	end,
 	discovered = true,
-	rarity = 4,
 	atlas = "Consumables",
 	pos = { x = 2, y = 0 },
 	cost = 4,
