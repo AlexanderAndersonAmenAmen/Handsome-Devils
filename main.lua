@@ -117,6 +117,19 @@ SMODS.current_mod.calculate = function(self, context)
 			end
 		}))
 	end
+	if context.remove_playing_cards then
+		for _, card in ipairs(context.removed) do
+			if card.seal == "hnds_spectralseal" and G.consumeables.config.card_limit < #G.consumeables.cards + G.GAME.consumeable_buffer then
+				local to_create = math.min(2, G.consumeables.config.card_limit - (#G.consumeables.cards + G.GAME.consumeable_buffer))
+				G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + to_create
+				for _ = 1, to_create do
+					SMODS.add_card({
+						set = "Spectral"
+					})
+				end
+			end
+		end
+	end
 end
 
 --[[---------------------------
