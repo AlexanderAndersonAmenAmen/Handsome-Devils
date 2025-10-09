@@ -13,7 +13,6 @@ SMODS.Consumable({
 		end
 		return { vars = { card.ability.extra.max_tags } }
 	end,
-	rarity = 4,
 	hidden = true,
 	soul_set = "Joker",
 	atlas = "Consumables",

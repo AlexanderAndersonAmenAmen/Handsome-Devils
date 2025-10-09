@@ -155,7 +155,6 @@ local files = {
 	seals = {
 		list = {
 			"black_seal",
-			"green_seal",
 			"spectralseal"
 		},
 		directory = "seals/",

@@ -221,9 +221,9 @@ return {
 			c_hnds_cycle = {
 				name = "Cycle",
 				text = {
-					"Add a {C:green}Green Seal{}",
-					"to {C:attention}#1#{} selected",
-					"card in your hand",
+					"Destroy a random {C:attention}Joker{},",
+					"create a random one",
+					"of a {C:attention}higher rarity{}",
 				},
 			},
 			c_hnds_petrify = {
@@ -245,11 +245,9 @@ return {
 			c_hnds_possess = {
 				name = "Possess",
 				text = {
-					"Destroy all but the",
-					"leftmost Joker, gives {C:attention}X#1#{}",
-					"the sell value of destroyed",
-					"Jokers {C:inactive}(Max of {C:money}$#2#{C:inactive})",
-					"{C:inactive}(Currently {C:money}$#3#{C:inactive})",
+					"Add a {C:spectral}Spectral Seal{}",
+					"to {C:attention}#1#{} selected",
+					"card in your hand",
 				},
 			},
 			c_hnds_dream = {
