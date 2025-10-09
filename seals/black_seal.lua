@@ -20,51 +20,34 @@ SMODS.Seal({
 			end
 			new_context.black_trigger = true
 			new_context.cardarea = G.play
-			local eval, post = eval_card(card, new_context)
-			local effects = {eval}
-			new_context.main_scoring = nil
-			new_context.individual = true
-			SMODS.calculate_context(new_context)
-			for _,v in ipairs(post or {}) do
-				effects[#effects+1] = v
-			end
-			if eval.retriggers then
-				for rt = 1, #eval.retriggers do
-					local rt_eval, rt_post = eval_card(card, new_context)
-					table.insert(effects, {eval.retriggers[rt]})
-					table.insert(effects, rt_eval)
-					for _, v in ipairs(rt_post or {}) do
-						effects[#effects+1] = v
-					end
-					SMODS.calculate_context(new_context)
-				end
-			end
-			SMODS.trigger_effects(effects, card)
-		end
-		if context.destroying_card and context.destroy_card == card and context.cardarea == G.hand and not context.black_trigger then
-			local new_context = {}
-			for k, v in pairs(context) do
-				new_context[k] = v
-			end
-			new_context.black_trigger = true
-			new_context.cardarea = G.play
-			local eval, post = eval_card(card, new_context)
-			local remove
-			for k,v in pairs(eval) do
-				if v.remove then remove = true end
-			end
-			return {
-				remove = remove
-			}
+			SMODS.score_card(card, new_context)
 		end
 	end,
 })
 
-local get_areas_ref = SMODS.get_card_areas
-SMODS.get_card_areas = function (_type, _context)
-	local ret = get_areas_ref(_type, _context)
-	if _type == 'playing_cards' and _context == 'destroying_cards' then
-		ret[#ret+1] = G.hand
+HNDS.should_hand_destroy = function (card)
+	return card.seal == "hnds_black"
+end
+
+local destroy_cards_ref = SMODS.calculate_destroying_cards
+function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand)
+	destroy_cards_ref(context, cards_destroyed, scoring_hand)
+	for i, card in ipairs(G.hand.cards) do
+		if HNDS.should_hand_destroy(card) then
+			local destroyed = nil
+			context.destroy_card = card
+			context.cardarea = G.play
+			local flags = SMODS.calculate_context(context)
+			if flags.remove then destroyed = true end
+			if destroyed then
+				card.getting_sliced = true
+				if SMODS.shatters(card) then
+					card.shattered = true
+				else
+					card.destroyed = true
+				end
+				cards_destroyed[#cards_destroyed + 1] = card
+			end
+		end
 	end
-	return ret
 end
