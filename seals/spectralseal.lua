@@ -16,6 +16,7 @@ SMODS.Seal({
                             for _ = 1, to_create do
                                 SMODS.add_card({ set = "Spectral", key_append = "hnds_spectralseal" })
                             end
+                            G.GAME.consumeable_buffer = 0
                             return true
                         end
                     }))
@@ -33,6 +34,7 @@ SMODS.Seal({
                             for _ = 1, to_create do
                                 SMODS.add_card({ set = "Spectral", key_append = "hnds_spectralseal" })
                             end
+                            G.GAME.consumeable_buffer = 0
                             return true
                         end
                     }))
