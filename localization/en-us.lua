@@ -208,6 +208,15 @@ return {
 					"equal to your {C:attention}Ante{}",
 				},
 			},
+			b_hnds_crystal = {
+				name = "Crystal Deck",
+				text = {
+					"Fight a Showdown Blind",
+					"at half of the win ante",
+					"Open an {T:p_hnds_spectral_ultra,C:spectral}Ultra Spectral Pack{}",
+					"when Showdown Blind is beaten"
+				}
+			}
 		},
 		Spectral = {
 			c_hnds_abyss = {
@@ -294,6 +303,16 @@ return {
 					"Creates {C:attention}#1# {C:spectral}Spectral{} cards",
 					"when {C:attention}destroyed",
 					"{C:inactive}(Must have room){}"
+				}
+			},
+			p_hnds_spectral_ultra = {
+				name = "Ultra Spectral Pack",
+				text = {
+					"Choose {C:attention}#1#{} of up to",
+					"{C:attention}#2# {C:spectral}Spectral{} cards to",
+					"be used immediately",
+					"Always contains at least",
+					"one {E:1,C:legendary}hidden consumable"
 				}
 			}
 		},
