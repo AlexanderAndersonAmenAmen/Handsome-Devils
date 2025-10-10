@@ -132,6 +132,7 @@ SMODS.current_mod.calculate = function(self, context)
                 booster.from_tag = true
                 G.FUNCS.use_card({ config = { ref_table = booster } })
                 booster:start_materialize()
+				return true
 			end
 		}))
 	end
