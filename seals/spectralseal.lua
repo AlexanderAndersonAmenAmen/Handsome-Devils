@@ -32,6 +32,7 @@ SMODS.Seal({
                             for _ = 1, to_create do
                                 SMODS.add_card({ set = "Spectral", key_append = "hnds_spectralseal" })
                             end
+                            return true
                         end
                     }))
                 end
