@@ -585,7 +585,11 @@ HNDS.get_next_rarity = function(rarity_key)
 		if HNDS.rarity_cycle[i] == rarity_key then                   --check to find the current rarity, will attempt to find the next existing rarity in the table after
 			found = true
 		elseif found and G.P_JOKER_RARITY_POOLS[HNDS.rarity_cycle[i]] then --check if the current rarity has been found and the table rarity actually exists
-			return HNDS.rarity_cycle[i]
+			local rarity = HNDS.rarity_cycle[i]
+			if rarity == 1 then rarity = "Common" end
+			if rarity == 2 then rarity = "Uncommon" end
+			if rarity == 3 then rarity = "Rare" end
+			if rarity == 4 then rarity = "Legendary" end
 		end
 	end
 	return 1 --default to common when no upgrade found
