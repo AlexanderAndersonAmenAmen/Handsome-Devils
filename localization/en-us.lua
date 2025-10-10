@@ -263,7 +263,7 @@ return {
 				name = "Dream",
 				text = {
 					"Creates {C:attention}10{} random",
-					"{C:attention}Joker Tags{}",
+					"{E:1,C:legendary}Joker Tags{}",
 				},
 			},
 			c_hnds_collision = {
