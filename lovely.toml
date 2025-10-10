@@ -64,33 +64,3 @@ end
 '''
 match_indent = true
 times = 1
-
-# -----------------------------------
-# Crystal Deck
-# -----------------------------------
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = '''
-elseif v.boss.showdown and (G.GAME.round_resets.ante)%G.GAME.win_ante == 0 and G.GAME.round_resets.ante >= 2 then
-'''
-position = "at"
-payload = '''
-elseif v.boss.showdown and ((G.GAME.round_resets.ante)%G.GAME.win_ante == 0 or (G.GAME.modifiers.hnds_double_showdown and G.GAME.round_resets.ante%math.floor(G.GAME.win_ante/2) == 0 )) and G.GAME.round_resets.ante >= 2 then
-'''
-match_indent = true
-times = 1
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = '''
-local _, boss = pseudorandom_element(eligible_bosses, pseudoseed('boss'))
-'''
-position = "before"
-payload = '''
-print(eligible_bosses)
-'''
-match_indent = true
-times = 1
