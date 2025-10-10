@@ -22,12 +22,17 @@ SMODS.Joker{
         if context.individual and context.cardarea == G.play and not context.blueprint then
             if context.other_card:get_id() == G.GAME.current_round.dark_idol.id and
             context.other_card:is_suit(G.GAME.current_round.dark_idol.suit) then
-                card.ability.extra.total = card.ability.extra.total + card.ability.extra.mult
-                card_eval_status_text((context.blueprint_card or card), 'extra', nil, nil, nil, {message = localize{type = 'variable', key = 'a_xmult', vars = {card.ability.extra.total}}})
-                context.other_card.mark_destroy = true
+                SMODS.scale_card(card, {
+                    ref_table = card.ability.extra,
+                    ref_value = "total",
+                    scalar_value = "mult",
+                    message = {
+                        message_key = "a_xmult"
+                    }
+                })
             end
         end
-        if context.destroying_card and context.destroying_card.mark_destroy then
+        if context.destroying_card and context.destroying_card:is_suit(G.GAME.current_round.dark_idol.suit) and context.other_card:get_id() == G.GAME.current_round.dark_idol.id then
             return {
                 remove = true
             }

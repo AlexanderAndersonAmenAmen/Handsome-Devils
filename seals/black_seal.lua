@@ -37,6 +37,7 @@ function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand
 			local destroyed = nil
 			context.destroy_card = card
 			context.cardarea = G.play
+			context.destroying_card = card
 			local flags = SMODS.calculate_context(context)
 			if flags.remove then destroyed = true end
 			if destroyed then
