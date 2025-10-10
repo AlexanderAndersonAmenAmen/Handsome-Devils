@@ -293,7 +293,7 @@ return {
 				text = {
 					"Creates {C:attention}#1# {C:spectral}Spectral{} cards",
 					"when {C:attention}destroyed",
-					"{C:inactive}(Must have room){},
+					"{C:inactive}(Must have room){}"
 				}
 			}
 		},
