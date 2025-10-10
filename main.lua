@@ -208,6 +208,7 @@ local files = {
 	decks = {
 		list = {
 			"premiumdeck",
+			"crystal",
 		},
 		directory = "decks/",
 	},

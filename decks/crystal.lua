@@ -1,6 +1,6 @@
 SMODS.Back {
     key = "crystal",
-    atlas = "extras",
+    atlas = "Extras",
     pos = { x = 1, y = 0 },
     unlocked = true,
     apply = function (self, back)

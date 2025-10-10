@@ -89,5 +89,7 @@ elseif v.boss.showdown and (G.GAME.round_resets.ante)%G.GAME.win_ante == 0 and G
 '''
 position = "at"
 payload = '''
-elseif v.boss.showdown and ((G.GAME.round_resets.ante)%G.GAME.win_ante == 0 or (G.GAME.modifiers.hnds_double_showdown and G.GAME.round_resets%math.floor(G.GAME.win_ante/2) == 0 ) and G.GAME.round_resets.ante >= 2 then
+elseif v.boss.showdown and ((G.GAME.round_resets.ante)%G.GAME.win_ante == 0 or (G.GAME.modifiers.hnds_double_showdown and G.GAME.round_resets.ante%math.floor(G.GAME.win_ante/2) == 0 )) and G.GAME.round_resets.ante >= 2 then
 '''
+match_indent = true
+times = 1
