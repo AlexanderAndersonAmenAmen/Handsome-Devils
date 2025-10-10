@@ -43,7 +43,7 @@ SMODS.Booster { --putting this in the same file for convenience
     create_card = function(self, card, i)
         if i == 1 then
             local options
-            for _, center in G.P_CENTER_POOLS.Spectral do
+            for _, center in G.P_CENTER_POOLS.Consumeables do
                 if center.hidden then options[#options + 1] = center.key end
             end
             return { key = pseudorandom_element(options), key_append = "spe", area = G.pack_cards, skip_materialize = true }
