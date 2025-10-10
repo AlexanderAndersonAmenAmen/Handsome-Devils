@@ -7,10 +7,7 @@ SMODS.Consumable({
 		},
 	},
 	loc_vars = function(self, info_queue, card)
-		for _, tag_key in ipairs(HNDS.get_shop_joker_tags()) do
-			info_queue[#info_queue + 1] =
-				{ key = tag_key, set = "Tag", config = G.P_TAGS[tag_key] and G.P_TAGS[tag_key].config }
-		end
+		info_queue[#info_queue+1] = { set = "Other", key = "hnds_joker_tag_example" }
 		return { vars = { card.ability.extra.max_tags } }
 	end,
 	hidden = true,

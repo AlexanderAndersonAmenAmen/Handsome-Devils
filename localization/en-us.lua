@@ -314,6 +314,13 @@ return {
 					"Contains at least one",
 					"{E:1,C:legendary}Ultra Rare consumable"
 				}
+			},
+			hnds_joker_tag_example = {
+				name = "Joker Tags",
+				text = {
+					"Holographic Tag, Polychrome Tag, Negative Tag",
+					"Foil Tag, Rare Tag, Uncommon Tag, Buffoon Tag, etc."
+				}
 			}
 		},
 		Voucher = {
