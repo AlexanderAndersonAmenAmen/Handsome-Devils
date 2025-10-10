@@ -292,7 +292,8 @@ return {
 				name = "Spectral Seal",
 				text = {
 					"Creates {C:attention}#1# {C:spectral}Spectral{} cards",
-					"when {C:attention}destroyed"
+					"when {C:attention}destroyed",
+					"{C:inactive}(Must have room){},
 				}
 			}
 		},
