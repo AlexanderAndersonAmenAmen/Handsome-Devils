@@ -88,7 +88,7 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	G.GAME.current_round.dark_idol = { suit = 'Spades', rank = 'Ace' }
 	local valid_dark_idol_cards = {}
 	for _, v in ipairs(G.playing_cards) do
-		if not SMODS.has_no_suit(v) then -- Abstracted enhancement check for jokers being able to give cards additional enhancements
+		if not SMODS.has_no_suit(v) and not SMODS.has_no_rank(v) then -- Abstracted enhancement check for jokers being able to give cards additional enhancements
 			valid_dark_idol_cards[#valid_dark_idol_cards + 1] = v
 		end
 	end
