@@ -364,13 +364,13 @@ return {
 			},
 		},
 		Enhanced = {
-			m_hnds_antimatter = {
-				name = "Antimatter Card",
+			m_hnds_aberrant = {
+				name = "Aberrant Card",
 				text = {
-					"{C:green}#1# in #2#{} chance to be {C:red}destroyed",
-					"Stack the effect of the next",
-					"applied enhancement infinitely",
-					"(Currently {C:attention}#3#{}, #4# stacks)",
+					"Gains {C:mult}#1#{} Mult",
+					"while stays in hand",
+					"Destroy this card",
+					"when {C:attention}discarded{}",
 				},
 			},
 			m_hnds_obsidian = {

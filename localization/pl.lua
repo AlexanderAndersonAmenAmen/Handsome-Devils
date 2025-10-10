@@ -242,7 +242,7 @@ return {
 			},
 		},
 		Enhanced = {
-			m_hnds_antimatter = {
+			m_hnds_aberrant = {
 				name = "Karta antymaterii",
 				text = {
 					"Nie można zmienić ulepszenia",

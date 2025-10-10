@@ -3,7 +3,7 @@ SMODS.Consumable({
 	atlas = "Consumables",
 	pos = { x = 3, y = 1 }, --this is just guessing lmao i still need the sprite
 	set = "Spectral",
-	config = { mod_conv = "m_hnds_antimatter", max_highlighted = 2 },
+	config = { mod_conv = "m_hnds_aberrant", max_highlighted = 2 },
 	discovered = true,
 	cost = 4,
 	loc_vars = function(self, info_queue, card)

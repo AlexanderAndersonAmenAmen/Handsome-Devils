@@ -201,7 +201,7 @@ local files = {
 	enhancements = {
 		list = {
 			"obsidian",
-			"antimatter",
+			"aberrant",
 		},
 		directory = "enhancements/",
 	},

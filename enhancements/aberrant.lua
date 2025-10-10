@@ -1,5 +1,5 @@
 SMODS.Enhancement({
-	key = "antimatter",
+	key = "aberrant",
 	atlas = "Extras",
 	pos = { x = 2, y = 0 },
 	config = { extra = { scale = 2, mult = 0 } },
