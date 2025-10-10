@@ -4,6 +4,9 @@ SMODS.Seal({
     atlas = "Extras",
     badge_colour = G.C.SECONDARY_SET.Spectral,
     config = { extra = { cards = 2 } },
+    loc_vars = function (self, info_queue, card)
+        return { vars = { self.config.extra.cards }}
+    end,
     calculate = function(self, card, context)
         if context.remove_playing_cards then
             for _, c in ipairs(context.removed) do

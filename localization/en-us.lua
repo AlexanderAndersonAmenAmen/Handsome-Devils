@@ -288,6 +288,13 @@ return {
 					"after {C:attention}refilling{} your hand"
 				},
 			},
+			hnds_spectralseal_seal = {
+				name = "Spectral Seal",
+				text = {
+					"Creates {C:attention}#1# {C:spectral}Spectral{} cards",
+					"when {C:attention}destroyed"
+				}
+			}
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {
