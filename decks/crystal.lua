@@ -5,6 +5,24 @@ SMODS.Back {
     unlocked = true,
     apply = function(self, back)
         G.GAME.modifiers.hnds_double_showdown = true
+    end,
+    calculate = function(self, back, context)
+        if context.end_of_round and context.main_eval and G.GAME.blind.boss and G.GAME.blind.config.blind.boss.showdown then
+            G.E_MANAGER:add_event(Event({
+                func = function()
+                    local booster = SMODS.create_card { key = "p_hnds_spectral_ultra", area = G.play }
+                    booster.T.x = G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2
+                    booster.T.y = G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2
+                    booster.T.w = G.CARD_W * 1.27
+                    booster.T.h = G.CARD_H * 1.27
+                    booster.cost = 0
+                    booster.from_tag = true
+                    G.FUNCS.use_card({ config = { ref_table = booster } })
+                    booster:start_materialize()
+                    return true
+                end
+            }))
+        end
     end
 }
 
@@ -58,7 +76,7 @@ SMODS.Booster { --putting this in the same file for convenience
             }
         end
     end,
-    in_pool = function (self, args)
+    in_pool = function(self, args)
         return false
     end
 }
