@@ -80,6 +80,7 @@ end
 SMODS.current_mod.reset_game_globals = function(run_start)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
+		G.GAME.hnds_booster_queue = {}
 	end
 	G.GAME.green_seal_draws = {}
 	reset_supersuit_card()
@@ -119,6 +120,15 @@ SMODS.current_mod.calculate = function(self, context)
 	end
 	if context.individual and SMODS.has_enhancement(context.other_card, "m_stone") then
 		G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
+	end
+	if context.starting_shop then
+		for _, booster in ipairs(G.GAME.hnds_booster_queue) do
+			G.E_MANAGER:add_event(Event({
+				func = function ()
+					SMODS.add_booster_to_shop(booster)
+				end
+			}))
+		end
 	end
 end
 
