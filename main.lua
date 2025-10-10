@@ -414,14 +414,6 @@ function HNDS.poll_tag(seed, options, exclusions)
 	return tag
 end
 
---For cross-mod compatibility with Maximus
---Use this function when adding to a joker's value
-if not Card.scale_value then
-	function Card:scale_value(applied_value, scalar)
-		return applied_value + scalar
-	end
-end
-
 function HNDS.dyn_level_up(card, hand, level, chips, mult, instant)
 	level = level or 1
 	chips = chips or G.GAME.hands[hand].l_chips * level
