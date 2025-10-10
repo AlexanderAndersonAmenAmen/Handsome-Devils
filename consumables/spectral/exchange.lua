@@ -3,7 +3,7 @@ SMODS.Consumable({
 	set = "Spectral",
 	config = {
 		extra = {
-			cards = 2,
+			cards = 1,
 			hand_reduction = 1,
 		},
 	},
