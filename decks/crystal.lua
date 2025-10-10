@@ -34,6 +34,7 @@ SMODS.Booster { --putting this in the same file for convenience
     pos = { x = 0, y = 1 },
     atlas = "Extras",
     config = { extra = 5, choose = 2 },
+    group_key = "k_spectral_pack",
     --no_collection = true,
     draw_hand = true,
     loc_vars = function(self, info_queue, card)
