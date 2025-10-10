@@ -57,22 +57,6 @@ times = 1
 [patches.pattern]
 target = "functions/common_events.lua"
 pattern = '''
--- TARGET: main scoring on played cards
-'''
-position = "after"
-payload = '''
-
-if SMODS.has_enhancement(card, "m_stone") then
-    G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
-end
-'''
-match_indent = true
-times = 1
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = '''
 check_and_set_high_score('furthest_ante', G.GAME.round_resets.ante)
 '''
 position = "after"

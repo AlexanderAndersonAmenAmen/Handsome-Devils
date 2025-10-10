@@ -117,6 +117,9 @@ SMODS.current_mod.calculate = function(self, context)
 			end
 		}))
 	end
+	if context.individual and SMODS.has_enhancement(context.other_card, "m_stone") then
+		G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
+	end
 end
 
 --[[---------------------------
