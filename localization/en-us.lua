@@ -318,8 +318,10 @@ return {
 			hnds_joker_tag_example = {
 				name = "Joker Tags",
 				text = {
-					"Holographic Tag, Polychrome Tag, Negative Tag",
-					"Foil Tag, Rare Tag, Uncommon Tag, Buffoon Tag, etc."
+					"{C:dark_edition}Foil{}, {C:dark_edition}Holographic{},",
+					"{C:dark_edition}Polychrome{}, {C:dark_edition}Negative{},",
+					"{C:green}Uncommon{}, {C:red}Rare{},",
+					"{C:attention}Buffoon Tag{}, etc.",
 				}
 			}
 		},
