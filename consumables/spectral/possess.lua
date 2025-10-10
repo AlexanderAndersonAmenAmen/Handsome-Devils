@@ -2,83 +2,85 @@ SMODS.Consumable({
 	key = "possess",
 	name = "Possess",
 	set = "Spectral",
-	config = {
-		extra = {
-			value_multiplier = 4,
-			max_payout = 100,
-		},
-	},
-	loc_vars = function(self, info_queue, card)
-		local value = 0
-		local destroyable_jokers = {}
-		if G.jokers and G.jokers.cards and #G.jokers.cards > 1 then
-			for i = 2, #G.jokers.cards do
-				if not G.jokers.cards[i].ability.eternal then
-					table.insert(destroyable_jokers, G.jokers.cards[i])
-				end
-			end
-		end
-		for k, v in pairs(destroyable_jokers) do
-			value = value + (v.sell_cost * card.ability.extra.value_multiplier)
-		end
-		local modified_max = card.ability.extra.max_payout * (G.GAME.gambler_mod or 1)
-		return { vars = { card.ability.extra.value_multiplier, modified_max, math.min(value, modified_max) } }
-	end,
 	discovered = true,
-	rarity = 4,
 	atlas = "Consumables",
 	pos = { x = 4, y = 0 },
 	cost = 4,
-	use = function(self, card, context, copier)
-		local destroyable_jokers = {}
-		if G.jokers and G.jokers.cards and #G.jokers.cards > 1 then
-			for i = 2, #G.jokers.cards do
-				if not G.jokers.cards[i].ability.eternal then
-					table.insert(destroyable_jokers, G.jokers.cards[i])
-				end
-			end
+	config = { max_highlighted = 1 },
+	loc_vars = function(self, info_queue, card)
+		-- Handle creating a tooltip with set args.
+		info_queue[#info_queue + 1] = G.P_SEALS["hnds_spectralseal"]
+		return {
+			vars = { card.ability.max_highlighted },
+		}
+	end,
+	use = function(self, card, area, copier) --Good enough
+		for i = 1, #G.hand.highlighted do
+			local highlighted = G.hand.highlighted[i]
+			G.E_MANAGER:add_event(Event({
+				func = function()
+					play_sound("tarot1")
+					highlighted:juice_up(0.3, 0.5)
+					return true
+				end,
+			}))
+			G.E_MANAGER:add_event(Event({
+				trigger = "after",
+				delay = 0.1,
+				func = function()
+					if highlighted then
+						highlighted:set_seal("hnds_spectralseal", nil, true)
+					end
+					return true
+				end,
+			}))
 		end
-		local no_sound = false
-		local value = 0
+		delay(0.5)
 		G.E_MANAGER:add_event(Event({
-			trigger = "before",
-			delay = 0.75,
+			trigger = "after",
+			delay = 0.2,
 			func = function()
-				for k, v in pairs(destroyable_jokers) do
-					value = value + (v.sell_cost * card.ability.extra.value_multiplier)
-					v:start_dissolve(nil, no_sound)
-					no_sound = true
-				end
-				return true
-			end,
-		}))
-		G.E_MANAGER:add_event(Event({
-			trigger = "before",
-			delay = 0.4,
-			func = function()
-				ease_dollars(math.min(value, card.ability.extra.max_payout * (G.GAME.gambler_mod or 1)))
+				G.hand:unhighlight_all()
 				return true
 			end,
 		}))
 	end,
 	can_use = function(self, card)
-		if G.jokers and G.jokers.cards and #G.jokers.cards > 1 then
-			--Check that not all jokers that would be destroyed are eternal
-			local all_eternal = true
-			for i = 2, #G.jokers.cards do
-				if not G.jokers.cards[i].ability.eternal then
-					all_eternal = false
-					break
-				end
-			end
-			if not all_eternal then
-				return true
-			end
+		if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] then
+			return true
 		end
-		return false
 	end,
 	force_use = function(self, card, area)
-		card:use_consumeable()
+		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, card.ability.max_highlighted)
+		for i = 1, #cards do
+			local highlighted = cards[i]
+			G.E_MANAGER:add_event(Event({
+				func = function()
+					play_sound("tarot1")
+					highlighted:juice_up(0.3, 0.5)
+					return true
+				end,
+			}))
+			G.E_MANAGER:add_event(Event({
+				trigger = "after",
+				delay = 0.1,
+				func = function()
+					if highlighted then
+						highlighted:set_seal("hnds_spectralseal")
+					end
+					return true
+				end,
+			}))
+		end
+		delay(0.5)
+		G.E_MANAGER:add_event(Event({
+			trigger = "after",
+			delay = 0.2,
+			func = function()
+				G.hand:unhighlight_all()
+				return true
+			end,
+		}))
 	end,
 	demicoloncompat = true,
 })
