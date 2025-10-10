@@ -8,7 +8,7 @@ SMODS.Back {
     end,
     calculate = function(self, back, context)
         if context.end_of_round and context.main_eval and G.GAME.blind.boss and G.GAME.blind.config.blind.boss.showdown then
-            G.GAME.hnds_booster_queue[#G.GAME.hnds_booster_queue+1] = "p_hnds_spectral_ultra"
+            G.GAME.hnds_crystal_queued = true
         end
     end
 }

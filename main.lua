@@ -80,7 +80,6 @@ end
 SMODS.current_mod.reset_game_globals = function(run_start)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
-		G.GAME.hnds_booster_queue = {}
 	end
 	G.GAME.green_seal_draws = {}
 	reset_supersuit_card()
@@ -121,14 +120,20 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.individual and SMODS.has_enhancement(context.other_card, "m_stone") then
 		G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
 	end
-	if context.starting_shop then
-		for _, booster in ipairs(G.GAME.hnds_booster_queue) do
-			G.E_MANAGER:add_event(Event({
-				func = function ()
-					SMODS.add_booster_to_shop(booster)
-				end
-			}))
-		end
+	if context.starting_shop and G.GAME.hnds_crystal_queued then
+		G.E_MANAGER:add_event(Event({
+			func = function ()
+				local booster = SMODS.create_card { key = 'p_hnds_spectral_ultra', area = G.play }
+                booster.T.x = G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2
+                booster.T.y = G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2
+                booster.T.w = G.CARD_W * 1.27
+                booster.T.h = G.CARD_H * 1.27
+                booster.cost = 0
+                booster.from_tag = true
+                G.FUNCS.use_card({ config = { ref_table = booster } })
+                booster:start_materialize()
+			end
+		}))
 	end
 end
 
