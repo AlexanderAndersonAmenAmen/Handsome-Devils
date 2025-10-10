@@ -438,7 +438,7 @@ return {
 		},
 		labels = {
 			hnds_black_seal = "Black Seal",
-			hnds_green_seal = "Green Seal",
+			hnds_spectralseal_seal = "Spectral Seal",
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Stone Ocean",
