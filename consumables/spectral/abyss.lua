@@ -47,13 +47,6 @@ SMODS.Consumable({
 			end,
 		}))
 	end,
-	can_use = function(self, card)
-		if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] then
-			return true
-		else
-			return false
-		end
-	end,
 	force_use = function(self, card, area)
 		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, card.ability.max_highlighted)
 		for i = 1, #cards do
