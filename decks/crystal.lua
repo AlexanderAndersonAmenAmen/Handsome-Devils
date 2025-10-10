@@ -60,7 +60,7 @@ SMODS.Booster { --putting this in the same file for convenience
     end,
     create_card = function(self, card, i)
         if i == 1 then
-            local options
+            local options = {}
             for _, center in ipairs(G.P_CENTER_POOLS.Consumeables) do
                 if center.hidden then options[#options + 1] = center.key end
             end
