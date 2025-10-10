@@ -592,6 +592,7 @@ HNDS.get_next_rarity = function(rarity_key)
 			if rarity == 2 then rarity = "Uncommon" end
 			if rarity == 3 then rarity = "Rare" end
 			if rarity == 4 then rarity = "Legendary" end
+			return rarity
 		end
 	end
 	return 1 --default to common when no upgrade found
