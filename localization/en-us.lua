@@ -367,7 +367,7 @@ return {
 			m_hnds_aberrant = {
 				name = "Aberrant Card",
 				text = {
-					"Gains {C:mult}#1#{} Mult",
+					"Gains {C:mult}+#1#{} Mult",
 					"while stays in hand",
 					"Destroy this card",
 					"when {C:attention}discarded{}",
