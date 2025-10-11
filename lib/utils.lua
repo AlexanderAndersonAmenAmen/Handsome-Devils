@@ -273,7 +273,7 @@ HNDS.blind_souls = { --blind soul jokers list, definitely needs to choose a them
     bl_window = {"j_greedy_joker", "j_rough_gem"},
     bl_manacle = {"j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_merry_andy", "j_stuntman"},
     bl_eye = {"j_sixth_sense", "j_obelisk"},
-    bl_mouth = {"j_card_sharp"},
+    bl_mouth = {"j_card_sharp", "Food"},
     bl_plant = {"j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_faceless", "j_green_joker"},
     bl_serpent = {"j_hnds_head_of_medusa"},
     bl_pillar = {"j_obelisk"},
@@ -289,13 +289,13 @@ HNDS.blind_souls = { --blind soul jokers list, definitely needs to choose a them
     bl_final_bell = {"j_sixth_sense", "j_sixth_sense", "j_dna", "j_dna", "j_dna", "j_idol", "j_idol", "j_idol"}
 }
 
-for _, center in ipairs(G.P_CENTER_POOLS.Food) do
-	HNDS.blind_souls.bl_mouth[#HNDS.blind_souls.bl_mouth+1] = center.key
-end
-
 HNDS.get_blind_soul = function (blind, seed) --G.GAME.blind should go in here
 	local soul_opts = blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] or {"j_joker"} --allow other mods to define their own blind souls
-    return pseudorandom_element(soul_opts, seed) or "j_joker" --in case someone has an exmpty list of souls for whatever reason
+    ret = pseudorandom_element(soul_opts, seed) or "j_joker" --in case someone has an exmpty list of souls for whatever reason
+	if G.P_CENTER_POOLS[ret] then
+		ret = pseudorandom_element(G.P_CENTER_POOLS[ret]).key
+	end
+	return ret
 end
 
 function reset_supersuit_card()
