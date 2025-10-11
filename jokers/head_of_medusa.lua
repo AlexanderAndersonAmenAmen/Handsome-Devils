@@ -2,13 +2,13 @@ SMODS.Joker({
 	key = "head_of_medusa",
 	config = {
 		extra = {
-			x_mult = 1,
+			x_chips = 1,
 			scaling = 0.1,
 		},
 	},
 	rarity = 2,
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.x_mult, card.ability.extra.scaling } }
+		return { vars = { card.ability.extra.x_chips, card.ability.extra.scaling } }
 	end,
 	atlas = "Jokers",
 	pos = { x = 6, y = 0 },
@@ -20,56 +20,65 @@ SMODS.Joker({
 	eternal_compat = true,
 	perishable_compat = false,
 	calculate = function(self, card, context)
-		if context.before and not context.blueprint then
-			local faces = 0
-			for k, v in ipairs(context.scoring_hand) do
-				if v:is_face() then
-					faces = faces + 1
-					v.hnds_petrifying = true
-					v:set_ability(G.P_CENTERS.m_stone, nil, true)
-					G.E_MANAGER:add_event(Event({
-						func = function()
-							v:juice_up()
-							v.hnds_petrifying = nil
-							return true
-						end,
-					}))
+		if context.end_of_round and context.individual and context.other_card:is_face() then
+			context.other_card.hnds_petrifying = true
+			G.E_MANAGER:add_event(Event({
+				func = function()
+					context.other_card:set_ability("m_stone", nil, true)
+					context.other_card.hnds_petrifying = nil
+					context.other_card:juice_up()
 				end
-			end
-			if faces > 0 then
-				SMODS.scale_card(card, {
-					ref_table = card.ability.extra,
-					ref_value = "x_mult",
-					scalar_value = "scaling",
-					operation = function(ref_table, ref_value, initial, change)
-						ref_table[ref_value] = initial + faces * change
-					end,
-					scaling_message = {
-						message_key = "k_hnds_petrified",
-						colour = G.C.GREY,
-					},
-				})
-			end
-		end
-		if context.forcetrigger then
+			}))
 			SMODS.scale_card(card, {
 				ref_table = card.ability.extra,
-				ref_value = "x_mult",
+				ref_value = "x_chips",
 				scalar_value = "scaling",
 				scaling_message = {
 					message_key = "k_hnds_petrified",
-					colour = G.C.GREY,
-				},
+					colour = G.C.GREY
+				}
 			})
+		end
+		if context.forcetrigger then
+			if G.hand and #G.hand.cards > 0 then
+				local faces = 0
+				for _, c in ipairs(G.hand.cards) do
+					if c:is_face() then
+						c.hnds_petrifying = true
+						faces = faces + 1
+						G.E_MANAGER:add_event(Event({
+							func = function()
+								c:set_ability("m_stone", nil, true)
+								c.hnds_petrifying = nil
+								c:juice_up()
+							end
+						}))
+					end
+				end
+				if faces > 0 then
+					SMODS.scale_card(card, {
+						ref_table = card.ability.extra,
+						ref_value = "x_chips",
+						scalar_value = "scaling",
+						scaling_message = {
+							message_key = "k_hnds_petrified",
+							colour = G.C.GREY
+						},
+						operation = function (ref_table, ref_value, initial, change)
+							ref_table[ref_value] = initial + faces*change
+						end
+					})
+				end
+			end
 			return {
-				xmult = card.ability.extra.x_mult,
+				xchips = card.ability.extra.x_chips,
 			}
 		end
 
 		--Scoring
 		if context.joker_main and context.cardarea == G.jokers then
 			return {
-				xmult = card.ability.extra.x_mult,
+				xchips = card.ability.extra.x_chips,
 			}
 		end
 	end,
