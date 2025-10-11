@@ -328,8 +328,9 @@ return {
 			hnds_black_seal = {
 				name = "Black Seal",
 				text = {
-					"Counts in scoring",
-					"if {C:attention}held{} in hand",
+					"Counts in {C:attention}scoring{}",
+					"while this card",
+					"stays in hand",
 				},
 			},
 			hnds_spectralseal_seal = {
