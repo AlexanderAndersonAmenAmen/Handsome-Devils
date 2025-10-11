@@ -165,6 +165,7 @@ local files = {
 			"energized",
 			"handsome",
 			"art",
+			"pennywise",
 		},
 		directory = "jokers/",
 	},
