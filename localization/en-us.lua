@@ -362,7 +362,7 @@ return {
 			},
 			hnds_soul = {
 				name = "Soul",
-				text = "Created by {C:legendary,E:1}Pennywise"
+				text = {"Created by {C:legendary,E:1}Pennywise"}
 			}
 		},
 		Voucher = {
