@@ -19,11 +19,11 @@ SMODS.Joker {
         if (context.end_of_round and context.beat_boss and context.main_eval) or (context.forcetrigger and G.GAME.blind) then
             G.E_MANAGER:add_event(Event({
                 func = function ()
-                    SMODS.add_card({
+                    local c = SMODS.add_card({
                         edition = 'e_negative',
                         key = HNDS.get_blind_soul(G.GAME.blind),
-                        stickers = { "hnds_soul" }
                     })
+                    c.ability.hnds_soul = true
                     return true
                 end
             }))
