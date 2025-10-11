@@ -280,6 +280,15 @@ return {
 					"to {C:dark_edition}#2#s",
 				},
 			},
+			c_hnds_spectrum = {
+				name = "Spectrum",
+				text = {
+					"Gives each card in",
+					"your hand a random",
+					"{C:attention}Enhancement{} and {C:attention}Seal",
+					"{s:0.9,C:inactive}(Mult and Bonus excluded)"
+				}
+			}
 		},
 		Other = {
 			hnds_black_seal = {
@@ -386,6 +395,20 @@ return {
 					"in the shop",
 				},
 			},
+			v_hnds_soaked = {
+				name = "Soaked and Wet",
+				text = {
+					"Leftmost card {C:attention}held in hand",
+					"counts in scoring"
+				}
+			},
+			v_hnds_beyond = {
+				name = "Go Beyond",
+				text = {
+					"Rightmost card {C:attention}held in hand",
+					"counts in scoring"
+				}
+			}
 		},
 		Planet = {
 			c_hnds_makemake = {

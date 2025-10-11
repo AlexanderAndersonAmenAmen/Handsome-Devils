@@ -165,6 +165,7 @@ local files = {
 			"dream",
 			"gateway",
 			"collision",
+			"spectrum",
 		},
 		directory = "consumables/spectral/",
 	},
