@@ -22,11 +22,12 @@ SMODS.Joker({
 	calculate = function(self, card, context)
 		if context.end_of_round and context.individual and context.other_card:is_face() then
 			context.other_card.hnds_petrifying = true
+			local c = context.other_card
 			G.E_MANAGER:add_event(Event({
 				func = function()
-					context.other_card:set_ability("m_stone", nil, true)
-					context.other_card.hnds_petrifying = nil
-					context.other_card:juice_up()
+					c:set_ability("m_stone", nil, true)
+					c.hnds_petrifying = nil
+					c:juice_up()
 				end
 			}))
 			SMODS.scale_card(card, {

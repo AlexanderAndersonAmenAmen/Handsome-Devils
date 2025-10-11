@@ -24,6 +24,7 @@ SMODS.Joker {
                         key = HNDS.get_blind_soul(G.GAME.blind),
                         sitckers = { "hnds_soul" }
                     })
+                    return true
                 end
             }))
         end
