@@ -6,7 +6,7 @@ SMODS.Voucher {
     unlocked = true,
     discovered = true,
     calculate = function (self, card, context)
-        if context.individual and context.other_card == G.hand.cards[1] then
+        if context.individual and context.other_card == G.hand.cards[1] and context.cardarea == G.hand then
             local new_context = {}
             for k,v in pairs(context) do
                 new_context[k] = v

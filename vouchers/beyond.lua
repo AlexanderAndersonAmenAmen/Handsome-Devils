@@ -7,7 +7,7 @@ SMODS.Voucher {
     discovered = true,
     requires = { "v_hnds_soaked" },
     calculate = function (self, card, context)
-        if context.individual and context.other_card == G.hand.cards[#G.hand.cards] then
+        if context.individual and context.other_card == G.hand.cards[#G.hand.cards] and context.cardarea == G.hand then
             local new_context = {}
             for k,v in pairs(context) do
                 new_context[k] = v
