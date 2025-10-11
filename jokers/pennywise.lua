@@ -22,7 +22,7 @@ SMODS.Joker {
                     SMODS.add_card({
                         edition = 'e_negative',
                         key = HNDS.get_blind_soul(G.GAME.blind),
-                        sitckers = { "hnds_soul" }
+                        stickers = { "hnds_soul" }
                     })
                     return true
                 end
