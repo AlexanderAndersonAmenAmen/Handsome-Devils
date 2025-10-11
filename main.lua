@@ -178,6 +178,8 @@ local files = {
 			"top_shelf",
 			"extra_filling",
 			"wholesale",
+			"soaked",
+			"beyond",
 		},
 		directory = "vouchers/",
 	},

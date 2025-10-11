@@ -1,6 +1,6 @@
 --black seal and such card destruction hook
 HNDS.should_hand_destroy = function (card)
-	return card.seal == "hnds_black"
+	return card.seal == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or (G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
 end
 
 local destroy_cards_ref = SMODS.calculate_destroying_cards
