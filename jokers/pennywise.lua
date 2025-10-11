@@ -21,7 +21,7 @@ SMODS.Joker {
                 func = function ()
                     local c = SMODS.add_card({
                         edition = 'e_negative',
-                        key = HNDS.get_blind_soul(G.GAME.blind),
+                        key = HNDS.get_blind_soul(G.GAME.blind, "hnds_pennywise"),
                     })
                     c.ability.hnds_soul = true
                     return true

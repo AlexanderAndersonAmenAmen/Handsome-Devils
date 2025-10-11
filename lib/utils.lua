@@ -259,35 +259,43 @@ HNDS.get_next_rarity = function(rarity_key)
 end
 
 HNDS.blind_souls = { --blind soul jokers list, definitely needs to choose a theming (similar to blind effect or related to blind name)
-    bl_hook = "j_drunkard",
-    bl_ox = "j_matador",
-    bl_house = "j_burnt",
-    bl_wall = "j_stone",
-    bl_wheel = "j_8_ball",
-    bl_arm = "j_juggler",
-    bl_club = "j_onyx_agate",
-    bl_water = "j_splash",
-    bl_window = "j_rough_gem",
-    bl_manacle = "j_burglar",
-    bl_eye = "j_obelisk",
-    bl_mouth = "j_card_sharp",
-    bl_plant = "j_flower_pot",
-    bl_serpent = "j_hnds_head_of_medusa",
-    bl_pillar = "j_obelisk",
-    bl_needle = "j_dna",
-    bl_head = "j_bloodstone",
-    bl_tooth = "j_hnds_coffee_break",
-    bl_flint = "j_campfire",
-    bl_mark = "j_photograph",
-    bl_final_acorn = "j_wee",
-    bl_final_leaf = "j_invisible",
-    bl_final_vessel = "j_four_fingers",
-    bl_final_heart = "j_bloodstone",
-    bl_final_bell = "j_idol"
+    bl_hook = {"j_drunkard"},
+    bl_ox = {"j_matador"},
+    bl_house = {"j_burnt", "j_family"},
+    bl_wall = {"j_stone", "j_marble", "j_castle", "j_ancient", "j_bloodstone"},
+    bl_wheel = {"j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel"},
+    bl_arm = {"j_juggler"},
+    bl_club = {"j_gluttenous_joker", "j_blackboard", "j_onyx_agate", "j_seeing_double"},
+    bl_fish = {"j_splash", "j_lucky_cat", "j_lucky_cat", "j_lucky_cat"},
+	bl_psychic = {"j_sixth_sense", "j_seance"},
+	bl_goad = {"j_wrathful_joker", "j_blackboard", "j_arrowhead"},
+	bl_water = {"j_splash", "j_splash", "j_splash", "j_burglar"},
+    bl_window = {"j_greedy_joker", "j_rough_gem"},
+    bl_manacle = {"j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_merry_andy", "j_stuntman"},
+    bl_eye = {"j_sixth_sense", "j_obelisk"},
+    bl_mouth = {"j_card_sharp"},
+    bl_plant = {"j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_faceless", "j_green_joker"},
+    bl_serpent = {"j_hnds_head_of_medusa"},
+    bl_pillar = {"j_obelisk"},
+    bl_needle = {"j_sixth_sense", "j_dna"},
+    bl_head = {"j_lusty_joker", "j_bloodstone"},
+    bl_tooth = {"j_hnds_coffee_break"},
+    bl_flint = {"j_campfire", "j_campfire", "j_campfire", "j_hiker"},
+    bl_mark = {"j_smiley", "j_scary_face", "j_photograph", "j_pareidolia", "j_sock_and_buskin"},
+    bl_final_acorn = {"j_half", "j_wee", "j_wee", "j_wee", "j_wee", "j_wee", "j_wee", "j_square"},
+    bl_final_leaf = {"j_luchador", "j_diet_cola", "j_invisible", "j_invisible", "j_invisible", "j_invisible", "j_invisible", "j_invisible"},
+    bl_final_vessel = {"j_four_fingers", "j_8_ball", "j_sixth_sense", "j_fortune_teller"},
+    bl_final_heart = {"j_lusty_joker", "j_bloodstone", "j_bloodstone", "j_bloodstone"},
+    bl_final_bell = {"j_sixth_sense", "j_sixth_sense", "j_dna", "j_dna", "j_dna", "j_idol", "j_idol", "j_idol"}
 }
 
-HNDS.get_blind_soul = function (blind) --G.GAME.blind should go in here
-    return blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] or "j_joker" --allow other mods to define their own blind souls
+for _, center in pairs(G.P_CENTER_POOLS.Food) do
+	HNDS.blind_souls.bl_mouth[#HNDS.blind_souls.bl_mouth+1] = center.key
+end
+
+HNDS.get_blind_soul = function (blind, seed) --G.GAME.blind should go in here
+	local soul_opts = blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] or {"j_joker"} --allow other mods to define their own blind souls
+    return pseudorandom_element(soul_opts, seed) or "j_joker" --in case someone has an exmpty list of souls for whatever reason
 end
 
 function reset_supersuit_card()
