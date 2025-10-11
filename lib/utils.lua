@@ -247,28 +247,14 @@ function HNDS.get_shop_joker_tags()
 end
 
 HNDS.rarity_cycle = {
-	1,
-	2,
-	3,
-	"val_renowned",
-	"cry_epic",
-	4,
-	"entr_reverse_legendary",
-	"valk_exquisite",
-	"cry_exotic", --maybe a bit unbalanced youre playing cryptid already anyway so :shrug:
-	"entr_entropic",
-	"valk_prestigious",
-	"ast_empyrean"
+	Common = "Uncommon",
+	Uncommon = "Rare",
+	Rare = next(SMODS.find_mod("Cryptid")) and "cry_epic" or "Legendary",
+	Legendary = "Common"
 }
 
 HNDS.get_next_rarity = function(rarity_key)
-	local r = nil
-	for i = 1, #HNDS.rarity_cycle do
-		if HNDS.rarity_cycle[i] == rarity_key then                   --check to find the current rarity, will attempt to find the next existing rarity in the table after
-			r = i+1
-		end
-	end
-	return G.P_JOKER_RARITY_POOLS[r] and r or 1
+	return HNDS.rarity_cycle[rarity_key]
 end
 
 HNDS.blind_souls = { --blind soul jokers list, definitely needs to choose a theming (similar to blind effect or related to blind name)

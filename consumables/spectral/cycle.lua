@@ -15,12 +15,16 @@ SMODS.Consumable({
 		end
 		if #available > 0 then
 			local joker = pseudorandom_element(available)
-			local rarity = HNDS.get_next_rarity(joker.config.center.rarity)
+			local rarity = joker.config.center.rarity
+			if rarity == 1 then rarity = "Common" end
+			if rarity == 2 then rarity = "Uncommon" end
+			if rarity == 3 then rarity = "Rare" end
+			if rarity == 4 then rarity = "Legendary" end
 			G.E_MANAGER:add_event(Event({
 				func = function()
 					SMODS.add_card({
 						set = "Joker",
-						rarity = rarity
+						rarity = HNDS.get_next_rarity(rarity)
 					})
 					SMODS.destroy_cards(joker)
 					return true
