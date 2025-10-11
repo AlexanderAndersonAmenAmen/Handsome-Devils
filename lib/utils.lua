@@ -271,6 +271,37 @@ HNDS.get_next_rarity = function(rarity_key)
 	return G.P_JOKER_RARITY_POOLS[r] and r or 1
 end
 
+HNDS.blind_souls = { --blind soul jokers list, definitely needs to choose a theming (similar to blind effect or related to blind name)
+    bl_hook = "j_drunkard",
+    bl_ox = "j_matador",
+    bl_house = "j_burnt",
+    bl_wall = "j_stone",
+    bl_wheel = "j_8_ball",
+    bl_arm = "j_juggler",
+    bl_club = "j_onyx_agate",
+    bl_water = "j_splash",
+    bl_window = "j_rough_gem",
+    bl_manacle = "j_burglar",
+    bl_eye = "j_obelisk",
+    bl_mouth = "j_card_sharp",
+    bl_plant = "j_flower_pot",
+    bl_serpent = "j_hnds_head_of_medusa",
+    bl_pillar = "j_obelisk",
+    bl_needle = "j_dna",
+    bl_head = "j_bloodstone",
+    bl_tooth = "j_hnds_coffee_break",
+    bl_flint = "j_campfire",
+    bl_mark = "j_photograph",
+    bl_final_acorn = "j_wee",
+    bl_final_leaf = "j_invisible",
+    bl_final_vessel = "j_four_fingers",
+    bl_final_heart = "j_bloodstone",
+    bl_final_bell = "j_idol"
+}
+
+HNDS.get_blind_soul = function (blind) --G.GAME.blind should go in here
+    return blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] --allow other mods to define their own blind souls
+end
 
 function reset_supersuit_card()
 	local supersuit_suits = {}
