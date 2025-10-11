@@ -121,10 +121,10 @@ SMODS.current_mod.calculate = function(self, context)
 					key = "j_hnds_art",
 					no_edition = true,
 				})
-				G.pack_cards:change_size(1)
 				return true
 			end
 		}))
+		G.GAME.art_queue = G.GAME.art_queue - 1
 	end
 end
 
