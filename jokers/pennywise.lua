@@ -16,7 +16,7 @@ SMODS.Joker {
         info_queue[#info_queue+1] = G.P_CENTERS.e_negative
     end,
     calculate = function (self, card, context)
-        if (context.end_of_round and context.beat_boss) or (context.forcetrigger and G.GAME.blind) then
+        if (context.end_of_round and context.beat_boss and context.main_eval) or (context.forcetrigger and G.GAME.blind) then
             G.E_MANAGER:add_event(Event({
                 func = function ()
                     SMODS.add_card({
