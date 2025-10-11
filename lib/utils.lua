@@ -258,12 +258,12 @@ HNDS.get_next_rarity = function(rarity_key)
 	return HNDS.rarity_cycle[rarity_key]
 end
 
-HNDS.blind_souls = { --blind soul jokers list, definitely needs to choose a theming (similar to blind effect or related to blind name)
+HNDS.blind_souls = {
     bl_hook = {"j_drunkard"},
     bl_ox = {"j_matador"},
     bl_house = {"j_burnt", "j_family"},
     bl_wall = {"j_stone", "j_marble", "j_castle", "j_ancient", "j_bloodstone"},
-    bl_wheel = {"j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel"},
+    bl_wheel = {"j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel", "j_hnds_banana_split", "j_hnds_energized", "j_hnds_jackpot", "j_hnds_ms_fortune", "j_oops"},
     bl_arm = {"j_juggler"},
     bl_club = {"j_gluttenous_joker", "j_blackboard", "j_onyx_agate", "j_seeing_double"},
     bl_fish = {"j_splash", "j_lucky_cat", "j_lucky_cat", "j_lucky_cat"},
