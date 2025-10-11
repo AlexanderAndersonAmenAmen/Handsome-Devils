@@ -120,6 +120,7 @@ SMODS.current_mod.calculate = function(self, context)
 					area = G.pack_cards,
 					key = "j_hnds_art"
 				})
+				return true
 			end
 		}))
 	end
