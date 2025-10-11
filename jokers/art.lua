@@ -5,7 +5,7 @@ SMODS.Joker {
     rarity = 4,
     cost = 20,
     atlas = "Jokers",
-    pos = { x = 5, y = 2 },
+    pos = { x = 6, y = 2 },
     soul_pos = { x = 1, y = 3 },
     config = { extra = { tags = 3 } },
     loc_vars = function (self, info_queue, card)
@@ -19,6 +19,7 @@ SMODS.Joker {
                         add_tag(HNDS.poll_tag("_hnds_art"))
                         play_sound("generic1", 0.9 + math.random() * 0.1, 0.8)
                         play_sound('holo1', 1.2 + math.random() * 0.1, 0.4)
+                        return true
                     end
                 }))
             end
