@@ -157,6 +157,8 @@ local files = {
 			"perfectionist",
 			"krusty",
 			"energized",
+			"handsome",
+			"art",
 		},
 		directory = "jokers/",
 	},
