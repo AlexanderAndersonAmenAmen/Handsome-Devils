@@ -72,6 +72,7 @@ SMODS.Consumable {
                     enh_options[i] = "UNAVAILABLE"
                 end
             end
+            print(enh_options)
             G.E_MANAGER:add_event(Event({
                 trigger = 'after',
                 delay = 0.4,

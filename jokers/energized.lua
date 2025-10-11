@@ -17,7 +17,7 @@ SMODS.Joker {
                 repetitions = card.ability.extra.reps
             }
         end
-        if context.destroy_card and #G.play.cards == 1 and context.destroy_card == G.play.cards[1] and not context.blueprint and SMODS.pseudorandom_probability(card, "hnds_energized", 1, card.ability.extra.odds) then
+        if context.destroy_card and #context.full_hand == 1 and context.destroy_card == context.full_hand[1] and not context.blueprint and SMODS.pseudorandom_probability(card, "hnds_energized", 1, card.ability.extra.odds) then
             return {
                 remove = true
             }

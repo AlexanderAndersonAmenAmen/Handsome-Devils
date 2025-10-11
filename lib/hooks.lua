@@ -9,11 +9,16 @@ function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand
 	for i, card in ipairs(G.hand.cards) do
 		if HNDS.should_hand_destroy(card) then
 			local destroyed = nil
-			context.destroy_card = card
-			context.cardarea = G.play
-			context.destroying_card = card
-            context.hnds_hand_trigger = true
-			local flags = SMODS.calculate_context(context)
+			local new_context = {}
+			for k,v in pairs(context) do
+				new_context[k] = v
+			end
+			new_context.destroy_card = card
+			new_context.cardarea = G.play
+			new_context.destroying_card = card
+            new_context.hnds_hand_trigger = true
+			new_context.full_hand = G.hand.cards
+			local flags = SMODS.calculate_context(new_context)
 			if flags.remove then destroyed = true end
 			if destroyed then
 				card.getting_sliced = true
