@@ -118,8 +118,10 @@ SMODS.current_mod.calculate = function(self, context)
 			func = function ()
 				SMODS.add_card({
 					area = G.pack_cards,
-					key = "j_hnds_art"
+					key = "j_hnds_art",
+					no_edition = true,
 				})
+				G.pack_cards:change_size(1)
 				return true
 			end
 		}))
