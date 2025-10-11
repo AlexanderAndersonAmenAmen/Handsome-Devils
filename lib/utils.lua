@@ -289,6 +289,12 @@ HNDS.blind_souls = {
     bl_final_bell = {"j_sixth_sense", "j_sixth_sense", "j_dna", "j_dna", "j_dna", "j_idol", "j_idol", "j_idol"}
 }
 
+if next(SMODS.find_mod("Entropy")) then
+	for _ = 1, 3 do
+		HNDS.blind_souls.bl_wheel[#HNDS.blind_souls.bl_wheel+1] = "Dice" --add a roughly 25% chance for a dice joker with entropy
+	end
+end
+
 HNDS.get_blind_soul = function (blind, seed) --G.GAME.blind should go in here
 	local soul_opts = blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] or {"j_joker"} --allow other mods to define their own blind souls
     ret = pseudorandom_element(soul_opts, seed) or "j_joker" --in case someone has an exmpty list of souls for whatever reason
