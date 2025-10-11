@@ -220,6 +220,15 @@ return {
 					"Retrigger all",
 					"cards with {C:dark_edition}editions",
 				}
+			},
+			j_hnds_art = {
+				name = "Art the Clown",
+				text = {
+					"Sell this card to",
+					"add a copy of it to your",
+					"next {C:attention}Booster Pack{} and",
+					"create {C:attention}#1#{} random {C:attention}Tags"
+				}
 			}
 		},
 		Back = {

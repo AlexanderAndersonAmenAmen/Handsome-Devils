@@ -324,6 +324,7 @@ end
 SMODS.current_mod.reset_game_globals = function(run_start)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
+		G.GAME.art_queue = 0
 	end
 	G.GAME.green_seal_draws = {}
 	reset_supersuit_card()

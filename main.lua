@@ -113,6 +113,13 @@ SMODS.current_mod.calculate = function(self, context)
 		}))
 		G.GAME.hnds_crystal_queued = nil
 	end
+	if context.setting_ability and G.pack_cards and context.other_card == G.pack_cards.cards[1] and not context.old then
+		context.other_card:set_ability("j_hnds_art")
+		for _, sticker in pairs(SMODS.Stickers) do
+			sticker:apply(context.other_card, nil)
+		end
+		context.other_card:set_edition()
+	end
 end
 
 SMODS.current_mod.optional_features = {
