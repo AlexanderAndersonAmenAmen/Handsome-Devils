@@ -210,8 +210,8 @@ return {
 				name = "Pennywise",
 				text = {
 					"When {C:attention}Boss Blind{} is defeated",
-					"gain its {C:attention}Soul{} in the form of a",
-					"special {C:dark_edition}Negative {C:attention}Joker",
+					"gain its {C:attention}Soul{} in the form",
+					"of a special {C:dark_edition}Negative {C:attention}Joker",
 					"Retrigger your {C:attention}Souls"
 				}
 			},
@@ -219,14 +219,14 @@ return {
 				name = "Handsome Devil",
 				text = {
 					"Retrigger all",
-					"cards with {C:dark_edition}editions",
+					"cards with {C:dark_edition}Editions",
 				}
 			},
 			j_hnds_art = {
 				name = "Art the Clown",
 				text = {
-					"Sell this card to",
-					"add a copy of it to your",
+					"Sell this card to add",
+					"a copy of it to your",
 					"next {C:attention}Booster Pack{} and",
 					"create {C:attention}#1#{} random {C:attention}Tags"
 				}
