@@ -259,29 +259,29 @@ HNDS.get_next_rarity = function(rarity_key)
 end
 
 HNDS.blind_souls = {
-    bl_hook = {"j_drunkard"},
-    bl_ox = {"j_matador"},
-    bl_house = {"j_burnt", "j_family"},
-    bl_wall = {"j_stone", "j_marble", "j_castle", "j_ancient", "j_bloodstone"},
-    bl_wheel = {"j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel", "j_hnds_banana_split", "j_hnds_energized", "j_hnds_jackpot", "j_hnds_ms_fortune", "j_oops"},
-    bl_arm = {"j_juggler"},
-    bl_club = {"j_gluttenous_joker", "j_blackboard", "j_onyx_agate", "j_seeing_double"},
-    bl_fish = {"j_splash", "j_lucky_cat", "j_lucky_cat", "j_lucky_cat"},
-	bl_psychic = {"j_sixth_sense", "j_seance"},
-	bl_goad = {"j_wrathful_joker", "j_blackboard", "j_arrowhead"},
-	bl_water = {"j_splash", "j_splash", "j_splash", "j_burglar"},
-    bl_window = {"j_greedy_joker", "j_rough_gem"},
-    bl_manacle = {"j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_merry_andy", "j_stuntman"},
-    bl_eye = {"j_sixth_sense", "j_obelisk"},
-    bl_mouth = {"j_card_sharp", "Food"},
-    bl_plant = {"j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_faceless", "j_green_joker"},
-    bl_serpent = {"j_hnds_head_of_medusa"},
-    bl_pillar = {"j_obelisk"},
-    bl_needle = {"j_sixth_sense", "j_dna"},
-    bl_head = {"j_lusty_joker", "j_bloodstone"},
-    bl_tooth = {"j_hnds_coffee_break"},
-    bl_flint = {"j_campfire", "j_campfire", "j_campfire", "j_hiker"},
-    bl_mark = {"j_smiley", "j_scary_face", "j_photograph", "j_pareidolia", "j_sock_and_buskin"},
+    bl_hook = {"j_drunkard", next(SMODS.find_mod("GrabBag")) and "j_gb_hook" or nil},
+    bl_ox = {"j_matador", next(SMODS.find_mod("GrabBag")) and "j_gb_ox" or nil},
+    bl_house = {"j_burnt", "j_family", next(SMODS.find_mod("GrabBag")) and "j_gb_house" or nil},
+    bl_wall = {"j_stone", "j_marble", "j_castle", "j_ancient", "j_bloodstone", next(SMODS.find_mod("GrabBag")) and "j_gb_wall" or nil},
+    bl_wheel = {"j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel", "j_hnds_banana_split", "j_hnds_energized", "j_hnds_jackpot", "j_hnds_ms_fortune", "j_oops", next(SMODS.find_mod("GrabBag")) and "j_gb_wheel" or nil},
+    bl_arm = {"j_juggler", next(SMODS.find_mod("GrabBag")) and "j_gb_arm" or nil},
+    bl_club = {"j_gluttenous_joker", "j_blackboard", "j_onyx_agate", "j_seeing_double", next(SMODS.find_mod("GrabBag")) and "j_gb_club" or nil},
+    bl_fish = {"j_splash", "j_lucky_cat", "j_lucky_cat", "j_lucky_cat", next(SMODS.find_mod("GrabBag")) and "j_gb_fish" or nil},
+	bl_psychic = {"j_sixth_sense", "j_seance", next(SMODS.find_mod("GrabBag")) and "j_gb_psychic" or nil},
+	bl_goad = {"j_wrathful_joker", "j_blackboard", "j_arrowhead", next(SMODS.find_mod("GrabBag")) and "j_gb_goad" or nil},
+	bl_water = {"j_splash", "j_splash", "j_splash", "j_burglar", next(SMODS.find_mod("GrabBag")) and "j_gb_water" or nil},
+    bl_window = {"j_greedy_joker", "j_rough_gem", next(SMODS.find_mod("GrabBag")) and "j_gb_window" or nil},
+    bl_manacle = {"j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_merry_andy", "j_stuntman", next(SMODS.find_mod("GrabBag")) and "j_gb_manacle" or nil},
+    bl_eye = {"j_sixth_sense", "j_obelisk", next(SMODS.find_mod("GrabBag")) and "j_gb_eye" or nil},
+    bl_mouth = {"j_card_sharp", "Food", next(SMODS.find_mod("GrabBag")) and "j_gb_mouth" or nil},
+    bl_plant = {"j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_faceless", "j_green_joker", next(SMODS.find_mod("GrabBag")) and "j_gb_plant" or nil},
+    bl_serpent = {"j_hnds_head_of_medusa", next(SMODS.find_mod("GrabBag")) and "j_gb_serpent" or nil},
+    bl_pillar = {"j_obelisk", next(SMODS.find_mod("GrabBag")) and "j_gb_pillar" or nil},
+    bl_needle = {"j_sixth_sense", "j_dna", next(SMODS.find_mod("GrabBag")) and "j_gb_needle" or nil},
+    bl_head = {"j_lusty_joker", "j_bloodstone", next(SMODS.find_mod("GrabBag")) and "j_gb_head" or nil},
+    bl_tooth = {"j_hnds_coffee_break", next(SMODS.find_mod("GrabBag")) and "j_gb_tooth" or nil},
+    bl_flint = {"j_campfire", "j_campfire", "j_campfire", "j_hiker", next(SMODS.find_mod("GrabBag")) and "j_gb_flint" or nil},
+    bl_mark = {"j_smiley", "j_scary_face", "j_photograph", "j_pareidolia", "j_sock_and_buskin", next(SMODS.find_mod("GrabBag")) and "j_gb_mark" or nil},
     bl_final_acorn = {"j_half", "j_wee", "j_wee", "j_wee", "j_wee", "j_wee", "j_wee", "j_square"},
     bl_final_leaf = {"j_luchador", "j_diet_cola", "j_invisible", "j_invisible", "j_invisible", "j_invisible", "j_invisible", "j_invisible"},
     bl_final_vessel = {"j_four_fingers", "j_8_ball", "j_sixth_sense", "j_fortune_teller"},
@@ -290,7 +290,7 @@ HNDS.blind_souls = {
 }
 
 if next(SMODS.find_mod("Entropy")) then
-	for _ = 1, 3 do
+	for _ = 1, 4 do
 		HNDS.blind_souls.bl_wheel[#HNDS.blind_souls.bl_wheel+1] = "Dice" --add a roughly 25% chance for a dice joker with entropy
 	end
 end
