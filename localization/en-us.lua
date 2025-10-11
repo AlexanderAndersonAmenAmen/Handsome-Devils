@@ -204,6 +204,15 @@ return {
 					"retriggers it {C:attention}#3#{} additional times",
 					"{C:green}#1# in #2#{} chance to {C:red}destroy it"
 				}
+			},
+			j_hnds_pennywise = {
+				name = "Pennywise",
+				text = {
+					"When {C:attention}Boss Blind{} is defeated",
+					"gain its {C:attention}Soul{} in the form of a",
+					"special {C:dark_edition}Negative {C:attention}Joker",
+					"Retrigger your {C:attention}Souls"
+				}
 			}
 		},
 		Back = {

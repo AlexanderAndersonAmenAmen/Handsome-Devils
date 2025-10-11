@@ -300,7 +300,7 @@ HNDS.blind_souls = { --blind soul jokers list, definitely needs to choose a them
 }
 
 HNDS.get_blind_soul = function (blind) --G.GAME.blind should go in here
-    return blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] --allow other mods to define their own blind souls
+    return blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] or "j_joker" --allow other mods to define their own blind souls
 end
 
 function reset_supersuit_card()
