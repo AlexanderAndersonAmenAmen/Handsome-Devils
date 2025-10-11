@@ -278,8 +278,6 @@ SMODS.Atlas({
 	py = 95,       -- height of one card
 })
 
-assert(SMODS.load_file("lib/hooks.lua"))()
-assert(SMODS.load_file("lib/utils.lua"))()
 
 --[[---------------------------
 Utility functions
@@ -318,3 +316,5 @@ end
 for key, value in pairs(files) do
 	load_files(key)
 end
+assert(SMODS.load_file("lib/hooks.lua"))()
+assert(SMODS.load_file("lib/utils.lua"))()

@@ -289,7 +289,7 @@ HNDS.blind_souls = { --blind soul jokers list, definitely needs to choose a them
     bl_final_bell = {"j_sixth_sense", "j_sixth_sense", "j_dna", "j_dna", "j_dna", "j_idol", "j_idol", "j_idol"}
 }
 
-for _, center in pairs(G.P_CENTER_POOLS.Food) do
+for _, center in ipairs(G.P_CENTER_POOLS.Food) do
 	HNDS.blind_souls.bl_mouth[#HNDS.blind_souls.bl_mouth+1] = center.key
 end
 
