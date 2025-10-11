@@ -50,9 +50,8 @@ return {
 				text = {
 					"When you Enhance",
 					"an Enhanced card,",
-					"it permanently",
-					"gains {C:mult}+#1#{} Mult",
-					"and {C:chips}+#2#{} Chips"
+					"it permanently gains",
+					"{C:mult}+#1#{} Mult and {C:chips}+#2#{} Chips",
 				},
 			},
 			j_hnds_banana_split = {
@@ -68,9 +67,10 @@ return {
 			j_hnds_head_of_medusa = {
 				name = "Head of Medusa",
 				text = {
-					"Gains {X:chips,C:white}X#2#{} Chips for each held",
-					"in hand {C:attention}face{} card at end of",
-					"round and turns them to {C:attention}Stone{}",
+					"Gains {X:chips,C:white}X#2#{} Chips for each",
+					"held in hand {C:attention}face{} card ",
+					"at end of round and",
+					"turns them to {C:attention}Stone{}",
 					"{C:inactive}(Currently {X:chips,C:white}X#1#{C:inactive} Chips)",
 				},
 			},
@@ -332,14 +332,6 @@ return {
 					"if {C:attention}held{} in hand",
 				},
 			},
-			hnds_green_seal = {
-				name = "Green Seal",
-				text = {
-					"When scored, draw a",
-					"card of the same {C:attention}rank{}",
-					"after {C:attention}refilling{} your hand"
-				},
-			},
 			hnds_spectralseal_seal = {
 				name = "Spectral Seal",
 				text = {
@@ -384,23 +376,6 @@ return {
 					"every {C:attention}#1#{} skips",
 				},
 			},
-			v_hnds_beginners_luck = {
-				name = "Beginner's Luck",
-				text = {
-					"Double all {C:attention}listed",
-					"{C:green,E:1,S:1.1}probabilities{} during",
-					"{C:attention}Small Blind{} round",
-					"{C:inactive}(ex: {C:green}1 in 3{C:inactive} -> {C:green}2 in 3{C:inactive})",
-				},
-			},
-			v_hnds_rigged = {
-				name = "Rigged",
-				text = {
-					"Double all {C:attention}listed{}",
-					"{C:green}probabilities{}",
-					"{C:inactive}(ex: {C:green}1 in 3{C:inactive} -> {C:green}2 in 3{C:inactive})",
-				},
-			},
 			v_hnds_premium = {
 				name = "Premium",
 				text = {
@@ -418,15 +393,15 @@ return {
 			v_hnds_extra_filling = {
 				name = "Extra Filling",
 				text = {
-					"All {C:attention}Booster Packs",
-					"offer {C:attention}+#1#{} card",
+					"{C:attention}+1{} card option available",
+					"in {C:attention}Booster Packs{}",
 				},
 			},
 			v_hnds_wholesale = {
 				name = "Wholesale",
 				text = {
 					"{C:attention}+1{} Booster Pack slot",
-					"in the shop",
+					"available in the shop",
 				},
 			},
 			v_hnds_soaked = {

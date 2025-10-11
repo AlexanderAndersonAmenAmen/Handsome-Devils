@@ -193,8 +193,6 @@ local files = {
 		list = {
 			"tag_hunter",
 			"hashtag_skip",
-			"beginners_luck",
-			"rigged",
 			"premium",
 			"top_shelf",
 			"extra_filling",
