@@ -491,6 +491,7 @@ return {
 			k_hnds_banana_split = "Split!",
 			k_hnds_color_of_madness = "Madness!",
 			k_hnds_occultist = "Study!",
+			k_hnds_splashed = "Splashed!",
 		},
 		labels = {
 			hnds_black_seal = "Black Seal",
