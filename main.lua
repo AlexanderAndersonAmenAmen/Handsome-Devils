@@ -280,25 +280,6 @@ SMODS.Atlas({
 	py = 95,       -- height of one card
 })
 
---[[---------------------------
-Function hooks
---]]
----------------------------
-
-
-local old_card_ui = generate_card_ui
-function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
-	if _c.set == "Joker" and _c.key == "j_hnds_banana_split" then
-		if card.edition and card.edition.negative then
-			main_end = {}
-			localize({ type = "other", key = "remove_negative", nodes = main_end, vars = {} })
-			main_end = main_end[1]
-		end
-	end
-
-	old_ret = old_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
-	return old_ret
-end
 
 --[[---------------------------
 Utility functions
