@@ -359,6 +359,10 @@ return {
 					"{C:green}Uncommon{}, {C:red}Rare{},",
 					"{C:attention}Buffoon Tag{}, etc.",
 				}
+			},
+			hnds_soul = {
+				name = "Soul",
+				text = "Created by {C:legendary,E:1}Pennywise"
 			}
 		},
 		Voucher = {
@@ -473,6 +477,7 @@ return {
 		labels = {
 			hnds_black_seal = "Black Seal",
 			hnds_spectralseal_seal = "Spectral Seal",
+			hnds_soul = "Soul"
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Stone Ocean",
