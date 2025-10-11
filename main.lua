@@ -135,6 +135,7 @@ SMODS.current_mod.calculate = function(self, context)
 				return true
 			end
 		}))
+		G.GAME.hnds_crystal_queued = nil
 	end
 end
 
@@ -284,16 +285,6 @@ Function hooks
 --]]
 ---------------------------
 
-local set_cost_ref = Card.set_cost
-function Card.set_cost(self)
-	set_cost_ref(self)
-	if self.config.center.key == "j_hnds_coffee_break" then
-		self.sell_cost = 0
-	end
-	if G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_premiumdeck" and self.config.center.set == "Joker" then
-		self.cost = math.floor(self.cost + G.GAME.round_resets.ante)
-	end
-end
 
 local old_card_ui = generate_card_ui
 function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)

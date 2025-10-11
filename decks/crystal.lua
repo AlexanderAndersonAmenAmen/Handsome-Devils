@@ -68,14 +68,3 @@ SMODS.Booster { --putting this in the same file for convenience
         return false
     end
 }
-
-local get_new_boss_ref = get_new_boss
-function get_new_boss()
-    local win_ante = G.GAME.win_ante
-    if G.GAME.modifiers.hnds_double_showdown then
-        G.GAME.win_ante = math.floor(G.GAME.win_ante/2)
-    end
-    local boss = get_new_boss_ref()
-    G.GAME.win_ante = win_ante
-    return boss
-end

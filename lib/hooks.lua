@@ -27,3 +27,25 @@ function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand
 		end
 	end
 end
+
+local get_new_boss_ref = get_new_boss --crystal deck double showdown hook
+function get_new_boss()
+    local win_ante = G.GAME.win_ante
+    if G.GAME.modifiers.hnds_double_showdown then
+        G.GAME.win_ante = math.floor(G.GAME.win_ante/2)
+    end
+    local boss = get_new_boss_ref()
+    G.GAME.win_ante = win_ante
+    return boss
+end
+
+local set_cost_ref = Card.set_cost --premium deck and coffee break cost hook
+function Card.set_cost(self)
+	set_cost_ref(self)
+	if self.config.center.key == "j_hnds_coffee_break" then
+		self.sell_cost = 0
+	end
+	if G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_premiumdeck" and self.config.center.set == "Joker" then
+		self.cost = math.floor(self.cost + G.GAME.round_resets.ante)
+	end
+end
