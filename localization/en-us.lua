@@ -52,6 +52,7 @@ return {
 					"an Enhanced card,",
 					"it permanently",
 					"gains {C:mult}+#1#{} Mult",
+					"and {C:chips}+#2#{} Chips"
 				},
 			},
 			j_hnds_banana_split = {
