@@ -14,6 +14,7 @@ SMODS.Voucher {
             new_context.hnds_hand_trigger = true
             new_context.cardarea = G.play
             SMODS.score_card(context.other_card, new_context)
+            return nil, true
         end
     end
 }

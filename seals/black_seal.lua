@@ -21,6 +21,7 @@ SMODS.Seal({
 			new_context.hnds_hand_trigger = true
 			new_context.cardarea = G.play
 			SMODS.score_card(card, new_context)
+			return nil, true
 		end
 	end,
 })
