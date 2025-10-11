@@ -213,6 +213,13 @@ return {
 					"special {C:dark_edition}Negative {C:attention}Joker",
 					"Retrigger your {C:attention}Souls"
 				}
+			},
+			j_hnds_handsome = {
+				name = "Handsome Devil",
+				text = {
+					"Retrigger all",
+					"cards with {C:dark_edition}editions",
+				}
 			}
 		},
 		Back = {
