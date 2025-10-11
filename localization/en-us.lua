@@ -196,6 +196,14 @@ return {
 					"Creates one when",
 					"{C:attention}Blind{} is selected",
 				}
+			},
+			j_hnds_energized = {
+				name = "Energized",
+				text = {
+					"If played hand is a single card,",
+					"retriggers it {C:attention}#3#{} additional times",
+					"{C:green}#1# in #2#{} chance to {C:red}destroy it"
+				}
 			}
 		},
 		Back = {

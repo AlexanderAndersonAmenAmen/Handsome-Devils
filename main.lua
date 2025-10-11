@@ -115,6 +115,10 @@ SMODS.current_mod.calculate = function(self, context)
 	end
 end
 
+SMODS.current_mod.optional_features = {
+	retrigger_joker = true
+}
+
 --[[---------------------------
 Script names
 --]]
@@ -145,6 +149,7 @@ local files = {
 			"supersuit",
 			"perfectionist",
 			"krusty",
+			"energized",
 		},
 		directory = "jokers/",
 	},
