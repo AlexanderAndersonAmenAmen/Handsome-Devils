@@ -46,7 +46,7 @@ end
 
 ---Gets a pseudorandom tag from the Tag pool - Also from Paperback. Go play it!!!!!
 function HNDS.poll_tag(seed, options, exclusions)
-	if not exclusions then exclusions = { "tag_boss", "tag_top_up", "tag_speed" } end
+	if not exclusions and not options then exclusions = { "tag_boss", "tag_top_up", "tag_speed" } end
 	-- This part is basically a copy of how the base game does it
 	-- Look at get_next_tag_key in common_events.lua
 	local pool = options or get_current_pool("Tag")
