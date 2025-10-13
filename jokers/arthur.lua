@@ -1,4 +1,4 @@
-RA = "Clubs"
+RA = "Spades"
 
 reset_arthur = function()
     local ancient_suits = {}
