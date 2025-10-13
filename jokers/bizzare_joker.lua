@@ -36,7 +36,7 @@ SMODS.Joker({
         vars = {cae.chips, cae.chipsg, cae.mult, cae.multg, cae.xmult, cae.xmultg, cae.sell_value}
 		return { key = key, vars = vars }
     end,
-    rarity = 3,
+    rarity = 2,
     cost = 7,
     atlas = "Jokers",
     pos = {
