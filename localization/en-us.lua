@@ -242,7 +242,7 @@ return {
 			j_hnds_bizzare_joker_spades = {
 				name = "Bizzare Joker",
 				text = {
-				"{C:chips}+#4#{} Chips per scored {C:spades}Spade{} card",
+				"{C:chips}+#2#{} Chips per scored {C:spades}Spade{} card",
  				"{S:0.8}Effect changes at end of round",
  				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
  				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
@@ -273,6 +273,16 @@ return {
  				"{S:0.8}Effect changes at end of round",
  				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
  				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
+				}
+			},
+			j_hnds_arthur = {
+				name = "Arthur",
+				text = {
+					"{C:attention}+#2#{} free {C:green}Reroll{} for every",
+					"scoring {V:1}#3#{} card played",
+					"Destroys scored {V:1}#3#s",
+					"{C:attention,S:0.8}Suit{S0.8} changes every hand",
+					"{C:inactive}(Currently {C:attention}#1#{C:green} Rerolls{C:inactive})"
 				}
 			},
 		},

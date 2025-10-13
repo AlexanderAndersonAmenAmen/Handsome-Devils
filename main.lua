@@ -167,7 +167,8 @@ local files = {
 			"handsome",
 			"art",
 			"pennywise",
-			"bizzare_joker"
+			"bizzare_joker",
+			"arthur"
 		},
 		directory = "jokers/",
 	},

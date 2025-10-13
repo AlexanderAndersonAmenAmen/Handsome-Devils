@@ -75,7 +75,7 @@ target = "game.lua"
 pattern = "G.STATE = G.STATES.NEW_ROUND"
 position = "at"
 payload = '''
-if SMODS.find_card('j_hnds_public_nuisance') and 
+if (#SMODS.find_card('j_hnds_public_nuisance') > 0) and 
 G.GAME.current_round.hands_left >= 1 then
     G.STATE = G.STATES.DRAW_TO_HAND
 else
@@ -108,8 +108,7 @@ pattern = '''
 '''
 position = "after"
 payload = '''
-if BC then
-    BC = "Spades"
-end
+bizzare_suit()
+reset_arthur()
 '''
 match_indent = true

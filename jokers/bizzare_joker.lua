@@ -78,5 +78,22 @@ SMODS.Joker({
                 end
             end
         end
+
+        if context.joker_main then
+            if BC == "Spades" then
+                return {
+                    chips = cae.chips
+                }
+            elseif BC == "Clubs" then
+                return {
+                    mult = cae.mult
+                }
+            elseif BC == "Hearts" then
+                return {
+                    xmult = cae.xmult
+                }
+            end
+        end
+
     end
 })
