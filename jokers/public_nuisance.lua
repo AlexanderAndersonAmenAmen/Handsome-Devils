@@ -3,7 +3,7 @@ SMODS.Joker({
 	atlas = "Jokers",
 	pos = { x = 8, y = 1 },
 	rarity = 1,
-	cost = 4,
+	cost = 3,
 	unlocked = true,
 	discovered = true,
 	blueprint_compat = false,
@@ -14,7 +14,7 @@ SMODS.Joker({
 		return { vars = {} }
 	end,
 	calculate = function(self, card, context)
-        if (context.selling_self or context.joker_type_destroyed and context.card == card) and G.GAME.chips >= G.GAME.blind.chips and not context.blueprint then
+        if (context.selling_self or (context.joker_type_destroyed and context.card == card)) and G.GAME.chips >= G.GAME.blind.chips and not context.blueprint then
 	            G.STATE = G.STATES.HAND_PLAYED
 	            G.STATE_COMPLETE = true
 	            end_round()

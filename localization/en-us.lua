@@ -230,7 +230,51 @@ return {
 					"next {C:attention}Booster Pack{} and",
 					"create {C:attention}#1#{} random {C:attention}Tags"
 				}
-			}
+			},
+			j_hnds_public_nuisance = {
+				name = "Public Nuisance",
+				text = {
+					"Keep playing {C:blue}Hands{}",
+					"after {C:red}Blind{} score",
+					"was met"
+				}
+			},
+			j_hnds_bizzare_joker_spades = {
+				name = "Bizzare Joker",
+				text = {
+				"{C:chips}+#4#{} Chips per scored {C:spades}Spade{} card",
+ 				"{S:0.8}Effect changes at end of round",
+ 				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
+ 				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
+				}
+			},
+			j_hnds_bizzare_joker_clubs = {
+				name = "Bizzare Joker",
+				text = {
+				"{C:mult}+#4#{} Mult per scored {C:clubs}Club{} card",
+ 				"{S:0.8}Effect changes at end of round",
+ 				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
+ 				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
+				}
+			},
+			j_hnds_bizzare_joker_diamonds = {
+				name = "Bizzare Joker",
+				text = {
+				"{C:money}+#7#{} Sell Value per scored {C:diamonds}Diamond{} card",
+ 				"{S:0.8}Effect changes at end of round",
+ 				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
+ 				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
+				}
+			},
+			j_hnds_bizzare_joker_hearts = {
+				name = "Bizzare Joker",
+				text = {
+				"{X:mult,C:white}X#6#{} Mult per scored {C:hearts}Heart{} card",
+ 				"{S:0.8}Effect changes at end of round",
+ 				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
+ 				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
+				}
+			},
 		},
 		Back = {
 			b_hnds_premiumdeck = {
