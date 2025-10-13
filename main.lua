@@ -157,6 +157,7 @@ local files = {
 			"digital_circus",
 			"jokes_aside",
 			"ms_fortune",
+			"public_nuisance",
 			"dark_humor",
 			"dark_idol",
 			"supersuit",

@@ -64,3 +64,22 @@ end
 '''
 match_indent = true
 times = 1
+
+# -----------------------------
+# Public Nuisance 
+# -----------------------------
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "G.STATE = G.STATES.NEW_ROUND"
+position = "at"
+payload = '''
+if SMODS.find_card('j_hnds_public_nuisance') and 
+G.GAME.current_round.hands_left >= 1 then
+    G.STATE = G.STATES.DRAW_TO_HAND
+else
+    G.STATE = G.STATES.NEW_ROUND
+end
+'''
+match_indent = true
