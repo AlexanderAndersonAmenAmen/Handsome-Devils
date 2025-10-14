@@ -83,32 +83,3 @@ else
 end
 '''
 match_indent = true
-
-
-# -----------------------------
-# Bizzare Joker
-# -----------------------------
-
-[[patches]]
-[patches.pattern]
-target = 'functions/common_events.lua'
-position = 'after'
-pattern = '''function reset_ancient_card()'''
-payload = '''
-bizzare_suit()
-'''
-match_indent = false
-
-# idk this is not needed
-[[patches]]
-[patches.pattern]
-target = 'functions/button_callbacks.lua'
-pattern = '''
- if G.SETTINGS.current_setup == 'New Run' then 
-'''
-position = "after"
-payload = '''
-bizzare_suit()
-reset_arthur()
-'''
-match_indent = true
