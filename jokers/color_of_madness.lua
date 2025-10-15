@@ -4,7 +4,7 @@ SMODS.Joker({
 	pos = { x = 4, y = 2 },
 	rarity = 2, --rarity: 1 = Common, 2 = Uncommon, 3 = Rare, 4 = Legendary
 	--soul_pos = { x = 0, y = 0 },
-	cost = 7, --cost
+	cost = 4, --cost
 	unlocked = true, --whether it is unlocked or not
 	discovered = true, --whether or not it starts discovered
 	blueprint_compat = false, --can it be blueprinted/brainstormed/other

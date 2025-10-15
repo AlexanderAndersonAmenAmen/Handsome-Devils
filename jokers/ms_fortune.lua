@@ -10,7 +10,7 @@ SMODS.Joker({
 		return { vars = { card.ability.extra.numerator, 0 } }
 	end,
 	rarity = 3,
-	cost = 7,
+	cost = 10,
 	atlas = "Jokers",
 	pos = { x = 1, y = 1 },
 	demicoloncompat = true,

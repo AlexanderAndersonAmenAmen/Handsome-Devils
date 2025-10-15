@@ -3,6 +3,7 @@ SMODS.Joker {
     atlas = "Jokers",
     pos = { x = 2, y = 2 },
     rarity = 3,
+    cost = 10,
     config = { extra = { odds = 2, reps = 4 }},
     loc_vars = function (self, info_queue, card)
         local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_energized")

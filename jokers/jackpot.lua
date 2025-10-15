@@ -8,7 +8,7 @@ SMODS.Joker({
 			prob = 1,
 		},
 	},
-	rarity = 2,
+	rarity = 1,
 	loc_vars = function(self, info_queue, card)
 		local numerator, denominator =
 			SMODS.get_probability_vars(card, card.ability.extra.prob, card.ability.extra.base_chance, "hnds_jackpot")
