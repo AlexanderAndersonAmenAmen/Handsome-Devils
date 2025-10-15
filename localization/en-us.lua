@@ -225,8 +225,8 @@ return {
 			j_hnds_art = {
 				name = "Art the Clown",
 				text = {
-					"Sell this card to add",
-					"a copy of it to your",
+					"Sell this card to",
+					"add a copy of it to your",
 					"next {C:attention}Booster Pack{} and",
 					"create {C:attention}#1#{} random {C:attention}Tags"
 				}
@@ -239,37 +239,37 @@ return {
 				}
 			},
 			j_hnds_bizzare_joker_spades = {
-				name = "Bizzare Joker",
+				name = "Bizarre Joker",
 				text = {
 				"{C:chips}+#2#{} Chips per scored {C:spades}Spade{} card",
- 				"{s:0.8}Effect changes at end of round",
+ 				"{s:0.8}Effect changes every round",
  				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
  				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
 				}
 			},
 			j_hnds_bizzare_joker_clubs = {
-				name = "Bizzare Joker",
+				name = "Bizarre Joker",
 				text = {
 				"{C:mult}+#4#{} Mult per scored {C:clubs}Club{} card",
- 				"{s:0.8}Effect changes at end of round",
+ 				"{s:0.8}Effect changes every round",
  				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
  				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
 				}
 			},
 			j_hnds_bizzare_joker_diamonds = {
-				name = "Bizzare Joker",
+				name = "Bizarre Joker",
 				text = {
 				"{C:money}+$#7#{} {C:attention}sell value{} per scored {C:diamonds}Diamond{} card",
- 				"{s:0.8}Effect changes at end of round",
+ 				"{s:0.8}Effect changes every round",
  				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
  				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
 				}
 			},
 			j_hnds_bizzare_joker_hearts = {
-				name = "Bizzare Joker",
+				name = "Bizarre Joker",
 				text = {
 				"{X:mult,C:white}X#6#{} Mult per scored {C:hearts}Heart{} card",
- 				"{s:0.8}Effect changes at end of round",
+ 				"{s:0.8}Effect changes every round",
  				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
  				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
 				}
@@ -280,19 +280,19 @@ return {
 					"{C:attention}+#2#{} free {C:green}Reroll{} for every",
 					"scoring {V:1}#3#{} card played",
 					"Destroys scored {V:1}#3#",
-					"{s:0.8}{C:attention}Suit{} changes every hand",
+					"{s:0.8}Suit changes every hand",
 					"{C:inactive}(Currently {C:attention}#1#{C:green} Rerolls{C:inactive})"
 				}
 			},
 		},
 		Back = {
 			b_hnds_premiumdeck = {
-				name = "Ol' reliable",
+				name = "Premium Deck",
 				text = {
-					"Increase all {C:attention}listed{}",
-					"{C:green,E:1}probabilities{} by {C:attention}X4{}",
-					"during {C:attention}Boss Blinds{}",
-					"{C:inactive}(e.x. {}{C:green}1 in 3{} {C:inactive}->{} {C:green}4 in 3{}{C:inactive}){}"
+					"Start run with",
+					"{C:green}Premium{} and {C:red}Top Shelf{}",
+					"Jokers cost extra {C:money}${}",
+					"equal to your {C:attention}Ante{}",
 				},
 			},
 			b_hnds_crystal = {
