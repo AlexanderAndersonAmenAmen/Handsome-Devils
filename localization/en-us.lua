@@ -259,7 +259,7 @@ return {
 			j_hnds_bizzare_joker_diamonds = {
 				name = "Bizarre Joker",
 				text = {
-				"{C:money}+$#7#{} {C:attention}sell value{} per scored {C:diamonds}Diamond{} card",
+				"{C:money}+$#7#{} sell value per scored {C:diamonds}Diamond{} card",
  				"{s:0.8}Effect changes every round",
  				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
  				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
