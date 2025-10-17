@@ -17,7 +17,7 @@ SMODS.Joker{
     cost = 6,
     unlocked = true,
     discovered = true,
-    blueprint_comat = true,
+    blueprint_compat = true,
     calculate = function(self, card, context)
         local destroy = {}
         if context.individual and context.cardarea == G.play and not context.blueprint then

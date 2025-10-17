@@ -129,6 +129,9 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.after then
 		reset_arthur()
 	end
+	if context.buying_card then
+		G.GAME.hnds_fregoli_copy = context.card.sort_id
+	end
 end
 
 SMODS.current_mod.optional_features = {
@@ -171,7 +174,8 @@ local files = {
 			"art",
 			"pennywise",
 			"bizzare_joker",
-			"arthur"
+			"arthur",
+			"fregoli",
 		},
 		directory = "jokers/",
 	},
