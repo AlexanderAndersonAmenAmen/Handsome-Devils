@@ -1,14 +1,13 @@
-BC = "Spades"
 
 function bizzare_suit()
     local ancient_suits = {}
     for k, v in ipairs({'Spades', 'Hearts', 'Clubs', 'Diamonds'}) do
-        if v ~= BC then
+        if v ~= G.GAME.hnds_bizzare_suit then
             ancient_suits[#ancient_suits + 1] = v
         end
     end
     local ancient_card = pseudorandom_element(ancient_suits, pseudoseed("this_is_so_bizzare"))
-    BC = ancient_card
+    G.GAME.hnds_bizzare_suit = ancient_card
 end
 
 SMODS.Joker({
@@ -31,8 +30,8 @@ SMODS.Joker({
     },
     loc_vars = function(self, info_queue, card)
         local cae = card.ability.extra
-    local key, vars
-		key = (self.key .. "_" .. string.lower(BC))
+        local key, vars
+		key = (self.key .. "_" .. (string.lower(G.GAME.hnds_bizzare_suit) or "spades"))
         vars = {cae.chips, cae.chipsg, cae.mult, cae.multg, cae.xmult, cae.xmultg, cae.sell_value}
 		return { key = key, vars = vars }
     end,
@@ -48,27 +47,30 @@ SMODS.Joker({
         local cae = card.ability.extra
         if context.before then
             for k, v in pairs(G.play.cards) do
-                if v:is_suit(BC) then
-                    if BC == "Spades" then
-                        cae.chips = cae.chips + cae.chipsg
-                        return {
-                            message = localize("k_upgrade_ex"),
-                            colour = G.C.CHIPS
-                        }
-                    elseif BC == "Clubs" then
-                        cae.mult = cae.mult + cae.multg
-                        return {
-                            message = localize("k_upgrade_ex"),
-                            colour = G.C.MULT
-                        }
-                    elseif BC == "Hearts" then
-                        cae.xmult = cae.xmult + cae.xmultg
-                        return {
-                            message = localize("k_upgrade_ex"),
-                            colour = G.C.MULT
-                        }
-                    elseif BC == "Diamonds" then
-                        card.ability.extra_value = (card.ability.extra_value or 0) + cae.selL_value
+                if v:is_suit(G.GAME.hnds_bizzare_suit) then
+                    if G.GAME.hnds_bizzare_suit == "Spades" then
+                        SMODS.scale_card(card, {
+                            ref_table = cae,
+                            ref_value = "chips",
+                            scalar_value = "chipsg",
+                            message = { colour = G.C.CHIPS }
+                        })
+                    elseif G.GAME.hnds_bizzare_suit == "Clubs" then
+                        SMODS.scale_card(card, {
+                            ref_table = cae,
+                            ref_value = "mult",
+                            scalar_value = "multg",
+                            message = { colour = G.C.RED }
+                        })
+                    elseif G.GAME.hnds_bizzare_suit == "Hearts" then
+                        SMODS.scale_card(card, {
+                            ref_table = cae,
+                            ref_value = "xmult",
+                            scalar_value = "xmultg",
+                            message = { colour = G.C.MULT }
+                        })
+                    elseif G.GAME.hnds_bizzare_suit == "Diamonds" then
+                        card.ability.extra_value = (card.ability.extra_value or 0) + cae.sell_value
                         card:set_cost()
                         return {
                             message = localize("k_val_up"),
@@ -80,15 +82,15 @@ SMODS.Joker({
         end
 
         if context.joker_main then
-            if BC == "Spades" then
+            if G.GAME.hnds_bizzare_suit == "Spades" then
                 return {
                     chips = cae.chips
                 }
-            elseif BC == "Clubs" then
+            elseif G.GAME.hnds_bizzare_suit == "Clubs" then
                 return {
                     mult = cae.mult
                 }
-            elseif BC == "Hearts" then
+            elseif G.GAME.hnds_bizzare_suit == "Hearts" then
                 return {
                     xmult = cae.xmult
                 }

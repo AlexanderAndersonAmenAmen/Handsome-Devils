@@ -345,7 +345,6 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	reset_supersuit_card()
     reset_dark_idol()
 	bizzare_suit()
-	reset_arthur()
 
 	-- The suit changes every round, so we use reset_game_globals to choose a suit.
 

@@ -8,8 +8,9 @@ SMODS.Joker{
     },
     rarity = 2,
     loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.mult, G.GAME.current_round.dark_idol.rank,
-        localize(G.GAME.current_round.dark_idol.suit, "suits_plural"), card.ability.extra.total, colours = { G.C.SUITS[G.GAME.current_round.dark_idol.suit] } } }
+        local idol_card = G.GAME.current_round.dark_idol or { rank = "Ace", suit = "Spades" }
+        return { vars = { card.ability.extra.mult, localize(idol_card.rank, "ranks"),
+        localize(idol_card.suit, "suits_plural"), card.ability.extra.total, colours = { G.C.SUITS[idol_card.suit] } } }
     end,
     atlas = "Jokers",
     pos = { x = 1, y = 2 },

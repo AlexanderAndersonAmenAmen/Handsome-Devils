@@ -126,6 +126,9 @@ SMODS.current_mod.calculate = function(self, context)
 		}))
 		G.GAME.art_queue = G.GAME.art_queue - 1
 	end
+	if context.after then
+		reset_arthur()
+	end
 end
 
 SMODS.current_mod.optional_features = {
