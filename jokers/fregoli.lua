@@ -38,7 +38,7 @@ SMODS.Joker {
     blueprint_compat = true,
     calculate = function (self, card, context)
         for _, c in ipairs(G.jokers.cards) do
-            if c.sort_id == G.GAME.hnds_fregoli_copy then
+            if c.sort_id == G.GAME.hnds_fregoli_copy and c ~= card then
                 return SMODS.blueprint_effect(card, c, context)
             end
         end
