@@ -1,7 +1,7 @@
 
 function bizzare_suit()
     local ancient_suits = {}
-    for k, v in ipairs({'Spades', 'Hearts', 'Clubs', 'Diamonds'}) do
+    for _, v in ipairs({'Spades', 'Hearts', 'Clubs', 'Diamonds'}) do
         if v ~= G.GAME.hnds_bizzare_suit then
             ancient_suits[#ancient_suits + 1] = v
         end
@@ -82,19 +82,11 @@ SMODS.Joker({
         end
 
         if context.joker_main then
-            if G.GAME.hnds_bizzare_suit == "Spades" then
-                return {
-                    chips = cae.chips
-                }
-            elseif G.GAME.hnds_bizzare_suit == "Clubs" then
-                return {
-                    mult = cae.mult
-                }
-            elseif G.GAME.hnds_bizzare_suit == "Hearts" then
-                return {
-                    xmult = cae.xmult
-                }
-            end
+            return {
+                chips = cae.chips,
+                mult = cae.mult,
+                extra = { xmult = cae.xmult }
+            }
         end
 
     end
