@@ -31,7 +31,7 @@ SMODS.Joker({
     loc_vars = function(self, info_queue, card)
         local cae = card.ability.extra
         local key, vars
-		key = (self.key .. "_" .. (string.lower(G.GAME.hnds_bizzare_suit) or "spades"))
+		key = (self.key .. "_" .. (string.lower(G.GAME.hnds_bizzare_suit or "spades") or "spades"))
         vars = {cae.chips, cae.chipsg, cae.mult, cae.multg, cae.xmult, cae.xmultg, cae.sell_value}
 		return { key = key, vars = vars }
     end,
