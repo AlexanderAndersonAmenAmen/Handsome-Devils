@@ -13,11 +13,11 @@ SMODS.Joker({
 	loc_vars = function(self, info_queue, card)
 		return { vars = {} }
 	end,
-	calculate = function(self, card, context)
-        if (context.selling_self or (context.joker_type_destroyed and context.card == card)) and G.GAME.chips >= G.GAME.blind.chips and not context.blueprint then
-	            G.STATE = G.STATES.HAND_PLAYED
-	            G.STATE_COMPLETE = true
-	            end_round()
-        end
-	end,
+	remove_from_deck = function (self, card, from_debuff)
+		if G.GAME.chips >= G.GAME.blind.chips then
+			G.STATE = G.STATES.HAND_PLAYED
+	        G.STATE_COMPLETE = true
+	        end_round()
+		end
+	end
 })
