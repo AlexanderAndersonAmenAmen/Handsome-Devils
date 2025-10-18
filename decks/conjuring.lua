@@ -17,7 +17,7 @@ SMODS.Back({
     calculate = function(self, back, context)
     end
 })
-
+--[[
 SMODS.Booster:take_ownership_by_kind('Arcana', {
         create_card = function(self, card, i)
             local _card
@@ -157,3 +157,4 @@ SMODS.Booster:take_ownership_by_kind('Standard', {
     },
     true
 )
+]]

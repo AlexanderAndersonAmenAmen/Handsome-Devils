@@ -57,3 +57,20 @@ function Card.set_cost(self)
 		self.cost = math.floor(self.cost + G.GAME.round_resets.ante)
 	end
 end
+
+create_card_ref = create_card
+function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+	if area == G.pack_cards and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" and not forced_key then
+		_type = pseudorandom_element({"Joker", (pseudorandom(pseudoseed('stdset'..G.GAME.round_resets.ante)) > 0.6) and "Enhanced" or "Base", "Consumeables"})
+	end
+    local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+    if card and next(SMODS.find_card("j_hnds_krusty")) and card.config then
+        for _, t in ipairs(G.P_CENTER_POOLS.Food) do
+            if t.key == card.config.center.key then
+                card:set_edition("e_negative")
+                break
+            end
+        end
+    end
+    return card
+end
