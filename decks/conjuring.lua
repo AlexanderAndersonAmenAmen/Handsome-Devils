@@ -4,7 +4,7 @@ SMODS.Back({
     order = 18,
     unlocked = true,
     discovered = true,
-    config = { voucher = 'v_hnds_extra_filling'},
+    config = { voucher = 'v_hnds_extra_stuffed'},
     loc_vars = function(self, info_queue, center)
        return {
             vars = { localize { type = 'name_text', key = self.config.voucher, set = 'Voucher' } }

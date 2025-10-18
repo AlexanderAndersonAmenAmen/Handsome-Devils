@@ -1,5 +1,5 @@
 SMODS.Voucher({
-	key = "extra_filling",
+	key = "stuffed",
 	atlas = "Vouchers",
 	pos = { x = 0, y = 0 },
 	config = { extra = { size_mod = 1 } },

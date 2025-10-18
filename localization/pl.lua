@@ -309,7 +309,7 @@ return {
 					"się {C:attention}#1#{} razy częściej",
 				},
 			},
-			v_hnds_extra_filling = {
+			v_hnds_stuffed = {
 				name = "Dodatkowe wypełnienie",
 				text = {
 					"Wszystkie {C:attention}paczki wzmacniające",

@@ -307,10 +307,10 @@ return {
 			b_hnds_conjuring = {
 				name = "Conjuring Deck",
 				text = {
-					"Start run with {C:attention}Extra Filling",
-					"All {C:attention}Booster Packs{} in shop",
-					"are {C:attention}Mega-sized{} and their",
-					"contents are {C:dark_edition,E:1}shuffled"
+					"Start run with {C:attention}Stuffed",
+					"All {C:attention}Booster Packs{} are",
+					"{C:attention}Mega-sized{} and have",
+					"{C:dark_edition,E:1}shuffled contents"
 				}
 			}
 		},
@@ -457,8 +457,8 @@ return {
 					"{C:attention}#1#X{} as often",
 				},
 			},
-			v_hnds_extra_filling = {
-				name = "Extra Filling",
+			v_hnds_stuffed = {
+				name = "Stuffed",
 				text = {
 					"{C:attention}+1{} card option available",
 					"in {C:attention}Booster Packs{}",
