@@ -3,6 +3,33 @@ version = "1.0.0"
 priority = 0
 
 # -----------------------------------
+# New variable to allow for extra booster pack choices
+# -----------------------------------
+
+[[patches]]
+[patches.pattern]
+target = '''=[SMODS _ "decks/game_object.lua"]'''
+match_indent = true
+position = 'at'
+pattern = '''
+vars = { cfg.choose, cfg.extra },
+'''
+payload = '''
+vars = { math.min(cfg.choose + G.GAME.modifiers.booster_choice_mod, cfg.extra), cfg.extra },
+'''
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+match_indent = true
+position = 'after'
+pattern = '''
+G.GAME.pack_choices = self.ability.choose or self.config.center.config.choose or 1'''
+payload = '''
+G.GAME.pack_choices = math.min(G.GAME.pack_choices + G.GAME.modifiers.booster_choice_mod, self.config.center.config.extra)
+'''
+
+# -----------------------------------
 # Head of Medusa
 # -----------------------------------
 
