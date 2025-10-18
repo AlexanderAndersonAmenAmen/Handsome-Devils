@@ -311,14 +311,6 @@ SMODS.ObjectType({ --vanilla foods, modded foods are added in their joker def
 	},
 })
 
-local show = SMODS.showman
-function SMODS.showman(card_key)
-    if G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" then
-        return true
-    end
-    return show(card_key)
-end
-
 local _init_game_object = Game.init_game_object
 function Game:init_game_object()
     local ret = _init_game_object(self)

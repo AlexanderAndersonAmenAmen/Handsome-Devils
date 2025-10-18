@@ -307,10 +307,10 @@ return {
 			b_hnds_conjuring = {
 				name = "Conjuring Deck",
 				text = {
-					"{C:attention}Jokers{} and {C:attention}consumables{}",
-					"may appear multiple times",
-					"{C:attention}+1{} card choice available",
-					"in {C:attention}Booster Packs{}"
+					"Start run with {C:attention}Extra Filling",
+					"All {C:attention}Booster Packs{} in shop",
+					"are {C:attention}Mega-sized{} and their",
+					"contents are {C:dark_edition,E:1}shuffled"
 				}
 			}
 		},

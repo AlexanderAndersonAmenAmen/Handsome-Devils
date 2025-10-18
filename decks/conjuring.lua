@@ -1,12 +1,14 @@
-SMODS.Back ({
+SMODS.Back({
     name = "Conjuring Deck",
     key = "conjuring",
     order = 18,
     unlocked = true,
     discovered = true,
-    config = {},
+    config = { voucher = 'v_hnds_extra_filling'},
     loc_vars = function(self, info_queue, center)
-        return { vars = {} }
+       return {
+            vars = { localize { type = 'name_text', key = self.config.voucher, set = 'Voucher' } }
+        }
     end,
     pos = { x = 0, y = 2 },
     atlas = "Extras",
