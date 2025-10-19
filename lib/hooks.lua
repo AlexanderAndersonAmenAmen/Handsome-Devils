@@ -71,7 +71,7 @@ function create_card(_type, area, legendary, _rarity, skip_materialize, soulable
     end
     return card
 end
-
+--[[
 local card_area_emplace_ref = CardArea.emplace
 function CardArea:emplace(card, location, stay_flipped)
 	if self == G.pack_cards then
@@ -91,3 +91,4 @@ function CardArea:emplace(card, location, stay_flipped)
 	end
 	card_area_emplace_ref(self, card, location, stay_flipped)
 end
+]]
