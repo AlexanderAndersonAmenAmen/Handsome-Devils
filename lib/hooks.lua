@@ -60,9 +60,6 @@ end
 
 create_card_ref = create_card
 function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
-	if area == G.pack_cards and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" and not forced_key then
-		_type = pseudorandom_element({"Joker", (pseudorandom(pseudoseed('stdset'..G.GAME.round_resets.ante)) > 0.6) and "Enhanced" or "Base", "Consumeables"})
-	end
     local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
     if card and next(SMODS.find_card("j_hnds_krusty")) and card.config then
         for _, t in ipairs(G.P_CENTER_POOLS.Food) do
@@ -72,8 +69,25 @@ function create_card(_type, area, legendary, _rarity, skip_materialize, soulable
             end
         end
     end
-	if card.ability.set ~= "Base" and card.ability.set ~= "Enhanced" and area == G.pack_cards then
-		card:set_seal()
-	end
     return card
+end
+
+local card_area_emplace_ref = CardArea.emplace
+function CardArea:emplace(card, location, stay_flipped)
+	if self == G.pack_cards then
+		local new_pool = pseudorandom_element({"Joker", (pseudorandom(pseudoseed('stdset'..G.GAME.round_resets.ante)) > 0.6) and "Enhanced" or "Base", "Consumeables"}, "conjuring_set")
+		local pool
+		if new_pool == "Joker" then
+			local rarity = SMODS.poll_rarity("Joker", "conjuring_rarity")
+			pool = get_current_pool("Joker", rarity)
+		else
+			pool = get_current_pool(new_pool)
+		end
+		local result
+		repeat
+			result = pseudorandom_element(pool)
+		until result ~= "UNAVAILABLE"
+		card:set_ability(G.P_CENTERS[result])
+	end
+	card_area_emplace_ref(self, card, location, stay_flipped)
 end
