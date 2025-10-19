@@ -72,5 +72,8 @@ function create_card(_type, area, legendary, _rarity, skip_materialize, soulable
             end
         end
     end
+	if card.ability.set ~= "Base" and card.ability.set ~= "Enhanced" and area == G.pack_cards then
+		card:set_seal()
+	end
     return card
 end
