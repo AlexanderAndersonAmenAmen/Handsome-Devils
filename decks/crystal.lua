@@ -66,5 +66,17 @@ SMODS.Booster { --putting this in the same file for convenience
     end,
     in_pool = function(self, args)
         return false
-    end
+    end,
+    cry_digital_hallucinations = {
+        colour = G.C.SECONDARY_SET.Spectral,
+        loc_key = "k_plus_spectral",
+        create = function ()
+            SMODS.add_card({
+                set = "Spectral",
+                area = G.consumeables,
+                edition = 'e_negative',
+                key_append = "diha"
+            })
+        end
+    }
 }
