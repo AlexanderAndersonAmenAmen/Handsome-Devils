@@ -284,6 +284,13 @@ return {
 					"{C:inactive}(Currently {C:attention}#1#{C:green} Rerolls{C:inactive})"
 				}
 			},
+			j_hnds_fregoli = {
+				name = "Fregoli",
+				text = {
+					"Copies the ability of the",
+					"last Joker you bought",
+				}
+			},
 		},
 		Back = {
 			b_hnds_premiumdeck = {
