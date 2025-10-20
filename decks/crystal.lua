@@ -52,7 +52,7 @@ SMODS.Booster { --putting this in the same file for convenience
             for _, center in ipairs(G.P_CENTER_POOLS.Consumeables) do
                 if center.hidden then options[#options + 1] = center.key end
             end
-            return { key = pseudorandom_element(options), key_append = "spe", area = G.pack_cards, skip_materialize = true }
+            return { key = pseudorandom_element(options, "spe"), key_append = "spe", area = G.pack_cards, skip_materialize = true }
         else
             return {
                 set = "Spectral",
@@ -60,7 +60,7 @@ SMODS.Booster { --putting this in the same file for convenience
                 skip_materialize = true,
                 soulable = true,
                 key_append =
-                "vremade_spe"
+                "spe"
             }
         end
     end,
@@ -71,12 +71,25 @@ SMODS.Booster { --putting this in the same file for convenience
         colour = G.C.SECONDARY_SET.Spectral,
         loc_key = "k_plus_spectral",
         create = function ()
-            SMODS.add_card({
-                set = "Spectral",
-                area = G.consumeables,
-                edition = 'e_negative',
-                key_append = "diha"
-            })
+            if pseudorandom("diha_ultraspec") < 0.2 then
+                local options = {}
+                for _, center in ipairs(G.P_CENTER_POOLS.Consumeables) do
+                    if center.hidden then options[#options + 1] = center.key end
+                end
+                SMODS.add_card({
+                    key = pseudorandom_element(options, "diha_spe"),
+                    key_append = "diha",
+                    area = G.consumeables,
+                    edition = "e_negative"
+                })
+            else
+                SMODS.add_card({
+                    set = "Spectral",
+                    area = G.consumeables,
+                    edition = 'e_negative',
+                    key_append = "diha"
+                })
+            end
         end
     }
 }
