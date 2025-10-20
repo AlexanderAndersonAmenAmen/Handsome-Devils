@@ -51,7 +51,7 @@ function Card.set_cost(self)
 		self.sell_cost = 0
 	end
 	if self.config.center.key == "j_hnds_art" then
-		self.sell_cost = -10
+		self.sell_cost = -5
 	end
 	if G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_premiumdeck" and self.config.center.set == "Joker" then
 		self.cost = math.floor(self.cost + G.GAME.round_resets.ante)

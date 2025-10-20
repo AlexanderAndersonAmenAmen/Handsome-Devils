@@ -30,7 +30,7 @@ return {
 			j_hnds_supersuit = {
 				name = "Supersuit",
 				text = {
-					"{C:attention}Retrigger{} all",
+					"Retrigger all",
 					"cards with {V:1}#1#{} suit,",
 					"{s:0.8}suit changes at end of round",
 				},
@@ -193,9 +193,9 @@ return {
 				name = "Clown Krusty",
 				text = {
 					"Adds {C:dark_edition}Negative{}",
-					"to {C:attention}Food Jokers",
-					"Creates one when",
-					"{C:attention}Blind{} is selected",
+					"edition to {C:attention}Food Jokers",
+					"{C:green}#1# in #2#{} chance to create",
+					"one at end of round",
 				}
 			},
 			j_hnds_energized = {
@@ -209,10 +209,10 @@ return {
 			j_hnds_pennywise = {
 				name = "Pennywise",
 				text = {
-					"When {C:attention}Boss Blind{} is defeated",
-					"gain its {C:attention}Soul{} in the form",
-					"of a special {C:dark_edition}Negative {C:attention}Joker",
-					"Retrigger your {C:attention}Souls"
+					"If {C:attention}Boss Blind{} is defeated in",
+					"{C:attention}one hand{}, gain its {C:legendary}Soul{} in a",
+					"form of a {C:dark_edition}Negative{} Joker",
+					"Retrigger your {C:legendary}Souls{}"
 				}
 			},
 			j_hnds_handsome = {
@@ -225,10 +225,10 @@ return {
 			j_hnds_art = {
 				name = "Art the Clown",
 				text = {
-					"Sell this card to",
-					"add a copy of it to your",
-					"next {C:attention}Booster Pack{} and",
-					"create {C:attention}#1#{} random {C:attention}Tags"
+					"Sell this card to add",
+					"a copy of it to the next",
+					"{C:attention}Booster Pack{} you open and",
+					"create a random {C:attention}Tag"
 				}
 			},
 			j_hnds_public_nuisance = {
@@ -284,11 +284,27 @@ return {
 					"{C:inactive}(Currently {C:attention}#1#{C:green} Rerolls{C:inactive})"
 				}
 			},
+			j_hnds_last_laugh = {
+				name = "Last Laugh",
+				text = {
+					"Sell this card to draw {C:attention}#1#{}",
+					"card from your deck, then",
+					"{C:red}destroy{} all cards in hand",
+					"{s:0.8}Upgrades at end of round",
+				}
+			},
 			j_hnds_fregoli = {
 				name = "Fregoli",
 				text = {
 					"Copies the ability of the",
 					"last Joker you bought",
+				}
+			},
+			j_hnds_walking_joke = {
+				name = "Walking Joke",
+				text = {
+					"Retrigger adjacent",
+					"{C:blue}Common{} Jokers",
 				}
 			},
 		},
@@ -530,6 +546,8 @@ return {
 		dictionary = {
 			k_hnds_petrified = "Petrified!",
 			k_hnds_goldfish = "Goldfish!",
+			k_hnds_boom_timer = "!!!",
+			k_hnds_boom = "BOOM!",
 			k_hnds_green = "Draw!",
 			k_hnds_jackpot = "Jackpot!",
 			k_hnds_probinc = "Increased!",

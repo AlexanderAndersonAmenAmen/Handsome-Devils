@@ -7,7 +7,7 @@ SMODS.Joker {
     atlas = "Jokers",
     pos = { x = 6, y = 2 },
     soul_pos = { x = 1, y = 3 },
-    config = { extra = { tags = 3 } },
+    config = { extra = { tags = 1 } },
     loc_vars = function (self, info_queue, card)
         return { vars = { card.ability.extra.tags } }
     end,

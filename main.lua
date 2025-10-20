@@ -98,16 +98,16 @@ SMODS.current_mod.calculate = function(self, context)
 	end
 	if context.starting_shop and G.GAME.hnds_crystal_queued then
 		G.E_MANAGER:add_event(Event({
-			func = function ()
+			func = function()
 				local booster = SMODS.create_card { key = 'p_hnds_spectral_ultra', area = G.play }
-                booster.T.x = G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2
-                booster.T.y = G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2
-                booster.T.w = G.CARD_W * 1.27
-                booster.T.h = G.CARD_H * 1.27
-                booster.cost = 0
-                booster.from_tag = true
-                G.FUNCS.use_card({ config = { ref_table = booster } })
-                booster:start_materialize()
+				booster.T.x = G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2
+				booster.T.y = G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2
+				booster.T.w = G.CARD_W * 1.27
+				booster.T.h = G.CARD_H * 1.27
+				booster.cost = 0
+				booster.from_tag = true
+				G.FUNCS.use_card({ config = { ref_table = booster } })
+				booster:start_materialize()
 				return true
 			end
 		}))
@@ -115,7 +115,7 @@ SMODS.current_mod.calculate = function(self, context)
 	end
 	if context.open_booster and G.GAME.art_queue > 0 then
 		G.E_MANAGER:add_event(Event({
-			func = function ()
+			func = function()
 				SMODS.add_card({
 					area = G.pack_cards,
 					key = "j_hnds_art",
@@ -147,35 +147,37 @@ local files = {
 	jokers = {
 		list = {
 			--You can rearrange the joker order in the collection by changing the order here
+			"balloons",
 			"coffee_break",
 			"jackpot",
-			"balloons",
-			"banana_split",
-			"head_of_medusa",
 			"pot_of_greed",
 			"jokestone",
+			"public_nuisance",
+			"walking_joke",
+			"banana_split",
+			"head_of_medusa",
 			"color_of_madness",
 			"deep_pockets",
 			"seismic_activity",
-			"occultist",
-			"stone_mask",
-			"meme",
-			"digital_circus",
 			"jokes_aside",
-			"ms_fortune",
-			"public_nuisance",
 			"dark_humor",
 			"dark_idol",
 			"supersuit",
 			"perfectionist",
-			"krusty",
-			"energized",
-			"handsome",
-			"art",
-			"pennywise",
 			"bizzare_joker",
-			"arthur",
 			"fregoli",
+			"handsome",
+			"ms_fortune",
+			"last_laugh",
+			"occultist",
+			"stone_mask",
+			"meme",
+			"digital_circus",
+			"energized",
+			"pennywise",
+			"art",
+			"krusty",
+			"arthur",
 		},
 		directory = "jokers/",
 	},
@@ -313,9 +315,9 @@ SMODS.ObjectType({ --vanilla foods, modded foods are added in their joker def
 
 local _init_game_object = Game.init_game_object
 function Game:init_game_object()
-    local ret = _init_game_object(self)
-    ret.hnds_booster_choice_mod = 0 --Booster pack choice
-    return ret
+	local ret = _init_game_object(self)
+	ret.hnds_booster_choice_mod = 0 --Booster pack choice
+	return ret
 end
 
 --[[---------------------------
