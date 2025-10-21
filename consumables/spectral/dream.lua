@@ -16,7 +16,7 @@ SMODS.Consumable({
 	pos = { x = 1, y = 1 },
 	soul_pos = { x = 1, y = 2 },
 	cost = 4,
-	use = function(self, card, context, copier)
+	use = function(self, card, area, copier)
 		local tags_to_make = card.ability.extra.max_tags
 		G.E_MANAGER:add_event(Event({
 			trigger = "before",
@@ -26,7 +26,7 @@ SMODS.Consumable({
 				return true
 			end,
 		}))
-		for i = 1, tags_to_make do
+		for _ = 1, tags_to_make do
 			G.E_MANAGER:add_event(Event({
 				trigger = "before",
 				delay = 0.5,
@@ -66,4 +66,27 @@ SMODS.Consumable({
 		end
 	end,
 	demicoloncompat = true,
+	bulk_use = function (self, card, area, copier, number)
+		local tags_to_make = card.ability.extra.max_tags * number
+		G.E_MANAGER:add_event(Event({
+			trigger = "before",
+			delay = 0.75,
+			func = function()
+				--empty event for timing purposes
+				return true
+			end,
+		}))
+		for _ = 1, tags_to_make do
+			G.E_MANAGER:add_event(Event({
+				trigger = "before",
+				delay = 0.5,
+				func = function()
+					card:juice_up()
+					play_sound("generic1", 0.9 + math.random() * 0.1, 0.8)
+					add_tag(HNDS.poll_tag("dream_", HNDS.get_shop_joker_tags()))
+					return true
+				end,
+			}))
+		end
+	end
 })

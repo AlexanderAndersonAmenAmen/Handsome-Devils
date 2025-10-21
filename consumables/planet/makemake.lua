@@ -46,5 +46,14 @@ if hnds_config.enableStoneOcean then
 			card:use_consumeable(area)
 		end,
 		demicoloncompat = true,
+		bulk_use = function (self, card, area, copier, number)
+			HNDS.dyn_level_up(
+				card,
+				card.ability.hand_type,
+				number,
+				(G.GAME.hands[card.ability.hand_type].l_chips + (G.GAME.ante_stones_scored or 0) * G.GAME.hands[card.ability.hand_type].l_chips_scaling ) * number,
+				0
+			)
+		end
 	})
 end
