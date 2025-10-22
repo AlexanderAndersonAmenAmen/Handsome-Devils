@@ -323,8 +323,8 @@ return {
 				text = {
 					"On Ante {C:attention}4{}, face",
 					"the {C:attention}Showdown Blind{}",
-					"Defeat it to open an",
-					"{E:1,C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}" --might need to remove the E:1, hover tooltip doesnt seem to work with that
+					"{T:p_hnds_spectral_ultra}Defeat it to open an{}",
+					"{C:legendary, E:1}Ultra Spectral Pack{}", --might need to remove the E:1, hover tooltip doesnt seem to work with that
 				}
 			},
 			b_hnds_conjuring = {
@@ -450,6 +450,15 @@ return {
 				text = {"Created by {C:legendary,E:1}Pennywise"}
 			},
 			p_hnds_magic = {
+				name = "Magic Pack",
+				text = {
+					"Choose {C:attention}#2#{} of up to",
+					"{C:attention}#1# {C:dark_edition,E:1}random{} cards to",
+					"be used immediately or",
+					"to add to your deck",
+				}
+			},
+			p_hnds_magic_1 = {
 				name = "Magic Pack",
 				text = {
 					"Choose {C:attention}#2#{} of up to",
