@@ -74,12 +74,14 @@ SMODS.Booster {
         G.booster_pack_sparkles:fade(1, 0)
     end,
     create_card = function (self, card, i)
+        local pool = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set")
         return {
-            set = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set"),
+            set = pool,
             area = G.pack_cards,
             skip_materialize = true,
             soulable = true,
-            key_append = "hnds_magic_card"
+            key_append = "hnds_magic_card",
+            seal = pool == "Playing Card" and SMODS.poll_seal({ key = "magic_seal" })
         }
     end,
     cry_digital_hallucinations = magic_diha_compat,
@@ -126,12 +128,14 @@ SMODS.Booster {
         G.booster_pack_sparkles:fade(1, 0)
     end,
     create_card = function (self, card, i)
+        local pool = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set")
         return {
-            set = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set"),
+            set = pool,
             area = G.pack_cards,
             skip_materialize = true,
             soulable = true,
-            key_append = "hnds_magic_card"
+            key_append = "hnds_magic_card",
+            seal = pool == "Playing Card" and SMODS.poll_seal({ key = "magic_seal" })
         }
     end,
     cry_digital_hallucinations = magic_diha_compat,
@@ -178,12 +182,14 @@ SMODS.Booster {
         G.booster_pack_sparkles:fade(1, 0)
     end,
     create_card = function (self, card, i)
+        local pool = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set")
         return {
-            set = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set"),
+            set = pool,
             area = G.pack_cards,
             skip_materialize = true,
             soulable = true,
-            key_append = "hnds_magic_card"
+            key_append = "hnds_magic_card",
+            seal = pool == "Playing Card" and SMODS.poll_seal({ key = "magic_seal" })
         }
     end,
     cry_digital_hallucinations = magic_diha_compat,
@@ -230,12 +236,14 @@ SMODS.Booster {
         G.booster_pack_sparkles:fade(1, 0)
     end,
     create_card = function (self, card, i)
+        local pool = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set")
         return {
-            set = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set"),
+            set = pool,
             area = G.pack_cards,
             skip_materialize = true,
             soulable = true,
-            key_append = "hnds_magic_card"
+            key_append = "hnds_magic_card",
+            seal = pool == "Playing Card" and SMODS.poll_seal({ key = "magic_seal" })
         }
     end,
     cry_digital_hallucinations = magic_diha_compat,
@@ -282,12 +290,14 @@ SMODS.Booster {
         G.booster_pack_sparkles:fade(1, 0)
     end,
     create_card = function (self, card, i)
+        local pool = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set")
         return {
-            set = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set"),
+            set = pool,
             area = G.pack_cards,
             skip_materialize = true,
             soulable = true,
-            key_append = "hnds_magic_card"
+            key_append = "hnds_magic_card",
+            seal = pool == "Playing Card" and SMODS.poll_seal({ key = "magic_seal" })
         }
     end,
     cry_digital_hallucinations = magic_diha_compat,
@@ -334,12 +344,14 @@ SMODS.Booster {
         G.booster_pack_sparkles:fade(1, 0)
     end,
     create_card = function (self, card, i)
+        local pool = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set")
         return {
-            set = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set"),
+            set = pool,
             area = G.pack_cards,
             skip_materialize = true,
             soulable = true,
-            key_append = "hnds_magic_card"
+            key_append = "hnds_magic_card",
+            seal = pool == "Playing Card" and SMODS.poll_seal({ key = "magic_seal" })
         }
     end,
     cry_digital_hallucinations = magic_diha_compat,
@@ -386,12 +398,14 @@ SMODS.Booster {
         G.booster_pack_sparkles:fade(1, 0)
     end,
     create_card = function (self, card, i)
+        local pool = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set")
         return {
-            set = pseudorandom_element({"Joker", "Playing Card", "Consumeables"}, "hnds_magic_set"),
+            set = pool,
             area = G.pack_cards,
             skip_materialize = true,
             soulable = true,
-            key_append = "hnds_magic_card"
+            key_append = "hnds_magic_card",
+            seal = pool == "Playing Card" and SMODS.poll_seal({ key = "magic_seal" })
         }
     end,
     cry_digital_hallucinations = magic_diha_compat,
