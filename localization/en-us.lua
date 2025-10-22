@@ -313,7 +313,7 @@ return {
 				name = "Premium Deck",
 				text = {
 					"Start run with",
-					"{C:green}Premium{} and {C:red}Top Shelf{}",
+					"{C:green,T:v_hnds_premium}Premium{} and {C:red,T:v_hnds_top_shelf}Top Shelf{}",
 					"Jokers cost extra {C:money}${}",
 					"equal to your {C:attention}Ante{}",
 				},
@@ -324,16 +324,15 @@ return {
 					"On Ante {C:attention}4{}, face",
 					"the {C:attention}Showdown Blind{}",
 					"Defeat it to open an",
-					"{E:1,C:legendary}Ultra Spectral Pack{}"
+					"{E:1,C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}" --might need to remove the E:1, hover tooltip doesnt seem to work with that
 				}
 			},
 			b_hnds_conjuring = {
 				name = "Conjuring Deck",
 				text = {
-					"Start run with {C:attention}Stuffed",
+					"Start run with {C:attention,T:v_hnds_stuffed}Stuffed",
 					"All {C:attention}Booster Packs{} are",
-					"{C:attention}Mega-sized{} and have",
-					"{C:dark_edition,E:1}shuffled contents"
+					"replaced with {C:attention,T:p_hnds_magic_1}Magic Packs",
 				}
 			}
 		},
@@ -448,6 +447,13 @@ return {
 			hnds_soul = {
 				name = "Soul",
 				text = {"Created by {C:legendary,E:1}Pennywise"}
+			},
+			p_hnds_magic = {
+				name = "Magic Pack",
+				text = {
+					"Select {C:attention}#1#{} of up to",
+                	"{C:attention}#2#{} random cards"
+				}
 			}
 		},
 		Voucher = {

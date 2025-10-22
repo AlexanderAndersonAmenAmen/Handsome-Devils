@@ -25,7 +25,7 @@ local magic_diha_compat = { --cryptid digital hallucinations compat
     colour = G.C.FILTER,
     loc_key = "k_plus_q",
     create = function ()
-        local pool = pseudorandom_element({"Joker", "Playing Card", "Consumaables"})
+        local pool = pseudorandom_element({"Joker", "Playing Card", "Consumeables"})
         local area
         if pool == "Consumeables" then area = G.consumeables end
         SMODS.add_card({
