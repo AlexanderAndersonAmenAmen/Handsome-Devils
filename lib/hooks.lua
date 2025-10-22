@@ -36,7 +36,7 @@ end
 local get_new_boss_ref = get_new_boss --crystal deck double showdown hook
 function get_new_boss()
     local win_ante = G.GAME.win_ante
-    if G.GAME.modifiers.hnds_double_showdown then
+    if G.GAME.modifiers.hnds_double_showdown and G.GAME.round_resets.ante and G.GAME.round_resets.ante < G.GAME.win_ante then
         G.GAME.win_ante = math.floor(G.GAME.win_ante/2)
     end
     local boss = get_new_boss_ref()
