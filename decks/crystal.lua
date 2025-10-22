@@ -67,7 +67,7 @@ SMODS.Booster { --putting this in the same file for convenience
     in_pool = function(self, args)
         return hnds_config.enablePackSpawning
     end,
-    cry_digital_hallucinations = {
+    cry_digital_hallucinations = { --cryptid digital hallucinations compat
         colour = G.C.SECONDARY_SET.Spectral,
         loc_key = "k_plus_spectral",
         create = function ()

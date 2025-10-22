@@ -71,24 +71,3 @@ function create_card(_type, area, legendary, _rarity, skip_materialize, soulable
     end
     return card
 end
---[[
-local card_area_emplace_ref = CardArea.emplace
-function CardArea:emplace(card, location, stay_flipped)
-	if self == G.pack_cards then
-		local new_pool = pseudorandom_element({"Joker", (pseudorandom(pseudoseed('stdset'..G.GAME.round_resets.ante)) > 0.6) and "Enhanced" or "Base", "Consumeables"}, "conjuring_set")
-		local pool
-		if new_pool == "Joker" then
-			local rarity = SMODS.poll_rarity("Joker", "conjuring_rarity")
-			pool = get_current_pool("Joker", rarity)
-		else
-			pool = get_current_pool(new_pool)
-		end
-		local result
-		repeat
-			result = pseudorandom_element(pool)
-		until result ~= "UNAVAILABLE"
-		card:set_ability(G.P_CENTERS[result])
-	end
-	card_area_emplace_ref(self, card, location, stay_flipped)
-end
-]]

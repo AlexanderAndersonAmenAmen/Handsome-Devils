@@ -560,6 +560,8 @@ return {
 			k_hnds_color_of_madness = "Madness!",
 			k_hnds_occultist = "Study!",
 			k_hnds_splashed = "Splashed!",
+			hnds_plus_q = "+1 ???", --this is for the cryptid digital hallucinations creation message with magic packs
+			k_hnds_magic_pack = "Magic Pack"
 		},
 		labels = {
 			hnds_black_seal = "Black Seal",
