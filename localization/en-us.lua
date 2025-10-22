@@ -330,9 +330,10 @@ return {
 			b_hnds_conjuring = {
 				name = "Conjuring Deck",
 				text = {
-					"Start run with {C:attention,T:v_hnds_stuffed}Stuffed",
-					"All {C:attention}Booster Packs{} are",
-					"replaced with {C:attention,T:p_hnds_magic_1}Magic Packs",
+					"All {C:attention}Booster Packs{}",
+					"in shop are replaced",
+					"by {C:attention}Magic Packs{} which",
+					"contain {C:dark_edition,E:1}random cards"
 				}
 			}
 		},
@@ -451,10 +452,12 @@ return {
 			p_hnds_magic = {
 				name = "Magic Pack",
 				text = {
-					"Select {C:attention}#1#{} of up to",
-                	"{C:attention}#2#{} random cards"
+					"Choose {C:attention}#2#{} of up to",
+					"{C:attention}#1# {C:dark_edition,E:1}random{} cards to",
+					"be used immediately or",
+					"to add to your deck",
 				}
-			}
+			},
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {

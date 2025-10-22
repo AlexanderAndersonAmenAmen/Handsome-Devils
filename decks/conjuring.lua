@@ -4,12 +4,6 @@ SMODS.Back({
     order = 18,
     unlocked = true,
     discovered = true,
-    config = { voucher = 'v_hnds_stuffed'},
-    loc_vars = function(self, info_queue, center)
-       return {
-            vars = { localize { type = 'name_text', key = self.config.voucher, set = 'Voucher' } }
-        }
-    end,
     pos = { x = 0, y = 2 },
     atlas = "Extras",
     apply = function(self,card)
@@ -43,7 +37,7 @@ SMODS.Booster {
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
-    pos = { x = 2, y = 2 },
+    pos = { x = 4, y = 0 },
     config = { extra = 5, choose = 2 },
     draw_hand = true,
     group_key = "k_hnds_magic_pack",
@@ -208,7 +202,7 @@ SMODS.Booster {
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
-    pos = { x = 4, y = 1 },
+    pos = { x = 2, y = 2 },
     config = { extra = 5, choose = 2 },
     draw_hand = true,
     group_key = "k_hnds_magic_pack",
@@ -263,7 +257,7 @@ SMODS.Booster {
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
-    pos = { x = 5, y = 1 },
+    pos = { x = 4, y = 1 },
     config = { extra = 5, choose = 2 },
     draw_hand = true,
     group_key = "k_hnds_magic_pack",
@@ -318,7 +312,7 @@ SMODS.Booster {
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
-    pos = { x = 4, y = 0 },
+    pos = { x = 5, y = 0 },
     config = { extra = 5, choose = 2 },
     draw_hand = true,
     group_key = "k_hnds_magic_pack",
@@ -373,7 +367,7 @@ SMODS.Booster {
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
-    pos = { x = 5, y = 0 },
+    pos = { x = 5, y = 1 },
     config = { extra = 5, choose = 2 },
     draw_hand = true,
     group_key = "k_hnds_magic_pack",
