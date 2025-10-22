@@ -332,7 +332,7 @@ return {
 				text = {
 					"All {C:attention}Booster Packs{}",
 					"in shop are replaced",
-					"by {C:attention}Magic Packs{} which",
+					"by {C:attention,T:p_hnds_magic_1}Magic Packs{} which",
 					"contain {C:dark_edition,E:1}random cards"
 				}
 			}
