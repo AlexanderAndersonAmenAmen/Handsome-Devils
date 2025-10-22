@@ -31,10 +31,7 @@ SMODS.Joker({
                     end
                 end
             end]]
-			local boost = card.ability.extra.scaling * HNDS.get_unique_suits(context.scoring_hand)
-			if context.forcetrigger then
-				boost = boost or 1
-			end
+			local boost = HNDS.get_unique_suits(context.scoring_hand)
 			if boost > 0 then
 				SMODS.scale_card(card, {
 					ref_table = card.ability.extra,
