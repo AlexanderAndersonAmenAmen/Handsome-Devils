@@ -15,7 +15,7 @@ SMODS.Back {
 
 SMODS.Booster { --putting this in the same file for convenience
     key = "spectral_ultra",
-    weight = 0,
+    weight = 0.01,
     kind = "Spectral",
     cost = 0,
     pos = { x = 0, y = 1 },
@@ -65,7 +65,7 @@ SMODS.Booster { --putting this in the same file for convenience
         end
     end,
     in_pool = function(self, args)
-        return false
+        return hnds_config.enablePackSpawning
     end,
     cry_digital_hallucinations = {
         colour = G.C.SECONDARY_SET.Spectral,
@@ -91,5 +91,5 @@ SMODS.Booster { --putting this in the same file for convenience
                 })
             end
         end
-    }
+    },
 }
