@@ -323,8 +323,8 @@ return {
 				text = {
 					"On Ante {C:attention}4{}, face",
 					"the {C:attention}Showdown Blind{}",
-					"{T:p_hnds_spectral_ultra}Defeat it to open an{}",
-					"{C:legendary, E:1}Ultra Spectral Pack{}", --might need to remove the E:1, hover tooltip doesnt seem to work with that
+					"Defeat it to open an",
+					"{C:legendary, T:p_hnds_spectral_ultra}Ultra Spectral Pack{}", --might need to remove the E:1, hover tooltip doesnt seem to work with that
 				}
 			},
 			b_hnds_conjuring = {
