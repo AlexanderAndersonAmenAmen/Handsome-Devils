@@ -17,7 +17,7 @@ SMODS.Booster { --putting this in the same file for convenience
     key = "spectral_ultra",
     weight = 0.01,
     kind = "Spectral",
-    cost = 0,
+    cost = 10,
     pos = { x = 0, y = 1 },
     atlas = "Extras",
     config = { extra = 5, choose = 2 },
