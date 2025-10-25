@@ -24,7 +24,7 @@ SMODS.Joker({
 		local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_banana_split")
 		return { vars = { card.ability.extra.Xmult, numerator, denominator }, main_end = main_end }
 	end,
-	calculate = function(card, card, context)
+	calculate = function(self, card, context)
 		if context.joker_main or context.forcetrigger then
 			SMODS.calculate_effect({
 				xmult = card.ability.extra.Xmult,

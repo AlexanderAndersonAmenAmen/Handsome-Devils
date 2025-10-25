@@ -307,6 +307,22 @@ return {
 					"{C:blue}Common{} Jokers",
 				}
 			},
+			j_hnds_blackjack = {
+				name = "Blackjack",
+				text = {
+					"{C:chips}#2#{} Chips if total {C:attention}rank{} of",
+					"discarded cards is {C:attention}21{}, resets",
+					"when {C:attention}Boss Blind{} is defeated",
+					"{C:inactive}(Currently {C:chips}+#1#{C:inactive} Chips)",
+				}
+			},
+			j_hnds_angry_mob = {
+				name = "Angry Mob",
+				text = {
+					"{X:mult,C:white}X#1#{} Mult",
+					"{C:attention}shops{} no longer offer Jokers"
+				}
+			},
 		},
 		Back = {
 			b_hnds_premiumdeck = {
