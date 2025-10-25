@@ -297,7 +297,7 @@ return {
 				name = "Fregoli",
 				text = {
 					"Copies the ability of the",
-					"last Joker you bought",
+					"last {C:attention}Joker{} you bought",
 				}
 			},
 			j_hnds_walking_joke = {
@@ -310,7 +310,7 @@ return {
 			j_hnds_blackjack = {
 				name = "Blackjack",
 				text = {
-					"{C:chips}#2#{} Chips if total {C:attention}rank{} of",
+					"{C:chips}+#2#{} Chips if total {C:attention}rank{} of",
 					"discarded cards is {C:attention}21{}, resets",
 					"when {C:attention}Boss Blind{} is defeated",
 					"{C:inactive}(Currently {C:chips}+#1#{C:inactive} Chips)",
@@ -319,8 +319,9 @@ return {
 			j_hnds_angry_mob = {
 				name = "Angry Mob",
 				text = {
-					"{X:mult,C:white}X#1#{} Mult",
-					"{C:attention}shops{} no longer offer Jokers"
+					"{X:mult,C:white}X#1#{} Mult,",
+					"{C:attention}shops{} no longer",
+					"offer {C:attention}Jokers"
 				}
 			},
 		},
