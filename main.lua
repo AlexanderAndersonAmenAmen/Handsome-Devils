@@ -283,6 +283,10 @@ local files = {
 		},
 		directory = "decks/",
 	},
+		editions = {
+		list = { "vintage" },
+		directory = "editions/",
+	},
 }
 
 if hnds_config.enableStoneOcean then

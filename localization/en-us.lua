@@ -426,6 +426,16 @@ return {
 				}
 			}
 		},
+		Edition = {
+			e_hnds_vintage = {
+				name = "Vintage",
+				text = {
+					"Earn additional {C:money}$1",
+					"per {C:money}$1{} of {C:attention}interest",
+					"at end of round",
+				},
+			},
+		},
 		Other = {
 			hnds_black_seal = {
 				name = "Black Seal",
@@ -599,6 +609,7 @@ return {
 			k_hnds_magic_pack = "Magic Pack"
 		},
 		labels = {
+			hnds_vintage = "Vintage",
 			hnds_black_seal = "Black Seal",
 			hnds_spectralseal_seal = "Spectral Seal",
 			hnds_soul = "Soul"
