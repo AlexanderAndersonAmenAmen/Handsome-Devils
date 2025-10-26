@@ -303,6 +303,11 @@ SMODS.Sound({
 	path = "madnesscolor.ogg",
 })
 
+SMODS.Sound({
+	key = "vintage",
+	path = "vintage.ogg",
+})
+
 SMODS.Atlas({
 	key = "modicon",
 	path = "hd_icon.png",
