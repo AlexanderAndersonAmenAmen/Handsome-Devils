@@ -10,7 +10,8 @@ SMODS.Back {
         if context.end_of_round and context.main_eval and G.GAME.round_resets.ante == math.floor(G.GAME.win_ante/2) then
             G.GAME.hnds_crystal_queued = true
         end
-    end
+    end,
+    pools = { RedeemableBacks = true }
 }
 
 SMODS.Booster { --putting this in the same file for convenience

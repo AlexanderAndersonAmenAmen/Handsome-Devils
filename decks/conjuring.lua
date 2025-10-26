@@ -13,6 +13,7 @@ SMODS.Back({
             end
         end
     end,
+    pools = { RedeemableBacks = true }
 })
 
 local magic_diha_compat = { --cryptid digital hallucinations compat
