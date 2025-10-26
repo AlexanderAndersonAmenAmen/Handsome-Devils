@@ -234,13 +234,13 @@ local files = {
 	spectrals = {
 		list = {
 			"abyss",
+			"possess",
 			"exchange",
 			"cycle",
-			"possess",
 			"petrify",
-			"dream",
 			"gateway",
 			"collision",
+			"dream",
 			"spectrum",
 		},
 		directory = "consumables/spectral/",
