@@ -9,7 +9,7 @@ SMODS.Edition({
 	unlocked = true,
 	config = {},
 	in_shop = true,
-	weight = 20,
+	weight = 14,
 	extra_cost = 5,
 	sound = { sound = "hnds_vintage", per = 1.2, vol = 0.3 },
 	apply_to_float = true,
