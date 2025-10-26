@@ -1,3 +1,5 @@
+if hnds_config.enableVintageEdition then
+
 SMODS.Shader({ key = 'vintage', path = 'vintage.fs' })
 
 SMODS.Edition({
@@ -22,3 +24,5 @@ SMODS.Edition({
 		end
 	end
 })
+
+end

@@ -1,6 +1,7 @@
 local configDefinition = {
 	["enableStoneOcean"] = true,
-	["enablePackSpawning"] = false
+	["enablePackSpawning"] = false,
+	["enableVintageEdition"] = true,
 }
 
 return configDefinition

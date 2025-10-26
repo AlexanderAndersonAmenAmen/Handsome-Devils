@@ -39,13 +39,26 @@ SMODS.Consumable {
             G.E_MANAGER:add_event(Event({
                 func = function()
                     local c = G.hand.cards[i]
-                    local seal = SMODS.poll_seal({ guaranteed = true })
+                    
                     local enh = SMODS.poll_enhancement({ guaranteed = true, options = enh_options })
-                    c:set_seal(seal)
+                    
                     c:set_ability(enh)
+                    return true
                 end
             }))
         end
+         for i = 1, #G.hand.cards do
+            G.E_MANAGER:add_event(Event({
+                func = function()
+                    local c = G.hand.cards[i]
+                    
+                     local seal = SMODS.poll_seal({ guaranteed = true })
+                    c:set_seal(seal)
+                    return true
+                end
+            }))
+        end
+
         for i = 1, #G.hand.cards do
             local percent = 0.85 + (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
             G.E_MANAGER:add_event(Event({
