@@ -21,6 +21,11 @@ SMODS.Joker({
 	perishable_compat = false,
 	calculate = function(self, card, context)
 		if context.other_consumeable and not context.other_consumeable.debuff then
+			local mult = 1
+			local c = context.other_consumeable
+			if next(SMODS.find_mod("Overflow")) then
+				mult = c.ability.immutable and c.ability.immutable.overflow_amount or mult
+			end
 			G.E_MANAGER:add_event(Event({
 				func = function()
 					context.other_consumeable:juice_up(0.5, 0.5)
@@ -28,7 +33,7 @@ SMODS.Joker({
 				end,
 			}))
 			return {
-				mult = card.ability.extra.consumeable_mult,
+				mult = card.ability.extra.consumeable_mult*mult,
 			}
 		end
 		if context.forcetrigger then
