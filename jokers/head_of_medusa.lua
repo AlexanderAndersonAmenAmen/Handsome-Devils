@@ -3,7 +3,7 @@ SMODS.Joker({
 	config = {
 		extra = {
 			x_chips = 1,
-			scaling = 0.1,
+			scaling = 0.2,
 		},
 	},
 	rarity = 2,
