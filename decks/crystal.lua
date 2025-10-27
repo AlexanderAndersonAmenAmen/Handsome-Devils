@@ -7,7 +7,7 @@ SMODS.Back {
         G.GAME.modifiers.hnds_double_showdown = true
     end,
     calculate = function(self, back, context)
-        if context.end_of_round and context.main_eval and G.GAME.round_resets.ante == math.floor(G.GAME.win_ante/2) then
+        if context.end_of_round and context.main_eval and G.GAME.round_resets.ante == math.floor(G.GAME.win_ante/2) and context.beat_boss then
             G.GAME.hnds_crystal_queued = true
         end
     end,
