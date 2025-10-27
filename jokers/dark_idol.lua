@@ -2,7 +2,7 @@ SMODS.Joker{
     key = "dark_idol",
     config = {
         extra = {
-            mult = 0.5,
+            mult = 0.25,
             total = 1,
         }
     },
