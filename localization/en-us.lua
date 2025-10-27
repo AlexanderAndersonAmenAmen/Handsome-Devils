@@ -67,11 +67,11 @@ return {
 			j_hnds_head_of_medusa = {
 				name = "Head of Medusa",
 				text = {
-					"Gains {X:chips,C:white}X#2#{} Chips for each",
+					"Gains {X:mult,C:white}X#2#{} Mult for each",
 					"held in hand {C:attention}face{} card ",
 					"at end of round and",
 					"turns them to {C:attention}Stone{}",
-					"{C:inactive}(Currently {X:chips,C:white}X#1#{C:inactive} Chips)",
+					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
 				},
 			},
 			j_hnds_deep_pockets = {

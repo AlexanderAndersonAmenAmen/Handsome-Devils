@@ -2,14 +2,14 @@ SMODS.Joker({
 	key = "head_of_medusa",
 	config = {
 		extra = {
-			x_chips = 1,
+			x_mult = 1,
 			scaling = 0.2,
 		},
 	},
 	rarity = 2,
 	loc_vars = function(self, info_queue, card)
 		info_queue[#info_queue+1] = G.P_CENTERS.m_stone
-		return { vars = { card.ability.extra.x_chips, card.ability.extra.scaling } }
+		return { vars = { card.ability.extra.x_mult, card.ability.extra.scaling } }
 	end,
 	atlas = "Jokers",
 	pos = { x = 6, y = 0 },
@@ -33,7 +33,7 @@ SMODS.Joker({
 			}))
 			SMODS.scale_card(card, {
 				ref_table = card.ability.extra,
-				ref_value = "x_chips",
+				ref_value = "x_mult",
 				scalar_value = "scaling",
 				scaling_message = {
 					message_key = "k_hnds_petrified",
@@ -60,7 +60,7 @@ SMODS.Joker({
 				if faces > 0 then
 					SMODS.scale_card(card, {
 						ref_table = card.ability.extra,
-						ref_value = "x_chips",
+						ref_value = "x_mult",
 						scalar_value = "scaling",
 						scaling_message = {
 							message_key = "k_hnds_petrified",
@@ -73,14 +73,14 @@ SMODS.Joker({
 				end
 			end
 			return {
-				xchips = card.ability.extra.x_chips,
+				xmult = card.ability.extra.x_mult,
 			}
 		end
 
 		--Scoring
 		if context.joker_main and context.cardarea == G.jokers then
 			return {
-				xchips = card.ability.extra.x_chips,
+				xmult = card.ability.extra.x_mult,
 			}
 		end
 	end,
