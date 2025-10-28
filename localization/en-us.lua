@@ -175,7 +175,7 @@ return {
 				text = {
 					"Quadruples all",
 					"{C:attention}listed{} {C:green,E:1}probabilities{}",
-					"Sets your money to {C:money}$0",
+					"Set your money to {C:red}$0",
 					"when {C:attention}Blind{} is selected",
 					"{C:inactive}(e.x. {}{C:green}1 in 3{} {C:inactive}->{} {C:green}#1# in 3{}{C:inactive}){}",
 				},
@@ -202,8 +202,8 @@ return {
 				name = "Energized",
 				text = {
 					"If played hand is a single card,",
-					"retriggers it {C:attention}#3#{} additional times",
-					"{C:green}#1# in #2#{} chance to {C:red}destroy it"
+					"retrigger it {C:attention}#3#{} additional times",
+					"{C:green}#1# in #2#{} chance to {C:red}destroy{} it"
 				}
 			},
 			j_hnds_pennywise = {
