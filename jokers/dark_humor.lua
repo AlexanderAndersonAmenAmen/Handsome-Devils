@@ -26,11 +26,13 @@ SMODS.Joker({
 				card.ability.extra.chips = card.ability.extra.chips
 					+ target:get_chip_bonus()
 					+ target:get_chip_h_bonus()
+				if target.edition and target.edition.chips then card.ability.extra.chips = card.ability.extra.chips + target.edition.chips end
 				if SMODS.has_enhancement(target, "m_lucky") then
-					card.ability.extra.mult = card.ability.extra.mult + target:get_chip_mult() + target:get_chip_h_mult() - target.ability.mult
+					card.ability.extra.mult = card.ability.extra.mult + target:get_chip_mult() + target:get_chip_h_mult() - (SMODS.pseudorandom_probability(target, "m_lucky", 1, 5) and 0 or target.ability.mult)
 				else
 					card.ability.extra.mult = card.ability.extra.mult + target:get_chip_mult() + target:get_chip_h_mult()
 				end
+				if target.edition and target.edition.mult then card.ability.extra.mult = card.ability.extra.mult + target.edition.mult end
 				SMODS.destroy_cards(target)
 				SMODS.calculate_effect({ message = localize("k_upgrade_ex") }, card)
 			end
