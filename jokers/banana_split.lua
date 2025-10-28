@@ -32,8 +32,7 @@ SMODS.Joker({
 		end
 
 		if
-			(context.end_of_round and context.main_eval)
-			or context.forcetrigger
+			(context.end_of_round and context.main_eval or context.forcetrigger)
 				and not context.blueprint
 				and #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit
 		then

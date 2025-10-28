@@ -17,7 +17,7 @@ SMODS.Joker({
     discovered = true,
     blueprint_compat = false,
     calculate = function(self, card, context)
-        if context.setting_ability and G.P_CENTERS[context.old].set == "Enhanced" and G.P_CENTERS[context.new].set == "Enhanced" then
+        if context.setting_ability and G.P_CENTERS[context.old].set == "Enhanced" and G.P_CENTERS[context.new].set == "Enhanced" and not context.unchanged then
             context.other_card.ability.perma_mult = context.other_card.ability.perma_mult + card.ability.extra.mult
             context.other_card.ability.perma_bonus = context.other_card.ability.perma_bonus + card.ability.extra.chips
             return {
