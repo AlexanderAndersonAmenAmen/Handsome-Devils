@@ -2,7 +2,7 @@ SMODS.Enhancement({
 	key = "obsidian",
 	atlas = "Extras",
 	pos = { x = 3, y = 0 },
-	config = { p_dollars = -1, extra = { odds = 3 } },
+	config = { p_dollars = -2, extra = { odds = 2 } },
 	loc_vars = function(self, info_queue, card)
 		local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_obsidian")
 		return { vars = { -card.ability.p_dollars, numerator, denominator } }
