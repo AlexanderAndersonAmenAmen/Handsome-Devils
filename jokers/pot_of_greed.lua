@@ -18,7 +18,7 @@ SMODS.Joker({
 	end,
 	calculate = function(self, card, context)
 		if context.setting_blind then
-			card.ability.extra.currently_drawn = 0
+			card.ability.extra.currently_drawn = 0 --this too does nothing
 		end
 
 		if (context.using_consumeable or context.forcetrigger) and G.hand and G.hand.cards and #G.hand.cards > 0 then

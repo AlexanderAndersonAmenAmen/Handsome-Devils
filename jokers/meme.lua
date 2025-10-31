@@ -41,6 +41,7 @@ SMODS.Joker({
 						ref_table[ref_value] = initial + boost * change
 					end,
 				})
+				return nil, true
 			end
 		elseif context.joker_main or context.forcetrigger then
 			return {

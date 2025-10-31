@@ -17,17 +17,18 @@ SMODS.Joker {
     end,
     calculate = function(self, card, context)
         if (context.end_of_round and context.beat_boss and context.main_eval and G.GAME.current_round.hands_played == 1) or (context.forcetrigger and G.GAME.blind) then
-                G.E_MANAGER:add_event(Event({
-                    func = function()
-                        local c = SMODS.add_card({
-                            edition = 'e_negative',
-                            key = HNDS.get_blind_soul(G.GAME.blind, "hnds_pennywise"),
-                        })
-                        c.ability.hnds_soul = true
-                        return true
-                    end
-                }))
-            end
+            G.E_MANAGER:add_event(Event({
+                func = function()
+                    local c = SMODS.add_card({
+                        edition = 'e_negative',
+                        key = HNDS.get_blind_soul(G.GAME.blind, "hnds_pennywise"),
+                    })
+                    c.ability.hnds_soul = true
+                    return true
+                end
+            }))
+            return nil, true
+        end
         if context.retrigger_joker_check and not context.retrigger_joker and context.other_card.ability.hnds_soul then
             return {
                 repetitions = 1

@@ -25,7 +25,7 @@ SMODS.Joker({
 			or (context.forcetrigger and #G.play > 0)
 		then
 			local othercard = G.play.cards[1]
-			if othercard and othercard.ability.set == "Enhanced" and not othercard.edition then
+			if othercard and next(SMODS.get_enhancements(othercard) or {}) and not othercard.edition then
 				G.E_MANAGER:add_event(Event({
 					func = function()
 						othercard:set_edition(
