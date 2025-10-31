@@ -19,8 +19,7 @@ SMODS.Joker {
 	end,
     calculate = function(self, card, context)
         if (context.end_of_round and context.main_eval)
-            or context.forcetrigger
-            and not context.blueprint then
+            or context.forcetrigger then
             if
                 context.forcetrigger
                 or SMODS.pseudorandom_probability(card, "krust", 1, card.ability.extra.odds, "hnds_krusty")
@@ -35,6 +34,7 @@ SMODS.Joker {
                         return true
                     end
                 }))
+                return nil, true
             end
         end
         if context.setting_ability and G.P_CENTER_POOLS.Food and G.P_CENTER_POOLS.Food[context.new] and not (context.other_card.edition and context.other_card.edition == "e_negative") and not context.blueprint then

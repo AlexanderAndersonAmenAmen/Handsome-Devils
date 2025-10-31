@@ -26,7 +26,7 @@ SMODS.Joker({
 				(
 					context.selling_card
 					and context.card ~= card
-					and G.STATE == G.STATES.SELECTING_HAND
+					and G.GAME.blind.in_blind
 					and context.card.ability.set == "Joker"
 				) or context.forcetrigger
 			)
@@ -36,6 +36,7 @@ SMODS.Joker({
 				ref_value = "x_mult",
 				scalar_value = "scaling",
 			})
+			return nil, true
 		end
 
 		--Scoring

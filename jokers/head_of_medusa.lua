@@ -40,6 +40,7 @@ SMODS.Joker({
 					colour = G.C.GREY
 				}
 			})
+			return nil, true
 		end
 		if context.forcetrigger then
 			if G.hand and #G.hand.cards > 0 then

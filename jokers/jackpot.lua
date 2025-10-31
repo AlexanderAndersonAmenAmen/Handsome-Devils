@@ -57,10 +57,11 @@ SMODS.Joker({
 						colour = G.C.GREEN,
 					},
 				})
+				return nil, true
 			end
 		end
 		if
-			context.forcetrigger
+			context.forcetrigger --this should probably also force self desctruction
 			and SMODS.pseudorandom_probability(
 				card,
 				"hnds_jackpot",
