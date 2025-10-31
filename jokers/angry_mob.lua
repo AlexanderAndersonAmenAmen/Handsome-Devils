@@ -8,8 +8,7 @@ SMODS.Joker({
     config = {
         extra = {
             xmult = 2,
-            old_rate = nil
-        }   
+        }
     },
     loc_vars = function(self, info_queue, card)
         return {
@@ -17,12 +16,13 @@ SMODS.Joker({
         }
     end,
     add_to_deck = function(self, card, from_debuff)
-        card.ability.extra.old_rate = G.GAME.joker_rate
-        G.GAME.joker_rate = 0
+        card.ability.extra.already_jokerless = G.GAME.modifiers.no_shop_jokers
+        G.GAME.modifiers.no_shop_jokers = true
     end,
     remove_from_deck = function(self, card, from_debuff)
-        G.GAME.joker_rate = card.ability.extra.old_rate
-        card.ability.extra.old_rate = nil
+        if not card.ability.extra.already_jokerless then
+            G.GAME.modifiers.no_shop_jokers = nil
+        end
     end,
     calculate = function(self, card, context)
         local cae = card.ability.extra
