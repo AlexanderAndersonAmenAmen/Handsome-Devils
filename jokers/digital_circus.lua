@@ -43,15 +43,9 @@ SMODS.Joker({
 						or nil,
 					edition = poll_edition("digital_circus", 1, false, true),
 				})
+				return nil, true
 			else
-				card_eval_status_text(
-					context.blueprint_card or card,
-					"extra",
-					nil,
-					nil,
-					nil,
-					{ message = localize("k_no_room_ex") }
-				)
+				return { message = localize("k_no_room_ex") }
 			end
 		end
 

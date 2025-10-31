@@ -34,7 +34,7 @@ SMODS.Joker({
 				end
 				if target.edition and target.edition.mult then card.ability.extra.mult = card.ability.extra.mult + target.edition.mult end
 				SMODS.destroy_cards(target)
-				SMODS.calculate_effect({ message = localize("k_upgrade_ex") }, card)
+				return { message = localize("k_upgrade_ex") }
 			end
 		end
 		if context.joker_main or context.forcetrigger then

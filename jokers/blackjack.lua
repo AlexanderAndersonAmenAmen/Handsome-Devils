@@ -18,8 +18,8 @@ SMODS.Joker({
     end,
     calculate = function(self, card, context)
         local cae = card.ability.extra
-        local sum = 0
         if context.pre_discard and not context.blueprint then
+            local sum = 0
             for k, v in pairs(context.full_hand) do
                 sum = sum + v.base.nominal
             end
@@ -29,7 +29,7 @@ SMODS.Joker({
 					ref_value = "chips",
 					scalar_value = "chipg",
 				})
-                sum = 0
+                return nil, true
             end
         end
 
@@ -41,7 +41,7 @@ SMODS.Joker({
 
         if context.end_of_round and not context.blueprint and G.GAME.blind.boss and context.main_eval then
             cae.chips = 0
-            SMODS.calculate_effect({message = localize("k_reset"), card = card})
+            return {message = localize("k_reset"), card = card}
         end
     end
 })

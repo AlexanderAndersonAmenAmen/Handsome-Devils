@@ -31,6 +31,7 @@ SMODS.Joker{
                         message_key = "a_xmult"
                     }
                 })
+                return nil, true
             end
         end
         if context.destroying_card and context.destroying_card:is_suit(G.GAME.current_round.dark_idol.suit) and context.destroying_card:get_id() == G.GAME.current_round.dark_idol.id then
