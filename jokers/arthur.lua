@@ -26,7 +26,7 @@ SMODS.Joker {
         return { vars = { card.ability.extra.re, card.ability.extra.rep, localize(suit, "suits_plural"), colours ={ G.C.SUITS[suit]} } }
     end,
     calculate = function (self, card, context)
-        if context.after and not context.blueprint then
+        if context.after and not context.blueprint and not context.retrigger_joker then
             return{
                 message = "Changed!",
             }
@@ -43,7 +43,7 @@ SMODS.Joker {
             
         end
 
-        if context.reroll_shop and card.ability.extra.re > 0 and not context.blueprint then
+        if context.reroll_shop and card.ability.extra.re > 0 and not context.blueprint and not context.retrigger_joker then
             card.ability.extra.re = card.ability.extra.re - 1
         end
 

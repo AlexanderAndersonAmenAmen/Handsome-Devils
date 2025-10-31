@@ -36,6 +36,7 @@ SMODS.Joker({
 					end,
 				}))
 			end
+			return nil, true
 		end
 	end,
 })

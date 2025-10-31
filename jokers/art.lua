@@ -24,6 +24,7 @@ SMODS.Joker {
                 }))
             end
             G.GAME.art_queue = G.GAME.art_queue + 1
+            return nil, true
         end
     end
 }

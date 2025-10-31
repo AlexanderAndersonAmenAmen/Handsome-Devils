@@ -25,10 +25,10 @@ SMODS.Joker({
 		return { vars = { card.ability.extra.Xmult, numerator, denominator }, main_end = main_end }
 	end,
 	calculate = function(self, card, context)
-		if context.joker_main or context.forcetrigger then
-			SMODS.calculate_effect({
+		if context.joker_main then
+			return {
 				xmult = card.ability.extra.Xmult,
-			}, card)
+			}
 		end
 
 		if
@@ -51,6 +51,7 @@ SMODS.Joker({
 				return {
 					colour = G.C.ORANGE,
 					message = localize("k_hnds_banana_split"),
+					xmult = context.forcetrigger and card.ability.extra.Xmult or nil
 				}
 			end
 		end
