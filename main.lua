@@ -334,9 +334,13 @@ local files = {
 		},
 		directory = "decks/",
 	},
-		editions = {
+	editions = {
 		list = { "vintage" },
 		directory = "editions/",
+	},
+	ranks = {
+		list = { "creepycard" },
+		directory = "ranks/",
 	},
 }
 
@@ -364,6 +368,13 @@ SMODS.Atlas({
 	path = "hd_icon.png",
 	px = 32,
 	py = 32,
+})
+
+SMODS.Atlas({
+	key = "creepyJ",
+	path = "creepyJ.png",
+	px = 71,
+	py = 95,
 })
 
 SMODS.Atlas({
