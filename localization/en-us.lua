@@ -241,37 +241,37 @@ return {
 			j_hnds_bizzare_joker_spades = {
 				name = "Bizarre Joker",
 				text = {
-				"{C:chips}+#2#{} Chips per scored {C:spades}Spade{} card",
- 				"{s:0.8}Effect changes every round",
- 				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
- 				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
+					"{C:chips}+#2#{} Chips per scored {C:spades}Spade{} card",
+					"{s:0.8}Effect changes every round",
+					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
+					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
 				}
 			},
 			j_hnds_bizzare_joker_clubs = {
 				name = "Bizarre Joker",
 				text = {
-				"{C:mult}+#4#{} Mult per scored {C:clubs}Club{} card",
- 				"{s:0.8}Effect changes every round",
- 				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
- 				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
+					"{C:mult}+#4#{} Mult per scored {C:clubs}Club{} card",
+					"{s:0.8}Effect changes every round",
+					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
+					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
 				}
 			},
 			j_hnds_bizzare_joker_diamonds = {
 				name = "Bizarre Joker",
 				text = {
-				"{C:money}+$#7#{} sell value per scored {C:diamonds}Diamond{} card",
- 				"{s:0.8}Effect changes every round",
- 				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
- 				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
+					"{C:money}+$#7#{} sell value per scored {C:diamonds}Diamond{} card",
+					"{s:0.8}Effect changes every round",
+					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
+					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
 				}
 			},
 			j_hnds_bizzare_joker_hearts = {
 				name = "Bizarre Joker",
 				text = {
-				"{X:mult,C:white}X#6#{} Mult per scored {C:hearts}Heart{} card",
- 				"{s:0.8}Effect changes every round",
- 				"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
- 				"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
+					"{X:mult,C:white}X#6#{} Mult per scored {C:hearts}Heart{} card",
+					"{s:0.8}Effect changes every round",
+					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
+					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
 				}
 			},
 			j_hnds_arthur = {
@@ -341,7 +341,7 @@ return {
 					"On Ante {C:attention}4{}, face",
 					"the {C:attention}Showdown Blind{}",
 					"Defeat it to open an",
-					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}" --might need to remove the E:1, hover tooltip doesnt seem to work with that
+					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}", --might need to remove the E:1, hover tooltip doesnt seem to work with that
 				}
 			},
 			b_hnds_conjuring = {
@@ -474,7 +474,7 @@ return {
 			},
 			hnds_soul = {
 				name = "Soul",
-				text = {"Created by {C:legendary,E:1}Pennywise"}
+				text = { "Created by {C:legendary,E:1}Pennywise" }
 			},
 			p_hnds_magic = {
 				name = "Magic Pack",
@@ -619,6 +619,9 @@ return {
 		},
 		poker_hand_descriptions = {
 			hnds_stone_ocean = { "A hand consisting of 5 Stone cards" },
+		},
+		ranks = {
+			hnds_creepycard = 'Something Truly Evil',
 		},
 	},
 }
