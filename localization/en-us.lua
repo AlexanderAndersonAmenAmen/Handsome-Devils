@@ -494,6 +494,9 @@ return {
 					"to add to your deck",
 				}
 			},
+			hnds_creepy_rank = {
+				"{C:red}evil{} ass rank"
+			}
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {

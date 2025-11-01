@@ -25,7 +25,7 @@ end
 local chip_x_mult_ref = Card.get_chip_x_mult
 function Card:get_chip_x_mult(context)
   if self.base.id == SMODS.Ranks['hnds_creepycard'].id then
-    return SMODS.Ranks['hnds_creepycard'].config.xmult
+    return SMODS.Ranks['hnds_creepycard'].config.xmult * chip_x_mult_ref(self, context)
   end
   return chip_x_mult_ref(self, context)
 end
