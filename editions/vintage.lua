@@ -4,7 +4,7 @@ SMODS.Shader({ key = 'vintage', path = 'vintage.fs' })
 
 SMODS.Edition({
 	key = "vintage",
-	disable_shadow = true,
+	disable_shadow = false,
 	disable_base_shader = true,
 	shader = "vintage",
 	discovered = true,
