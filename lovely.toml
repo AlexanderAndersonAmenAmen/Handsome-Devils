@@ -85,24 +85,6 @@ end
 match_indent = true
 
 # -----------------------------
-# Creepy Joker Rank
-# -----------------------------
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "elseif card_type == 'Booster' then"
-position = "before"
-payload = '''
-if card and card.base and card.base.value == "hnds_creepycard" then
-    full_UI_table.name = {}
-    localize{type = 'other', key = 'hnds_creepy_rank', set = 'Other', nodes = full_UI_table.name}
-    full_UI_table.name = full_UI_table.name[1]
-end
-'''
-match_indent = true
-
-# -----------------------------
 # DNA Tag
 # -----------------------------
 
