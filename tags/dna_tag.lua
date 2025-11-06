@@ -5,36 +5,15 @@ SMODS.Tag {
     pos = { x = 5, y = 0 },
     discovered = true,
     apply = function(self, tag, context)
-        if context.type == 'immediate' then
+        if context.type == 'hnds_joker_bought' then
             local lock = tag.ID
             G.CONTROLLER.locks[lock] = true
             tag:yep('+', G.C.GOLD, function(card)
-                if G.jokers and G.jokers.cards[1] then
-                    local copied
-                    for _, c in ipairs(G.jokers.cards) do
-                        if c.sort_id == G.GAME.hnds_dna_tag_copy then
-                            copied = c
-                        end
-                    end
-                    if not copied then copied = card end --failsafe
-                    local chosen_joker = copied
-                    if context.card_added then
-                        G.E_MANAGER:add_event(Event({
-                            trigger = 'before',
-                            delay = 0.4,
-                            func = function()
-                                local copied_joker = copy_card(chosen_joker, nil, nil, nil,
-                                    chosen_joker.edition and chosen_joker.edition.negative)
-                                copied_joker:start_materialize()
-                                copied_joker:add_to_deck()
-                                if copied_joker.edition and copied_joker.edition.negative then
-                                    copied_joker:set_edition(nil, true)
-                                end
-                                G.jokers:emplace(copied_joker)
-                                return true
-                            end
-                        }))
-                    end
+                if context.card then
+                    local copy = copy_card(context.card)
+                    copy.ability.from_hnds_dna = true
+                    copy:add_to_deck()
+                    G.jokers:emplace(copy)
                 end
                 G.CONTROLLER.locks[lock] = nil
                 return true
