@@ -4,32 +4,6 @@ HNDS.should_hand_destroy = function(card)
 	(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
 end
 
-local smods_hnr_ref = SMODS.has_no_rank
-function SMODS.has_no_rank(card)
-	local ret = smods_hnr_ref(card)
-	if card.base.id == SMODS.Ranks['hnds_creepycard'].id then
-		ret = true
-	end
-	return ret
-end
-
-local smods_hnr_ref = SMODS.has_no_suit
-function SMODS.has_no_suit(card)
-	local ret = smods_hnr_ref(card)
-	if card.base.id == SMODS.Ranks['hnds_creepycard'].id then
-		ret = true
-	end
-	return ret
-end
-
-local chip_x_mult_ref = Card.get_chip_x_mult
-function Card:get_chip_x_mult(context)
-  if self.base.id == SMODS.Ranks['hnds_creepycard'].id then
-    return SMODS.Ranks['hnds_creepycard'].config.xmult
-  end
-  return chip_x_mult_ref(self, context)
-end
-
 local destroy_cards_ref = SMODS.calculate_destroying_cards
 function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand)
 	destroy_cards_ref(context, cards_destroyed, scoring_hand)
