@@ -5,15 +5,13 @@ SMODS.Tag {
     pos = { x = 5, y = 0 },
     discovered = true,
     apply = function(self, tag, context)
-        if context.type == 'hnds_joker_bought' then
+        if context.type == 'store_joker_modify' and context.card.ability.set == "Joker" then
             local lock = tag.ID
             G.CONTROLLER.locks[lock] = true
-            tag:yep('+', G.C.GOLD, function(card)
-                if context.card then
-                    local copy = copy_card(context.card)
-                    copy:add_to_deck()
-                    G.jokers:emplace(copy)
-                end
+            tag:yep('+', G.C.GOLD, function()
+                context.card.ability.hnds_copies_to_create = (context.card.ability.hnds_copies_to_create or 0) + 1
+                context.card.ability.couponed = true
+                context.card:set_cost()
                 G.CONTROLLER.locks[lock] = nil
                 return true
             end)

@@ -494,6 +494,18 @@ return {
 					"to add to your deck",
 				}
 			},
+			dna_tag_tooltip_singular = {
+				name = "Tag Copies",
+				text = {
+					"Will create {C:attention}#1#{} copy when bought"
+				}
+			},
+			dna_tag_tooltip_plural = {
+				name = "Tag Copies",
+				text = {
+					"Will create {C:attention}#1#{} copies when bought"
+				}
+			}
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {
