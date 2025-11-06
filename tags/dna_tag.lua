@@ -11,7 +11,6 @@ SMODS.Tag {
             tag:yep('+', G.C.GOLD, function(card)
                 if context.card then
                     local copy = copy_card(context.card)
-                    copy.ability.from_hnds_dna = true
                     copy:add_to_deck()
                     G.jokers:emplace(copy)
                 end

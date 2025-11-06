@@ -102,7 +102,7 @@ end
 local add_to_deck_ref = Card.add_to_deck
 function Card:add_to_deck(from_debuff)
 	local ret = add_to_deck_ref(self, from_debuff)
-	if G.GAME.tags and not self.ability.from_hnds_dna and not from_debuff then
+	if G.GAME.tags and not from_debuff then
 		for i = 1, #G.GAME.tags do
 			G.GAME.tags[i]:apply_to_run({ type = "hnds_joker_bought", card = self })
 		end
