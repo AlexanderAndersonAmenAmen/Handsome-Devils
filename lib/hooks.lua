@@ -113,6 +113,7 @@ function Card:add_to_deck(from_debuff)
 						copy.ability.hnds_copies_to_create = nil
 						copy:add_to_deck()
 						G.jokers:emplace(copy)
+						G.GAME.joker_buffer = 0
 						return true
 					end
 				})
