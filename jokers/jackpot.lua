@@ -18,7 +18,7 @@ SMODS.Joker({
 		end
 		local numerator, denominator =
 			SMODS.get_probability_vars(card, 2^seven, card.ability.extra.base_chance, "hnds_jackpot")
-		return { vars = { numerator, denominator, card.ability.extra.money, card.ability.extra.mult } }
+		return { vars = { numerator, denominator, card.ability.extra.money, card.ability.extra.mult, card.ability.extra.base_chance } }
 	end,
 	atlas = "Jokers",
 	pos = { x = 8, y = 0 },
