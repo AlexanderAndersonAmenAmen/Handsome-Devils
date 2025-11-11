@@ -13,7 +13,7 @@ SMODS.Joker({
 		if G.hand and G.hand.highlighted then
 			local _, _, _, cards = G.FUNCS.get_poker_hand_info(G.hand.highlighted)
 			for _, c in ipairs(cards or {}) do
-				if c:get_id() == 7 then seven = seven + 1 end
+				if c:get_id() == 7 and c.facing == "front" then seven = seven + 1 end
 			end
 		end
 		local numerator, denominator =
