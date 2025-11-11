@@ -110,7 +110,7 @@ return {
 					"give {C:mult}+#4#{} Mult per hand played",
 					"Each scoring {C:attention}7{} doubles this",
 					"{C:green}probability{} for played hand",
-					"{C:inactive}(ex. {C:green}1 in #5#{} -> {C:green}2 in #5#{})"
+					"{C:inactive}(ex. {C:green}1 in #5#{C:inactive} -> {C:green}2 in #5#{C:inactive})"
 				},
 			},
 			j_hnds_pot_of_greed = {
