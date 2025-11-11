@@ -107,9 +107,9 @@ return {
 				name = "Jackpot",
 				text = {
 					"{C:green}#1# in #2#{} chance to win {C:money}$#3#{} and",
-					"{C:red}self destruct{} at end of round",
-					"Increases {C:attention}listed{} {C:green}probability{}",
-					"by {C:attention}#4#{} per scoring {C:attention}7{} played",
+					"give {C:mult}+#4#{} Mult per hand played",
+					"{C:green}Probability{} is doubled for",
+					"each scoring {C:attention}7{}"
 				},
 			},
 			j_hnds_pot_of_greed = {
