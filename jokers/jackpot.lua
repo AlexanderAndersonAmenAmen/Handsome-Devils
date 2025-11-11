@@ -9,8 +9,15 @@ SMODS.Joker({
 	},
 	rarity = 1,
 	loc_vars = function(self, info_queue, card)
+		local seven = 0
+		if G.hand and G.hand.highlighted then
+			local _, _, _, cards = G.FUNCS.get_poker_hand_info(G.hand.highlighted)
+			for _, c in ipairs(cards or {}) do
+				if c:get_id() == 7 then seven = seven + 1 end
+			end
+		end
 		local numerator, denominator =
-			SMODS.get_probability_vars(card, 1, card.ability.extra.base_chance, "hnds_jackpot")
+			SMODS.get_probability_vars(card, 2^seven, card.ability.extra.base_chance, "hnds_jackpot")
 		return { vars = { numerator, denominator, card.ability.extra.money, card.ability.extra.mult } }
 	end,
 	atlas = "Jokers",
@@ -30,7 +37,7 @@ SMODS.Joker({
 			end
 			if SMODS.pseudorandom_probability(card, "hnds_jackpot", 2^seven, card.ability.extra.base_chance) then
 				return {
-					dollars = card.ability.extra.dollars,
+					dollars = card.ability.extra.money,
 					mult = card.ability.extra.mult
 				}
 			end
