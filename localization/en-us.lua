@@ -108,8 +108,8 @@ return {
 				text = {
 					"{C:green}#1# in #2#{} chance to win {C:money}$#3#{} and",
 					"give {C:mult}+#4#{} Mult per hand played",
-					"{C:green}Probability{} is doubled for",
-					"each scoring {C:attention}7{}"
+					"This {C:green}probability{} is doubled for",
+					"the hand for each scoring {C:attention}7{}"
 				},
 			},
 			j_hnds_pot_of_greed = {
