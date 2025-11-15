@@ -347,6 +347,14 @@ Atlases and other resources
 --]]
 ---------------------------
 
+SMODS.Gradient({
+    key = "SEAL_EDITION",
+    colours = { G.C.RED, G.C.BLUE, G.C.GOLD, G.C.PURPLE },
+    cycle = 7.5,
+})
+
+G.C.SEAL_EDITION = SMODS.Gradients.hnds_SEAL_EDITION
+
 SMODS.Sound({
 	key = "madnesscolor",
 	path = "madnesscolor.ogg",

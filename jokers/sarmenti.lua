@@ -23,7 +23,7 @@ SMODS.Joker {
             modeCol = G.C.ORANGE
         else --seals
             modeString = localize("b_seals")
-            modeCol = G.C.RED
+            modeCol = G.C.SEAL_EDITION
         end
 
         return { vars = { modeString, colours = {modeCol} } }

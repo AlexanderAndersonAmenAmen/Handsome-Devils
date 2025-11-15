@@ -328,10 +328,10 @@ return {
 			j_hnds_sarmenti = {
 				name = "Sarmenti",
 				text = {
-					"{C:attention}Once{} per round, scored cards",
-					"gain random {V:1}#1#{}",
-					"if played hand contains",
-					"a {C:attention}Four of a Kind{}",
+					"{C:attention}Once{} per round, give",
+					"scored cards random",
+					"{V:1}#1#{} if played hand",
+					"contains a {C:attention}Four of a Kind{}",
 					"{s:0.8}Effect changes every round",
 				}
 			},
