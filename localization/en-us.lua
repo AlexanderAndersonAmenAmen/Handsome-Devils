@@ -325,6 +325,19 @@ return {
 					"offer {C:attention}Jokers"
 				}
 			},
+			j_hnds_sarmenti = {
+				name = "Sarmenti",
+				text = {
+					"Once per round, if scored hand",
+					"contains a {C:attention}Four of a Kind{},",
+					"scored cards gain random {V:1}#1#{}",
+					"{s:0.4}",
+					"{s:0.8,C:inactive}Cycles through {s:0.8,C:dark_edition}#3#{s:0.8,C:inactive}, {s:0.8,C:attention}#4#{s:0.8}",
+					"{s:0.8,C:inactive}and {s:0.8,C:mult}#5#{s:0.8,C:inactive} every round",
+					"{s:0.4}",
+					"{s:0.8,C:white,B:2}#2#"
+				}
+			},
 		},
 		Back = {
 			b_hnds_premiumdeck = {
@@ -655,7 +668,11 @@ return {
 			k_hnds_occultist = "Study!",
 			k_hnds_splashed = "Splashed!",
 			hnds_plus_q = "+1 ???", --this is for the cryptid digital hallucinations creation message with magic packs
-			k_hnds_magic_pack = "Magic Pack"
+			k_hnds_magic_pack = "Magic Pack",
+			k_hnds_sarmenti_active = "active",
+			k_hnds_sarmenti_inactive = "inactive",
+			k_hnds_sarmenti_enhanced = "Enhanced!",
+			k_hnds_enhancements = "Enhancements",
 		},
 		labels = {
 			hnds_vintage = "Vintage",

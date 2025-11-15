@@ -274,6 +274,7 @@ local files = {
 			"pennywise",
 			"art",
 			"krusty",
+			"sarmenti",
 			"arthur",
 		},
 		directory = "jokers/",
