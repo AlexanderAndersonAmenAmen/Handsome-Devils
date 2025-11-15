@@ -496,12 +496,6 @@ return {
 				}
 			},
 			dna_tag_tooltip_singular = {
-				name = "Tag Copies",
-				text = {
-					"Will create {C:attention}#1#{} copy when bought"
-				}
-			},
-			dna_tag_tooltip_singular = {
 				name = "DNA Tag",
 				text = {
 					"When you buy this Joker,",
