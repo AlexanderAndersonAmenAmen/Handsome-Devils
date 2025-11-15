@@ -16,7 +16,7 @@ SMODS.Tag {
                 return true
             end)
             tag.triggered = true
-            return true
+            return copy
         end
     end
 }
