@@ -340,8 +340,8 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
 		G.GAME.art_queue = 0
+		G.GAME.hnds_exchange_minus = 1
 	end
-	G.GAME.green_seal_draws = {}
 	reset_supersuit_card()
     reset_dark_idol()
 	bizzare_suit()
