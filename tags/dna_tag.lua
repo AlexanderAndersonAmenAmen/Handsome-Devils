@@ -6,15 +6,13 @@ SMODS.Tag {
     discovered = true,
     apply = function(self, tag, context)
         if context.type == 'store_joker_modify' and context.card.ability.set == "Joker" then
-            local lock = tag.ID
-            G.CONTROLLER.locks[lock] = true
+            local copy = copy_card(context.card)
+            create_shop_card_ui(copy, "Joker", G.shop_jokers)
+            copy.states.visible = false
             tag:yep('+', G.C.GOLD, function()
-                local copy = copy_card(context.card)
+                copy:start_materialize()
                 copy.ability.couponed = true
                 copy:set_cost()
-                G.shop_jokers:emplace(copy)
-                copy:start_materialize()
-                G.CONTROLLER.locks[lock] = nil
                 return true
             end)
             tag.triggered = true
