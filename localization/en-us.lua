@@ -501,12 +501,14 @@ return {
 					"Will create {C:attention}#1#{} copy when bought"
 				}
 			},
-			dna_tag_tooltip_plural = {
-				name = "Tag Copies",
+			dna_tag_tooltip_singular = {
+				name = "DNA Tag",
 				text = {
-					"Will create {C:attention}#1#{} copies when bought"
+					"When you buy this Joker,",
+					"create a copy of it",
+					"{C:inactive}(Must have room){}",
 				}
-			}
+			},
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {
@@ -619,6 +621,15 @@ return {
 				text = {
 					"Gives a free",
 					"{C:dark_edition,E:1}Magic Pack",
+				},
+			},
+			tag_hnds_dna_tag = {
+				name = "DNA Tag",
+				text = {
+					"Next shop Joker is free",
+					"and gets {C:attention}duplicated{}",
+					"when you buy it",
+					"{C:inactive}(Must have room){}",
 				},
 			},
 		}
