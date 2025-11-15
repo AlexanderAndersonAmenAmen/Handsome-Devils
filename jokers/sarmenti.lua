@@ -34,27 +34,17 @@ SMODS.Joker {
 
             for _, c in ipairs(context.scoring_hand) do
                 if card.ability.extra.mode == 0 then
-                    c:set_edition(poll_edition('sarmenti', 1, false, true))
+                    c:set_edition(poll_edition('sarmenti', 1, false, true), nil, nil, true)
                 elseif card.ability.extra.mode == 1 then
-                    c:set_ability(G.P_CENTERS[SMODS.poll_enhancement({key = 'sarmenti', guaranteed = true})])
-
-                    G.E_MANAGER:add_event(Event({
-                        func = function()
-                            c:juice_up()
-                            return true
-                        end
-                    })) 
-
+                    c:set_ability(SMODS.poll_enhancement({key = 'sarmenti', guaranteed = true}), nil, true)
                 else
                     c:set_seal(SMODS.poll_seal({key = 'sarmenti', guaranteed = true}))
-                    
-                    G.E_MANAGER:add_event(Event({
-                        func = function()
-                            c:juice_up()
-                            return true
-                        end
-                    })) 
                 end
+                G.E_MANAGER:add_event(Event{
+                    func = function ()
+                        c:juice_up()
+                    end
+                })
             end
             return {
                 message = localize('k_hnds_sarmenti_enhanced')
