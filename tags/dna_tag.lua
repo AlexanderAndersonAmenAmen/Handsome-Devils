@@ -9,6 +9,7 @@ SMODS.Tag {
             local copy = copy_card(context.card)
             create_shop_card_ui(copy, "Joker", G.shop_jokers)
             copy.states.visible = false
+            copy.states.drag.can = false
             tag:yep('+', G.C.GOLD, function()
                 copy:start_materialize()
                 copy.ability.couponed = true
@@ -16,7 +17,7 @@ SMODS.Tag {
                 return true
             end)
             tag.triggered = true
-            return copy
+            return true
         end
     end
 }
