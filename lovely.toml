@@ -83,3 +83,20 @@ else
 end
 '''
 match_indent = true
+
+# -----------------------------
+# DNA Tag
+# -----------------------------
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = 'for _, v in ipairs(info_queue) do'
+position = "before"
+payload = '''
+    if card and card.ability and card.ability.hnds_copies_to_create then
+        local copies = card.ability.hnds_copies_to_create
+        info_queue[#info_queue+1] = { set = "Other", key = "dna_tag_tooltip_"..(copies ~= 1 and "plural" or "singular"), vars = {copies}}
+    end
+'''
+match_indent = true

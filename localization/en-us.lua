@@ -495,6 +495,18 @@ return {
 					"to add to your deck",
 				}
 			},
+			dna_tag_tooltip_singular = {
+				name = "Tag Copies",
+				text = {
+					"Will create {C:attention}#1#{} copy when bought"
+				}
+			},
+			dna_tag_tooltip_plural = {
+				name = "Tag Copies",
+				text = {
+					"Will create {C:attention}#1#{} copies when bought"
+				}
+			}
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {
@@ -587,6 +599,29 @@ return {
 				},
 			},
 		},
+		Tag = {
+			tag_hnds_vintage_tag = {
+				name = "Vintage Tag",
+				text = {
+					"Next base edition shop",
+					"Joker is free and",
+					"becomes {C:dark_edition}Vintage"
+				}
+			},
+			tag_hnds_mystery_tag = {
+				name = "Mystery Tag",
+				text = {
+					"Create {C:attention}2{} random {C:attention}Tags",
+				}
+			},
+			tag_hnds_magic_tag = {
+				name = "Magic Tag",
+				text = {
+					"Gives a free",
+					"{C:dark_edition,E:1}Magic Pack",
+				},
+			},
+		}
 	},
 	misc = {
 		dictionary = {
