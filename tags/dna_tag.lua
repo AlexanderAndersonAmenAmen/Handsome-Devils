@@ -12,6 +12,7 @@ SMODS.Tag {
             copy.states.drag.can = false
             tag:yep('+', G.C.GOLD, function()
                 copy:start_materialize()
+                G.shop_jokers:align_cards()
                 copy.ability.couponed = true
                 copy:set_cost()
                 return true
