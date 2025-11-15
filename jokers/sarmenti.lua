@@ -11,18 +11,9 @@ SMODS.Joker {
     config = { extra = { mode = 0, active = true } }, -- mode 0 = editions, mode 1 = enhancements, mode 3 = seals
     loc_vars = function (self, info_queue, card)
 
-        local ac = card.ability.extra.active or true
         local mod = card.ability.extra.mode or 0
 
-        local activeString, activeCol, modeString, modeCol
-
-        if ac then
-            activeString = localize("k_hnds_sarmenti_active")
-            activeCol = G.C.GREEN
-        else
-            activeString = localize("k_hnds_sarmenti_inactive")
-            activeCol = G.C.MULT
-        end
+        local modeString, modeCol
 
         if mod == 0 then --editions
             modeString = localize("b_editions")
@@ -35,7 +26,7 @@ SMODS.Joker {
             modeCol = G.C.RED
         end
 
-        return { vars = { modeString, activeString, localize("b_editions"), localize("k_hnds_enhancements"), localize("b_seals"), colours = {modeCol, activeCol} } }
+        return { vars = { modeString, colours = {modeCol} } }
     end,
     calculate = function (self, card, context)
         
