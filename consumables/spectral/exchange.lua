@@ -4,7 +4,6 @@ SMODS.Consumable({
 	config = {
 		extra = {
 			cards = 1,
-			hand_reduction = 1,
 		},
 	},
 	loc_vars = function(self, info_queue, card)
@@ -13,7 +12,7 @@ SMODS.Consumable({
 			set = "Edition",
 			config = { extra = G.P_CENTERS["e_negative"].config.card_limit },
 		}
-		return { vars = { card.ability.extra.cards, card.ability.extra.hand_reduction } }
+		return { vars = { card.ability.extra.cards, G.GAME.hnds_exchange_minus or 1 } }
 	end,
 	discovered = true,
 	atlas = "Consumables",
@@ -31,8 +30,11 @@ SMODS.Consumable({
 				return true
 			end,
 		}))
-		ease_hands_played(-card.ability.extra.hand_reduction)
-		G.GAME.round_resets.hands = G.GAME.round_resets.hands - card.ability.extra.hand_reduction
+		G.GAME.hnds_exchange_minus = G.GAME.hnds_exchange_minus or 1
+		local mod = G.GAME.hnds_exchange_minus
+		ease_hands_played(-mod)
+		G.GAME.round_resets.hands = G.GAME.round_resets.hands - mod
+		G.GAME.hnds_exchange_minus = G.GAME.hnds_exchange_minus + 1
 	end,
 	can_use = function(self, card)
 		if G.STATE == G.STATES.SELECTING_HAND and G.GAME.current_round.hands_left <= 1 then

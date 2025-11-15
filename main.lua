@@ -224,6 +224,9 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.buying_card then
 		G.GAME.hnds_fregoli_copy = context.card.sort_id
 	end
+	if context.card_added then
+		G.GAME.hnds_dna_tag_copy = context.card.sort_id
+	end
 end
 
 SMODS.current_mod.optional_features = {
@@ -335,9 +338,18 @@ local files = {
 		},
 		directory = "decks/",
 	},
-		editions = {
+	editions = {
 		list = { "vintage" },
 		directory = "editions/",
+	},
+	tags = {
+		list = { 
+			"vintage_tag",
+			"mystery_tag",
+			"magic_tag",
+			"dna_tag",
+		 },
+		directory = "tags/",
 	},
 }
 
@@ -365,6 +377,13 @@ SMODS.Atlas({
 	path = "hd_icon.png",
 	px = 32,
 	py = 32,
+})
+
+SMODS.Atlas({
+	key = "HDtags",
+	path = "HDtags.png",
+	px = 34,
+	py = 34,
 })
 
 SMODS.Atlas({
