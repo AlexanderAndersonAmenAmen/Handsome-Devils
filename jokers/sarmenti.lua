@@ -34,7 +34,7 @@ SMODS.Joker {
 
             for _, c in ipairs(context.scoring_hand) do
                 if card.ability.extra.mode == 0 then
-                    c:set_edition(poll_edition('sarmenti', 1, false, true), nil, nil, true)
+                    c:set_edition(poll_edition('sarmenti', 1, false, true))
                 elseif card.ability.extra.mode == 1 then
                     c:set_ability(SMODS.poll_enhancement({key = 'sarmenti', guaranteed = true}), nil, true)
                 else
