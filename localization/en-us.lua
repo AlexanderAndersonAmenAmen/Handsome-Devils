@@ -503,6 +503,14 @@ return {
 					"{C:inactive}(Must have room){}",
 				}
 			},
+			dna_tag_tooltip_plural = {
+				name = "DNA Tag",
+				text = {
+					"When you buy this Joker,",
+					"create {C:attention}#1#{} copies of it",
+					"{C:inactive}(Must have room){}",
+				}
+			},
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {
