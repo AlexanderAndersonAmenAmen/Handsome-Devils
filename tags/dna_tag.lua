@@ -9,9 +9,11 @@ SMODS.Tag {
             local lock = tag.ID
             G.CONTROLLER.locks[lock] = true
             tag:yep('+', G.C.GOLD, function()
-                context.card.ability.hnds_copies_to_create = (context.card.ability.hnds_copies_to_create or 0) + 1
-                context.card.ability.couponed = true
-                context.card:set_cost()
+                local copy = copy_card(context.card)
+                copy.ability.couponed = true
+                copy:set_cost()
+                G.shop_jokers:emplace(copy)
+                copy:start_materialize()
                 G.CONTROLLER.locks[lock] = nil
                 return true
             end)

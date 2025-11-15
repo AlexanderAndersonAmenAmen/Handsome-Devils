@@ -72,28 +72,3 @@ function create_card(_type, area, legendary, _rarity, skip_materialize, soulable
 	end
 	return card
 end
-
-local add_to_deck_ref = Card.add_to_deck
-function Card:add_to_deck(from_debuff)
-	local ret = add_to_deck_ref(self, from_debuff)
-	if not from_debuff and self.ability.hnds_copies_to_create then
-		for _ = 1, self.ability.hnds_copies_to_create do
-			if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
-				G.GAME.joker_buffer = G.GAME.joker_buffer + 1
-				local c = self
-				G.E_MANAGER:add_event(Event{
-					func = function ()
-						local copy = copy_card(c)
-						copy.ability.hnds_copies_to_create = nil
-						copy:add_to_deck()
-						G.jokers:emplace(copy)
-						G.GAME.joker_buffer = 0
-						return true
-					end
-				})
-			end
-		end
-		self.ability.hnds_copies_to_create = nil
-	end
-	return ret
-end
