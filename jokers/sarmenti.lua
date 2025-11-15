@@ -43,6 +43,7 @@ SMODS.Joker {
                 G.E_MANAGER:add_event(Event{
                     func = function ()
                         c:juice_up()
+                        return true
                     end
                 })
             end
