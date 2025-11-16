@@ -373,7 +373,7 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 
 		if not G.hnds_circus_joker then
 			G.hnds_circus_joker = CardArea (
-				17.5, 5, G.CARD_W, G.CARD_H,
+				17.5, 5.75, G.CARD_W, G.CARD_H,
 				{card_limit = 1, highlighted_limit = 0, type = 'title'}
 			)
 		end
@@ -400,7 +400,8 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 			print('joker picked: ' .. new_joker)
 
 			local j = SMODS.add_card({set = 'Jokers', area = G.hnds_circus_joker, key = new_joker, no_edition = true, skip_materialize = true}) --silently and sneakily add the joker to the offscreen cardarea
-
+			j.ignore_base_shader = {true}
+			j.ignore_shadow = {true} -- force ignore shadow/base shader for transparent shader
 		end
 	
 	else
