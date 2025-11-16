@@ -336,6 +336,24 @@ function reset_dark_idol()
 	end
 end
 
+HNDS.circus_joker_pool = {
+	'j_hack', 
+	'j_juggler', 
+	'j_drunkard', 
+	'j_chaos', 
+	'j_sock_and_buskin', 
+	'j_smeared', 
+	'j_ring_master', -- why the heck is showman called this in the game files bruh
+	'j_oops',
+	'j_vagabond', 
+	'j_astronomer', 
+	'j_sixth_sense', 
+	'j_hanging_chad', 
+	'j_dusk', 
+	'j_hnds_supersuit', 
+	'j_hnds_pot_of_greed'
+}
+
 SMODS.current_mod.reset_game_globals = function(run_start)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
@@ -348,4 +366,97 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 
 	-- The suit changes every round, so we use reset_game_globals to choose a suit.
 
+	
+	-- vv FOR CIRCUS DECK vv --
+
+	if HNDS.DeckOrSleeve('circus') then
+
+		if not G.hnds_circus_joker then
+			G.hnds_circus_joker = CardArea (
+				17.5, 5.75, G.CARD_W, G.CARD_H,
+				{card_limit = 1, highlighted_limit = 0, type = 'title'}
+			)
+		end
+
+		if ((G.GAME and G.GAME.blind and G.GAME.blind:get_type() == 'Boss') or run_start) then
+			G.GAME.hnds_circus_joker_key = G.GAME.hnds_circus_joker_key or nil
+
+			if #G.hnds_circus_joker.cards > 0 then
+				G.hnds_circus_joker.cards[1]:start_dissolve() --remove the previous joker
+				G.hnds_circus_joker.cards = {}
+			end
+			
+			local poolcopy = HNDS.table_shallow_copy(HNDS.circus_joker_pool)
+			if G.GAME.hnds_circus_joker_key then
+				local i = HNDS.get_key_for_value(poolcopy, G.GAME.hnds_circus_joker_key)
+				if i then
+					table.remove(poolcopy, i) -- can't pick the same joker 2 antes in a row
+				end
+			end
+			
+			local new_joker = pseudorandom_element(poolcopy, pseudoseed('circus'))
+			G.GAME.hnds_circus_joker_key = new_joker
+
+			print('joker picked: ' .. new_joker)
+
+			local j = SMODS.add_card({set = 'Jokers', area = G.hnds_circus_joker, key = new_joker, no_edition = true, skip_materialize = true}) --silently and sneakily add the joker to the offscreen cardarea
+			j.ignore_base_shader = {true}
+			j.ignore_shadow = {true} -- force ignore shadow/base shader for transparent shader
+		end
+	
+	else
+		if G.hnds_circus_joker then
+			G.hnds_circus_joker:remove()
+		end
+	end
+
+end
+
+local find_joker_ref = find_joker
+
+function find_joker(name, non_debuff)
+
+	local jokers = find_joker_ref(name, non_debuff)
+
+	if G.hnds_circus_joker then
+		for _, v in pairs(G.hnds_circus_joker.cards) do
+			if v and type(v) == 'table' and v.ability.name == name and (non_debuff or not v.debuff) then
+				table.insert(jokers, v)
+			end
+		end
+	end
+
+	return jokers
+
+end
+
+---Copies the context of the table `t` non-recursively into a new table.
+---@param t table
+---@return table
+function HNDS.table_shallow_copy(t)
+	local t2 = {}
+	for k,v in pairs(t) do
+		t2[k] = v
+	end
+	return t2
+end
+
+function HNDS.get_key_for_value(t, value)
+  for k,v in pairs(t) do
+    if v==value then return k end
+  end
+  return nil
+end
+
+--Checks if the active deck or sleeve is the provided key. Code from Entropy.
+function HNDS.DeckOrSleeve(key)
+    local num = 0
+    if CardSleeves then
+        if G.GAME.selected_sleeve == ("sleeve_hnds_"..key) then num = num + 1 end
+    end
+    for i, v in pairs(G.GAME.entr_bought_decks or {}) do
+        if v == "b_hnds_"..key then num = num + 1 end
+    end
+    if  G.GAME.selected_back and G.GAME.selected_back.effect.center.original_key == key then num = num + 1 end
+    return num > 0 and num or nil
 end

@@ -363,6 +363,16 @@ return {
 					"by {C:attention,T:p_hnds_magic_1}Magic Packs{} which",
 					"contain {C:dark_edition,E:1}random cards"
 				}
+			},
+			b_hnds_circus = {
+				name = "Circus Deck",
+				text = {
+					"Copies ability of",
+					"a random {C:attention}Joker",
+					"Changes when defeating",
+					"a {C:attention}Boss Blind",
+					"{C:inactive}(Currently {V:1}#1#{C:inactive})"
+				}
 			}
 		},
 		Spectral = {
