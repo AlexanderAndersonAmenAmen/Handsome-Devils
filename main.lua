@@ -170,21 +170,6 @@ SMODS.current_mod.config_tab = function()
 end
 
 SMODS.current_mod.calculate = function(self, context)
-	if context.drawing_cards and #G.GAME.green_seal_draws > 0 then --green seal effect
-		G.E_MANAGER:add_event(Event({
-			blockable = true,
-			func = function()
-				for _, card in ipairs(G.GAME.green_seal_draws) do
-					if card.area == G.deck and card.config then
-						draw_card(G.deck, G.hand, nil, "up", true, card)
-					end
-				end
-				G.GAME.green_seal_draws = {}
-				save_run()
-				return true
-			end
-		}))
-	end
 	if context.individual and SMODS.has_enhancement(context.other_card, "m_stone") then
 		G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
 	end
@@ -361,6 +346,14 @@ end
 Atlases and other resources
 --]]
 ---------------------------
+
+SMODS.Gradient({
+    key = "SEAL_EDITION",
+    colours = { G.C.RED, G.C.BLUE, G.C.GOLD, G.C.PURPLE },
+    cycle = 7.5,
+})
+
+G.C.SEAL_EDITION = SMODS.Gradients.hnds_SEAL_EDITION
 
 SMODS.Sound({
 	key = "madnesscolor",
