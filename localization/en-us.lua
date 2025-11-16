@@ -373,7 +373,16 @@ return {
 					"{C:attention}Boss Blind{}, ability changes",
 					"{C:inactive}(Currently: {V:1}#1#{C:inactive})"
 				}
-			}
+			},
+			b_hnds_ol_reliable = {
+				name = "Ol' Reliable Deck",
+				text = {
+					"Triples all {C:attention}listed",
+					"{C:green}probabilities{} during",
+					"{C:attention}shop{} and {C:attention}Boss Blinds",
+					"{C:inactive}(e.x. {C:green}1 in 3{C:inactive} -> {C:green}3 in 3){C:inactive}"
+				}
+			},
 		},
 		Spectral = {
 			c_hnds_abyss = {

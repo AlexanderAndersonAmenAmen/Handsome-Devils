@@ -321,6 +321,7 @@ local files = {
 			"crystal",
 			"conjuring",
 			"circus",
+			"ol_reliable",
 		},
 		directory = "decks/",
 	},
