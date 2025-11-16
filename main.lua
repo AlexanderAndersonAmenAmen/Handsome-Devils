@@ -320,6 +320,7 @@ local files = {
 			"premiumdeck",
 			"crystal",
 			"conjuring",
+			"circus",
 		},
 		directory = "decks/",
 	},
