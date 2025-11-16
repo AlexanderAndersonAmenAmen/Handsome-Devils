@@ -338,6 +338,12 @@ local files = {
 		 },
 		directory = "tags/",
 	},
+	stakes = {
+		list = {
+			"platinum",
+		},
+		directory = "stakes/"
+	}
 }
 
 if hnds_config.enableStoneOcean then

@@ -410,6 +410,18 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 		end
 	end
 
+	-- PLATINUM STAKE --
+
+	if G.GAME.stake == G.P_STAKES["stake_hnds_platinum"].stake_level and not run_start then
+
+		print (G.GAME.chips .. " / " .. G.GAME.blind.chips)
+
+		if G.GAME.chips >= (G.GAME.blind.chips * 2) then
+			print("blind was beat by over 2X required score!")
+			G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 2
+		end
+	end
+
 end
 
 local find_joker_ref = find_joker
