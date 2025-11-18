@@ -415,6 +415,19 @@ SMODS.Atlas({
 	py = 95,       -- height of one card
 })
 
+SMODS.Atlas({
+	key = "Stakes",
+	path = "HDchips.png",
+	px = 47,
+	py = 47,
+})
+
+SMODS.Atlas({
+	key = "Stickers",
+	path = "HDstickers.png",
+	px = 71,
+	py = 95,
+})
 
 --[[---------------------------
 Utility functions
