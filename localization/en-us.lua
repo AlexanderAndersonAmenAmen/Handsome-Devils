@@ -405,15 +405,15 @@ return {
 				name = "Petrify",
 				text = {
 					"Enhaces all {C:attention}face{} cards",
-					"in hand into {C:attention}Stone Cards{}",
-					"Gain {C:money}$#1#{} for each petrified",
+					"in hand into {C:attention}Stone Cards{},",
+					"gain {C:money}$#1#{} for each petrified",
 				},
 			},
 			c_hnds_exchange = {
 				name = "Exchange",
 				text = {
 					"Add {C:dark_edition}Negative{} to",
-					"{C:attention}#1#{} selected cards",
+					"{C:attention}#1#{} selected cards,",
 					"{C:blue}-#2#{} hand each round",
 				},
 			},
@@ -614,7 +614,7 @@ return {
 				text = {
 					"{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
 					"{C:attention}#2#",
-					"{C:chips}+#3#{} chips. {C:chips}+#4#{} extra",
+					"{C:chips}+#3#{} chips, {C:chips}+#4#{} extra",
 					"for each {C:attention}Stone Card{}",
 					"scored this Ante {C:inactive}[#5#]",
 				},
