@@ -2,10 +2,10 @@ SMODS.Joker({
 	key = "digital_circus",
 	config = {
 		extra = {
-			max_rounds = 3,
+			max_rounds = 2,
 			current_rounds = 0,
 			current_rarity = 1,
-			rarity_strings = { "Common", "Uncommon", "Rare", "Legendary" },
+			rarity_strings = { "Common", "Uncommon", "Rare" },
 		},
 	},
 	rarity = 3,
@@ -37,10 +37,7 @@ SMODS.Joker({
 				SMODS.add_card({
 					set = "Joker",
 					area = G.jokers,
-					legendary = (card.ability.extra.current_rarity == 4) or nil,
-					rarity = (card.ability.extra.current_rarity ~= 4)
-							and rarity_vals[card.ability.extra.current_rarity]
-						or nil,
+					rarity = rarity_vals[card.ability.extra.current_rarity],
 					edition = poll_edition("digital_circus", 1, false, true),
 				})
 				return nil, true
