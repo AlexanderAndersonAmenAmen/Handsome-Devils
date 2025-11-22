@@ -676,9 +676,8 @@ return {
 			stake_hnds_platinum = {
 				name = "Platinum Stake",
 				text = {
-					"If {C:attention}Blind{} is defeated by scoring",
-					"twice the required Chips,",
-					"all {C:attention}Blinds{} become {C:mult}X2{} larger",
+					"If {C:attention}Blind{} is defeated by scoring twice the",
+					"required Chips, all {C:attention}Blinds{} become {C:mult}X2{} larger",
                     "{s:0.8}Applies all previous Stakes",
 				}
 			}

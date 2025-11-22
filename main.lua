@@ -417,9 +417,9 @@ SMODS.Atlas({
 
 SMODS.Atlas({
 	key = "Stakes",
-	path = "HDchips.png",
-	px = 47,
-	py = 47,
+	path = "HDstakes.png",
+	px = 29,
+	py = 29,
 })
 
 SMODS.Atlas({
