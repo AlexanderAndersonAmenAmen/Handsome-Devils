@@ -8,12 +8,8 @@ end
 local smods_hnr_ref = SMODS.get_enhancements
 function SMODS.get_enhancements(card)
 	local ret = smods_hnr_ref(card)
-	if card.base.id == SMODS.Ranks['hnds_creepycard'].id then
-		if context.check_enhancement then
-			if context.other_card.config.center.key ~= "c_base" then
-				return { m_creepyenh = true }
-			end
-		end
+	if card.base.id == SMODS.Ranks['hnds_creepycard'].id and card.config.center.key ~= "c_base" then
+		ret.m_hnds_creepyenh = true
 	end
 	return ret
 end
