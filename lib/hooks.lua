@@ -1,7 +1,21 @@
 --black seal and such card destruction hook
 HNDS.should_hand_destroy = function(card)
 	return card.seal == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or
-	(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
+		(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
+end
+
+
+local smods_hnr_ref = SMODS.get_enhancements
+function SMODS.get_enhancements(card)
+	local ret = smods_hnr_ref(card)
+	if card.base.id == SMODS.Ranks['hnds_creepycard'].id then
+		if context.check_enhancement then
+			if context.other_card.config.center.key ~= "c_base" then
+				return { m_creepyenh = true }
+			end
+		end
+	end
+	return ret
 end
 
 local destroy_cards_ref = SMODS.calculate_destroying_cards
@@ -81,8 +95,8 @@ function Card:add_to_deck(from_debuff)
 			if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
 				G.GAME.joker_buffer = G.GAME.joker_buffer + 1
 				local c = self
-				G.E_MANAGER:add_event(Event{
-					func = function ()
+				G.E_MANAGER:add_event(Event {
+					func = function()
 						local copy = copy_card(c)
 						copy.ability.hnds_copies_to_create = nil
 						copy:add_to_deck()

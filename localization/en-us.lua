@@ -223,6 +223,16 @@ return {
 					"cards with {C:dark_edition}Editions",
 				}
 			},
+			j_hnds_creepy = {
+				name = "Creepy Joker",
+				text = {
+					"{X:mult,C:white}X#2#{} Mult",
+					"{C:green}#3# in #4#{} chance to",
+					"add this {C:attention}Joker{} to your ",
+					"deck as a {C:attention}playing card",
+					"at end of round",
+				}
+			},
 			j_hnds_art = {
 				name = "Art the Clown",
 				text = {
@@ -543,9 +553,9 @@ return {
 			hnds_platinum_sticker = {
 				name = "Platinum Sticker",
 				text = {
-                    "Used this Joker",
-                    "to win on {C:attention}Platinum",
-                    "{C:attention}Stake{} difficulty",
+					"Used this Joker",
+					"to win on {C:attention}Platinum",
+					"{C:attention}Stake{} difficulty",
 				}
 			}
 		},
@@ -639,6 +649,13 @@ return {
 					"consumable card",
 				},
 			},
+			m_hnds_creepyenh = {
+				name = "Something Truly Evil",
+				text = {
+					"{X:mult,C:white}X#1#{} Mult",
+					"no rank or suit",
+				},
+			},
 		},
 		Tag = {
 			tag_hnds_vintage_tag = {
@@ -678,7 +695,7 @@ return {
 				text = {
 					"If {C:attention}Blind{} is defeated by scoring twice the",
 					"required Chips, all {C:attention}Blinds{} become {C:mult}X2{} larger",
-                    "{s:0.8}Applies all previous Stakes",
+					"{s:0.8}Applies all previous Stakes",
 				}
 			}
 		}

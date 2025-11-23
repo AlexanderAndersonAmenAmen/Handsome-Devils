@@ -254,6 +254,7 @@ local files = {
 			"stone_mask",
 			"meme",
 			"angry_mob",
+			"creepy",
 			"digital_circus",
 			"energized",
 			"pennywise",
@@ -312,6 +313,7 @@ local files = {
 		list = {
 			"obsidian",
 			"aberrant",
+			"creepyenh"
 		},
 		directory = "enhancements/",
 	},
@@ -328,6 +330,10 @@ local files = {
 	editions = {
 		list = { "vintage" },
 		directory = "editions/",
+	},
+	ranks = {
+		list = { "creepycard" },
+		directory = "ranks/",
 	},
 	tags = {
 		list = { 
@@ -425,6 +431,13 @@ SMODS.Atlas({
 SMODS.Atlas({
 	key = "Stickers",
 	path = "HDstickers.png",
+	px = 71,
+	py = 95,
+})
+
+SMODS.Atlas({
+	key = "creepyJ",
+	path = "creepyJ.png",
 	px = 71,
 	py = 95,
 })
