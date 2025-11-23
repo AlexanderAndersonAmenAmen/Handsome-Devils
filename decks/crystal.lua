@@ -19,7 +19,7 @@ SMODS.Booster { --putting this in the same file for convenience
     weight = 0.01,
     kind = "Spectral",
     cost = 10,
-    pos = { x = 0, y = 1 },
+    pos = { x = 2, y = 2 },
     atlas = "Extras",
     config = { extra = 5, choose = 2 },
     group_key = "k_spectral_pack",
