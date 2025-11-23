@@ -7,7 +7,7 @@ SMODS.Joker({
 			mult = 20,
 		},
 	},
-	rarity = 1,
+	rarity = 2,
 	loc_vars = function(self, info_queue, card)
 		local seven = 0
 		if G.hand and G.hand.highlighted then
