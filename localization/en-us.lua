@@ -413,7 +413,7 @@ return {
 				name = "Exchange",
 				text = {
 					"Add {C:dark_edition}Negative{} to",
-					"{C:attention}#1#{} selected cards,",
+					"{C:attention}#1#{} selected card,",
 					"{C:blue}-#2#{} hand each round",
 				},
 			},
