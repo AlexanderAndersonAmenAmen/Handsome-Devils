@@ -412,8 +412,9 @@ return {
 			c_hnds_exchange = {
 				name = "Exchange",
 				text = {
-					"Add {C:dark_edition}Negative{} to",
-					"{C:attention}#1#{} selected card,",
+					"Add {C:dark_edition}Negative{}",
+					"to {C:attention}#1#{} selected,",
+					"card in your hand",
 					"{C:blue}-#2#{} hand each round",
 				},
 			},
