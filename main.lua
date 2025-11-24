@@ -215,7 +215,8 @@ SMODS.current_mod.calculate = function(self, context)
 end
 
 SMODS.current_mod.optional_features = {
-	retrigger_joker = true
+	retrigger_joker = true,
+	quantum_enhancements = true
 }
 
 --[[---------------------------
