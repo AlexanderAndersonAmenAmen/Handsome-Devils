@@ -1,7 +1,7 @@
 SMODS.Enhancement {
 	key = 'creepyenh',
 	atlas = "Jokers",
-	pos = { x = 7, y = 3 },
+	pos = { x = 0, y = 4 },
 	config = { Xmult = 1.5 },
 	no_collection = true,
 	replace_base_card = true,
