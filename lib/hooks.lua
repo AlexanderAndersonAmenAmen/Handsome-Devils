@@ -100,7 +100,7 @@ end
 
 score_card_ref = SMODS.score_card
 function SMODS.score_card(card, context)
-	if not G.scorehand and (card:get_seal()=="hnds_black" or G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1] or G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards]) and context.cardarea == G.hand then
+	if not G.scorehand and (card:get_seal()=="hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or (G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])) and context.cardarea == G.hand then
 		G.scorehand = true
 		context.cardarea = G.play
 		if context.destroy_card then context.destroying_card = context.destroy_card end
