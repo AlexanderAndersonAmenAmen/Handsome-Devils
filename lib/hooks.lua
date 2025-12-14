@@ -1,4 +1,4 @@
---black seal and such card destruction hook
+--[[  black seal and such card destruction hook (should no longer be needed but commented out just in case)
 HNDS.should_hand_destroy = function(card)
 	return card.seal == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or
 	(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
@@ -33,7 +33,7 @@ function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand
 		end
 	end
 end
-
+]]
 local get_new_boss_ref = get_new_boss --crystal deck double showdown hook
 function get_new_boss()
 	local win_ante = G.GAME.win_ante
@@ -96,4 +96,16 @@ function Card:add_to_deck(from_debuff)
 		self.ability.hnds_copies_to_create = nil
 	end
 	return ret
+end
+
+score_card_ref = SMODS.score_card
+function SMODS.score_card(card, context)
+	if not G.scorehand and (card:get_seal()=="hnds_black" or G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1] or G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards]) and context.cardarea == G.hand then
+		G.scorehand = true
+		context.cardarea = G.play
+		SMODS.score_card(card, context)
+		G.scorehand = nil
+		context.cardarea = G.play
+	end
+	return score_card_ref(card, context)
 end
