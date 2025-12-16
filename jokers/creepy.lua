@@ -23,13 +23,6 @@ SMODS.Joker {
                     func = function()
                         local cards = {}
                         for i = 1, card.ability.extra.cards do
-                            local cen_pool = {}
-                            for _, enhancement_center in pairs(G.P_CENTER_POOLS["Enhanced"]) do
-                                if enhancement_center.key ~= 'm_stone' and not enhancement_center.overrides_base_rank then
-                                    cen_pool[#cen_pool + 1] = enhancement_center
-                                end
-                            end
-                            local enhancement = pseudorandom_element(cen_pool, 'spe_card')
                             cards[i] = SMODS.add_card { set = "Base", rank = 'hnds_creepycard', area = G.deck, enhancement = 'm_hnds_creepyenh' }
                         end
                         SMODS.calculate_context({ playing_card_added = true, cards = cards })
