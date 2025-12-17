@@ -571,7 +571,7 @@ if SMODS then
         atlas = 'Extras',
         pos = { x = 3, y = 2 },
         group_key = 'k_hnds_cursed_pack',
-        config = {extra = 16, choose = 5},
+        config = {extra = 4, choose = 1},
         cost = 6,
         weight = 0.10,
         create_card = function(self, card)

@@ -524,6 +524,32 @@ return {
 					"to add to your deck",
 				}
 			},
+			p_hnds_cursed_pack = {
+				name = "Paquete Maldito",
+				text = {
+					"Elige {C:attention}#2#{} de hasta {C:attention}#1#{},",
+					"Comodines {C:red}Malditos{}"
+				}
+			},
+			hnds_cursed_offer_title = {
+				text = {
+					"Obtienes una {C:green}Oferta{}:",
+				},
+			},
+			hnds_cursed_price_title = {
+				text = {
+					"A cambio de un {C:red}Precio{}:",
+				},
+			},
+			hnds_cursed = {
+				name = "Maldito",
+				text = {
+					"Obtienes una {C:green}Oferta{}:",
+					"{C:inactive}({C:green}sin oferta{C:inactive}){}",
+					"a cambio de un {C:red}Precio{}:",
+					"{C:inactive}({C:red}sin precio{C:inactive}){}",
+				}
+			},
 			dna_tag_tooltip_singular = {
 				name = "DNA Tag",
 				text = {
@@ -706,6 +732,8 @@ return {
 			k_hnds_splashed = "Splashed!",
 			hnds_plus_q = "+1 ???", --this is for the cryptid digital hallucinations creation message with magic packs
 			k_hnds_magic_pack = "Magic Pack",
+			k_hnds_cursed_pack = "Paquete Maldito",
+			hnds_cursed_pack = "Paquete Maldito",
 			k_hnds_sarmenti_active = "active",
 			k_hnds_sarmenti_inactive = "inactive",
 			k_hnds_sarmenti_enhanced = "Enhanced!",
@@ -715,7 +743,15 @@ return {
 			hnds_vintage = "Vintage",
 			hnds_black_seal = "Black Seal",
 			hnds_spectralseal_seal = "Spectral Seal",
-			hnds_soul = "Soul"
+			hnds_soul = "Soul",
+			hnds_cursed = "Maldito",
+			hnds_offer = "Oferta",
+			hnds_price = "Precio",
+		},
+		v_text = {
+			ch_c_hnds_devils_round = {
+				"Todos los Comodines están Malditos",
+			},
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Stone Ocean",

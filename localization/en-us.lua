@@ -552,7 +552,8 @@ return {
 			p_hnds_cursed_pack = {
 				name = "Cursed Pack",
 				text = {
-					"Choose {C:attention}1{} of {C:attention}4{} Cursed Jokers"
+					"Choose {C:attention}#2#{} of up to {C:attention}#1#",
+					"{C:red}Cursed{} Jokers"
 				}
 			},
 			-- Cursed Sticker
@@ -570,9 +571,9 @@ return {
 				name = "Cursed",
 				text = {
 					"You get an {C:green}Offer{}:",
-					"random benefit",
+					"{C:inactive}({C:green}no offer{C:inactive}){}",
 					"for a {C:red}Price{}:",
-					"A random penalty",
+					"{C:inactive}({C:red}no price{C:inactive}){}",
 				}
 			},
 			-- Cursed Offers and Prices

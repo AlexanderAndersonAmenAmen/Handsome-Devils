@@ -20,7 +20,7 @@ function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand
 			new_context.hnds_hand_trigger = true
 			new_context.full_hand = G.hand.cards
 			local flags = SMODS.calculate_context(new_context)
-			if flags.remove then destroyed = true end
+			if flags and flags.remove then destroyed = true end
 			if destroyed then
 				card.getting_sliced = true
 				if SMODS.shatters(card) then
@@ -128,6 +128,11 @@ end
 local add_to_deck_ref = Card.add_to_deck
 function Card:add_to_deck(from_debuff)
 	local ret = add_to_deck_ref(self, from_debuff)
+	if not from_debuff and self and self.config and self.config.center and self.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
+		if (not self.ability or not self.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+			apply_curse(self)
+		end
+	end
 	if not from_debuff and self.ability.hnds_copies_to_create then
 		for _ = 1, self.ability.hnds_copies_to_create do
 			if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
