@@ -412,7 +412,7 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 
 	-- PLATINUM STAKE --
 
-	if G.GAME.stake == G.P_STAKES["stake_hnds_platinum"].stake_level and not run_start then
+	if G.GAME.stake >= G.P_STAKES["stake_hnds_platinum"].stake_level and not run_start then
 
 		print (G.GAME.chips .. " / " .. G.GAME.blind.chips)
 

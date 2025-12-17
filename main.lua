@@ -341,8 +341,15 @@ local files = {
 	stakes = {
 		list = {
 			"platinum",
+			"blood"
 		},
 		directory = "stakes/"
+	},
+	challenges = {
+		list = {
+			"devils_round"
+		},
+		directory = "challenges/"
 	}
 }
 
@@ -475,3 +482,4 @@ for key, value in pairs(files) do
 end
 assert(SMODS.load_file("lib/hooks.lua"))()
 assert(SMODS.load_file("lib/utils.lua"))()
+assert(SMODS.load_file("lib/curses.lua"))()

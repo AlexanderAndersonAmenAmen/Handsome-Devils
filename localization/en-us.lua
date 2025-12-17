@@ -548,7 +548,116 @@ return {
                     "to win on {C:attention}Platinum",
                     "{C:attention}Stake{} difficulty",
 				}
-			}
+			},
+			p_hnds_cursed_pack = {
+				name = "Cursed Pack",
+				text = {
+					"Choose {C:attention}1{} of {C:attention}4{} Cursed Jokers"
+				}
+			},
+			-- Cursed Sticker
+			hnds_cursed_offer_title = {
+				text = {
+					"You get an {C:green}Offer{}:",
+				},
+			},
+			hnds_cursed_price_title = {
+				text = {
+					"For a {C:red}Price{}:",
+				},
+			},
+			hnds_cursed = { -- Display in the Collection
+				name = "Cursed",
+				text = {
+					"You get an {C:green}Offer{}:",
+					"random benefit",
+					"for a {C:red}Price{}:",
+					"A random penalty",
+				}
+			},
+			-- Cursed Offers and Prices
+			offer_copy_random_tarot = {
+				text = {
+					"Creates a random {C:tarot}Tarot{}",
+					"card at the end of",
+					"the {C:attention}round{}",
+				},
+			},
+			offer_copy_random_planet = {
+				text = {
+					"Creates a random {C:planet}Planet{}",
+					"card at the end of",
+					"the {C:attention}round{}",
+				},
+			},
+			offer_random_negative = {
+				text = {
+					"Gives {C:dark_edition}Negative{}",
+					"to a random Joker",
+				},
+			},
+			offer_self_negative = {
+				text = {
+					"This Joker",
+					"becomes {C:dark_edition}Negative{}",
+				},
+			},
+			offer_reactivate = {
+				text = {
+					"{C:attention}Retrigger{}",
+					"this Joker",
+				},
+			},
+			offer_interest_cap = {
+				text = {
+					"{C:money}Increases{} max",
+					"interest by $5",
+				},
+			},
+			offer_shop_reroll = {
+				text = {
+					"Gain 2 free",
+					"{C:green}rerolls{} each shop",
+				},
+			},
+			price_destroy_jokers = {
+				text = {
+					"{C:red,E:2}Destroy{} all your",
+					"Jokers",
+				},
+			},
+			price_destroy_deck = {
+				text = {
+					"{C:red}Destroy{} 8 random",
+					"cards from your deck",
+				},
+			},
+			price_bankrupt = {
+				text = {
+					"Set {C:money}money{} to $0",
+				},
+			},
+			price_inflation = {
+				text = {
+					"Increase all {C:money}prices{}",
+					"by {C:red}25%{}",
+				},
+			},
+			price_lose_hand = {
+				text = {
+					"Lose 1 {C:blue}Hand{}",
+				},
+			},
+			price_lose_discard = {
+				text = {
+					"Lose 1 {C:red}Discard{}",
+				},
+			},
+			price_minus_hand_size = {
+				text = {
+					"-1 {C:attention}Hand Size{}",
+				},
+			},
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {
@@ -681,6 +790,17 @@ return {
 					"required Chips, all {C:attention}Blinds{} become {C:mult}X2{} larger",
                     "{s:0.8}Applies all previous Stakes",
 				}
+			},
+			stake_hnds_blood_stake = {
+				name = "Blood Stake",
+				text = {
+					"Shop can have {C:red}Cursed{} Jokers",
+					"{s:0.8}Applies all previous Stakes",
+				},
+				unlock = {
+                    'Win with this',
+                    'deck on Platinum Stake',
+                }
 			}
 		}
 	},
@@ -688,6 +808,8 @@ return {
 		dictionary = {
 			k_hnds_petrified = "Petrified!",
 			k_hnds_goldfish = "Goldfish!",
+			k_hnds_cursed_offers = "Cursed Offers",
+			k_hnds_cursed_prices = "Cursed Prices",
 			k_hnds_boom_timer = "!!!",
 			k_hnds_boom = "BOOM!",
 			k_hnds_green = "Draw!",
@@ -704,6 +826,8 @@ return {
 			k_hnds_splashed = "Splashed!",
 			hnds_plus_q = "+1 ???", --this is for the cryptid digital hallucinations creation message with magic packs
 			k_hnds_magic_pack = "Magic Pack",
+			k_hnds_cursed_pack = "Cursed Pack",
+			hnds_cursed_pack = "Cursed Pack",
 			k_hnds_sarmenti_active = "active",
 			k_hnds_sarmenti_inactive = "inactive",
 			k_hnds_sarmenti_enhanced = "Enhanced!",
@@ -713,16 +837,21 @@ return {
 			hnds_vintage = "Vintage",
 			hnds_black_seal = "Black Seal",
 			hnds_spectralseal_seal = "Spectral Seal",
-			hnds_soul = "Soul"
+			hnds_soul = "Soul",
+			hnds_cursed = "Cursed",
+			hnds_offer = "Offer",
+			hnds_price = "Price",
+		},
+		v_text = {
+			ch_c_hnds_devils_round = {
+				"All Jokers are Cursed",
+			},
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Stone Ocean",
 		},
 		poker_hand_descriptions = {
 			hnds_stone_ocean = { "A hand consisting of 5 Stone cards" },
-		},
-		ranks = {
-			hnds_creepycard = 'Something Truly Evil',
 		},
 	},
 }

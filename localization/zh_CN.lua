@@ -257,6 +257,8 @@ return {
 		dictionary = {
 			k_hnds_petrified = "石化！",
 			k_hnds_goldfish = "金鱼！",
+			k_hnds_cursed_offers = "诅咒馈赠",
+			k_hnds_cursed_prices = "诅咒代价",
 			k_hnds_green = "抽牌！",
 			k_hnds_jackpot = "头奖！",
 			k_hnds_probinc = "增加！",

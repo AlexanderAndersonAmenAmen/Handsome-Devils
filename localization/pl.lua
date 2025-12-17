@@ -341,6 +341,8 @@ return {
 		dictionary = {
 			k_hnds_petrified = "Skamieniały!",
 			k_hnds_goldfish = "Złota ryba!",
+			k_hnds_cursed_offers = "Przeklęte oferty",
+			k_hnds_cursed_prices = "Przeklęte ceny",
 			k_hnds_green = "Dobierasz!",
 			k_hnds_jackpot = "Jackpot!",
 			k_hnds_probinc = "Powiększono!",

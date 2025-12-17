@@ -1,4 +1,4 @@
---black seal and such card destruction hook
+ --black seal and such card destruction hook
 HNDS.should_hand_destroy = function(card)
 	return card.seal == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or
 	(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
@@ -59,6 +59,50 @@ function Card.set_cost(self)
 	end
 end
 
+if CardArea and CardArea.emplace and not CardArea._hnds_wrapped_emplace then
+	CardArea._hnds_wrapped_emplace = true
+	local emplace_ref = CardArea.emplace
+	function CardArea:emplace(card, ...)
+		local ret = emplace_ref(self, card, ...)
+		if self == G.jokers and card and card.config and card.config.center and card.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
+			if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+				apply_curse(card)
+			end
+		end
+		if self == G.shop_jokers and card and card.config and card.config.center and card.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
+			if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+				apply_curse(card)
+			end
+		end
+		if self == G.shop_jokers and card and card.config and card.config.center and card.config.center.set == 'Joker' and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
+			if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
+				if pseudorandom('hnds_curse_shop'..G.GAME.modifiers.hnds_shop_curse_roll) < 0.25 then
+					apply_curse(card)
+				end
+			end
+		end
+		return ret
+	end
+end
+
+if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card then
+	SMODS._hnds_wrapped_create_card = true
+	local smods_create_card_ref = SMODS.create_card
+	function SMODS.create_card(args)
+		local c = smods_create_card_ref(args)
+		if c and args and args.area == G.shop_jokers and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
+			if (not c.ability or not c.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
+				if pseudorandom('hnds_curse_shop'..G.GAME.modifiers.hnds_shop_curse_roll) < 0.12 then
+					apply_curse(c)
+				end
+			end
+		end
+		return c
+	end
+end
+
 create_card_ref = create_card
 function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
 	local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
@@ -67,6 +111,14 @@ function create_card(_type, area, legendary, _rarity, skip_materialize, soulable
 			if t.key == card.config.center.key then
 				card:set_edition("e_negative")
 				break
+			end
+		end
+	end
+	if card and _type == "Joker" and ((area == G.shop_jokers) or (card.area == G.shop_jokers)) and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
+		if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+			G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
+			if pseudorandom('hnds_curse_shop'..G.GAME.modifiers.hnds_shop_curse_roll) < 0.12 then
+				apply_curse(card)
 			end
 		end
 	end
