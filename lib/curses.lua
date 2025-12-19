@@ -41,7 +41,15 @@ G.CURSE_OFFERS = {
                                 card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
                                 return true
                             end
-                            SMODS.add_card({set = 'Tarot', area = G.consumeables, key_append = 'hnds_curse_tarot'})
+                            -- Play animation first, then create card
+                            G.E_MANAGER:add_event(Event({
+                                trigger = 'after',
+                                delay = 0.3,
+                                func = function()
+                                    SMODS.add_card({set = 'Tarot', area = G.consumeables, key_append = 'hnds_curse_tarot'})
+                                    return true
+                                end
+                            }))
                             card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_copied_ex'), colour = G.C.CHIPS})
                             return true
                         end
@@ -64,7 +72,15 @@ G.CURSE_OFFERS = {
                                 card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
                                 return true
                             end
-                            SMODS.add_card({set = 'Planet', area = G.consumeables, key_append = 'hnds_curse_planet'})
+                            -- Play animation first, then create card
+                            G.E_MANAGER:add_event(Event({
+                                trigger = 'after',
+                                delay = 0.3,
+                                func = function()
+                                    SMODS.add_card({set = 'Planet', area = G.consumeables, key_append = 'hnds_curse_planet'})
+                                    return true
+                                end
+                            }))
                             card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_copied_ex'), colour = G.C.CHIPS})
                             return true
                         end
@@ -84,7 +100,14 @@ G.CURSE_OFFERS = {
                 end
                 if #eligible > 0 then
                     local target = pseudorandom_element(eligible, pseudoseed('curse_neg'))
+                    -- Temporarily mark this as a curse edition change to prevent re-triggering
+                    if target.ability then
+                        target.ability.hnds_curse_negative_applying = true
+                    end
                     target:set_edition({negative = true})
+                    if target.ability then
+                        target.ability.hnds_curse_negative_applying = nil
+                    end
                     card_eval_status_text(target, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.DARK_EDITION})
                 end
             end
@@ -140,9 +163,9 @@ G.CURSE_OFFERS = {
         id = 'offer_interest_cap',
         func = function(card, context)
             if context.add_to_deck and G.GAME.interest_cap then
-                G.GAME.interest_cap = G.GAME.interest_cap + 25
+                G.GAME.interest_cap = G.GAME.interest_cap + 5
             elseif context.remove_from_deck and G.GAME and G.GAME.interest_cap then
-                G.GAME.interest_cap = G.GAME.interest_cap - 25
+                G.GAME.interest_cap = G.GAME.interest_cap - 5
                 if G.GAME.interest_cap < 0 then G.GAME.interest_cap = 0 end
             end
         end
@@ -154,6 +177,65 @@ G.CURSE_OFFERS = {
             if context.end_of_round and context.main_eval and not context.repetition and not context.blueprint then
                 G.GAME.current_round.free_rerolls = (G.GAME.current_round.free_rerolls or 0) + 2
                 if calculate_reroll_cost then calculate_reroll_cost(true) end
+            end
+        end
+    },
+    [8] = {
+        id = 'offer_eternal_copy',
+        func = function(card, context)
+            if context.buying_card then
+                if not (G and G.E_MANAGER and Event and G.jokers and G.GAME and G.jokers.config) then return end
+
+                if #G.jokers.cards + (G.GAME.joker_buffer or 0) >= G.jokers.config.card_limit then
+                    card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
+                    return
+                end
+
+                G.GAME.joker_buffer = (G.GAME.joker_buffer or 0) + 1
+                local c = card
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.1,
+                    func = function()
+                        local copy = copy_card(c)
+                        if copy then
+                            copy.ability = copy.ability or {}
+                            copy.ability.curse = nil
+                            copy.ability.hnds_curse_preview = nil
+                            copy.ability.curse_acquire_triggered = true -- Prevent re-triggering
+                            copy.cursed_shake = nil
+
+                            -- Completely remove cursed sticker from all data structures
+                            if copy.stickers and type(copy.stickers) == 'table' then
+                                copy.stickers.hnds_cursed = nil
+                            end
+                            if copy.ability.stickers and type(copy.ability.stickers) == 'table' then
+                                copy.ability.stickers.hnds_cursed = nil
+                            end
+
+                            -- Set flag for Devil's Round challenge only (no eternal sticker)
+                            copy.ability.hnds_eternal_copy_created = true
+
+                            -- Remove the cursed sticker from the card's sticker list
+                            if copy.remove_sticker then
+                                copy:remove_sticker('hnds_cursed')
+                            end
+
+                            -- Force refresh the card's sticker display
+                            if copy.sticker_display then
+                                copy.sticker_display:remove()
+                                copy.sticker_display = nil
+                            end
+
+                            copy:add_to_deck()
+                            G.jokers:emplace(copy)
+                            card_eval_status_text(copy, 'extra', nil, nil, nil, {message = localize('k_copied_ex'), colour = G.C.CHIPS})
+                        end
+
+                        G.GAME.joker_buffer = math.max(0, (G.GAME.joker_buffer or 1) - 1)
+                        return true
+                    end
+                }))
             end
         end
     }
@@ -204,7 +286,6 @@ G.CURSE_PRICES = {
         func = function(card, context)
             if context.buying_card then
                 ease_dollars(-G.GAME.dollars, true)
-                card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_bankrupt'), colour = G.C.RED})
             end
         end
     },
@@ -213,15 +294,13 @@ G.CURSE_PRICES = {
         id = 'price_inflation',
         func = function(card, context)
             if not (G and G.GAME) then return end
-            if context.add_to_deck then
-                G.GAME.hnds_curse_inflation_count = (G.GAME.hnds_curse_inflation_count or 0) + 1
-                G.GAME.discount_percent = (G.GAME.discount_percent or 0) - 25
-            elseif context.remove_from_deck then
-                G.GAME.hnds_curse_inflation_count = math.max(0, (G.GAME.hnds_curse_inflation_count or 0) - 1)
-                G.GAME.discount_percent = (G.GAME.discount_percent or 0) + 25
-            else
-                return
-            end
+            if not context.buying_card then return end
+
+            G.GAME.hnds_curse_inflation_count = (G.GAME.hnds_curse_inflation_count or 0) + 1
+            G.GAME.discount_percent = (G.GAME.discount_percent or 0) - 25
+            
+            -- Apply a permanent price modifier that affects all future shop items
+            G.GAME.hnds_price_multiplier = (G.GAME.hnds_price_multiplier or 1) * 1.25
 
             if G.shop_jokers and G.shop_jokers.cards then
                 for _, c in ipairs(G.shop_jokers.cards) do
@@ -239,37 +318,42 @@ G.CURSE_PRICES = {
     [5] = {
         id = 'price_lose_hand',
         func = function(card, context)
-            if context.add_to_deck then
-                G.GAME.round_resets.hands = G.GAME.round_resets.hands - 1
-                ease_hands_played(-1)
-            elseif context.remove_from_deck then
-                G.GAME.round_resets.hands = G.GAME.round_resets.hands + 1
-                ease_hands_played(1)
-            end
+            if not (context and context.buying_card and G and G.GAME and G.GAME.starting_params and G.GAME.round_resets) then return end
+
+            G.GAME.starting_params.hands = math.max(0, (G.GAME.starting_params.hands or 0) - 1)
+            G.GAME.round_resets.hands = math.max(0, (G.GAME.round_resets.hands or 0) - 1)
+            ease_hands_played(-1)
         end
     },
     -- 6. -1 Discard
     [6] = {
         id = 'price_lose_discard',
         func = function(card, context)
-            if context.add_to_deck then
-                G.GAME.round_resets.discards = G.GAME.round_resets.discards - 1
-                ease_discard(-1)
-            elseif context.remove_from_deck then
-                G.GAME.round_resets.discards = G.GAME.round_resets.discards + 1
-                ease_discard(1)
-            end
+            if not (context and context.buying_card and G and G.GAME and G.GAME.starting_params and G.GAME.round_resets) then return end
+
+            G.GAME.starting_params.discards = math.max(0, (G.GAME.starting_params.discards or 0) - 1)
+            G.GAME.round_resets.discards = math.max(0, (G.GAME.round_resets.discards or 0) - 1)
+            ease_discard(-1)
         end
     },
     -- 7. -1 Hand size
     [7] = {
         id = 'price_minus_hand_size',
         func = function(card, context)
-            if context.add_to_deck then
+            if not (context and context.buying_card and G and G.GAME and G.GAME.starting_params) then return end
+
+            if (G.GAME.starting_params.hand_size or 0) <= 1 then return end
+            G.GAME.starting_params.hand_size = math.max(1, (G.GAME.starting_params.hand_size or 1) - 1)
+            if G.hand and G.hand.change_size then
                 G.hand:change_size(-1)
-            elseif context.remove_from_deck then
-                G.hand:change_size(1)
             end
+        end
+    },
+    [8] = {
+        id = 'price_ante_scaling_125',
+        func = function(card, context)
+            if not (context and context.buying_card and G and G.GAME and G.GAME.starting_params) then return end
+            G.GAME.starting_params.ante_scaling = (G.GAME.starting_params.ante_scaling or 1) * 1.25
         end
     }
 }
@@ -401,8 +485,11 @@ if not _G.HNDS_generate_card_ui_wrap and type(generate_card_ui) == 'function' th
         -- Sticker tooltips are rendered via `generate_card_ui` using a special `Other` center.
         -- We only provide a "previous card" fallback for our cursed sticker so we don't leak
         -- a stale card into unrelated tooltips (this previously caused hover crashes).
-        if card ~= nil then _HNDS_generate_card_ui_prev_card = card end
-        local use_card = card or _HNDS_generate_card_ui_prev_card
+        if card ~= nil and type(card) == 'table' and card.ability ~= nil then _HNDS_generate_card_ui_prev_card = card end
+        local use_card = card
+        if use_card == nil and _HNDS_generate_card_ui_prev_card ~= nil and type(_HNDS_generate_card_ui_prev_card) == 'table' and _HNDS_generate_card_ui_prev_card.ability ~= nil then
+            use_card = _HNDS_generate_card_ui_prev_card
+        end
 
         if SMODS and SMODS.Stickers and type(_c) == 'table' and _c.set == 'Other' and type(_c.key) == 'string' then
             local st = SMODS.Stickers[_c.key]
@@ -411,11 +498,17 @@ if not _G.HNDS_generate_card_ui_wrap and type(generate_card_ui) == 'function' th
                 if vars == nil and type(_c.vars) == 'table' then vars = _c.vars end
                 local pass_card = card
                 if _c.key == 'hnds_cursed' then pass_card = use_card end
-                return _HNDS_generate_card_ui_ref(st, full_UI_table, vars, card_type, badges, hide_desc, main_start, main_end, pass_card)
+                local ok, ret_or_err = pcall(_HNDS_generate_card_ui_ref, st, full_UI_table, vars, card_type, badges, hide_desc, main_start, main_end, pass_card)
+                if ok then return ret_or_err end
+                print('HNDS generate_card_ui sticker error: '..tostring(ret_or_err))
+                return full_UI_table
             end
         end
 
-        return _HNDS_generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
+        local ok, ret_or_err = pcall(_HNDS_generate_card_ui_ref, _c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
+        if ok then return ret_or_err end
+        print('HNDS generate_card_ui error: '..tostring(ret_or_err))
+        return full_UI_table
     end
 end
 
@@ -571,7 +664,7 @@ if SMODS then
         atlas = 'Extras',
         pos = { x = 3, y = 2 },
         group_key = 'k_hnds_cursed_pack',
-        config = {extra = 4, choose = 1},
+        config = {extra = 20, choose = 5},
         cost = 6,
         weight = 0.10,
         create_card = function(self, card)
@@ -589,6 +682,14 @@ function trigger_curse(card, context)
     -- - lovely button callback hook (buying_card)
     -- - cursed sticker calculate (normal evaluation)
     if not card.ability or not card.ability.curse then return end
+    
+    -- Prevent re-triggering on eternal copies or when negative edition is being applied by curse
+    if card.ability.hnds_eternal_copy_created or card.ability.hnds_curse_negative_applying then return end
+
+    -- Prevent curse re-triggering when vouchers are bought (vouchers trigger buying_card context on all jokers)
+    if context and context.buying_card and context.card and context.card.ability and context.card.ability.set == 'Voucher' then
+        return
+    end
 
     if context and context.buying_card then
         card.ability.curse_acquire_triggered = true
@@ -600,7 +701,25 @@ function trigger_curse(card, context)
     for _, v in pairs(G.CURSE_PRICES) do if v.id == card.ability.curse.price then price_def = v break end end
 
     local acquire_ret
-    if context and context.add_to_deck and not card.ability.curse_acquire_triggered then
+    -- Handle challenge creation separately to avoid double-triggering
+    if context and context.challenge_creation then
+        -- For challenge jokers, trigger both offer and price immediately
+        card.ability.curse_acquire_triggered = true -- Set this flag to prevent re-triggering
+        local offer_ret, price_ret
+        if offer_def and offer_def.func then
+            local ok, ret_or_err = pcall(offer_def.func, card, context)
+            if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.curse.offer)..' -> '..tostring(ret_or_err)) end
+            if ok then offer_ret = ret_or_err end
+        end
+        if price_def and price_def.func then
+            local ok, ret_or_err = pcall(price_def.func, card, context)
+            if not ok then print('HNDS CURSE price error: '..tostring(card.ability.curse.price)..' -> '..tostring(ret_or_err)) end
+            if ok then price_ret = ret_or_err end
+        end
+        acquire_ret = offer_ret or price_ret
+        -- Skip the normal add_to_deck logic for challenge creations to prevent double-triggering
+        return acquire_ret
+    elseif context and context.add_to_deck and not card.ability.curse_acquire_triggered then
         -- When a Joker is first added to the deck, we simulate a single "buy" trigger
         -- so offers/prices that are keyed to context.buying_card still fire once.
         card.ability.curse_acquire_triggered = true

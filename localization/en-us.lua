@@ -576,30 +576,30 @@ return {
 					"{C:inactive}({C:red}no price{C:inactive}){}",
 				}
 			},
-			-- Cursed Offers and Prices
+			-- Cursed Offers Descriptions
 			offer_copy_random_tarot = {
 				text = {
-					"Creates a random {C:tarot}Tarot{}",
-					"card at the end of",
-					"the {C:attention}round{}",
+					"Creates a {C:tarot}Tarot{}",
+					"card at the end",
+					"of the {C:attention}round{}",
 				},
 			},
 			offer_copy_random_planet = {
 				text = {
-					"Creates a random {C:planet}Planet{}",
-					"card at the end of",
-					"the {C:attention}round{}",
+					"Creates a {C:planet}Planet{}",
+					"card at the end",
+					"of the {C:attention}round{}",
 				},
 			},
 			offer_random_negative = {
 				text = {
 					"Gives {C:dark_edition}Negative{}",
-					"to a random Joker",
+					"to a random {C:attention}Joker{}",
 				},
 			},
 			offer_self_negative = {
 				text = {
-					"This Joker",
+					"This {C:attention}Joker{}",
 					"becomes {C:dark_edition}Negative{}",
 				},
 			},
@@ -611,20 +611,27 @@ return {
 			},
 			offer_interest_cap = {
 				text = {
-					"{C:money}Increases{} max",
-					"interest by $5",
+					"Rises {C:money}interest{}",
+					"cap by $5",
 				},
 			},
 			offer_shop_reroll = {
 				text = {
-					"Gain 2 free",
-					"{C:green}rerolls{} each shop",
+					"2 free {C:green}rerolls{}",
+					"each shop",
 				},
 			},
+			offer_eternal_copy = {
+				text = {
+					"Create a {C:attention}copy{}",
+					"of this {C:attention}Joker{}",
+				},
+			},
+			-- Cursed Prices Descriptions
 			price_destroy_jokers = {
 				text = {
-					"{C:red,E:2}Destroy{} all your",
-					"Jokers",
+					"{C:red,E:2}Destroy{} all",
+					"your {C:attention}Jokers{}",
 				},
 			},
 			price_destroy_deck = {
@@ -647,16 +654,24 @@ return {
 			price_lose_hand = {
 				text = {
 					"Lose 1 {C:blue}Hand{}",
+					"Permanently",
 				},
 			},
 			price_lose_discard = {
 				text = {
 					"Lose 1 {C:red}Discard{}",
+					"Permanently",
 				},
 			},
 			price_minus_hand_size = {
 				text = {
-					"-1 {C:attention}Hand Size{}",
+					"{C:attention}-1{} hand size",
+					"Permanently",
+				},
+			},
+			price_ante_scaling_125 = {
+				text = {
+					"{C:red}X1.25{} Ante Scaling",
 				},
 			},
 		},

@@ -550,6 +550,103 @@ return {
 					"{C:inactive}({C:red}sin precio{C:inactive}){}",
 				}
 			},
+			offer_copy_random_tarot = {
+				text = {
+					"Crea una carta del",
+					"{C:tarot}Tarot{} al final",
+					"de la {C:attention}ronda{}",
+				},
+			},
+			offer_copy_random_planet = {
+				text = {
+					"Crea una carta de",
+					"{C:planet}Planeta{} al final",
+					"de la {C:attention}ronda{}",
+				},
+			},
+			offer_random_negative = {
+				text = {
+					"Otorga {C:dark_edition}Negativo{}",
+					"a un {C:attention}Comodín{} al azar",
+				},
+			},
+			offer_self_negative = {
+				text = {
+					"Este {C:attention}Comodín{}",
+					"se vuelve {C:dark_edition}Negativo{}",
+				},
+			},
+			offer_reactivate = {
+				text = {
+					"{C:attention}Reactiva{}",
+					"este Comodín",
+				},
+			},
+			offer_interest_cap = {
+				text = {
+					"{C:money}Aumenta{} el interés",
+					"máximo en $5",
+				},
+			},
+			offer_shop_reroll = {
+				text = {
+					"Ganas 2 {C:green}renovaciones{}",
+					"gratis en la tienda",
+				},
+			},
+			offer_eternal_copy = {
+				text = {
+					"Crea una {C:attention}copia{}",
+					"de este {C:attention}Comodín{}",
+				},
+			},
+			price_destroy_jokers = {
+				text = {
+					"{C:red,E:2}Destruye{} todos",
+					"tus {C:attention}Comodines{}",
+				},
+			},
+			price_destroy_deck = {
+				text = {
+					"{C:red}Destruye{} 8 cartas",
+					"de tu baraja",
+				},
+			},
+			price_bankrupt = {
+				text = {
+					"Te quedas sin {C:money}dinero{}",
+				},
+			},
+			price_inflation = {
+				text = {
+					"Aumenta todos los {C:money}precios{}",
+					"en un {C:red}25%{}",
+				},
+			},
+			price_lose_hand = {
+				text = {
+					"Pierdes permanentemente {C:attention}1{}",
+					"{C:blue}Mano{}",
+				},
+			},
+			price_lose_discard = {
+				text = {
+					"Pierdes permanentemente {C:attention}1{}",
+					"{C:red}Descarte{}",
+				},
+			},
+			price_minus_hand_size = {
+				text = {
+					"-1 al {C:attention}tamaño de mano{}",
+					"permanentemente",
+				},
+			},
+			price_ante_scaling_125 = {
+				text = {
+					"Aumenta en {C:red}X1.25{} la",
+					"{C:attention}puntuación requerida{}",
+				},
+			},
 			dna_tag_tooltip_singular = {
 				name = "DNA Tag",
 				text = {

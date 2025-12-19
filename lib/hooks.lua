@@ -57,23 +57,29 @@ function Card.set_cost(self)
 	if G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_premiumdeck" and self.config.center.set == "Joker" then
 		self.cost = math.floor(self.cost + G.GAME.round_resets.ante)
 	end
+	-- Apply curse price multiplier
+	if G.GAME and G.GAME.hnds_price_multiplier and G.GAME.hnds_price_multiplier > 1 then
+		if self.config.center.set == "Joker" or self.config.center.set == "Booster" then
+			self.cost = math.max(0, math.floor(self.cost * G.GAME.hnds_price_multiplier))
+		end
+	end
 end
 
 if CardArea and CardArea.emplace and not CardArea._hnds_wrapped_emplace then
 	CardArea._hnds_wrapped_emplace = true
 	local emplace_ref = CardArea.emplace
 	function CardArea:emplace(card, ...)
+		-- Apply curse immediately for Devil's Round challenge before any other logic
+		if card and card.config and card.config.center and card.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
+			-- Don't apply curse to eternal copies
+			if not (card.ability and card.ability.hnds_eternal_copy_created) then
+				if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+					apply_curse(card)
+				end
+			end
+		end
 		local ret = emplace_ref(self, card, ...)
-		if self == G.jokers and card and card.config and card.config.center and card.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
-			if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
-				apply_curse(card)
-			end
-		end
-		if self == G.shop_jokers and card and card.config and card.config.center and card.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
-			if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
-				apply_curse(card)
-			end
-		end
+		-- Keep existing logic for other scenarios
 		if self == G.shop_jokers and card and card.config and card.config.center and card.config.center.set == 'Joker' and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
 			if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
 				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
@@ -91,6 +97,17 @@ if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card then
 	local smods_create_card_ref = SMODS.create_card
 	function SMODS.create_card(args)
 		local c = smods_create_card_ref(args)
+		-- Apply curse immediately for Devil's Round challenge
+		if c and c.config and c.config.center and c.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
+			-- Don't apply curse to eternal copies
+			if not (c.ability and c.ability.hnds_eternal_copy_created) then
+				if (not c.ability or not c.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+					apply_curse(c)
+				end
+			end
+		end
+		
+		-- Keep existing logic for shop curses
 		if c and args and args.area == G.shop_jokers and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
 			if (not c.ability or not c.ability.curse) and apply_curse and type(apply_curse) == 'function' then
 				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
@@ -106,6 +123,17 @@ end
 create_card_ref = create_card
 function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
 	local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+	
+	-- Apply curse immediately for Devil's Round challenge
+	if card and _type == "Joker" and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
+		-- Don't apply curse to eternal copies
+		if not (card.ability and card.ability.hnds_eternal_copy_created) then
+			if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+				apply_curse(card)
+			end
+		end
+	end
+	
 	if card and next(SMODS.find_card("j_hnds_krusty")) and card.config then
 		for _, t in ipairs(G.P_CENTER_POOLS.Food) do
 			if t.key == card.config.center.key then
@@ -129,8 +157,15 @@ local add_to_deck_ref = Card.add_to_deck
 function Card:add_to_deck(from_debuff)
 	local ret = add_to_deck_ref(self, from_debuff)
 	if not from_debuff and self and self.config and self.config.center and self.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
-		if (not self.ability or not self.ability.curse) and apply_curse and type(apply_curse) == 'function' then
-			apply_curse(self)
+		-- Don't apply curse to eternal copies
+		if not (self.ability and self.ability.hnds_eternal_copy_created) then
+			if (not self.ability or not self.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+				apply_curse(self)
+				-- Only trigger curse penalty if it hasn't been triggered already (to prevent double-triggering in challenges)
+				if self.ability and self.ability.curse and not self.ability.curse_acquire_triggered and trigger_curse and type(trigger_curse) == 'function' then
+					trigger_curse(self, {buying_card = true, challenge_creation = true})
+				end
+			end
 		end
 	end
 	if not from_debuff and self.ability.hnds_copies_to_create then
