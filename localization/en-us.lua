@@ -383,6 +383,14 @@ return {
 					"{C:inactive}(e.x. {C:green}1 in 3{C:inactive} -> {C:green}3 in 3){C:inactive}"
 				}
 			},
+			b_hnds_cursed = {
+				name = "Cursed Deck",
+				text = {
+					"Defeat the {C:attention}first",
+					"{C:attention}Boss Blind{} to open an",
+					"{C:red,T:p_hnds_cursed_pack}Unskippable Cursed Pack{}",
+				}
+			},
 		},
 		Spectral = {
 			c_hnds_abyss = {
@@ -549,6 +557,14 @@ return {
                     "{C:attention}Stake{} difficulty",
 				}
 			},
+			hnds_blood_sticker = {
+				name = "Blood Sticker",
+				text = {
+					"Used this Joker",
+					"to win on {C:attention}Blood",
+					"{C:attention}Stake{} difficulty",
+				}
+			},
 			p_hnds_cursed_pack = {
 				name = "Cursed Pack",
 				text = {
@@ -603,7 +619,7 @@ return {
 					"becomes {C:dark_edition}Negative{}",
 				},
 			},
-			offer_reactivate = {
+			offer_retrigger = {
 				text = {
 					"{C:attention}Retrigger{}",
 					"this Joker",
@@ -615,13 +631,13 @@ return {
 					"cap by $5",
 				},
 			},
-			offer_shop_reroll = {
+			offer_free_rerolls = {
 				text = {
 					"2 free {C:green}rerolls{}",
 					"each shop",
 				},
 			},
-			offer_eternal_copy = {
+			offer_joker_copy = {
 				text = {
 					"Create a {C:attention}copy{}",
 					"of this {C:attention}Joker{}",
@@ -634,7 +650,7 @@ return {
 					"your {C:attention}Jokers{}",
 				},
 			},
-			price_destroy_deck = {
+			price_destroy_cards = {
 				text = {
 					"{C:red}Destroy{} 8 random",
 					"cards from your deck",
@@ -663,7 +679,7 @@ return {
 					"Permanently",
 				},
 			},
-			price_minus_hand_size = {
+			price_lose_hand_size = {
 				text = {
 					"{C:attention}-1{} hand size",
 					"Permanently",

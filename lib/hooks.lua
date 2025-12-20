@@ -96,27 +96,27 @@ if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card then
 	SMODS._hnds_wrapped_create_card = true
 	local smods_create_card_ref = SMODS.create_card
 	function SMODS.create_card(args)
-		local c = smods_create_card_ref(args)
+		local created_card = smods_create_card_ref(args)
 		-- Apply curse immediately for Devil's Round challenge
-		if c and c.config and c.config.center and c.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
+		if created_card and created_card.config and created_card.config.center and created_card.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
 			-- Don't apply curse to eternal copies
-			if not (c.ability and c.ability.hnds_eternal_copy_created) then
-				if (not c.ability or not c.ability.curse) and apply_curse and type(apply_curse) == 'function' then
-					apply_curse(c)
+			if not (created_card.ability and created_card.ability.hnds_eternal_copy_created) then
+				if (not created_card.ability or not created_card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+					apply_curse(created_card)
 				end
 			end
 		end
 		
 		-- Keep existing logic for shop curses
-		if c and args and args.area == G.shop_jokers and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
-			if (not c.ability or not c.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+		if created_card and args and args.area == G.shop_jokers and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
+			if (not created_card.ability or not created_card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
 				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
 				if pseudorandom('hnds_curse_shop'..G.GAME.modifiers.hnds_shop_curse_roll) < 0.12 then
-					apply_curse(c)
+					apply_curse(created_card)
 				end
 			end
 		end
-		return c
+		return created_card
 	end
 end
 
@@ -172,10 +172,10 @@ function Card:add_to_deck(from_debuff)
 		for _ = 1, self.ability.hnds_copies_to_create do
 			if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
 				G.GAME.joker_buffer = G.GAME.joker_buffer + 1
-				local c = self
+				local source_card = self
 				G.E_MANAGER:add_event(Event{
 					func = function ()
-						local copy = copy_card(c)
+						local copy = copy_card(source_card)
 						copy.ability.hnds_copies_to_create = nil
 						copy:add_to_deck()
 						G.jokers:emplace(copy)

@@ -1,8 +1,9 @@
 --[[
-Curses Logic and Implementation (Cursed Stickers, Booster Pack and Random Cursed Offer/Price System)
+Curses Logic and Implementation (Cursed Stickers, Booster Pack and Random Cursed Offer/Price System are
+inside of this file and most of the code, other parts of the code are inside hooks, lovely.otml and the loc files)
 This file defines the "curse" system used by Cursed Jokers.
 
-High-level model:
+Data model:
 - A Cursed Joker has a sticker (`hnds_cursed`) and a `card.ability.curse` table.
 - `card.ability.curse.offer` is a benefit ID (from `G.CURSE_OFFERS`).
 - `card.ability.curse.price` is a drawback ID (from `G.CURSE_PRICES`).
@@ -12,11 +13,6 @@ How/when curse logic runs:
 - When removed from your deck, the lovely patch calls `trigger_curse(card, {remove_from_deck=true})`.
 - When you buy a shop card, the lovely patch calls `trigger_curse(...)` in a context that includes `buying_card=true`.
 - Every time Balatro evaluates Joker effects, the sticker's `calculate` forwards to `trigger_curse(card, context)`.
-
-Important Context flags used here:
-- `buying_card`: used for "on purchase" offers.
-- `add_to_deck` / `remove_from_deck`: used for passive modifiers that should apply while owned.
-- `end_of_round` + `main_eval`: used for end-of-round effects.
 
 Tooltip/UI:
 - The sticker provides a tooltip (using localization keys under `descriptions.Other`).
@@ -41,7 +37,6 @@ G.CURSE_OFFERS = {
                                 card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
                                 return true
                             end
-                            -- Play animation first, then create card
                             G.E_MANAGER:add_event(Event({
                                 trigger = 'after',
                                 delay = 0.3,
@@ -72,7 +67,6 @@ G.CURSE_OFFERS = {
                                 card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
                                 return true
                             end
-                            -- Play animation first, then create card
                             G.E_MANAGER:add_event(Event({
                                 trigger = 'after',
                                 delay = 0.3,
@@ -94,10 +88,23 @@ G.CURSE_OFFERS = {
         id = 'offer_random_negative',
         func = function(card, context)
             if context.buying_card then
+                local function is_negative(joker)
+                    if not joker then return false end
+                    if joker.edition == 'e_negative' then return true end
+                    if type(joker.edition) == 'table' and joker.edition.negative then return true end
+                    return false
+                end
+
                 local eligible = {}
                 for _, v in ipairs(G.jokers.cards) do
-                    if v ~= card and (not v.edition or not v.edition.negative) then table.insert(eligible, v) end
+                    if v ~= card and not is_negative(v) then eligible[#eligible + 1] = v end
                 end
+
+                -- If there are no other eligible Jokers, allow targeting self (only if self isn't already Negative)
+                if #eligible == 0 and not is_negative(card) then
+                    eligible[1] = card
+                end
+
                 if #eligible > 0 then
                     local target = pseudorandom_element(eligible, pseudoseed('curse_neg'))
                     -- Temporarily mark this as a curse edition change to prevent re-triggering
@@ -109,32 +116,6 @@ G.CURSE_OFFERS = {
                         target.ability.hnds_curse_negative_applying = nil
                     end
                     card_eval_status_text(target, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.DARK_EDITION})
-                end
-            end
-
-            if context.selling_self and G.jokers and G.jokers.cards then
-                local eligible = {}
-                for _, v in ipairs(G.jokers.cards) do
-                    if v ~= card then
-                        local is_negative = false
-                        if v.edition == 'e_negative' then is_negative = true end
-                        if type(v.edition) == 'table' and v.edition.negative then is_negative = true end
-                        if is_negative then eligible[#eligible + 1] = v end
-                    end
-                end
-
-                if #eligible > 0 then
-                    local target = pseudorandom_element(eligible, pseudoseed('curse_neg_remove'))
-                    local ok = false
-                    if target.set_edition then
-                        ok = pcall(function()
-                            target:set_edition(nil, true, true)
-                        end)
-                    end
-                    if not ok then
-                        target.edition = nil
-                        if target.set_cost then target:set_cost() end
-                    end
                 end
             end
         end
@@ -151,7 +132,7 @@ G.CURSE_OFFERS = {
     },
     -- 5. Retrigger this Joker
     [5] = {
-        id = 'offer_reactivate',
+        id = 'offer_retrigger',
         func = function(card, context)
             if context.retrigger_joker_check and not context.retrigger_joker and context.other_card == card then
                 return { message = localize('k_again_ex'), repetitions = 1, card = card }
@@ -172,7 +153,7 @@ G.CURSE_OFFERS = {
     },
     -- 7. Gain 2 free rerolls for each shop
     [7] = {
-        id = 'offer_shop_reroll',
+        id = 'offer_free_rerolls',
         func = function(card, context)
             if context.end_of_round and context.main_eval and not context.repetition and not context.blueprint then
                 G.GAME.current_round.free_rerolls = (G.GAME.current_round.free_rerolls or 0) + 2
@@ -181,7 +162,7 @@ G.CURSE_OFFERS = {
         end
     },
     [8] = {
-        id = 'offer_eternal_copy',
+        id = 'offer_joker_copy',
         func = function(card, context)
             if context.buying_card then
                 if not (G and G.E_MANAGER and Event and G.jokers and G.GAME and G.jokers.config) then return end
@@ -203,24 +184,22 @@ G.CURSE_OFFERS = {
                             copy.ability.curse = nil
                             copy.ability.hnds_curse_preview = nil
                             copy.ability.curse_acquire_triggered = true -- Prevent re-triggering
+                            copy.hnds_curse_acquire_triggered = true
                             copy.cursed_shake = nil
-
                             -- Completely remove cursed sticker from all data structures
                             if copy.stickers and type(copy.stickers) == 'table' then
                                 copy.stickers.hnds_cursed = nil
                             end
+
                             if copy.ability.stickers and type(copy.ability.stickers) == 'table' then
                                 copy.ability.stickers.hnds_cursed = nil
                             end
-
-                            -- Set flag for Devil's Round challenge only (no eternal sticker)
+                            -- Set flag for Devil's Round challenge only
                             copy.ability.hnds_eternal_copy_created = true
-
                             -- Remove the cursed sticker from the card's sticker list
                             if copy.remove_sticker then
                                 copy:remove_sticker('hnds_cursed')
                             end
-
                             -- Force refresh the card's sticker display
                             if copy.sticker_display then
                                 copy.sticker_display:remove()
@@ -242,7 +221,7 @@ G.CURSE_OFFERS = {
 }
 
 G.CURSE_PRICES = {
-    -- Prices are drawbacks/penalties. Some trigger immediately on buy (context.buying_card),
+    -- Prices are drawbacks/penalties. all trigger immediately on buy (context.buying_card)
     -- They technically work like a Jokers
     
     -- 1. Destroy all Jokers
@@ -260,7 +239,7 @@ G.CURSE_PRICES = {
     },
     -- 2. Destroy 8 random cards from your deck
     [2] = {
-        id = 'price_destroy_deck',
+        id = 'price_destroy_cards',
         func = function(card, context)
             if context.buying_card then
                 local pool = {}
@@ -285,7 +264,24 @@ G.CURSE_PRICES = {
         id = 'price_bankrupt',
         func = function(card, context)
             if context.buying_card then
-                ease_dollars(-G.GAME.dollars, true)
+                if G and G.E_MANAGER and Event then
+                    G.E_MANAGER:add_event(Event({
+                        trigger = 'after',
+                        delay = 0,
+                        func = function()
+                            local current_dollars = tonumber(G.GAME and G.GAME.dollars) or 0
+                            if current_dollars ~= 0 then
+                                ease_dollars(-current_dollars, true)
+                            end
+                            return true
+                        end
+                    }))
+                else
+                    local current_dollars = tonumber(G.GAME and G.GAME.dollars) or 0
+                    if current_dollars ~= 0 then
+                        ease_dollars(-current_dollars, true)
+                    end
+                end
             end
         end
     },
@@ -299,7 +295,6 @@ G.CURSE_PRICES = {
             G.GAME.hnds_curse_inflation_count = (G.GAME.hnds_curse_inflation_count or 0) + 1
             G.GAME.discount_percent = (G.GAME.discount_percent or 0) - 25
             
-            -- Apply a permanent price modifier that affects all future shop items
             G.GAME.hnds_price_multiplier = (G.GAME.hnds_price_multiplier or 1) * 1.25
 
             if G.shop_jokers and G.shop_jokers.cards then
@@ -338,7 +333,7 @@ G.CURSE_PRICES = {
     },
     -- 7. -1 Hand size
     [7] = {
-        id = 'price_minus_hand_size',
+        id = 'price_lose_hand_size',
         func = function(card, context)
             if not (context and context.buying_card and G and G.GAME and G.GAME.starting_params) then return end
 
@@ -369,13 +364,13 @@ if SMODS then
             return { vars = { '', '' } }
         end,
 
+        -- This builds the tooltip text for the sticker.
+        -- The cursed sticker tooltip is composed from `descriptions.Other` localization keys:
+        -- - `hnds_cursed_offer_title`
+        -- - `<offer_id>`
+        -- - `hnds_cursed_price_title`
+        -- - `<price_id>`
         generate_ui = function(self, info_queue, card, desc_nodes, specific_vars, full_UI_table)
-            -- This builds the tooltip text for the sticker.
-            -- The cursed sticker tooltip is composed from `descriptions.Other` localization keys:
-            -- - `hnds_cursed_offer_title`
-            -- - `<offer_id>`
-            -- - `hnds_cursed_price_title`
-            -- - `<price_id>`
             if not (card and G and G.localization and desc_nodes) then return end
 
             for i = #desc_nodes, 1, -1 do
@@ -406,14 +401,7 @@ if SMODS then
                     return
                 end
 
-                localize({
-                    type = 'other',
-                    key = key,
-                    nodes = desc_nodes,
-                    vars = vars,
-                    shadow = false,
-                    default_col = G.C.UI.TEXT_DARK,
-                })
+                localize ( { type = 'other', key = key, nodes = desc_nodes, vars = vars, shadow = false, default_col = G.C.UI.TEXT_DARK, } )
             end
 
             local is_collection = card and card.area and card.area.config and card.area.config.collection
@@ -596,8 +584,8 @@ function apply_curse(card)
     -- Assign a random offer + price to a card, then attach the cursed sticker.
     -- This is used when generating cursed pack cards.
     if card and card.config and card.config.center and card.config.center.key then
-        local k = card.config.center.key
-        if k == 'c_hnds_dream' or k == 'j_hnds_art' then
+        local center_key = card.config.center.key
+        if center_key == 'c_hnds_dream' or center_key == 'j_hnds_art' then
             return
         end
     end
@@ -610,38 +598,38 @@ function apply_curse(card)
     end
 
     if card.stickers and type(card.stickers) == 'table' then
-        for k, _ in pairs(card.stickers) do
-            if k ~= 'hnds_cursed' then
-                card.stickers[k] = nil
+        for sticker_key, _ in pairs(card.stickers) do
+            if sticker_key ~= 'hnds_cursed' then
+                card.stickers[sticker_key] = nil
             end
         end
     end
 
     if card.ability and card.ability.stickers and type(card.ability.stickers) == 'table' then
-        for k, _ in pairs(card.ability.stickers) do
-            if k ~= 'hnds_cursed' then
-                card.ability.stickers[k] = nil
+        for sticker_key, _ in pairs(card.ability.stickers) do
+            if sticker_key ~= 'hnds_cursed' then
+                card.ability.stickers[sticker_key] = nil
             end
         end
     end
 
-    local offer_idx
-    local price_idx
-    local attempt = 0
+    local offer_index
+    local price_index
+    local attempt_count = 0
 
-    while attempt < 10 do
-        attempt = attempt + 1
+    while attempt_count < 10 do
+        attempt_count = attempt_count + 1
         -- Use unique seed per attempt
-        offer_idx = pseudorandom('curse_offer'..(card.ID or '')..attempt, 1, #G.CURSE_OFFERS)
-        price_idx = pseudorandom('curse_price'..(card.ID or '')..attempt, 1, #G.CURSE_PRICES)
+        offer_index = pseudorandom('curse_offer'..(card.ID or '')..attempt_count, 1, #G.CURSE_OFFERS)
+        price_index = pseudorandom('curse_price'..(card.ID or '')..attempt_count, 1, #G.CURSE_PRICES)
 
-        local offer = G.CURSE_OFFERS[offer_idx]
-        local price = G.CURSE_PRICES[price_idx]
+        local offer_entry = G.CURSE_OFFERS[offer_index]
+        local price_entry = G.CURSE_PRICES[price_index]
 
-        if offer and price then
+        if offer_entry and price_entry then
             card.ability.curse = {
-                offer = offer.id,
-                price = price.id
+                offer = offer_entry.id,
+                price = price_entry.id
             }
             if card.add_sticker then
                 card:add_sticker('hnds_cursed', true)
@@ -664,9 +652,14 @@ if SMODS then
         atlas = 'Extras',
         pos = { x = 3, y = 2 },
         group_key = 'k_hnds_cursed_pack',
-        config = {extra = 20, choose = 5},
+        config = {extra = 4, choose = 1},
         cost = 6,
         weight = 0.10,
+        ease_background_colour = function(self)
+            local cursed_col = mix_colours(G.C.RED, G.C.BLACK, 0.75)
+            ease_colour(G.C.DYN_UI.MAIN, cursed_col)
+            ease_background_colour { new_colour = cursed_col, special_colour = darken(G.C.BLACK, 0.2), contrast = 2.5 }
+        end,
         create_card = function(self, card)
             local c = create_card("Joker", G.pack_cards, nil, nil, true, true, nil, 'cur')
             apply_curse(c)
@@ -691,26 +684,37 @@ function trigger_curse(card, context)
         return
     end
 
-    if context and context.buying_card then
+    if context and context.buying_card and not context.challenge_creation then
+        if not context.card or context.card ~= card then
+            return
+        end
+        if (card.ability and card.ability.curse_acquire_triggered) or card.hnds_curse_acquire_triggered then
+            return
+        end
+        card.ability = card.ability or {}
         card.ability.curse_acquire_triggered = true
+        card.hnds_curse_acquire_triggered = true
     end
 
     -- Find definitions
     local offer_def, price_def
-    for _, v in pairs(G.CURSE_OFFERS) do if v.id == card.ability.curse.offer then offer_def = v break end end
-    for _, v in pairs(G.CURSE_PRICES) do if v.id == card.ability.curse.price then price_def = v break end end
+    for _, offer_definition in pairs(G.CURSE_OFFERS) do if offer_definition.id == card.ability.curse.offer then offer_def = offer_definition break end end
+    for _, price_definition in pairs(G.CURSE_PRICES) do if price_definition.id == card.ability.curse.price then price_def = price_definition break end end
 
     local acquire_ret
     -- Handle challenge creation separately to avoid double-triggering
     if context and context.challenge_creation then
         -- For challenge jokers, trigger both offer and price immediately
+        card.ability = card.ability or {}
         card.ability.curse_acquire_triggered = true -- Set this flag to prevent re-triggering
+        card.hnds_curse_acquire_triggered = true
         local offer_ret, price_ret
         if offer_def and offer_def.func then
             local ok, ret_or_err = pcall(offer_def.func, card, context)
             if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.curse.offer)..' -> '..tostring(ret_or_err)) end
             if ok then offer_ret = ret_or_err end
         end
+
         if price_def and price_def.func then
             local ok, ret_or_err = pcall(price_def.func, card, context)
             if not ok then print('HNDS CURSE price error: '..tostring(card.ability.curse.price)..' -> '..tostring(ret_or_err)) end
@@ -719,22 +723,26 @@ function trigger_curse(card, context)
         acquire_ret = offer_ret or price_ret
         -- Skip the normal add_to_deck logic for challenge creations to prevent double-triggering
         return acquire_ret
-    elseif context and context.add_to_deck and not card.ability.curse_acquire_triggered then
+    elseif context and context.add_to_deck and not ((card.ability and card.ability.curse_acquire_triggered) or card.hnds_curse_acquire_triggered) then
         -- When a Joker is first added to the deck, we simulate a single "buy" trigger
         -- so offers/prices that are keyed to context.buying_card still fire once.
+        card.ability = card.ability or {}
         card.ability.curse_acquire_triggered = true
+        card.hnds_curse_acquire_triggered = true
         local acquire_context = {}
-        for k, v in pairs(context) do acquire_context[k] = v end
+        for context_key, context_value in pairs(context) do acquire_context[context_key] = context_value end
 
         acquire_context.buying_card = true
         acquire_context.add_to_deck = nil
         acquire_context.remove_from_deck = nil
+
         local offer_ret, price_ret
         if offer_def and offer_def.func then
             local ok, ret_or_err = pcall(offer_def.func, card, acquire_context)
             if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.curse.offer)..' -> '..tostring(ret_or_err)) end
             if ok then offer_ret = ret_or_err end
         end
+
         if price_def and price_def.func then
             local ok, ret_or_err = pcall(price_def.func, card, acquire_context)
             if not ok then print('HNDS CURSE price error: '..tostring(card.ability.curse.price)..' -> '..tostring(ret_or_err)) end

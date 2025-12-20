@@ -156,6 +156,44 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = 'G.FUNCS.can_skip_booster = function(e)'
+position = 'after'
+payload = '''
+    if G and G.GAME and G.GAME.hnds_forced_pack_no_skip then
+      e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+      e.config.button = nil
+      return
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = 'G.FUNCS.skip_booster = function(e)'
+position = 'after'
+payload = '''
+    if G and G.GAME and G.GAME.hnds_forced_pack_no_skip then
+      return
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = 'G.FUNCS.end_consumeable = function(e, delayfac)'
+position = 'after'
+payload = '''
+    if G and G.GAME and G.GAME.hnds_forced_pack_no_skip then
+      G.GAME.hnds_forced_pack_no_skip = nil
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
 target = "functions/misc_functions.lua"
 pattern = "amount = amount - amount%(10^math.floor(math.log10(amount)-1))"
 position = "after"

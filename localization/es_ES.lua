@@ -383,6 +383,14 @@ return {
 					"{C:inactive}(e.x. {C:green}1 in 3{C:inactive} -> {C:green}3 in 3){C:inactive}"
 				}
 			},
+			b_hnds_cursed = {
+				name = "Baraja Maldita",
+				text = {
+					"Derrota la {C:attention}primera",
+					"{C:attention}Ciega Jefe{} para abrir un",
+					"{C:red,T:p_hnds_cursed_pack}Paquete Maldito Inevitable{}",
+				}
+			},
 		},
 		Spectral = {
 			c_hnds_abyss = {
@@ -576,7 +584,7 @@ return {
 					"se vuelve {C:dark_edition}Negativo{}",
 				},
 			},
-			offer_reactivate = {
+			offer_retrigger = {
 				text = {
 					"{C:attention}Reactiva{}",
 					"este Comodín",
@@ -588,13 +596,13 @@ return {
 					"máximo en $5",
 				},
 			},
-			offer_shop_reroll = {
+			offer_free_rerolls = {
 				text = {
 					"Ganas 2 {C:green}renovaciones{}",
 					"gratis en la tienda",
 				},
 			},
-			offer_eternal_copy = {
+			offer_joker_copy = {
 				text = {
 					"Crea una {C:attention}copia{}",
 					"de este {C:attention}Comodín{}",
@@ -606,7 +614,7 @@ return {
 					"tus {C:attention}Comodines{}",
 				},
 			},
-			price_destroy_deck = {
+			price_destroy_cards = {
 				text = {
 					"{C:red}Destruye{} 8 cartas",
 					"de tu baraja",
@@ -635,7 +643,7 @@ return {
 					"{C:red}Descarte{}",
 				},
 			},
-			price_minus_hand_size = {
+			price_lose_hand_size = {
 				text = {
 					"-1 al {C:attention}tamaño de mano{}",
 					"permanentemente",
