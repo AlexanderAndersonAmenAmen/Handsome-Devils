@@ -200,7 +200,9 @@ SMODS.current_mod.calculate = function(self, context)
 				booster.T.h = G.CARD_H * 1.27
 				booster.cost = 0
 				booster.from_tag = true
-				G.GAME.hnds_forced_pack_no_skip = true
+				if not (HNDS and HNDS.joker_slots_full_of_eternals and HNDS.joker_slots_full_of_eternals()) then
+					G.GAME.hnds_forced_pack_no_skip = true
+				end
 				G.FUNCS.use_card({ config = { ref_table = booster } })
 				booster:start_materialize()
 				return true
@@ -354,6 +356,7 @@ local files = {
 			"mystery_tag",
 			"magic_tag",
 			"dna_tag",
+			"cursed_tag",
 		 },
 		directory = "tags/",
 	},

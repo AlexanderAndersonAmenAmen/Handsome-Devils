@@ -802,6 +802,13 @@ return {
 					"{C:inactive}(Debe haber espacio){}",
 				},
 			},
+			tag_hnds_cursed_tag = {
+				name = "Etiqueta Maldita",
+				text = {
+					"Abres de inmediato un",
+					"{C:red}Paquete Maldito{} \"gratis\"",
+				},
+			},
 		},
 		Stake = {
 			stake_hnds_platinum = {

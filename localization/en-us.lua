@@ -610,8 +610,8 @@ return {
 			},
 			offer_random_enhancement = {
 				text = {
-					"Gives a random",
-					"{C:attention}Enhancement{} to",
+					"Give random",
+					"{C:attention}Ehnacements{} to",
 					"{C:attention}8{} cards in deck",
 				},
 			},
@@ -813,7 +813,14 @@ return {
 					"Next shop Joker is free",
 					"and gets {C:attention}duplicated{}",
 					"when you buy it",
-					"{C:inactive}(Must have room){}",
+					"{C:inactive}(Must have room){},",
+				},
+			},
+			tag_hnds_cursed_tag = {
+				name = "Cursed Tag",
+				text = {
+					"Immediately open a \"free\"",
+					"{C:red,T:p_hnds_cursed_pack}Cursed Pack{}",
 				},
 			},
 		},

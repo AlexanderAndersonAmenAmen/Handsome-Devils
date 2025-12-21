@@ -144,6 +144,17 @@ function HNDS.dyn_level_up(card, hand, level, chips, mult, instant)
 	}))
 end
 
+function HNDS.joker_slots_full_of_eternals()
+	if not (G and G.jokers and G.jokers.cards and G.jokers.config and G.jokers.config.card_limit) then return false end
+	if #G.jokers.cards < G.jokers.config.card_limit then return false end
+	for _, j in ipairs(G.jokers.cards) do
+		if not (j and j.ability and j.ability.eternal) then
+			return false
+		end
+	end
+	return true
+end
+
 --Return a list of all the jokers that create jokers in shop
 function HNDS.get_shop_joker_tags()
 	local tag_list = {

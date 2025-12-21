@@ -667,7 +667,7 @@ if SMODS then
         atlas = 'Extras',
         pos = { x = 3, y = 2 },
         group_key = 'k_hnds_cursed_pack',
-        config = {extra = 40, choose = 1},
+        config = {extra = 4, choose = 1},
         cost = 6,
         weight = 0.10,
         ease_background_colour = function(self)
