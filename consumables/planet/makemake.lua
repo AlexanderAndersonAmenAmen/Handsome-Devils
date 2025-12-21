@@ -33,27 +33,28 @@ if hnds_config.enableStoneOcean then
 			}
 		end,
 		use = function(self, card, area, copier)
-			HNDS.dyn_level_up(
-				card,
-				card.ability.hand_type,
-				1,
-				G.GAME.hands[card.ability.hand_type].l_chips
-					+ (G.GAME.ante_stones_scored or 0) * G.GAME.hands[card.ability.hand_type].l_chips_scaling,
-				0
-			)
+			SMODS.upgrade_poker_hands{
+				hands = card.ability.hand_type,
+				parameters = { "chips" },
+				level_up = true,
+				func = function (current, base, parameter)
+					return current + G.GAME.hands[card.ability.hand_type].l_chips + (G.GAME.ante_stones_scored or 0) * G.GAME.hands[card.ability.hand_type].l_chips_scaling
+				end
+			}
 		end,
 		force_use = function(self, card, area)
 			card:use_consumeable(area)
 		end,
 		demicoloncompat = true,
 		bulk_use = function (self, card, area, copier, number)
-			HNDS.dyn_level_up(
-				card,
-				card.ability.hand_type,
-				number,
-				(G.GAME.hands[card.ability.hand_type].l_chips + (G.GAME.ante_stones_scored or 0) * G.GAME.hands[card.ability.hand_type].l_chips_scaling ) * number,
-				0
-			)
+			SMODS.upgrade_poker_hands{
+				hands = card.ability.hand_type,
+				parameters = { "chips" },
+				level_up = number,
+				func = function (current, base, parameter)
+					return current + (G.GAME.hands[card.ability.hand_type].l_chips + (G.GAME.ante_stones_scored or 0) * G.GAME.hands[card.ability.hand_type].l_chips_scaling) * number
+				end
+			}
 		end
 	})
 end
