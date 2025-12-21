@@ -546,7 +546,7 @@ return {
 			},
 			hnds_cursed_price_title = {
 				text = {
-					"A cambio de un {C:red}Precio{}:",
+					"por un {C:red}Precio{}:",
 				},
 			},
 			hnds_cursed = {
@@ -572,10 +572,11 @@ return {
 					"de la {C:attention}ronda{}",
 				},
 			},
-			offer_random_negative = {
+			offer_random_enhancement = {
 				text = {
-					"Otorga {C:dark_edition}Negativo{}",
-					"a un {C:attention}Comodín{} al azar",
+					"Otorga {C:attention}Mejoras{}",
+					"al azar a",
+					"{C:attention}8{} cartas",
 				},
 			},
 			offer_self_negative = {
@@ -649,9 +650,9 @@ return {
 					"permanentemente",
 				},
 			},
-			price_ante_scaling_125 = {
+			price_ante_scaling = {
 				text = {
-					"Aumenta en {C:red}X1.25{} la",
+					"Aumenta en {C:red}X1.50{} la",
 					"{C:attention}puntuación requerida{}",
 				},
 			},

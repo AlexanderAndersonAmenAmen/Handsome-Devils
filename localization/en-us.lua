@@ -387,8 +387,9 @@ return {
 				name = "Cursed Deck",
 				text = {
 					"Defeat the {C:attention}first",
-					"{C:attention}Boss Blind{} to open an",
-					"{C:red,T:p_hnds_cursed_pack}Unskippable Cursed Pack{}",
+					"{C:attention}Boss Blind{} to open",
+					"an {C:red}unskippable{}",
+					"{C:red,T:p_hnds_cursed_pack}Cursed Pack{}",
 				}
 			},
 		},
@@ -568,19 +569,19 @@ return {
 			p_hnds_cursed_pack = {
 				name = "Cursed Pack",
 				text = {
-					"Choose {C:attention}#2#{} of up to {C:attention}#1#",
-					"{C:red}Cursed{} Jokers"
+					"Choose {C:attention}#1#{} of up to {C:attention}#2#{}",
+					"{C:red}Cursed{} Joker cards"
 				}
 			},
 			-- Cursed Sticker
 			hnds_cursed_offer_title = {
 				text = {
-					"You get an {C:green}Offer{}:",
+					"{C:green}Offer{}:",
 				},
 			},
 			hnds_cursed_price_title = {
 				text = {
-					"For a {C:red}Price{}:",
+					"{C:red}Price{}:",
 				},
 			},
 			hnds_cursed = { -- Display in the Collection
@@ -607,87 +608,89 @@ return {
 					"of the {C:attention}round{}",
 				},
 			},
-			offer_random_negative = {
+			offer_random_enhancement = {
 				text = {
-					"Gives {C:dark_edition}Negative{}",
-					"to a random {C:attention}Joker{}",
+					"Gives a random",
+					"{C:attention}Enhancement{} to",
+					"{C:attention}8{} cards in deck",
 				},
 			},
 			offer_self_negative = {
 				text = {
-					"This {C:attention}Joker{}",
-					"becomes {C:dark_edition}Negative{}",
+					"Add {C:dark_edition}Negative{}",
+					"to this Joker",
 				},
 			},
 			offer_retrigger = {
 				text = {
-					"{C:attention}Retrigger{}",
-					"this Joker",
+					"{C:attention}Retriggers{} an",
+					"additional time",
 				},
 			},
 			offer_interest_cap = {
 				text = {
-					"Rises {C:money}interest{}",
-					"cap by $5",
+					"Raises interest",
+					"cap by {C:money}$5{}",
 				},
 			},
 			offer_free_rerolls = {
 				text = {
-					"2 free {C:green}rerolls{}",
-					"each shop",
+					"Gives {C:attention}2{} free",
+					"{C:green}rerolls{} per shop",
 				},
 			},
 			offer_joker_copy = {
 				text = {
-					"Create a {C:attention}copy{}",
+					"Create a copy",
 					"of this {C:attention}Joker{}",
 				},
 			},
 			-- Cursed Prices Descriptions
 			price_destroy_jokers = {
 				text = {
-					"{C:red,E:2}Destroy{} all",
-					"your {C:attention}Jokers{}",
+					"Destroy all",
+					"other Jokers"
 				},
 			},
 			price_destroy_cards = {
 				text = {
-					"{C:red}Destroy{} 8 random",
-					"cards from your deck",
+					"Destroy {C:attention}8{} random",
+					"cards in your deck",
 				},
 			},
 			price_bankrupt = {
 				text = {
-					"Set {C:money}money{} to $0",
+					"Set money to {C:red}$0{}",
 				},
 			},
 			price_inflation = {
 				text = {
-					"Increase all {C:money}prices{}",
-					"by {C:red}25%{}",
+					"Permanently increase",
+					"all {C:attention}shop prices{} by {C:red}25%{}",
 				},
 			},
 			price_lose_hand = {
 				text = {
-					"Lose 1 {C:blue}Hand{}",
-					"Permanently",
+					"Lose {C:red}1{} hand",
+					"permanently",
 				},
 			},
 			price_lose_discard = {
 				text = {
-					"Lose 1 {C:red}Discard{}",
-					"Permanently",
+					"Lose {C:red}1{} discard",
+					"permanently",
 				},
 			},
 			price_lose_hand_size = {
 				text = {
-					"{C:attention}-1{} hand size",
-					"Permanently",
+					"{C:red}-1{} hand size",
+					"permanently",
 				},
 			},
-			price_ante_scaling_125 = {
+			price_ante_scaling = {
 				text = {
-					"{C:red}X1.25{} Ante Scaling",
+					"All {C:attention}Blinds{} become {C:red}50%{}",
+					"bigger permanently",
 				},
 			},
 		},

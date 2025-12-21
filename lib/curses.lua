@@ -75,7 +75,6 @@ G.CURSE_OFFERS = {
                                     return true
                                 end
                             }))
-                            card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_copied_ex'), colour = G.C.CHIPS})
                             return true
                         end
                     }))
@@ -83,39 +82,36 @@ G.CURSE_OFFERS = {
             end
         end
     },
-    -- 3. Add negative to another joker
+    -- 3. Give a random enhancement to 8 cards in your deck
     [3] = {
-        id = 'offer_random_negative',
+        id = 'offer_random_enhancement',
         func = function(card, context)
             if context.buying_card then
-                local function is_negative(joker)
-                    if not joker then return false end
-                    if joker.edition == 'e_negative' then return true end
-                    if type(joker.edition) == 'table' and joker.edition.negative then return true end
-                    return false
+                local pool = {}
+                for _, v in ipairs(G.playing_cards) do
+                    pool[#pool + 1] = v
                 end
 
-                local eligible = {}
-                for _, v in ipairs(G.jokers.cards) do
-                    if v ~= card and not is_negative(v) then eligible[#eligible + 1] = v end
-                end
-
-                -- If there are no other eligible Jokers, allow targeting self (only if self isn't already Negative)
-                if #eligible == 0 and not is_negative(card) then
-                    eligible[1] = card
-                end
-
-                if #eligible > 0 then
-                    local target = pseudorandom_element(eligible, pseudoseed('curse_neg'))
-                    -- Temporarily mark this as a curse edition change to prevent re-triggering
-                    if target.ability then
-                        target.ability.hnds_curse_negative_applying = true
+                local to_enhance = math.min(8, #pool)
+                if not G.P_CENTERS then return end
+                local enhancement_keys = {}
+                for k, v in pairs(G.P_CENTERS) do
+                    if v.set == 'Enhanced' then
+                        table.insert(enhancement_keys, k)
                     end
-                    target:set_edition({negative = true})
-                    if target.ability then
-                        target.ability.hnds_curse_negative_applying = nil
+                end
+                if #enhancement_keys == 0 then return end
+                for i = 1, to_enhance do
+                    local idx = pseudorandom('curse_enhance' .. tostring(card.ID or '') .. '_' .. i, 1, #pool)
+                    local target = pool[idx]
+                    table.remove(pool, idx)
+                    if target then
+                        local enhancement = pseudorandom_element(enhancement_keys, pseudoseed('curse_enhance_type' .. tostring(card.ID or '') .. '_' .. i))
+                        local center = G.P_CENTERS[enhancement]
+                        if center then
+                            set_enhancement(target, enhancement)
+                        end
                     end
-                    card_eval_status_text(target, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.DARK_EDITION})
                 end
             end
         end
@@ -144,9 +140,9 @@ G.CURSE_OFFERS = {
         id = 'offer_interest_cap',
         func = function(card, context)
             if context.add_to_deck and G.GAME.interest_cap then
-                G.GAME.interest_cap = G.GAME.interest_cap + 5
+                G.GAME.interest_cap = G.GAME.interest_cap + 25
             elseif context.remove_from_deck and G.GAME and G.GAME.interest_cap then
-                G.GAME.interest_cap = G.GAME.interest_cap - 5
+                G.GAME.interest_cap = G.GAME.interest_cap - 25
                 if G.GAME.interest_cap < 0 then G.GAME.interest_cap = 0 end
             end
         end
@@ -155,7 +151,7 @@ G.CURSE_OFFERS = {
     [7] = {
         id = 'offer_free_rerolls',
         func = function(card, context)
-            if context.end_of_round and context.main_eval and not context.repetition and not context.blueprint then
+            if context.buying_card then
                 G.GAME.current_round.free_rerolls = (G.GAME.current_round.free_rerolls or 0) + 2
                 if calculate_reroll_cost then calculate_reroll_cost(true) end
             end
@@ -176,7 +172,7 @@ G.CURSE_OFFERS = {
                 local c = card
                 G.E_MANAGER:add_event(Event({
                     trigger = 'after',
-                    delay = 0.1,
+                    delay = 0.2,
                     func = function()
                         local copy = copy_card(c)
                         if copy then
@@ -223,7 +219,7 @@ G.CURSE_OFFERS = {
 G.CURSE_PRICES = {
     -- Prices are drawbacks/penalties. all trigger immediately on buy (context.buying_card)
     -- They technically work like a Jokers
-    
+
     -- 1. Destroy all Jokers
     [1] = {
         id = 'price_destroy_jokers',
@@ -267,7 +263,7 @@ G.CURSE_PRICES = {
                 if G and G.E_MANAGER and Event then
                     G.E_MANAGER:add_event(Event({
                         trigger = 'after',
-                        delay = 0,
+                        delay = 0.1,
                         func = function()
                             local current_dollars = tonumber(G.GAME and G.GAME.dollars) or 0
                             if current_dollars ~= 0 then
@@ -307,6 +303,7 @@ G.CURSE_PRICES = {
                     if c and c.set_cost then c:set_cost() end
                 end
             end
+            if calculate_reroll_cost then calculate_reroll_cost() end
         end
     },
     -- 5. -1 Hand
@@ -345,10 +342,10 @@ G.CURSE_PRICES = {
         end
     },
     [8] = {
-        id = 'price_ante_scaling_125',
+        id = 'price_ante_scaling',
         func = function(card, context)
             if not (context and context.buying_card and G and G.GAME and G.GAME.starting_params) then return end
-            G.GAME.starting_params.ante_scaling = (G.GAME.starting_params.ante_scaling or 1) * 1.25
+            G.GAME.starting_params.ante_scaling = (G.GAME.starting_params.ante_scaling or 1) * 1.50
         end
     }
 }
@@ -580,6 +577,23 @@ if not _G.HNDS_curse_collections and SMODS and SMODS.current_mod then
     end
 end
 
+function set_enhancement(card, key)
+    if card.area == G.hand then
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.15, func = function() card:highlight(true); card:flip(); play_sound('generic1', 0.7, 0.35); card:juice_up(0.3,0.3); return true; end}))
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4,
+            func = function()
+                card:set_ability(G.P_CENTERS[key])
+                card:juice_up()
+                return true
+            end
+        }))
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.15, func = function() card:highlight(false); card:flip(); play_sound('tarot2', 0.85, 0.6); card:juice_up(0.3,0.3); return true; end}))
+    else
+        card:set_ability(G.P_CENTERS[key])
+        if SMODS and SMODS.enh_cache and SMODS.enh_cache.clear then SMODS.enh_cache:write(card, nil) end
+    end
+end
+
 function apply_curse(card)
     -- Assign a random offer + price to a card, then attach the cursed sticker.
     -- This is used when generating cursed pack cards.
@@ -595,6 +609,7 @@ function apply_curse(card)
     if card.ability then
         card.ability.perishable = nil
         card.ability.eternal = nil
+        card.ability.rental = nil
     end
 
     if card.stickers and type(card.stickers) == 'table' then
@@ -652,7 +667,7 @@ if SMODS then
         atlas = 'Extras',
         pos = { x = 3, y = 2 },
         group_key = 'k_hnds_cursed_pack',
-        config = {extra = 4, choose = 1},
+        config = {extra = 40, choose = 1},
         cost = 6,
         weight = 0.10,
         ease_background_colour = function(self)
