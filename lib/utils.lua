@@ -148,7 +148,12 @@ function HNDS.joker_slots_full_of_eternals()
 	if not (G and G.jokers and G.jokers.cards and G.jokers.config and G.jokers.config.card_limit) then return false end
 	if #G.jokers.cards < G.jokers.config.card_limit then return false end
 	for _, j in ipairs(G.jokers.cards) do
-		if not (j and j.ability and j.ability.eternal) then
+		if not j then
+			return false
+		end
+		if j.ability and j.ability.eternal then
+		elseif j.edition and j.edition.negative then
+		else
 			return false
 		end
 	end
