@@ -276,6 +276,9 @@ local files = {
 			"angry_mob",
 			"digital_circus",
 			"energized",
+			"one_punchline_man",
+			"imposter",
+			"contagion",
 			"pennywise",
 			"art",
 			"krusty",
@@ -478,6 +481,16 @@ SMODS.ObjectType({ --vanilla foods, modded foods are added in their joker def
 		j_selzer = true,
 	},
 })
+
+-- Imposter utility function for rank matching
+HNDS.imposter_rank_match = function(card, required_id)
+	if #SMODS.find_card('j_hnds_imposter') > 0 then
+		if card:get_id() >= 11 and card:get_id() <= 13 then
+			return true
+		end
+	end
+	return card:get_id() == required_id
+end
 
 local _init_game_object = Game.init_game_object
 function Game:init_game_object()

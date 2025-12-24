@@ -285,6 +285,31 @@ return {
 					"{C:inactive}(Currently {C:attention}#1#{C:green} Rerolls{C:inactive})"
 				}
 			},
+			j_hnds_one_punchline_man = {
+				name = "One Punchline Man",
+				text = {
+					"Gains {X:mult,C:white}X0.25{} Mult per",
+					"unused hand at end of round",
+					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
+				},
+			},
+			j_hnds_imposter = {
+				name = "Imposter",
+				text = {
+					"Scored {C:attention}face cards{} count as",
+					"any {C:attention}rank{} for all Joker",
+					"specific effects",
+				},
+			},
+			j_hnds_contagion = {
+				name = "Contagion",
+				text = {
+					"{C:green}#1# in #2#{} chance for an",
+					"enhanced card to copy",
+					"its Enhancement to",
+					"a card on the right when scored",
+				},
+			},
 			j_hnds_last_laugh = {
 				name = "Last Laugh",
 				text = {

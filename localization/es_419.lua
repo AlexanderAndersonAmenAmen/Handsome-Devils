@@ -333,6 +333,33 @@ return {
 					"{s:0.8}El efecto cambia cada ronda",
 				}
 			},
+			j_hnds_one_punchline_man = {
+				name = "One Punchline Man",
+				text = {
+					"Gana {X:mult,C:white}X0.25{} Multi por",
+					"cada {C:blue}mano{} que no usaste",
+					"al final de la ronda",
+					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
+				},
+			},
+			j_hnds_imposter = {
+				name = "Impostor",
+				text = {
+					"Las cartas de {C:attention}figura{} anotadas",
+					"actúan como cualquier categoría",
+					"para todos los efectos específicos",
+					"de {C:attention}Comodines{}",
+				},
+			},
+			j_hnds_contagion = {
+				name = "Contagio",
+				text = {
+					"Las cartas {C:attention}mejoradas{} tienen",
+					"una prob. de {C:green}#1# en #2#{} de",
+					"copiar su mejora a una",
+					"carta a la {C:attention}derecha{}",
+				},
+			},
 		},
 		Back = {
 			b_hnds_premiumdeck = {
@@ -340,8 +367,8 @@ return {
 				text = {
 					"Comienzas con los vales",
 					"{C:green,T:v_hnds_premium}Premium{} y {C:red,T:v_hnds_top_shelf}Exclusividad{}",
-					"Los comodines cuestan {C:money}${}",
-					"igual a tu {C:attention}Apuesta{}",
+					"Los comodines cuestan {C:money}dinero{}",
+					"adicional igual a tu {C:attention}Apuesta{}",
 				},
 			},
 			b_hnds_crystal = {
