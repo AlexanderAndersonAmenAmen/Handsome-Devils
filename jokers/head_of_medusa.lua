@@ -29,6 +29,7 @@ SMODS.Joker({
 					c:set_ability("m_stone", nil, true)
 					c.hnds_petrifying = nil
 					c:juice_up()
+					return true
 				end
 			}))
 			SMODS.scale_card(card, {
