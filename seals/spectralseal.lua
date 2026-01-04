@@ -17,7 +17,16 @@ SMODS.Seal({
                     G.E_MANAGER:add_event(Event({
                         func = function()
                             for _ = 1, to_create do
-                                SMODS.add_card({ set = "Spectral", key_append = "hnds_spectralseal" })
+                                local available_spectrals = {}
+                                for _, center in ipairs(G.P_CENTER_POOLS.Consumeables) do
+                                    if center.set == "Spectral" and not center.hidden then
+                                        table.insert(available_spectrals, center.key)
+                                    end
+                                end
+                                if #available_spectrals > 0 then
+                                    local spectral_key = pseudorandom_element(available_spectrals, "hnds_spectralseal")
+                                    SMODS.add_card({ key = spectral_key, key_append = "hnds_spectralseal" })
+                                end
                             end
                             G.GAME.consumeable_buffer = 0
                             return true
@@ -35,7 +44,16 @@ SMODS.Seal({
                     G.E_MANAGER:add_event(Event({
                         func = function()
                             for _ = 1, to_create do
-                                SMODS.add_card({ set = "Spectral", key_append = "hnds_spectralseal" })
+                                local available_spectrals = {}
+                                for _, center in ipairs(G.P_CENTER_POOLS.Consumeables) do
+                                    if center.set == "Spectral" and not center.hidden then
+                                        table.insert(available_spectrals, center.key)
+                                    end
+                                end
+                                if #available_spectrals > 0 then
+                                    local spectral_key = pseudorandom_element(available_spectrals, "hnds_spectralseal")
+                                    SMODS.add_card({ key = spectral_key, key_append = "hnds_spectralseal" })
+                                end
                             end
                             G.GAME.consumeable_buffer = 0
                             return true

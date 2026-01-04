@@ -1,28 +1,37 @@
 --[[
 Curses Logic and Implementation (Cursed Stickers, Booster Pack and Random Cursed Offer/Price System are
-inside of this file and most of the code, other parts of the code are inside hooks, lovely.otml and the loc files)
-This file defines the "curse" system used by Cursed Jokers.
+inside of this file and most of the code, other parts of the code are inside hooks, lovely.toml and the loc files)
+This file defines the "curse" system used by the Cursed Sticker.
 
 Data model:
 - A Cursed Joker has a sticker (`hnds_cursed`) and a `card.ability.curse` table.
 - `card.ability.curse.offer` is a benefit ID (from `G.CURSE_OFFERS`).
 - `card.ability.curse.price` is a drawback ID (from `G.CURSE_PRICES`).
 
-How/when curse logic runs:
-- When the Joker is added to your deck, the lovely patch calls `trigger_curse(card, {add_to_deck=true})`.
-- When removed from your deck, the lovely patch calls `trigger_curse(card, {remove_from_deck=true})`.
-- When you buy a shop card, the lovely patch calls `trigger_curse(...)` in a context that includes `buying_card=true`.
-- Every time Balatro evaluates Joker effects, the sticker's `calculate` forwards to `trigger_curse(card, context)`.
-
 Tooltip/UI:
 - The sticker provides a tooltip (using localization keys under `descriptions.Other`).
 - The code also adds "Cursed Offers" and "Cursed Prices" pages to the collection.
+
+Primary entry points (functions)
+- `apply_curse(card)`
+  - Assigns a random offer/price pair to a Joker and attaches the `hnds_cursed` sticker.
+  - Used when generating cursed content (e.g. cursed pack, cursed shop rolls, Devil's Round challenge).
+
+Who calls this code
+- lovely patches (outside this file) call `trigger_curse`
+  - add_to_deck
+  - remove_from_deck
+  - buying_card
+
+- Collection UI
+  - Custom collection tabs so players can browse the offers/price descriptions.
+  - The collection cards are "fake" preview cards with `card.ability.hnds_curse_preview = true`.
 --]]
 
 G.CURSE_OFFERS = {
     -- Offers are benefits
     -- They technically work like a Jokers
-    
+
     -- 1. Create a copy of a random tarot card
     [1] = {
         id = 'offer_copy_random_tarot',
@@ -87,9 +96,13 @@ G.CURSE_OFFERS = {
         id = 'offer_random_enhancement',
         func = function(card, context)
             if context.buying_card then
+                context.hnds_curse_taken = context.hnds_curse_taken or {}
+                local taken = context.hnds_curse_taken
                 local pool = {}
                 for _, v in ipairs(G.playing_cards) do
-                    pool[#pool + 1] = v
+                    if not taken[v] then
+                        pool[#pool + 1] = v
+                    end
                 end
 
                 local to_enhance = math.min(8, #pool)
@@ -106,6 +119,7 @@ G.CURSE_OFFERS = {
                     local target = pool[idx]
                     table.remove(pool, idx)
                     if target then
+                        taken[target] = true
                         local enhancement = pseudorandom_element(enhancement_keys, pseudoseed('curse_enhance_type' .. tostring(card.ID or '') .. '_' .. i))
                         local center = G.P_CENTERS[enhancement]
                         if center then
@@ -126,7 +140,7 @@ G.CURSE_OFFERS = {
             end
         end
     },
-    -- 5. Retrigger this Joker
+    -- 5. Retrigger this Joker (Is kinda buggy and can do some weird stuff still)
     [5] = {
         id = 'offer_retrigger',
         func = function(card, context)
@@ -151,8 +165,13 @@ G.CURSE_OFFERS = {
     [7] = {
         id = 'offer_free_rerolls',
         func = function(card, context)
-            if context.buying_card then
-                G.GAME.current_round.free_rerolls = (G.GAME.current_round.free_rerolls or 0) + 2
+            if not (G and G.GAME and G.GAME.current_round) then return end
+            if not context then return end
+
+            if context.buying_card or (context.starting_shop and context.main_eval and not context.repetition and not context.blueprint) then
+                local cr = G.GAME.current_round
+                cr.free_rerolls = tonumber(cr.free_rerolls) or 0
+                cr.free_rerolls = math.max(0, cr.free_rerolls + 2)
                 if calculate_reroll_cost then calculate_reroll_cost(true) end
             end
         end
@@ -238,10 +257,14 @@ G.CURSE_PRICES = {
         id = 'price_destroy_cards',
         func = function(card, context)
             if context.buying_card then
+                context.hnds_curse_taken = context.hnds_curse_taken or {}
+                local taken = context.hnds_curse_taken
                 local pool = {}
                 if G.playing_cards then
                     for _, v in ipairs(G.playing_cards) do
-                        pool[#pool + 1] = v
+                        if not taken[v] then
+                            pool[#pool + 1] = v
+                        end
                     end
                 end
 
@@ -250,7 +273,10 @@ G.CURSE_PRICES = {
                     local idx = pseudorandom('curse_destroy'..tostring(card.ID or '')..'_'..i, 1, #pool)
                     local target = pool[idx]
                     table.remove(pool, idx)
-                    if target then target:start_dissolve() end
+                    if target then
+                        taken[target] = true
+                        target:start_dissolve()
+                    end
                 end
             end
         end

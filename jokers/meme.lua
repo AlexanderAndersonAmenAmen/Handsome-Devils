@@ -9,7 +9,7 @@ SMODS.Joker({
 	blueprint_compat = true,
 	demicoloncompat = true,
 	eternal_compat = true,
-	perishable_compat = true,
+	perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
 	config = {
 		extra = {
 			x_mult = 1,
@@ -20,17 +20,7 @@ SMODS.Joker({
 		return { vars = { card.ability.extra.x_mult, card.ability.extra.scaling } }
 	end,
 	calculate = function(self, card, context)
-		if context.before or context.forcetrigger and not context.blueprint then
-			--[[
-            local suits = {}
-            for i, other_card in ipairs(context.scoring_hand) do
-                for suit, _ in pairs(SMODS.Suits) do
-                    if other_card:is_suit(suit) and not suits[suit] then
-                        suits[suit] = true
-                        card.ability.extra.x_mult = card.ability.extra.x_mult + card.ability.extra.scaling
-                    end
-                end
-            end]]
+		if context.before and not context.blueprint and not context.retrigger_joker then
 			local boost = HNDS.get_unique_suits(context.scoring_hand)
 			if boost > 0 then
 				SMODS.scale_card(card, {

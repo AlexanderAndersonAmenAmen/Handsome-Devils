@@ -23,7 +23,8 @@ SMODS.Joker {
     config = { extra = { re = 0, rep = 1 } },
     loc_vars = function (self, info_queue, card)
         local suit = G.GAME.hnds_arthur_suit or "Spades"
-        return { vars = { card.ability.extra.re, card.ability.extra.rep, localize(suit, "suits_plural"), colours ={ G.C.SUITS[suit]} } }
+        local total_free_rerolls = (G.GAME and G.GAME.current_round and G.GAME.current_round.free_rerolls) or card.ability.extra.re
+        return { vars = { total_free_rerolls, card.ability.extra.rep, localize(suit, "suits_plural"), colours ={ G.C.SUITS[suit]} } }
     end,
     calculate = function (self, card, context)
         if context.after and not context.blueprint and not context.retrigger_joker then

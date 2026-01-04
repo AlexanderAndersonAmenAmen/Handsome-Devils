@@ -4,8 +4,8 @@ return {
 			j_hnds_color_of_madness = {
 				name = "El Color de la Locura",
 				text = {
-					"Mejor la {C:attention}primera{} carta",
-					"anota a una {C:attention}Carta Versátil{}",
+					"Mejora la {C:attention}primera{} carta",
+					"anotada a una {C:attention}Carta Versátil{}",
 					"si la mano jugada tiene",
 					"{C:attention}4{} palos diferentes",
 				},
@@ -14,7 +14,7 @@ return {
 				name = "Ocultista",
 				text = {
 					"Si la {C:attention}primera mano{} anota",
-					"{C:attention}4{} palo difrentes,",
+					"{C:attention}4{} cartas de palos diferentes,",
 					"crea una {C:attention}Etiqueta{} {C:tarot}Encantada{},",
 					"{C:spectral}Etérea{}, de {C:planet}Meteoro{} o {C:attention}Bufón{}",
 				},
@@ -30,8 +30,8 @@ return {
 			j_hnds_dark_idol = {
 				name = "Ídolo Oscuro",
 				text = {
-					"Gana {X:mult,C:white}X#1#{} Multi por cada",
-					"{C:attention}#2#{} de {V:1}#3#{}",
+					"Gana {X:mult,C:white}X#1#{} Multi por",
+					"cada {C:attention}#2#{} de {V:1}#3#{}",
 					"anotado y los {C:red}destruye{}",
 					"{s:0.8}(Cambia al final de la ronda)",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#4#{C:inactive} Multi)"
@@ -41,7 +41,7 @@ return {
 				name = "Perfeccionista",
 				text = {
 					"Al mejorar una carta",
-					"obtine adicionalmente",
+					"{C:attention}Mejorada{} obtiene adicionalmente",
 					"{C:mult}+#1#{} Multi y {C:chips}+#2#{} Fichas",
 				},
 			},
@@ -66,7 +66,7 @@ return {
 				},
 			},
 			j_hnds_deep_pockets = {
-				name = "Bolsillos Profundos",
+				name = "Bolsillos Anchos",
 				text = {
 					"{C:attention}+#1#{} ranuras de consumibles",
 					"cada carta en el",
@@ -101,7 +101,7 @@ return {
 					"otorgar {C:mult}+#4#{} Multi por mano jugada",
 					"duplica la {C:green}probabilidad{} por cada",
 					"{C:attention}7{} en mano jugada",
-					"{C:inactive}(Ej. {C:green}1 eb #5#{C:inactive} -> {C:green}2 en #5#{C:inactive})"
+					"{C:inactive}(Ej. {C:green}1 en #5#{C:inactive} -> {C:green}2 en #5#{C:inactive})"
 				},
 			},
 			j_hnds_pot_of_greed = {
@@ -121,9 +121,10 @@ return {
 			j_hnds_stone_mask = {
 				name = "Máscara de Piedra",
 				text = {
-					"Si la {C:attention}primera mano{}",
-					"es una sola carta mejorada,",
-					"le otorga una {C:dark_edition}Edición{}",
+					"Si la {C:attention}primera mano{} es una",
+					"sola carta, esta obtiene",
+					"una {C:attention}Mejora{}, {C:dark_edition}Edición{}",
+					"o {C:attention}Sello{}",
 				},
 			},
 			j_hnds_jokestone = {
@@ -158,7 +159,7 @@ return {
 					'Gana {X:mult,C:white}X#2#{} Multi por',
 					'cada {C:attention}Comodín{} vendido',
 					"durante una {C:attention}Ciega{}",
-					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
+					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
 				},
 			},
 			j_hnds_ms_fortune = {
@@ -279,11 +280,11 @@ return {
 					"la tienda al anotar {V:1}#3#{}",
 					"y se {C:red}destruyen{} después",
 					"{s:0.8}El palo cambia cada ronda",
-					"{C:inactive}(Actualmente {C:attention}#1#{C:green} Rerolls{C:inactive})"
+					"{C:inactive,s:0.8}(Actualmente {C:attention,s:0.8}#1#{C:green,s:0.8} Renovaciones{C:inactive,s:0.8})"
 				}
 			},
 			j_hnds_last_laugh = {
-				name = "Última Risa",
+				name = "Bromita Pesada",
 				text = {
 					"Al venderse, saca {C:attention}#1#{}",
 					"cartas de la baraja, y luego",
@@ -342,13 +343,28 @@ return {
 					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
 				},
 			},
+			j_hnds_jigsaw_joker = {
+				name = "Comodín Jigsaw",
+				text = {
+					"Tras jugar {C:attention}8{} manos",
+					"únicas, vende esta carta",
+					"para crear {C:attention}2{} Etiquetas",
+					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive}/8){}",
+				},
+			},
+			j_hnds_dynamic_duos = {
+				name = "Dúo Dinámico",
+				text = {
+					"Si juegas un {C:attention}Doble Par{} de",
+					"cartas de {C:attention}pares{} e {C:attention}impares{},",
+					"reactiva las cartas",
+				},
+			},
 			j_hnds_imposter = {
 				name = "Impostor",
 				text = {
 					"Las cartas de {C:attention}figura{} anotadas",
-					"actúan como cualquier categoría",
-					"para todos los efectos específicos",
-					"de {C:attention}Comodines{}",
+					"actúan como cartas enumeradas",
 				},
 			},
 			j_hnds_contagion = {
@@ -701,7 +717,14 @@ return {
                     "Usaste este comodín para",
                     "ganar el Pozo de {C:attention}Platino{}",
 				}
-			}
+			},
+			hnds_blood_sticker = {
+				name = "Sticker de Sangre",
+				text = {
+					"Usaste este comodín para",
+					"ganar el Pozo de {C:attention}Sangre{}",
+				}
+			},
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {
@@ -842,9 +865,20 @@ return {
 				name = "Pozo de Platino",
 				text = {
 					"Si la {C:attention}Ciega{} es derrotada con el {C:attention}doble{}",
-					"fichas requeridas, todas las {C:attention}ciegas{} son {C:mult}X2{} más grandes",
-                    "{s:0.8}Aplica todas las apuestas anteriores{}",
+					"fichas requeridas, la siguiente {C:attention}Ciega{} es {C:mult}X2{} más grande",
+                    "{s:0.8}Aplica todos los pozos anteriores{}",
 				}
+			},
+			stake_hnds_blood_stake = {
+				name = "Pozo de Sangre",
+				text = {
+					"La tienda puede tener Comodines {C:red}Malditos{}",
+					"{s:0.8}Aplica todos los pozos anteriores{}",
+				},
+				unlock = {
+                    'Gana con esta',
+                    'baraja en el Pozo de Platino',
+                }
 			}
 		}
 	},
@@ -886,10 +920,19 @@ return {
 			hnds_offer = "Oferta",
 			hnds_price = "Precio",
 		},
+		challenge_names = {
+			c_hnds_devils_round = "La Apuesta del Diablo",
+			c_hnds_draw_2_cards = "SACO 2 CARTAS",
+			c_hnds_dark_ritual = "Ritual Oscuro",
+			c_hnds_the_circus = "El Circo",
+			c_hnds_gambling_opportunity = "Ludopatía",
+		},
 		v_text = {
-			ch_c_hnds_devils_round = {
-				"Todos los Comodines están Malditos",
-			},
+			ch_c_hnds_devils_round = {  "Todos los Comodines están {C:red,E:2}Malditos{}", },
+			ch_c_hnds_draw_2_cards = { "", },
+			ch_c_hnds_dark_ritual = { "No puedes visitar la {C:money}Tienda{}", },
+			ch_c_hnds_the_circus = {  "", },
+			ch_c_hnds_gambling_opportunity = {  "Los {C:attention}Comodines{}, {C:attention}Sello de Oro{}, {C:attention}Carta de Oro{} y {C:attention}de la Suerte{} están deshabilitados", },
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Océano de Piedra",

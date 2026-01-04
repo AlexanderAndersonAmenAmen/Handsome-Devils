@@ -1,0 +1,25 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# -----------------------------------
+# Head of Medusa
+# -----------------------------------
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''
+                if self.children.front and self.ability.effect ~= 'Stone Card' then
+                    self.children.front:draw_shader('dissolve')
+                end
+'''
+position = "at"
+payload = '''
+                if self.children.front and (self.ability.effect ~= 'Stone Card' or (self.ability.effect == 'Stone Card' and self.hnds_petrifying)) then
+                    self.children.front:draw_shader('dissolve')
+                end
+'''
+match_indent = true
+times = 1

@@ -272,6 +272,8 @@ local files = {
 			"last_laugh",
 			"occultist",
 			"stone_mask",
+			"jigsaw_joker",
+			"dynamic_duos",
 			"meme",
 			"angry_mob",
 			"digital_circus",
@@ -372,7 +374,11 @@ local files = {
 	},
 	challenges = {
 		list = {
-			"devils_round"
+			"devils_round",
+			"draw_2_cards",
+			"dark_ritual",
+			"the_circus",
+			"gambling_opportunity",
 		},
 		directory = "challenges/"
 	}
@@ -518,3 +524,5 @@ end
 assert(SMODS.load_file("lib/hooks.lua"))()
 assert(SMODS.load_file("lib/utils.lua"))()
 assert(SMODS.load_file("lib/curses.lua"))()
+assert(SMODS.load_file("lib/cross_mod_compat.lua"))()
+assert(SMODS.load_file("lib/challenge_rules.lua"))()

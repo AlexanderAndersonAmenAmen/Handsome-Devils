@@ -1,10 +1,193 @@
- --black seal and such card destruction hook
+--[[
+Handsome Devils - Runtime Hooks
+
+Purpose
+- This module installs gameplay hooks that are *not specific to a single card definition*.
+- It centralizes overrides of core Balatro functions that need to be modified for:
+  - custom stakes/decks
+  - curse system glue logic
+  - UI display patches
+  - special-case mechanics that are easier/safer to implement as a hook than as per-card code
+
+Who loads this file
+- Loaded by `main.lua` via `assert(SMODS.load_file("lib/hooks.lua"))()`.
+
+What this module touches
+- Core functions:
+  - `end_round`
+  - `create_UIBox_blind_choice`
+  - `Blind:set_blind`
+  - `Card:set_cost`
+  - `create_card`
+  - `find_joker`
+
+- SMODS integration:
+  - Wraps `SMODS.calculate_destroying_cards` and `SMODS.score_card` to support custom seals/vouchers
+    that destroy cards but still need scoring logic.
+
+- UI integration:
+  - Wraps `G.UIDEF.challenge_description_tab` (Restrictions tab) so banned Editions display correctly
+    by rendering a Joker placeholder with the edition applied.
+
+Safety / invariants
+- Wrappers are installed once using `_hnds_wrapped_*` flags.
+- Hooks are written to degrade gracefully if optional globals or other mods are not present.
+--]]
+
+local HNDS_is_platinum_stake_active
+
+-- Platinum Stake: Doubles blind multiplier when beating blinds by 2x chips
+local end_round_ref = end_round
+function end_round(...)
+	local is_platinum_stake = HNDS_is_platinum_stake_active and HNDS_is_platinum_stake_active() or false
+	local blind_chips = (G and G.GAME and G.GAME.blind and G.GAME.blind.chips) or nil
+	local chips = (G and G.GAME and G.GAME.chips) or nil
+	local won_round = (chips and blind_chips) and (chips - blind_chips >= 0) or false
+	local beat_by_2x = is_platinum_stake and won_round and blind_chips and blind_chips > 0 and chips and (chips >= blind_chips * 2)
+	if beat_by_2x and G and G.GAME then
+		G.GAME.modifiers = G.GAME.modifiers or {}
+		G.GAME.modifiers.hnds_next_blind_mult = (G.GAME.modifiers.hnds_next_blind_mult or 1) * 2
+	end
+	return end_round_ref(...)
+end
+
+if G and G.UIDEF and G.UIDEF.challenge_description_tab and not G.UIDEF._hnds_wrapped_challenge_description_tab then
+	G.UIDEF._hnds_wrapped_challenge_description_tab = true
+	local challenge_description_tab_ref = G.UIDEF.challenge_description_tab
+	function G.UIDEF.challenge_description_tab(args)
+		local ret = challenge_description_tab_ref(args)
+		if not (args and args._tab == 'Restrictions') then
+			return ret
+		end
+		if not (G and G.P_CENTERS and G.P_CENTERS.j_joker) then
+			return ret
+		end
+
+		local function patch_node(node)
+			if type(node) ~= 'table' then return end
+			local obj = node.config and node.config.object
+			if obj and type(obj) == 'table' and obj.cards and type(obj.cards) == 'table' then
+				for i = 1, #obj.cards do
+					local c = obj.cards[i]
+					if c and c.config and c.config.center and c.config.center.set == 'Edition' and c.config.center.key then
+						local edition_key = c.config.center.key
+						c:set_ability(G.P_CENTERS.j_joker, true, true)
+						c:set_edition(edition_key, true, true)
+					end
+				end
+			end
+			if node.nodes and type(node.nodes) == 'table' then
+				for j = 1, #node.nodes do
+					patch_node(node.nodes[j])
+				end
+			end
+		end
+
+		patch_node(ret)
+		return ret
+	end
+end
+
+if not _G._hnds_wrapped_blind_choice then
+	-- UI wrapper for blind choice to display modified blind amounts
+	_G._hnds_wrapped_blind_choice = true
+	local create_UIBox_blind_choice_ref = create_UIBox_blind_choice
+	function create_UIBox_blind_choice(blind_type, run_info)
+		local t = create_UIBox_blind_choice_ref(blind_type, run_info)
+		if G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_next_blind_mult then
+			local mult = G.GAME.modifiers.hnds_next_blind_mult
+			if mult and mult > 1 then
+				local blind_key = G.GAME.round_resets and G.GAME.round_resets.blind_choices and G.GAME.round_resets.blind_choices[blind_type]
+				local blind_cfg = blind_key and G.P_BLINDS and G.P_BLINDS[blind_key]
+				if blind_cfg and blind_cfg.mult and get_blind_amount and number_format and score_number_scale then
+					local ante = (G.GAME.round_resets and G.GAME.round_resets.blind_ante) or (G.GAME.round_resets and G.GAME.round_resets.ante)
+					local base_amt = get_blind_amount(ante) * blind_cfg.mult * (G.GAME.starting_params and G.GAME.starting_params.ante_scaling or 1)
+					local from_text = number_format(base_amt)
+					local to_amt = base_amt * mult
+					local to_text = number_format(to_amt)
+					local function patch_nodes(nodes)
+						if _G.type(nodes) ~= 'table' then return end
+						for _, n in ipairs(nodes) do
+							if n and n.config and n.config.text and n.config.text == from_text then
+								n.config.text = to_text
+								n.config.scale = score_number_scale(0.9, to_amt)
+							elseif n and n.nodes then
+								patch_nodes(n.nodes)
+							end
+						end
+					end
+					patch_nodes(t.nodes)
+				end
+			end
+		end
+		return t
+	end
+end
+
+local function HNDS_is_stake_active(stake_key)
+	-- Helper function to check if a specific stake is active
+	if not (G and G.GAME and G.GAME.applied_stakes and G.P_STAKES and stake_key) then return false end
+	local stake = G.P_STAKES[stake_key]
+	for _, applied in ipairs(G.GAME.applied_stakes) do
+		if applied == stake_key then
+			return true
+		end
+		if stake and stake.order and applied == stake.order then
+			return true
+		end
+	end
+	return false
+end
+
+HNDS_is_platinum_stake_active = function()
+	-- Check if platinum stake is active (supports multiple stake key variations)
+	if not (G and G.GAME) then return false end
+	if HNDS_is_stake_active('platinum') then return true end
+	if HNDS_is_stake_active('stake_hnds_platinum') then return true end
+	if HNDS_is_stake_active('hnds_platinum') then return true end
+	return false
+end
+
+local Blind_set_blind_ref = Blind.set_blind
+-- Apply blind multiplier from platinum stake when setting new blind
+function Blind:set_blind(blind, reset, silent)
+	local ret = Blind_set_blind_ref(self, blind, reset, silent)
+	if not (G and G.GAME and G.GAME.facing_blind) then
+		return ret
+	end
+
+	local mult = nil
+	if G and G.GAME then
+		if G.GAME.modifiers and G.GAME.modifiers.hnds_next_blind_mult and G.GAME.modifiers.hnds_next_blind_mult > 1 then
+			mult = G.GAME.modifiers.hnds_next_blind_mult
+			G.GAME.modifiers.hnds_next_blind_mult = nil
+		end
+	end
+	if mult then
+		if self and self.chips then
+			self.chips = self.chips * mult
+			if number_format then
+				self.chip_text = number_format(self.chips)
+			end
+			if G and G.FUNCS and G.hand_text_area and G.hand_text_area.blind_chips then
+				G.FUNCS.blind_chip_UI_scale(G.hand_text_area.blind_chips)
+			end
+			if G and G.HUD and G.HUD.recalculate then
+				G.HUD:recalculate()
+			end
+		end
+	end
+	return ret
+end
+
+-- Black Seal and voucher card destruction detection
 HNDS.should_hand_destroy = function(card)
 	return card.seal == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or
 	(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
 end
 
 local destroy_cards_ref = SMODS.calculate_destroying_cards
+-- Handle destruction of cards with black seal or voucher effects
 function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand)
 	destroy_cards_ref(context, cards_destroyed, scoring_hand)
 	for i, card in ipairs(G.hand.cards) do
@@ -34,7 +217,8 @@ function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand
 	end
 end
 
-local get_new_boss_ref = get_new_boss --crystal deck double showdown hook
+local get_new_boss_ref = get_new_boss
+-- Crystal Deck: Halves win ante for double showdown effect
 function get_new_boss()
 	local win_ante = G.GAME.win_ante
 	if G.GAME.modifiers.hnds_double_showdown and G.GAME.round_resets.ante and G.GAME.round_resets.ante < G.GAME.win_ante then
@@ -45,7 +229,8 @@ function get_new_boss()
 	return boss
 end
 
-local set_cost_ref = Card.set_cost --premium deck and coffee break cost hook
+local set_cost_ref = Card.set_cost
+-- Premium Deck and Coffee Break Joker cost modifications
 function Card.set_cost(self)
 	set_cost_ref(self)
 	if self.config.center.key == "j_hnds_coffee_break" then
@@ -65,19 +250,11 @@ function Card.set_cost(self)
 	end
 end
 
-if CardArea and CardArea.emplace and not CardArea._hnds_wrapped_emplace then
-	CardArea._hnds_wrapped_emplace = true
+if CardArea and CardArea.emplace and not CardArea._hnds_wrapped_emplace_shop then
+	-- Shop curses: Apply curses to jokers when they enter shop (Blood Stake)
+	CardArea._hnds_wrapped_emplace_shop = true
 	local emplace_ref = CardArea.emplace
 	function CardArea:emplace(card, ...)
-		-- Apply curse immediately for Devil's Round challenge before any other logic
-		if card and card.config and card.config.center and card.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
-			-- Don't apply curse to eternal copies
-			if not (card.ability and card.ability.hnds_eternal_copy_created) then
-				if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
-					apply_curse(card)
-				end
-			end
-		end
 		local ret = emplace_ref(self, card, ...)
 		-- Keep existing logic for other scenarios
 		if self == G.shop_jokers and card and card.config and card.config.center and card.config.center.set == 'Joker' and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
@@ -92,22 +269,14 @@ if CardArea and CardArea.emplace and not CardArea._hnds_wrapped_emplace then
 	end
 end
 
-if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card then
-	SMODS._hnds_wrapped_create_card = true
+-- Shop curses (Cursed Pack logic)
+if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
+	-- Alternative method for applying curses to shop jokers
+	SMODS._hnds_wrapped_create_card_shop = true
 	local smods_create_card_ref = SMODS.create_card
 	function SMODS.create_card(args)
 		local created_card = smods_create_card_ref(args)
-		-- Apply curse immediately for Devil's Round challenge
-		if created_card and created_card.config and created_card.config.center and created_card.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
-			-- Don't apply curse to eternal copies
-			if not (created_card.ability and created_card.ability.hnds_eternal_copy_created) then
-				if (not created_card.ability or not created_card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
-					apply_curse(created_card)
-				end
-			end
-		end
-		
-		-- Keep existing logic for shop curses
+		-- Apply curses to shop jokers when enable_curses is active (Blood Stake)
 		if created_card and args and args.area == G.shop_jokers and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
 			if (not created_card.ability or not created_card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
 				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
@@ -120,20 +289,12 @@ if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card then
 	end
 end
 
-create_card_ref = create_card
+-- Krusty Food negative edition (separate from curses)
+local create_card_ref = create_card
 function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
 	local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
-	
-	-- Apply curse immediately for Devil's Round challenge
-	if card and _type == "Joker" and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
-		-- Don't apply curse to eternal copies
-		if not (card.ability and card.ability.hnds_eternal_copy_created) then
-			if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
-				apply_curse(card)
-			end
-		end
-	end
-	
+
+	-- Krusty gives negative edition to Food cards when created
 	if card and next(SMODS.find_card("j_hnds_krusty")) and card.config then
 		for _, t in ipairs(G.P_CENTER_POOLS.Food) do
 			if t.key == card.config.center.key then
@@ -142,38 +303,22 @@ function create_card(_type, area, legendary, _rarity, skip_materialize, soulable
 			end
 		end
 	end
-	if card and _type == "Joker" and ((area == G.shop_jokers) or (card.area == G.shop_jokers)) and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
-		if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
-			G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
-			if pseudorandom('hnds_curse_shop'..G.GAME.modifiers.hnds_shop_curse_roll) < 0.12 then
-				apply_curse(card)
-			end
-		end
-	end
+
 	return card
 end
 
 local add_to_deck_ref = Card.add_to_deck
+-- Handle joker copying abilities (e.g., DNA tag)
 function Card:add_to_deck(from_debuff)
 	local ret = add_to_deck_ref(self, from_debuff)
-	if not from_debuff and self and self.config and self.config.center and self.config.center.set == 'Joker' and G.GAME and G.GAME.challenge == 'c_hnds_devils_round' then
-		if not (self.ability and self.ability.hnds_eternal_copy_created) then
-			if (not self.ability or not self.ability.curse) and apply_curse and type(apply_curse) == 'function' then
-				apply_curse(self)
-				if self.ability and self.ability.curse and not self.ability.curse_acquire_triggered and trigger_curse and type(trigger_curse) == 'function' then
-					trigger_curse(self, {buying_card = true, challenge_creation = true})
-				end
-			end
-		end
-	end
 	if not from_debuff and self.ability.hnds_copies_to_create then
 		for _ = 1, self.ability.hnds_copies_to_create do
 			if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
 				G.GAME.joker_buffer = G.GAME.joker_buffer + 1
-				local source_card = self
+				local c = self
 				G.E_MANAGER:add_event(Event{
 					func = function ()
-						local copy = copy_card(source_card)
+						local copy = copy_card(c)
 						copy.ability.hnds_copies_to_create = nil
 						copy:add_to_deck()
 						G.jokers:emplace(copy)
@@ -188,7 +333,22 @@ function Card:add_to_deck(from_debuff)
 	return ret
 end
 
--- Impostor code (Highly Optimized - Context Aware)
+score_card_ref = SMODS.score_card
+-- Black Seal scoring: Force scoring of destroyed cards as if they were played
+function SMODS.score_card(card, context)
+	if not G.scorehand and HNDS.should_hand_destroy(card) and context.cardarea == G.hand then
+		G.scorehand = true
+		context.cardarea = G.play
+		if context.destroy_card then context.destroying_card = context.destroy_card end
+		SMODS.score_card(card, context)
+		G.scorehand = nil
+		context.destroying_card = nil
+		context.cardarea = G.play
+	end
+	return score_card_ref(card, context)
+end
+
+-- Impostor Joker: Highly optimized context-aware rank spoofing system
 if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_imposter then
     Card._hnds_wrapped_calculate_joker_imposter = true
     local calculate_joker_ref = Card.calculate_joker

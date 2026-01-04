@@ -14,6 +14,6 @@ SMODS.Joker {
         return { vars = {} }
     end,
     calculate = function(self, card, context)
-        -- Effect handled globally in hooks or patches
+        -- Effect in hooks file, the Joker is the Boolean
     end
 }

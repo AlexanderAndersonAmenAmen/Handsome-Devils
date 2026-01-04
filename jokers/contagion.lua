@@ -15,7 +15,7 @@ SMODS.Joker {
         return { vars = { numerator, denominator } }
     end,
     calculate = function(self, card, context)
-        if context.before and context.scoring_hand and not context.blueprint then
+        if context.after and context.scoring_hand and not context.blueprint then
             for i, scoring_card in ipairs(context.scoring_hand) do
                 if scoring_card.config.center ~= G.P_CENTERS.c_base then
                     local right_index = i + 1
@@ -23,11 +23,10 @@ SMODS.Joker {
                         local right_card = context.scoring_hand[right_index]
                         if right_card.config.center == G.P_CENTERS.c_base then
                             if SMODS.pseudorandom_probability(card, 'hnds_contagion', 1, card.ability.extra.odds) then
-                                right_card:flip()
                                 right_card:set_ability(scoring_card.config.center)
                                 G.E_MANAGER:add_event(Event({
                                     trigger = 'after',
-                                    delay = 0.3,
+                                    delay = 0.4,
                                     func = function()
                                         right_card:juice_up()
                                         play_sound('card1', 1)
@@ -36,7 +35,7 @@ SMODS.Joker {
                                 }))
                                 G.E_MANAGER:add_event(Event({
                                     trigger = 'after',
-                                    delay = 0.15,
+                                    delay = 0.2,
                                     func = function()
                                         right_card:flip()
                                         play_sound('tarot2', 1, 0.6)

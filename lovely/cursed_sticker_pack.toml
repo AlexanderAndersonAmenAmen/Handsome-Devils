@@ -1,0 +1,115 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# -----------------------------
+# Cursed Sticker & Cursed Pack
+# -----------------------------
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = 'if self.area and self.ability.couponed and (self.area == G.shop_jokers or self.area == G.shop_booster) then self.cost = 0 end'
+position = 'after'
+payload = '''
+    if self.area and (self.area == G.shop_jokers or self.area == G.shop_booster) then
+        if self.cost < 0 then self.cost = 0 end
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = 'c:buy_from_shop()'
+position = 'after'
+payload = '''
+    if trigger_curse and c and c.area and (c.area == G.shop_jokers or c.area == G.shop_booster) then
+        trigger_curse(c, {buying_card = true, card = c})
+        if G.jokers and G.jokers.cards then
+            for _, j in ipairs(G.jokers.cards) do
+                if j ~= c then
+                    trigger_curse(j, {buying_card_other = true, card = c})
+                end
+            end
+        end
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = 'G.FUNCS.can_skip_booster = function(e)'
+position = 'after'
+payload = '''
+    if G and G.GAME and G.GAME.hnds_forced_pack_no_skip then
+      e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+      e.config.button = nil
+      return
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = 'G.FUNCS.skip_booster = function(e)'
+position = 'after'
+payload = '''
+    if G and G.GAME and G.GAME.hnds_forced_pack_no_skip then
+      return
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = 'G.FUNCS.end_consumeable = function(e, delayfac)'
+position = 'after'
+payload = '''
+    if G and G.GAME and G.GAME.hnds_forced_pack_no_skip then
+      G.GAME.hnds_forced_pack_no_skip = nil
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = "amount = amount - amount%(10^math.floor(math.log10(amount)-1))"
+position = "after"
+payload = "if G.GAME.modifiers.curse_blind_percent then amount = math.floor(amount * (1 + G.GAME.modifiers.curse_blind_percent)); amount = amount - amount%(10^math.floor(math.log10(amount)-1)) end"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "self.added_to_deck = true"
+position = "after"
+payload = "if trigger_curse then trigger_curse(self, {add_to_deck = true}) end"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "self.added_to_deck = false"
+position = "after"
+payload = "if trigger_curse then trigger_curse(self, {remove_from_deck = true}) end"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = 'if self.shake_timer > 0 then'
+position = 'before'
+payload = '''
+    if self.cursed_shake and self.area == G.pack_cards then
+         if not self.juice or (self.juice.r < 0.1) then
+            self:juice_up(0.05, 0.05)
+        end
+    end
+'''
+match_indent = true

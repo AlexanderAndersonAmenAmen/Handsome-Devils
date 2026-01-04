@@ -132,15 +132,16 @@ return {
 				name = "Stone Mask",
 				text = {
 					"If {C:attention}first hand{} of round",
-					"is a single Enhanced card,",
-					"add a random {C:dark_edition}Edition{} to it",
+					"is a single card, give it a",
+					"random {C:attention}Enhancement{}, {C:attention}Seal{}",
+					"or {C:dark_edition}Edition{} if it doesn't have one",
 				},
 			},
 			j_hnds_jokestone = {
 				name = "Jokestone",
 				text = {
 					"At the start of round,",
-					"draw up to {C:attention}3{} Enhanced",
+					"draw up to {C:attention}#1#{} Enhanced", -- Using a var instead bc Dongtong from all in jest, also the var was already there
 					"cards from your deck",
 				},
 			},
@@ -293,6 +294,23 @@ return {
 					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
 				},
 			},
+			j_hnds_jigsaw_joker = {
+				name = "Jigsaw Joker",
+				text = {
+					"After playing {C:attention}8{} unique",
+					"poker hands, sell this card to",
+					"create {C:attention}2{} random Tags",
+					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/8){}",
+				},
+			},
+			j_hnds_dynamic_duos = {
+				name = "Dynamic Duos",
+				text = {
+					"If played hand is a {C:attention}Two Pair{}",
+					"of {C:attention}odd{} and {C:attention}even{} rank cards,",
+					"retrigger them",
+				},
+			},
 			j_hnds_imposter = {
 				name = "Imposter",
 				text = {
@@ -430,9 +448,9 @@ return {
 			c_hnds_cycle = {
 				name = "Cycle",
 				text = {
-					"Destroy a random {C:attention}Joker{},",
-					"create a random one",
-					"of a {C:attention}higher rarity{}",
+					"Replace your {C:attention}Jokers{} with",
+					"random ones of the {C:attention}same rarity{},",
+					"sets money to {C:money}$0{}",
 				},
 			},
 			c_hnds_petrify = {
@@ -578,9 +596,9 @@ return {
 			hnds_platinum_sticker = {
 				name = "Platinum Sticker",
 				text = {
-                    "Used this Joker",
-                    "to win on {C:attention}Platinum",
-                    "{C:attention}Stake{} difficulty",
+					"Used this Joker",
+					"to win on {C:attention}Platinum",
+					"{C:attention}Stake{} difficulty",
 				}
 			},
 			hnds_blood_sticker = {
@@ -854,8 +872,8 @@ return {
 				name = "Platinum Stake",
 				text = {
 					"If {C:attention}Blind{} is defeated by scoring twice the",
-					"required Chips, all {C:attention}Blinds{} become {C:mult}X2{} larger",
-                    "{s:0.8}Applies all previous Stakes",
+					"required Chips, the {C:attention}next Blind{} becomes {C:mult}X2{} larger",
+					"{s:0.8}Applies all previous Stakes",
 				}
 			},
 			stake_hnds_blood_stake = {
@@ -865,9 +883,9 @@ return {
 					"{s:0.8}Applies all previous Stakes",
 				},
 				unlock = {
-                    'Win with this',
-                    'deck on Platinum Stake',
-                }
+					'Win with this',
+					'deck on Platinum Stake',
+				}
 			}
 		}
 	},
@@ -909,10 +927,19 @@ return {
 			hnds_offer = "Offer",
 			hnds_price = "Price",
 		},
+		challenge_names = {
+			c_hnds_devils_round = "Devil's Round",
+			c_hnds_draw_2_cards = "DRAW 2 CARDS",
+			c_hnds_dark_ritual = "Dark Ritual",
+			c_hnds_the_circus = "The Circus",
+			c_hnds_gambling_opportunity = "Gambling Opportunity",
+		},
 		v_text = {
-			ch_c_hnds_devils_round = {
-				"All Jokers are Cursed",
-			},
+			ch_c_hnds_devils_round = {  "All Jokers are {C:red,E:2}Cursed{}", },
+			ch_c_hnds_draw_2_cards = { "Start with 5 {C:attention}hand size{}", },
+			ch_c_hnds_dark_ritual = { "You can't visit the {C:money}Shop{}", },
+			ch_c_hnds_the_circus = {  "", },
+			ch_c_hnds_gambling_opportunity = {  "Economy {C:attention}Jokers{}, {C:attention}Gold Seal{}, {C:attention}Gold card{} and {C:attention}Lucky Card{} are banned", },
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Stone Ocean",
