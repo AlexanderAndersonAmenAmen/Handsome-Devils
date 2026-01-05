@@ -43,7 +43,7 @@ function end_round(...)
 	local blind_chips = (G and G.GAME and G.GAME.blind and G.GAME.blind.chips) or nil
 	local chips = (G and G.GAME and G.GAME.chips) or nil
 	local won_round = (chips and blind_chips) and (chips - blind_chips >= 0) or false
-	local beat_by_2x = is_platinum_stake and won_round and blind_chips and blind_chips > 0 and chips and (chips >= blind_chips * 2)
+	local beat_by_2x = is_platinum_stake and won_round and blind_chips and blind_chips > 0 and chips and (chips > blind_chips * 2)
 	if beat_by_2x and G and G.GAME then
 		G.GAME.modifiers = G.GAME.modifiers or {}
 		G.GAME.modifiers.hnds_next_blind_mult = (G.GAME.modifiers.hnds_next_blind_mult or 1) * 2
@@ -94,6 +94,10 @@ if not _G._hnds_wrapped_blind_choice then
 	local create_UIBox_blind_choice_ref = create_UIBox_blind_choice
 	function create_UIBox_blind_choice(blind_type, run_info)
 		local t = create_UIBox_blind_choice_ref(blind_type, run_info)
+		local on_deck = (G and G.GAME and G.GAME.blind_on_deck) or nil
+		if run_info or not on_deck or blind_type ~= on_deck then
+			return t
+		end
 		if G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_next_blind_mult then
 			local mult = G.GAME.modifiers.hnds_next_blind_mult
 			if mult and mult > 1 then

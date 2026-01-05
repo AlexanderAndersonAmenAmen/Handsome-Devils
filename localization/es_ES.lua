@@ -864,7 +864,7 @@ return {
 			stake_hnds_platinum = {
 				name = "Pozo de Platino",
 				text = {
-					"Si la {C:attention}Ciega{} es derrotada con el {C:attention}doble{}",
+					"Si la {C:attention}Ciega{} es derrotada con el {C:attention}doble{} de las",
 					"fichas requeridas, la siguiente {C:attention}Ciega{} es {C:mult}X2{} más grande",
                     "{s:0.8}Aplica todos los pozos anteriores{}",
 				}
@@ -920,19 +920,10 @@ return {
 			hnds_offer = "Oferta",
 			hnds_price = "Precio",
 		},
-		challenge_names = {
-			c_hnds_devils_round = "La Apuesta del Diablo",
-			c_hnds_draw_2_cards = "SACO 2 CARTAS",
-			c_hnds_dark_ritual = "Ritual Oscuro",
-			c_hnds_the_circus = "El Circo",
-			c_hnds_gambling_opportunity = "Ludopatía",
-		},
 		v_text = {
-			ch_c_hnds_devils_round = {  "Todos los Comodines están {C:red,E:2}Malditos{}", },
-			ch_c_hnds_draw_2_cards = { "", },
-			ch_c_hnds_dark_ritual = { "No puedes visitar la {C:money}Tienda{}", },
-			ch_c_hnds_the_circus = {  "", },
-			ch_c_hnds_gambling_opportunity = {  "Los {C:attention}Comodines{}, {C:attention}Sello de Oro{}, {C:attention}Carta de Oro{} y {C:attention}de la Suerte{} están deshabilitados", },
+			ch_c_hnds_devils_round = {
+				"Todos los Comodines están Malditos",
+			},
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Océano de Piedra",
