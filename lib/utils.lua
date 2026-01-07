@@ -120,18 +120,6 @@ function HNDS.poll_tag(seed, options, exclusions)
 	return tag
 end
 
-
-function HNDS.joker_slots_full_of_eternals()
-	if not (G and G.jokers and G.jokers.cards and G.jokers.config and G.jokers.config.card_limit) then return false end
-	if #G.jokers.cards < G.jokers.config.card_limit then return false end
-	for _, j in ipairs(G.jokers.cards) do
-		if not j or not (j.ability and j.ability.eternal) then
-			return false
-		end
-	end
-	return true
-end
-
 -- Dynamic hand level up with animation and effects (used by various jokers/consumables)
 function HNDS.dyn_level_up(card, hand, level, chips, mult, instant)
 	level = level or 1

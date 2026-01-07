@@ -1,39 +1,3 @@
---[[
-Handsome Devils - Runtime Hooks
-
-Purpose
-- This module installs gameplay hooks that are *not specific to a single card definition*.
-- It centralizes overrides of core Balatro functions that need to be modified for:
-  - custom stakes/decks
-  - curse system glue logic
-  - UI display patches
-  - special-case mechanics that are easier/safer to implement as a hook than as per-card code
-
-Who loads this file
-- Loaded by `main.lua` via `assert(SMODS.load_file("lib/hooks.lua"))()`.
-
-What this module touches
-- Core functions:
-  - `end_round`
-  - `create_UIBox_blind_choice`
-  - `Blind:set_blind`
-  - `Card:set_cost`
-  - `create_card`
-  - `find_joker`
-
-- SMODS integration:
-  - Wraps `SMODS.calculate_destroying_cards` and `SMODS.score_card` to support custom seals/vouchers
-    that destroy cards but still need scoring logic.
-
-- UI integration:
-  - Wraps `G.UIDEF.challenge_description_tab` (Restrictions tab) so banned Editions display correctly
-    by rendering a Joker placeholder with the edition applied.
-
-Safety / invariants
-- Wrappers are installed once using `_hnds_wrapped_*` flags.
-- Hooks are written to degrade gracefully if optional globals or other mods are not present.
---]]
-
 local HNDS_is_platinum_stake_active
 
 -- Platinum Stake: Doubles blind multiplier when beating blinds by 2x chips
@@ -186,7 +150,7 @@ end
 
 -- Black Seal and voucher card destruction detection
 HNDS.should_hand_destroy = function(card)
-	return card.seal == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or
+	return card:get_seal() == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or
 	(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
 end
 
@@ -352,7 +316,7 @@ function SMODS.score_card(card, context)
 	return score_card_ref(card, context)
 end
 
--- Impostor Joker: Highly optimized context-aware rank spoofing system
+-- Impostor Joker, this is the actual code of the impostor, thinking about moving it to the Joker itself
 if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_imposter then
     Card._hnds_wrapped_calculate_joker_imposter = true
     local calculate_joker_ref = Card.calculate_joker

@@ -864,7 +864,7 @@ return {
 			stake_hnds_platinum = {
 				name = "Pozo de Platino",
 				text = {
-					"Si la {C:attention}Ciega{} es derrotada con el {C:attention}doble{} de las",
+					"Si la {C:attention}Ciega{} es derrotada con el {C:attention}doble{}",
 					"fichas requeridas, la siguiente {C:attention}Ciega{} es {C:mult}X2{} más grande",
                     "{s:0.8}Aplica todos los pozos anteriores{}",
 				}
