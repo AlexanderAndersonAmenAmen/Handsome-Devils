@@ -449,8 +449,9 @@ return {
 			c_hnds_cycle = {
 				name = "Cycle",
 				text = {
-					"Replace your {C:attention}Jokers{} with",
-					"random ones of the {C:attention}same rarity{},",
+					"Replaces all of your",
+					"{C:attention}Jokers{} with random ones",
+					"of the {C:attention}same rarity{},",
 					"sets money to {C:money}$0{}",
 				},
 			},
