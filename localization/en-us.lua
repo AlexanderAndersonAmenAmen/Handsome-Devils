@@ -89,7 +89,7 @@ return {
 					"Sell this card to create",
 					"a random {V:1}#1#{} Joker",
 					"with a random {C:dark_edition}Edition",
-					"{s:0.8}Upgrades every {s:0.8}{C:attention}#3#{} {s:0.8}rounds",
+					"{s:0.8}Upgrades every {C:attention,s:0.8}#3#{} {s:0.8}rounds",
 					"{C:inactive}(Currently {C:attention}#2#{C:inactive}/#3#)",
 				},
 			},
@@ -133,8 +133,8 @@ return {
 				text = {
 					"If {C:attention}first hand{} of round",
 					"is a single card, give it a",
-					"random {C:attention}Enhancement{}, {C:attention}Seal{}",
-					"or {C:dark_edition}Edition{} if it doesn't have one",
+					"random {C:attention}Enhancement{}, {C:attention}Seal{} or",
+					"{C:dark_edition}Edition{} if it doesn't have one",
 				},
 			},
 			j_hnds_jokestone = {
@@ -289,8 +289,9 @@ return {
 			j_hnds_one_punchline_man = {
 				name = "One Punchline Man",
 				text = {
-					"Gains {X:mult,C:white}X0.25{} Mult per",
-					"unused hand at end of round",
+					"Gains {X:mult,C:white}X0.25{} Mult",
+					"per {C:attention}unused{} {C:blue}hand{}",
+					"at end of round",
 					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
 				},
 			},
@@ -298,8 +299,8 @@ return {
 				name = "Jigsaw Joker",
 				text = {
 					"After playing {C:attention}8{} unique",
-					"poker hands, sell this card to",
-					"create {C:attention}2{} random Tags",
+					"poker hands, sell this card",
+					"to create {C:attention}2{} random Tags",
 					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/8){}",
 				},
 			},
@@ -314,18 +315,18 @@ return {
 			j_hnds_imposter = {
 				name = "Imposter",
 				text = {
-					"Scored {C:attention}face cards{} count as",
-					"any {C:attention}rank{} for all Joker",
-					"specific effects",
+					"Scored {C:attention}face cards{} count",
+					"as any {C:attention}rank{} for all",
+					"Joker effects",
 				},
 			},
 			j_hnds_contagion = {
 				name = "Contagion",
 				text = {
 					"{C:green}#1# in #2#{} chance for an",
-					"enhanced card to copy",
-					"its Enhancement to",
-					"a card on the right when scored",
+					"enhanced card to copy its",
+					"{C:attention}Enhancement{} to a card on",
+					"the {C:attention}right{} when scored",
 				},
 			},
 			j_hnds_last_laugh = {
@@ -856,13 +857,13 @@ return {
 					"Next shop Joker is free",
 					"and gets {C:attention}duplicated{}",
 					"when you buy it",
-					"{C:inactive}(Must have room){},",
+					"{C:inactive}(Must have room){}",
 				},
 			},
 			tag_hnds_cursed_tag = {
 				name = "Cursed Tag",
 				text = {
-					"Immediately open a \"free\"",
+					"Gives a free",
 					"{C:red,T:p_hnds_cursed_pack}Cursed Pack{}",
 				},
 			},
@@ -871,8 +872,8 @@ return {
 			stake_hnds_platinum = {
 				name = "Platinum Stake",
 				text = {
-					"If {C:attention}Blind{} is defeated by scoring twice the",
-					"required Chips, the {C:attention}next Blind{} becomes {C:mult}X2{} larger",
+					"Scoring twice the required Chips,",
+					"makes the next {C:attention}Blind{} {C:mult}X2{} larger",
 					"{s:0.8}Applies all previous Stakes",
 				}
 			},
@@ -880,6 +881,7 @@ return {
 				name = "Blood Stake",
 				text = {
 					"Shop can have {C:red}Cursed{} Jokers",
+					"{C:inactive,s:0.8}(Gains extra {C:green,s:0.8}power{} {C:inactive,s:0.8}but at a {C:red,s:0.8}cost{}{C:inactive,s:0.8}...)",
 					"{s:0.8}Applies all previous Stakes",
 				},
 				unlock = {

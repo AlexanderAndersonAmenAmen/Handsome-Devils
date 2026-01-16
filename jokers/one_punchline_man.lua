@@ -9,7 +9,7 @@ SMODS.Joker {
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
-    config = { extra = { Xmult = 1, Xmult_extra = 0.25 } },
+    config = { extra = { Xmult = 1, Xmult_extra = 0.2 } },
     loc_vars = function(self, info_queue, card)
         return { vars = { card.ability.extra.Xmult, card.ability.extra.Xmult_extra, card.ability.extra.xmult_gains } }
     end,
