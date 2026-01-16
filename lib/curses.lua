@@ -686,28 +686,29 @@ function apply_curse(card)
 end
 
 -- Cursed Pack Definition
-if SMODS then
-    SMODS.Booster{
-        key = 'cursed_pack',
-        kind = 'Joker',
-        atlas = 'Extras',
-        pos = { x = 3, y = 2 },
-        group_key = 'k_hnds_cursed_pack',
-        config = {extra = 4, choose = 1},
-        cost = 6,
-        weight = 0.10,
-        ease_background_colour = function(self)
-            local cursed_col = mix_colours(G.C.RED, G.C.BLACK, 0.75)
-            ease_colour(G.C.DYN_UI.MAIN, cursed_col)
-            ease_background_colour { new_colour = cursed_col, special_colour = darken(G.C.BLACK, 0.2), contrast = 2.5 }
-        end,
-        create_card = function(self, card)
-            local c = create_card("Joker", G.pack_cards, nil, nil, true, true, nil, 'cur')
-            apply_curse(c)
-            return c
-        end
-    }
-end
+SMODS.Booster{
+    key = 'cursed_pack',
+    kind = 'Joker',
+    atlas = 'Extras',
+    pos = { x = 3, y = 2 },
+    group_key = 'k_hnds_cursed_pack',
+    config = {extra = 4, choose = 1},
+    cost = 6,
+    weight = 0.10,
+    ease_background_colour = function(self)
+        local cursed_col = mix_colours(G.C.RED, G.C.BLACK, 0.75)
+        ease_colour(G.C.DYN_UI.MAIN, cursed_col)
+        ease_background_colour { new_colour = cursed_col, special_colour = darken(G.C.BLACK, 0.2), contrast = 2.5 }
+    end,
+    create_card = function(self, card)
+        local c = create_card("Joker", G.pack_cards, nil, nil, true, true, nil, 'cur')
+        apply_curse(c)
+        return c
+    end,
+    in_pool = function (self, args)
+        return hnds_config.enableCursedPackSpawning
+    end
+}
 
 function trigger_curse(card, context)
     -- Central dispatcher: looks up the selected offer/price by ID and executes them.

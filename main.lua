@@ -139,7 +139,7 @@ SMODS.current_mod.config_tab = function()
 									{
 										n = G.UIT.T,
 										config = {
-											text = "Enable Magic/Ultra Spectral packs spawning",
+											text = "Enable Ultra Spectral packs spawning",
 											scale = 0.45,
 											colour = G.C.UI.TEXT_LIGHT,
 										},
@@ -160,6 +160,88 @@ SMODS.current_mod.config_tab = function()
 								shadow = true,
 								ref_table = hnds_config,
 								ref_value = "enablePackSpawning",
+							}),
+						},
+					},
+				},
+			},
+			{
+				n = G.UIT.R,
+				config = { padding = 0, align = "cm", minh = 0.1 },
+				nodes = {
+					{
+						n = G.UIT.C,
+						config = { align = "c", padding = 0, minh = 0.1 },
+						nodes = {
+							{
+								n = G.UIT.R,
+								config = { padding = 0, align = "cm", minh = 0 },
+								nodes = {
+									{
+										n = G.UIT.T,
+										config = {
+											text = "Enable Magic packs spawning",
+											scale = 0.45,
+											colour = G.C.UI.TEXT_LIGHT,
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						n = G.UIT.C,
+						config = { align = "cl", padding = 0.05 },
+						nodes = {
+							create_toggle({
+								col = true,
+								label = "",
+								scale = 1,
+								w = 0,
+								shadow = true,
+								ref_table = hnds_config,
+								ref_value = "enableMagicPackSpawning",
+							}),
+						},
+					},
+				},
+			},
+			{
+				n = G.UIT.R,
+				config = { padding = 0, align = "cm", minh = 0.1 },
+				nodes = {
+					{
+						n = G.UIT.C,
+						config = { align = "c", padding = 0, minh = 0.1 },
+						nodes = {
+							{
+								n = G.UIT.R,
+								config = { padding = 0, align = "cm", minh = 0 },
+								nodes = {
+									{
+										n = G.UIT.T,
+										config = {
+											text = "Enable Cursed packs spawning",
+											scale = 0.45,
+											colour = G.C.UI.TEXT_LIGHT,
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						n = G.UIT.C,
+						config = { align = "cl", padding = 0.05 },
+						nodes = {
+							create_toggle({
+								col = true,
+								label = "",
+								scale = 1,
+								w = 0,
+								shadow = true,
+								ref_table = hnds_config,
+								ref_value = "enableCursedPackSpawning",
 							}),
 						},
 					},

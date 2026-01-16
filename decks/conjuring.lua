@@ -82,7 +82,7 @@ SMODS.Booster {
     end,
     cry_digital_hallucinations = magic_diha_compat,
     in_pool = function (self, args)
-        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enablePackSpawning
+        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enableMagicPackSpawning
     end
 }
 
@@ -137,7 +137,7 @@ SMODS.Booster {
     end,
     cry_digital_hallucinations = magic_diha_compat,
     in_pool = function (self, args)
-        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enablePackSpawning
+        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enableMagicPackSpawning
     end
 }
 
@@ -192,7 +192,7 @@ SMODS.Booster {
     end,
     cry_digital_hallucinations = magic_diha_compat,
     in_pool = function (self, args)
-        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enablePackSpawning
+        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enableMagicPackSpawning
     end
 }
 
@@ -247,7 +247,7 @@ SMODS.Booster {
     end,
     cry_digital_hallucinations = magic_diha_compat,
     in_pool = function (self, args)
-        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enablePackSpawning
+        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enableMagicPackSpawning
     end
 }
 
@@ -302,7 +302,7 @@ SMODS.Booster {
     end,
     cry_digital_hallucinations = magic_diha_compat,
     in_pool = function (self, args)
-        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enablePackSpawning
+        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enableMagicPackSpawning
     end
 }
 
@@ -357,6 +357,6 @@ SMODS.Booster {
     end,
     cry_digital_hallucinations = magic_diha_compat,
     in_pool = function (self, args)
-        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enablePackSpawning
+        return G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring" or hnds_config.enableMagicPackSpawning
     end
 }
