@@ -411,10 +411,10 @@ return {
 			b_hnds_circus = {
 				name = "Circus Deck",
 				text = {
-					"Copies ability",
+					"Has an ability",
 					"of a random {C:attention}Joker",
 					"After defeating each",
-					"{C:attention}Boss Blind{}, ability changes",
+					"{C:attention}Blind{}, ability changes",
 					"{C:inactive}(Currently: {V:1}#1#{C:inactive})"
 				}
 			},

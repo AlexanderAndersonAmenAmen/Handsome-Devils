@@ -442,7 +442,7 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 			)
 		end
 
-		if ((G.GAME and G.GAME.blind and G.GAME.blind:get_type() == 'Boss') or run_start) then
+		if ((G.GAME and G.GAME.blind) or run_start) then
 			G.GAME.hnds_circus_joker_key = G.GAME.hnds_circus_joker_key or nil
 
 			if #G.hnds_circus_joker.cards > 0 then
@@ -460,8 +460,6 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 			
 			local new_joker = pseudorandom_element(poolcopy, pseudoseed('circus'))
 			G.GAME.hnds_circus_joker_key = new_joker
-
-			print('joker picked: ' .. new_joker)
 
 			local j = SMODS.add_card({set = 'Jokers', area = G.hnds_circus_joker, key = new_joker, no_edition = true, skip_materialize = true}) --silently and sneakily add the joker to the offscreen cardarea
 			j.ignore_base_shader = {true}
