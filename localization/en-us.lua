@@ -553,8 +553,8 @@ return {
 				text = {
 					"{C:dark_edition}Foil{}, {C:dark_edition}Holographic{},",
 					"{C:dark_edition}Polychrome{}, {C:dark_edition}Negative{},",
-					"{C:green}Uncommon{}, {C:red}Rare{},",
-					"{C:attention}Buffoon Tag{}, etc.",
+					"{C:dark_edition}Vintage{}, {C:green}Uncommon{}, {C:red}Rare{},",
+					"{C:attention}Buffoon, Cursed{} {C:attention}Tag{} etc.",
 				}
 			},
 			hnds_soul = {

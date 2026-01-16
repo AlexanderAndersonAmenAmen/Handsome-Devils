@@ -204,9 +204,11 @@ function HNDS.get_shop_joker_tags()
 		"tag_holo",
 		"tag_polychrome",
 		"tag_negative",
+		"vintage_tag",
 		"tag_rare",
 		"tag_uncommon",
 		"tag_buffoon",
+		"cursed_tag"
 	}
 
 	--Add tags from other mods
