@@ -1,0 +1,49 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# -----------------------------------
+# Stone Ocean
+# -----------------------------------
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+check_and_set_high_score('furthest_ante', G.GAME.round_resets.ante)
+'''
+position = "after"
+payload = '''
+G.GAME.ante_stones_scored = 0
+'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '''=[SMODS _ "src/game_object.lua"]'''
+pattern = '''
+hand[self.key] = math.max(hand['s_'..self.key] + hand['l_'..self.key]*(hand.level - 1), 0)
+'''
+position = "at"
+payload = '''
+hand[self.key] = math.max(hand[self.key] + hand['l_'..self.key]*amount, 0)
+'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''
+local card = Card(0,0, 0.5*G.CARD_W, 0.5*G.CARD_H, G.P_CARDS[v[1]], G.P_CENTERS.c_base)
+'''
+position = "after"
+payload = '''
+if v.enhancement then
+    card:set_ability(G.P_CENTERS[v.enhancement])
+end
+'''
+match_indent = true
+times = 1

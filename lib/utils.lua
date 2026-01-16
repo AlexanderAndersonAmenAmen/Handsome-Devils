@@ -1,3 +1,38 @@
+--[[
+Handsome Devils - Shared Utilities
+
+Purpose
+- This file holds shared helper functions used across multiple Handsome Devils systems.
+- These helpers are intentionally kept "dumb" (no hooks) so they can be reused safely from:
+  - Joker/consumable definitions
+  - deck/stake logic
+  - challenge logic
+  - cross-mod compatibility glue
+
+Who uses this
+- `main.lua` and various content scripts call into `HNDS.*` helpers.
+- `hooks.lua` relies on some helpers during run initialization and special deck logic.
+
+Notable helpers
+- `HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)`
+  - Counts distinct suits in a scoring hand, handling wild cards.
+
+- `HNDS.poll_tag(seed, options, exclusions)`
+  - Re-implements tag selection with exclusions, and fixes Orbital tag selection for modded hands.
+
+- `HNDS.dyn_level_up(card, hand, level, chips, mult, instant)`
+  - Applies hand level changes with the same timing/juice patterns as vanilla tarot/planet animations.
+
+- `HNDS.get_shop_joker_tags()`
+  - Returns a list of tag keys that can create shop jokers (extended when other mods are installed).
+
+- `HNDS.table_shallow_copy`, `HNDS.get_key_for_value`
+  - Small utility helpers used by deck/stake effects.
+
+Notes / invariants
+- Some functions consult `SMODS.find_mod(...)` to include optional compatibility behavior.
+- This file should avoid hooking globals; that work belongs in `hooks.lua` / `challenge_rules.lua`.
+--]]
 
 ---Gets the number of unique suits in a provided scoring hand - code from Paperback, try it if you haven't!
 function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
@@ -85,7 +120,7 @@ function HNDS.poll_tag(seed, options, exclusions)
 	return tag
 end
 
-
+-- Dynamic hand level up with animation and effects (used by various jokers/consumables)
 function HNDS.dyn_level_up(card, hand, level, chips, mult, instant)
 	level = level or 1
 	chips = chips or G.GAME.hands[hand].l_chips * level
@@ -144,7 +179,25 @@ function HNDS.dyn_level_up(card, hand, level, chips, mult, instant)
 	}))
 end
 
---Return a list of all the jokers that create jokers in shop
+-- Cursed Deck: Check if all joker slots are filled with eternal jokers only
+-- Returns true only when player has full board of eternal jokers (allows skipping cursed pack)
+function HNDS.joker_slots_full_of_eternals()
+	if not (G and G.jokers and G.jokers.cards and G.jokers.config and G.jokers.config.card_limit) then return false end
+	if #G.jokers.cards < G.jokers.config.card_limit then return false end
+	for _, j in ipairs(G.jokers.cards) do
+		if not j then
+			return false
+		end
+		if j.ability and j.ability.eternal then
+		elseif j.edition and j.edition.negative then
+		else
+			return false
+		end
+	end
+	return true
+end
+
+-- Return a list of all the jokers that create jokers in shop (for tag compatibility)
 function HNDS.get_shop_joker_tags()
 	local tag_list = {
 		"tag_foil",
@@ -247,6 +300,7 @@ function HNDS.get_shop_joker_tags()
 	return tag_list
 end
 
+-- Rarity cycling system for jokers (Common -> Uncommon -> Rare -> Epic/Legendary -> Common)
 HNDS.rarity_cycle = {
 	Common = "Uncommon",
 	Uncommon = "Rare",
@@ -254,10 +308,12 @@ HNDS.rarity_cycle = {
 	Legendary = "Common"
 }
 
+-- Get next rarity in the cycle (used by rarity-changing effects)
 HNDS.get_next_rarity = function(rarity_key)
 	return HNDS.rarity_cycle[rarity_key]
 end
 
+-- Blind soul rewards: Define which jokers are rewarded for defeating specific blinds
 HNDS.blind_souls = {
     bl_hook = {"j_drunkard", next(SMODS.find_mod("GrabBag")) and "j_gb_hook" or nil},
     bl_ox = {"j_matador", next(SMODS.find_mod("GrabBag")) and "j_gb_ox" or nil},
@@ -295,6 +351,7 @@ if next(SMODS.find_mod("Entropy")) then
 	end
 end
 
+-- Get a random soul joker for defeating a blind (supports custom soul definitions)
 HNDS.get_blind_soul = function (blind, seed) --G.GAME.blind should go in here
 	local soul_opts = blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] or {"j_joker"} --allow other mods to define their own blind souls
     ret = pseudorandom_element(soul_opts, seed) or "j_joker" --in case someone has an exmpty list of souls for whatever reason
@@ -304,6 +361,7 @@ HNDS.get_blind_soul = function (blind, seed) --G.GAME.blind should go in here
 	return ret
 end
 
+-- Supersuit Joker: Reset the randomly chosen suit for the round
 function reset_supersuit_card()
 	local supersuit_suits = {}
 	G.GAME.current_round.supersuit_card = G.GAME.current_round.supersuit_card or {}
@@ -319,6 +377,7 @@ function reset_supersuit_card()
 	G.GAME.current_round.supersuit_card.suit = supersuit_card
 end
 
+-- Dark Idol Joker: Reset the randomly chosen card for the round
 function reset_dark_idol()
 	G.GAME.current_round.dark_idol = { suit = 'Spades', rank = 'Ace' }
 	local valid_dark_idol_cards = {}
@@ -336,6 +395,7 @@ function reset_dark_idol()
 	end
 end
 
+-- Circus Deck: Pool of jokers that can be randomly assigned each boss blind
 HNDS.circus_joker_pool = {
 	'j_hack', 
 	'j_juggler', 
@@ -354,7 +414,9 @@ HNDS.circus_joker_pool = {
 	'j_hnds_pot_of_greed'
 }
 
+-- Reset game globals: Initialize round-specific variables and deck effects
 SMODS.current_mod.reset_game_globals = function(run_start)
+	local preserved_next_blind_mult = (G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_next_blind_mult) or (G and G.GAME and G.GAME.hnds_next_blind_mult)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
 		G.GAME.art_queue = 0
@@ -409,23 +471,15 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 			G.hnds_circus_joker:remove()
 		end
 	end
-
-	-- PLATINUM STAKE --
-
-	if G.GAME.stake == G.P_STAKES["stake_hnds_platinum"].stake_level and not run_start then
-
-		print (G.GAME.chips .. " / " .. G.GAME.blind.chips)
-
-		if G.GAME.chips >= (G.GAME.blind.chips * 2) then
-			print("blind was beat by over 2X required score!")
-			G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 2
-		end
+	if preserved_next_blind_mult and preserved_next_blind_mult > 1 and G and G.GAME then
+		G.GAME.modifiers = G.GAME.modifiers or {}
+		G.GAME.modifiers.hnds_next_blind_mult = G.GAME.modifiers.hnds_next_blind_mult or preserved_next_blind_mult
+		G.GAME.hnds_next_blind_mult = G.GAME.hnds_next_blind_mult or preserved_next_blind_mult
 	end
-
 end
 
+-- Enhanced find_joker function to include Circus Deck joker in search results
 local find_joker_ref = find_joker
-
 function find_joker(name, non_debuff)
 
 	local jokers = find_joker_ref(name, non_debuff)
@@ -453,6 +507,7 @@ function HNDS.table_shallow_copy(t)
 	return t2
 end
 
+-- Utility: Get key for a given value in a table
 function HNDS.get_key_for_value(t, value)
   for k,v in pairs(t) do
     if v==value then return k end

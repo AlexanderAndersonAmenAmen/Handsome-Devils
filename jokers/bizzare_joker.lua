@@ -16,7 +16,7 @@ SMODS.Joker({
     discovered = true,
     blueprint_compat = true,
     eternal_compat = true,
-    perishable_compat = true,
+    perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
     config = {
         extra = {
             chips = 0,

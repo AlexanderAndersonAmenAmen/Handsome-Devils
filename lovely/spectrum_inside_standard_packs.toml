@@ -1,0 +1,135 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# -----------------------------
+# Standard Packs: Spectrum should be selectable (not usable) and should not inherit edition/seal
+# -----------------------------
+
+# Patch 1: Allow Soul replacement for Base cards
+# In vanilla create_card(), there's a special-case that forces forced_key = 'c_base' when _type == 'Base'
+# This prevents soul replacement (like Spectral cards) from working in Standard Packs
+# We only apply this fallback when forced_key wasn't already set by the soul roll
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if _type == 'Base' then "
+position = "at"
+match_indent = true
+payload = "if _type == 'Base' and not forced_key then "
+
+# Patch 2: Prevent editions on consumables via SMODS.create_card
+# When SMODS.create_card is called with t.edition, don't apply it to consumables
+# This covers cases where mods use SMODS.create_card directly
+[[patches]]
+[patches.pattern]
+target = "SMODS/_/src/utils.lua"
+pattern = "if t.edition then _card:set_edition(t.edition) end"
+position = "at"
+match_indent = true
+payload = "if t.edition and not _card.ability.consumeable then _card:set_edition(t.edition) end"
+
+# Patch 3: Prevent seals on consumables via SMODS.create_card
+# When SMODS.create_card is called with t.seal, don't apply it to consumables
+# This covers cases where mods use SMODS.create_card directly
+[[patches]]
+[patches.pattern]
+target = "SMODS/_/src/utils.lua"
+pattern = "if t.seal then _card:set_seal(t.seal); _card.ability.delay_seal = false end"
+position = "at"
+match_indent = true
+payload = "if t.seal and not _card.ability.consumeable then _card:set_seal(t.seal); _card.ability.delay_seal = false end"
+
+# Patch 4: Prevent editions on consumables via Card:set_edition
+# Directly patch the core function to prevent ANY consumable from getting editions
+# This is the most robust solution - even if something tries to apply an edition, it won't stick
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "function Card:set_edition(edition, immediate, silent)"
+position = "after"
+match_indent = true
+payload = '''
+    -- Prevent consumables from having editions
+    if self.ability and self.ability.consumeable then
+        self.edition = nil
+        return
+    end
+'''
+
+# Patch 5: Prevent seals on consumables via Card:set_seal
+# Directly patch the core function to prevent ANY consumable from getting seals
+# This is the most robust solution - even if something tries to apply a seal, it won't stick
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "function Card:set_seal(_seal, silent, immediate)"
+position = "after"
+match_indent = true
+payload = '''
+    -- Prevent consumables from having seals (they're useless)
+    if self.ability and self.ability.consumeable then
+        _seal = nil
+    end
+'''
+
+# Patch 6: Randomize Spectrum position in Standard Packs
+# Spectrum was always appearing in the first (leftmost) slot when it replaced a Base card
+# This patch shuffles Spectrum to a random position before cards are displayed
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''
+                    for k, v in ipairs(pack_cards) do
+                        G.pack_cards:emplace(v)
+                    end
+'''
+position = "before"
+match_indent = true
+payload = '''
+                    -- Randomize Spectrum position so it doesn't always appear on the left
+                    if self.ability.name and self.ability.name:find('Standard') then
+                        local spectrum_index = nil
+                        for i, c in ipairs(pack_cards) do
+                            if c and c.config and c.config.center_key and c.config.center_key:match('spectrum$') then
+                                spectrum_index = i
+                                break
+                            end
+                        end
+                        if spectrum_index then
+                            local swap_index = math.floor(pseudorandom(pseudoseed('hnds_spectrum_pos'..G.GAME.round_resets.ante)) * #pack_cards) + 1
+                            -- Swap Spectrum with another card at a random position
+                            pack_cards[spectrum_index], pack_cards[swap_index] = pack_cards[swap_index], pack_cards[spectrum_index]
+                        end
+                    end
+'''
+
+# Patch 7: Force draw_hand when Spectrum appears in Standard Packs
+# Spectrum can't is a spectral card and I got too many tries to move into consumables, so I just force the deck to get draw
+# This workaround forces draw_from_deck_to_hand() to make it selectable and alert the player
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''
+                    for k, v in ipairs(pack_cards) do
+                        G.pack_cards:emplace(v)
+                    end
+'''
+position = "after"
+match_indent = true
+payload = '''
+                    -- Force draw_hand when Spectrum appears so it's useable
+                    if self.ability.name and self.ability.name:find('Standard') and G.FUNCS and G.FUNCS.draw_from_deck_to_hand then
+                        local has_spectrum = false
+                        for _, c in ipairs(pack_cards) do
+                            if c and c.config and c.config.center_key and c.config.center_key:match('spectrum$') then
+                                has_spectrum = true
+                                break
+                            end
+                        end
+                        if has_spectrum then
+                            G.FUNCS.draw_from_deck_to_hand()
+                        end
+                    end
+'''

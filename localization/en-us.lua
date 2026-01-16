@@ -132,15 +132,16 @@ return {
 				name = "Stone Mask",
 				text = {
 					"If {C:attention}first hand{} of round",
-					"is a single Enhanced card,",
-					"add a random {C:dark_edition}Edition{} to it",
+					"is a single card, give it a",
+					"random {C:attention}Enhancement{}, {C:attention}Seal{}",
+					"or {C:dark_edition}Edition{} if it doesn't have one",
 				},
 			},
 			j_hnds_jokestone = {
 				name = "Jokestone",
 				text = {
 					"At the start of round,",
-					"draw up to {C:attention}3{} Enhanced",
+					"draw up to {C:attention}#1#{} Enhanced", -- Using a var instead bc Dongtong from all in jest, also the var was already there
 					"cards from your deck",
 				},
 			},
@@ -285,6 +286,48 @@ return {
 					"{C:inactive}(Currently {C:attention}#1#{C:green} Rerolls{C:inactive})"
 				}
 			},
+			j_hnds_one_punchline_man = {
+				name = "One Punchline Man",
+				text = {
+					"Gains {X:mult,C:white}X0.25{} Mult per",
+					"unused hand at end of round",
+					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
+				},
+			},
+			j_hnds_jigsaw_joker = {
+				name = "Jigsaw Joker",
+				text = {
+					"After playing {C:attention}8{} unique",
+					"poker hands, sell this card to",
+					"create {C:attention}2{} random Tags",
+					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/8){}",
+				},
+			},
+			j_hnds_dynamic_duos = {
+				name = "Dynamic Duos",
+				text = {
+					"If played hand is a {C:attention}Two Pair{}",
+					"of {C:attention}odd{} and {C:attention}even{} rank cards,",
+					"retrigger them",
+				},
+			},
+			j_hnds_imposter = {
+				name = "Imposter",
+				text = {
+					"Scored {C:attention}face cards{} count as",
+					"any {C:attention}rank{} for all Joker",
+					"specific effects",
+				},
+			},
+			j_hnds_contagion = {
+				name = "Contagion",
+				text = {
+					"{C:green}#1# in #2#{} chance for an",
+					"enhanced card to copy",
+					"its Enhancement to",
+					"a card on the right when scored",
+				},
+			},
 			j_hnds_last_laugh = {
 				name = "Last Laugh",
 				text = {
@@ -383,6 +426,15 @@ return {
 					"{C:inactive}(e.x. {C:green}1 in 3{C:inactive} -> {C:green}3 in 3){C:inactive}"
 				}
 			},
+			b_hnds_cursed = {
+				name = "Cursed Deck",
+				text = {
+					"Defeat the {C:attention}first",
+					"{C:attention}Boss Blind{} to open",
+					"an {C:red}unskippable{}",
+					"{C:red,T:p_hnds_cursed_pack}Cursed Pack{}",
+				}
+			},
 		},
 		Spectral = {
 			c_hnds_abyss = {
@@ -396,9 +448,9 @@ return {
 			c_hnds_cycle = {
 				name = "Cycle",
 				text = {
-					"Destroy a random {C:attention}Joker{},",
-					"create a random one",
-					"of a {C:attention}higher rarity{}",
+					"Replace your {C:attention}Jokers{} with",
+					"random ones of the {C:attention}same rarity{},",
+					"sets money to {C:money}$0{}",
 				},
 			},
 			c_hnds_petrify = {
@@ -544,11 +596,146 @@ return {
 			hnds_platinum_sticker = {
 				name = "Platinum Sticker",
 				text = {
-                    "Used this Joker",
-                    "to win on {C:attention}Platinum",
-                    "{C:attention}Stake{} difficulty",
+					"Used this Joker",
+					"to win on {C:attention}Platinum",
+					"{C:attention}Stake{} difficulty",
 				}
-			}
+			},
+			hnds_blood_sticker = {
+				name = "Blood Sticker",
+				text = {
+					"Used this Joker",
+					"to win on {C:attention}Blood",
+					"{C:attention}Stake{} difficulty",
+				}
+			},
+			p_hnds_cursed_pack = {
+				name = "Cursed Pack",
+				text = {
+					"Choose {C:attention}#1#{} of up to {C:attention}#2#{}",
+					"{C:red}Cursed{} Joker cards"
+				}
+			},
+			-- Cursed Sticker
+			hnds_cursed_offer_title = {
+				text = {
+					"{C:green}Offer{}:",
+				},
+			},
+			hnds_cursed_price_title = {
+				text = {
+					"{C:red}Price{}:",
+				},
+			},
+			hnds_cursed = { -- Display in the Collection
+				name = "Cursed",
+				text = {
+					"You get an {C:green}Offer{}:",
+					"{C:inactive}({C:green}no offer{C:inactive}){}",
+					"for a {C:red}Price{}:",
+					"{C:inactive}({C:red}no price{C:inactive}){}",
+				}
+			},
+			-- Cursed Offers Descriptions
+			offer_copy_random_tarot = {
+				text = {
+					"Creates a {C:tarot}Tarot{}",
+					"card at the end",
+					"of the {C:attention}round{}",
+				},
+			},
+			offer_copy_random_planet = {
+				text = {
+					"Creates a {C:planet}Planet{}",
+					"card at the end",
+					"of the {C:attention}round{}",
+				},
+			},
+			offer_random_enhancement = {
+				text = {
+					"Give random",
+					"{C:attention}Ehnacements{} to",
+					"{C:attention}8{} cards in deck",
+				},
+			},
+			offer_self_negative = {
+				text = {
+					"Add {C:dark_edition}Negative{}",
+					"to this Joker",
+				},
+			},
+			offer_retrigger = {
+				text = {
+					"{C:attention}Retriggers{} an",
+					"additional time",
+				},
+			},
+			offer_interest_cap = {
+				text = {
+					"Raises interest",
+					"cap by {C:money}$5{}",
+				},
+			},
+			offer_free_rerolls = {
+				text = {
+					"Gives {C:attention}2{} free",
+					"{C:green}rerolls{} per shop",
+				},
+			},
+			offer_joker_copy = {
+				text = {
+					"Create a copy",
+					"of this {C:attention}Joker{}",
+				},
+			},
+			-- Cursed Prices Descriptions
+			price_destroy_jokers = {
+				text = {
+					"Destroy all",
+					"other Jokers"
+				},
+			},
+			price_destroy_cards = {
+				text = {
+					"Destroy {C:attention}8{} random",
+					"cards in your deck",
+				},
+			},
+			price_bankrupt = {
+				text = {
+					"Set money to {C:red}$0{}",
+				},
+			},
+			price_inflation = {
+				text = {
+					"Permanently increase",
+					"all {C:attention}shop prices{} by {C:red}25%{}",
+				},
+			},
+			price_lose_hand = {
+				text = {
+					"Lose {C:red}1{} hand",
+					"permanently",
+				},
+			},
+			price_lose_discard = {
+				text = {
+					"Lose {C:red}1{} discard",
+					"permanently",
+				},
+			},
+			price_lose_hand_size = {
+				text = {
+					"{C:red}-1{} hand size",
+					"permanently",
+				},
+			},
+			price_ante_scaling = {
+				text = {
+					"All {C:attention}Blinds{} become {C:red}50%{}",
+					"bigger permanently",
+				},
+			},
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {
@@ -669,7 +856,14 @@ return {
 					"Next shop Joker is free",
 					"and gets {C:attention}duplicated{}",
 					"when you buy it",
-					"{C:inactive}(Must have room){}",
+					"{C:inactive}(Must have room){},",
+				},
+			},
+			tag_hnds_cursed_tag = {
+				name = "Cursed Tag",
+				text = {
+					"Immediately open a \"free\"",
+					"{C:red,T:p_hnds_cursed_pack}Cursed Pack{}",
 				},
 			},
 		},
@@ -678,8 +872,19 @@ return {
 				name = "Platinum Stake",
 				text = {
 					"If {C:attention}Blind{} is defeated by scoring twice the",
-					"required Chips, all {C:attention}Blinds{} become {C:mult}X2{} larger",
-                    "{s:0.8}Applies all previous Stakes",
+					"required Chips, the {C:attention}next Blind{} becomes {C:mult}X2{} larger",
+					"{s:0.8}Applies all previous Stakes",
+				}
+			},
+			stake_hnds_blood_stake = {
+				name = "Blood Stake",
+				text = {
+					"Shop can have {C:red}Cursed{} Jokers",
+					"{s:0.8}Applies all previous Stakes",
+				},
+				unlock = {
+					'Win with this',
+					'deck on Platinum Stake',
 				}
 			}
 		}
@@ -688,6 +893,8 @@ return {
 		dictionary = {
 			k_hnds_petrified = "Petrified!",
 			k_hnds_goldfish = "Goldfish!",
+			k_hnds_cursed_offers = "Cursed Offers",
+			k_hnds_cursed_prices = "Cursed Prices",
 			k_hnds_boom_timer = "!!!",
 			k_hnds_boom = "BOOM!",
 			k_hnds_green = "Draw!",
@@ -704,6 +911,8 @@ return {
 			k_hnds_splashed = "Splashed!",
 			hnds_plus_q = "+1 ???", --this is for the cryptid digital hallucinations creation message with magic packs
 			k_hnds_magic_pack = "Magic Pack",
+			k_hnds_cursed_pack = "Cursed Pack",
+			hnds_cursed_pack = "Cursed Pack",
 			k_hnds_sarmenti_active = "active",
 			k_hnds_sarmenti_inactive = "inactive",
 			k_hnds_sarmenti_enhanced = "Enhanced!",
@@ -713,16 +922,30 @@ return {
 			hnds_vintage = "Vintage",
 			hnds_black_seal = "Black Seal",
 			hnds_spectralseal_seal = "Spectral Seal",
-			hnds_soul = "Soul"
+			hnds_soul = "Soul",
+			hnds_cursed = "Cursed",
+			hnds_offer = "Offer",
+			hnds_price = "Price",
+		},
+		challenge_names = {
+			c_hnds_devils_round = "Devil's Round",
+			c_hnds_draw_2_cards = "DRAW 2 CARDS",
+			c_hnds_dark_ritual = "Dark Ritual",
+			c_hnds_the_circus = "The Circus",
+			c_hnds_gambling_opportunity = "Gambling Opportunity",
+		},
+		v_text = {
+			ch_c_hnds_devils_round = {  "All Jokers are {C:red,E:2}Cursed{}", },
+			ch_c_hnds_draw_2_cards = { "Start with 5 {C:attention}hand size{}", },
+			ch_c_hnds_dark_ritual = { "You can't visit the {C:money}Shop{}", },
+			ch_c_hnds_the_circus = {  "", },
+			ch_c_hnds_gambling_opportunity = {  "Economy {C:attention}Jokers{}, {C:attention}Gold Seal{}, {C:attention}Gold card{} and {C:attention}Lucky Card{} are banned", },
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Stone Ocean",
 		},
 		poker_hand_descriptions = {
 			hnds_stone_ocean = { "A hand consisting of 5 Stone cards" },
-		},
-		ranks = {
-			hnds_creepycard = 'Something Truly Evil',
 		},
 	},
 }

@@ -240,6 +240,32 @@ return {
 					"lub {C:attention}odrzucona",
 				},
 			},
+			p_hnds_cursed_pack = {
+				name = "Przeklęta paczka",
+				text = {
+					"Wybierz {C:attention}#2#{} z maks. {C:attention}#1#{},",
+					"{C:red}Przeklętych{} Jokerów",
+				}
+			},
+			hnds_cursed_offer_title = {
+				text = {
+					"Otrzymujesz {C:green}Ofertę{}:",
+				},
+			},
+			hnds_cursed_price_title = {
+				text = {
+					"Za {C:red}Cenę{}:",
+				},
+			},
+			hnds_cursed = {
+				name = "Przeklęty",
+				text = {
+					"Otrzymujesz {C:green}Ofertę{}:",
+					"{C:inactive}({C:green}brak oferty{C:inactive}){}",
+					"Za {C:red}Cenę{}:",
+					"{C:inactive}({C:red}brak ceny{C:inactive}){}",
+				}
+			},
 		},
 		Enhanced = {
 			m_hnds_aberrant = {
@@ -341,6 +367,8 @@ return {
 		dictionary = {
 			k_hnds_petrified = "Skamieniały!",
 			k_hnds_goldfish = "Złota ryba!",
+			k_hnds_cursed_offers = "Przeklęte oferty",
+			k_hnds_cursed_prices = "Przeklęte ceny",
 			k_hnds_green = "Dobierasz!",
 			k_hnds_jackpot = "Jackpot!",
 			k_hnds_probinc = "Powiększono!",
@@ -352,10 +380,20 @@ return {
 			k_hnds_banana_split = "Podzielone!",
 			k_hnds_color_of_madness = "Szaleństwo!",
 			k_hnds_occultist = "Ucz się!",
+			k_hnds_cursed_pack = "Przeklęta paczka",
+			hnds_cursed_pack = "Przeklęta paczka",
 		},
 		labels = {
 			hnds_black_seal = "Czarna Pieczęć",
 			hnds_green_seal = "Zielona Pieczęć",
+			hnds_cursed = "Przeklęty",
+			hnds_offer = "Oferta",
+			hnds_price = "Cena",
+		},
+		v_text = {
+			ch_c_hnds_devils_round = {
+				"Wszystkie Jokery są Przeklęte",
+			},
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Ocean kamienia",

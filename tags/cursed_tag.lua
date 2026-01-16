@@ -1,18 +1,17 @@
 SMODS.Tag {
-    key = "magic_tag",
+    key = "cursed_tag",
     atlas = "HDtags",
-    min_ante = 2,
-    pos = { x = 2, y = 0 },
+    pos = { x = 3, y = 0 },
     discovered = true,
     loc_vars = function(self, info_queue, tag)
-        info_queue[#info_queue + 1] = G.P_CENTERS.p_hnds_magic_1
+        info_queue[#info_queue + 1] = G.P_CENTERS.p_hnds_cursed_pack
     end,
     apply = function(self, tag, context)
         if context.type == 'new_blind_choice' then
             local lock = tag.ID
             G.CONTROLLER.locks[lock] = true
-            tag:yep('+', G.C.SECONDARY_SET.Planet, function()
-                local key = 'p_hnds_magic_' .. math.random(7)
+            tag:yep('+', G.C.RED, function()
+                local key = 'p_hnds_cursed_pack'
                 local booster = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
                 G.play.T.y + G.play.T.h/2 - G.CARD_H*1.27/2, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[key], {bypass_discovery_center = true, bypass_discovery_ui = true})
                 booster.cost = 0

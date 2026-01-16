@@ -22,7 +22,7 @@ SMODS.Joker({
 	end,
 	calculate = function(self, card, context)
 		if context.setting_blind then
-			card.ability.extra.currently_drawn = 0 --this does literally nothing?
+			card.ability.extra.currently_drawn = 0 --this does literally nothing? -- Marffe: looks like it just checks how many cards are currently draw in hand to be an additive to the draw_scaling
 		end
 
 		if (context.selling_self or context.forcetrigger) and G.hand and G.hand.cards and #G.hand.cards > 0 then

@@ -19,6 +19,9 @@ SMODS.Joker({
     calculate = function(self, card, context)
         if context.setting_ability and context.old and context.old ~= "c_base" and context.new ~= "c_base" and not context.unchanged then
             print(context.old)
+            if HNDS and HNDS.XMOD and HNDS.XMOD.perfectionist_should_apply and not HNDS.XMOD.perfectionist_should_apply(context) then
+                return
+            end
             context.other_card.ability.perma_mult = context.other_card.ability.perma_mult + card.ability.extra.mult
             context.other_card.ability.perma_bonus = context.other_card.ability.perma_bonus + card.ability.extra.chips
             return {

@@ -1,0 +1,87 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# -----------------------------
+# Public Nuisance: Force draw instead of ending round when joker is present
+# -----------------------------
+
+# Patch 1: Force DRAW_TO_HAND state instead of NEW_ROUND when Public Nuisance exists
+# Normally the game would transition to NEW_ROUND, but we want to keep drawing cards
+# as long as Public Nuisance joker is present and we have cards/hands left
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "G.STATE = G.STATES.NEW_ROUND"
+position = "at"
+match_indent = true
+payload = """
+G.GAME.hnds_public_nuisance_end_round_queued = nil
+-- If Public Nuisance joker exists and we have cards/hands left, force draw instead of ending round
+if (#SMODS.find_card('j_hnds_public_nuisance') > 0) and 
+G.GAME.current_round.hands_left >= 1 and (#G.deck.cards > 0 or #G.hand.cards > 0) then
+    G.STATE = G.STATES.DRAW_TO_HAND
+else
+    G.STATE = G.STATES.NEW_ROUND
+end
+"""
+
+# Patch 2: Prevent double end_round() calls with flag
+# The game can call end_round() multiple times in edge cases
+# This flag ensures end_round() only executes once per round transition
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = """
+if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.play.cards < 1 then
+        end_round()
+    end"""
+position = "at"
+match_indent = true
+payload = """
+if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.play.cards < 1 then
+    -- Only call end_round() once per transition to avoid issues
+    if not G.GAME.hnds_public_nuisance_end_round_queued then
+        G.GAME.hnds_public_nuisance_end_round_queued = true
+        end_round()
+    end
+end
+"""
+
+# Patch 3: Handle edge case where deck/hand are empty but round shouldn't end yet
+# This prevents premature round ending when Public Nuisance should keep the game going
+# The original code would immediately end_round() when deck/hand are empty
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "if #G.hand.cards < 1 and #G.deck.cards < 1 then"
+position = "before"
+match_indent = true
+payload = """
+-- Public Nuisance patch: Check if we should end round
+if #G.hand.cards < 1 and #G.deck.cards < 1 then
+"""
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = """
+if #G.hand.cards < 1 and #G.deck.cards < 1 then
+            end_round()
+        else
+            save_run()"""
+position = "at"
+match_indent = true
+payload = """
+if #G.hand.cards < 1 and #G.deck.cards < 1 then
+    -- Don't immediately end round if Public Nuisance is keeping us alive
+    -- Let the flag system in Patch 2 handle when to actually end_round()
+    if #G.play.cards < 1 and not G.GAME.hnds_public_nuisance_end_round_queued then
+        G.GAME.hnds_public_nuisance_end_round_queued = true
+        end_round()
+    end
+else
+    save_run()
+end
+"""

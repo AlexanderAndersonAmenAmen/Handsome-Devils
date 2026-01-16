@@ -920,10 +920,19 @@ return {
 			hnds_offer = "Oferta",
 			hnds_price = "Precio",
 		},
+		challenge_names = {
+			c_hnds_devils_round = "La Apuesta del Diablo",
+			c_hnds_draw_2_cards = "SACO 2 CARTAS",
+			c_hnds_dark_ritual = "Ritual Oscuro",
+			c_hnds_the_circus = "El Circo",
+			c_hnds_gambling_opportunity = "Ludopatía",
+		},
 		v_text = {
-			ch_c_hnds_devils_round = {
-				"Todos los Comodines están Malditos",
-			},
+			ch_c_hnds_devils_round = {  "Todos los Comodines están {C:red,E:2}Malditos{}", },
+			ch_c_hnds_draw_2_cards = { "", },
+			ch_c_hnds_dark_ritual = { "No puedes visitar la {C:money}Tienda{}", },
+			ch_c_hnds_the_circus = {  "", },
+			ch_c_hnds_gambling_opportunity = {  "Los {C:attention}Comodines{}, {C:attention}Sello de Oro{}, {C:attention}Carta de Oro{} y {C:attention}de la Suerte{} están deshabilitados", },
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Océano de Piedra",

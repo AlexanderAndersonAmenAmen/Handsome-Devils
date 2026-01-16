@@ -190,6 +190,26 @@ SMODS.current_mod.calculate = function(self, context)
 		}))
 		G.GAME.hnds_crystal_queued = nil
 	end
+	if context.starting_shop and G.GAME.hnds_cursed_pack_queued then
+		G.E_MANAGER:add_event(Event({
+			func = function()
+				local booster = SMODS.create_card { key = 'p_hnds_cursed_pack', area = G.play }
+				booster.T.x = G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2
+				booster.T.y = G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2
+				booster.T.w = G.CARD_W * 1.27
+				booster.T.h = G.CARD_H * 1.27
+				booster.cost = 0
+				booster.from_tag = true
+				if not (HNDS and HNDS.joker_slots_full_of_eternals and HNDS.joker_slots_full_of_eternals()) then
+					G.GAME.hnds_forced_pack_no_skip = true
+				end
+				G.FUNCS.use_card({ config = { ref_table = booster } })
+				booster:start_materialize()
+				return true
+			end
+		}))
+		G.GAME.hnds_cursed_pack_queued = nil
+	end
 	if context.open_booster and G.GAME.art_queue > 0 then
 		G.E_MANAGER:add_event(Event({
 			func = function()
@@ -252,10 +272,15 @@ local files = {
 			"last_laugh",
 			"occultist",
 			"stone_mask",
+			"jigsaw_joker",
+			"dynamic_duos",
 			"meme",
 			"angry_mob",
 			"digital_circus",
 			"energized",
+			"one_punchline_man",
+			"imposter",
+			"contagion",
 			"pennywise",
 			"art",
 			"krusty",
@@ -320,6 +345,7 @@ local files = {
 			"premiumdeck",
 			"crystal",
 			"conjuring",
+			"cursed",
 			"circus",
 			"ol_reliable",
 		},
@@ -335,14 +361,26 @@ local files = {
 			"mystery_tag",
 			"magic_tag",
 			"dna_tag",
+			"cursed_tag",
 		 },
 		directory = "tags/",
 	},
 	stakes = {
 		list = {
 			"platinum",
+			"blood"
 		},
 		directory = "stakes/"
+	},
+	challenges = {
+		list = {
+			"devils_round",
+			"draw_2_cards",
+			"dark_ritual",
+			"the_circus",
+			"gambling_opportunity",
+		},
+		directory = "challenges/"
 	}
 }
 
@@ -450,6 +488,16 @@ SMODS.ObjectType({ --vanilla foods, modded foods are added in their joker def
 	},
 })
 
+-- Imposter utility function for rank matching
+HNDS.imposter_rank_match = function(card, required_id)
+	if #SMODS.find_card('j_hnds_imposter') > 0 then
+		if card:get_id() >= 11 and card:get_id() <= 13 then
+			return true
+		end
+	end
+	return card:get_id() == required_id
+end
+
 local _init_game_object = Game.init_game_object
 function Game:init_game_object()
 	local ret = _init_game_object(self)
@@ -475,3 +523,6 @@ for key, value in pairs(files) do
 end
 assert(SMODS.load_file("lib/hooks.lua"))()
 assert(SMODS.load_file("lib/utils.lua"))()
+assert(SMODS.load_file("lib/curses.lua"))()
+assert(SMODS.load_file("lib/cross_mod_compat.lua"))()
+assert(SMODS.load_file("lib/challenge_rules.lua"))()

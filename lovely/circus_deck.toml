@@ -1,0 +1,22 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# -----------------------------
+# Circus Deck
+# -----------------------------
+
+[[patches]]
+[patches.pattern]
+target = '''=[SMODS _ "src/utils.lua"]'''
+pattern = '''
+-- TARGET: add your own CardAreas for joker evaluation
+'''
+position = "after"
+payload = '''
+    if HNDS.DeckOrSleeve("circus") and G.hnds_circus_joker and G.hnds_circus_joker.cards then
+        t[#t+1] = G.hnds_circus_joker
+    end
+'''
+match_indent = true

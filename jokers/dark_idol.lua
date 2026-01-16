@@ -18,6 +18,8 @@ SMODS.Joker{
     unlocked = true,
     discovered = true,
     blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
     calculate = function(self, card, context)
         local destroy = {}
         if context.individual and context.cardarea == G.play and not context.blueprint then

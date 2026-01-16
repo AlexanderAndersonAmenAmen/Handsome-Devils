@@ -34,6 +34,7 @@ SMODS.Joker({
 		if context.selling_self or context.forcetrigger and not context.blueprint then
 			if #G.jokers.cards <= G.jokers.config.card_limit then
 				local rarity_vals = { "Common", "Uncommon", "Rare" }
+				if card.ability.extra.current_rarity > 3 then card.ability.extra.current_rarity = 3 end
 				SMODS.add_card({
 					set = "Joker",
 					area = G.jokers,
@@ -47,13 +48,12 @@ SMODS.Joker({
 		end
 
 		if (context.end_of_round and context.main_eval) or context.forcetrigger then
-			if card.ability.extra.current_rarity ~= 4 then
+			if card.ability.extra.current_rarity > 3 then card.ability.extra.current_rarity = 3 end
+			if card.ability.extra.current_rarity < 3 then
 				card.ability.extra.current_rounds = card.ability.extra.current_rounds + 1
 				if card.ability.extra.current_rounds >= card.ability.extra.max_rounds then
-					card.ability.extra.current_rarity = card.ability.extra.current_rarity + 1
-					if card.ability.extra.current_rarity ~= 4 then
-						card.ability.extra.current_rounds = 0
-					end
+					card.ability.extra.current_rarity = math.min(3, card.ability.extra.current_rarity + 1)
+					card.ability.extra.current_rounds = 0
 				end
 				if
 					card.ability.extra.current_rounds ~= 0
