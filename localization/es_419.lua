@@ -348,7 +348,7 @@ return {
 				text = {
 					"Tras jugar {C:attention}8{} manos",
 					"únicas, vende esta carta",
-					"para crear {C:attention}2{} Etiquetas",
+					"para crear {C:attention}#3#{} Etiquetas",
 					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive}/8){}",
 				},
 			},

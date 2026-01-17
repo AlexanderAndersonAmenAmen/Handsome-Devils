@@ -300,7 +300,7 @@ return {
 				text = {
 					"After playing {C:attention}8{} unique",
 					"poker hands, sell this card",
-					"to create {C:attention}2{} random Tags",
+					"to create {C:attention}#3#{} random Tags",
 					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/8){}",
 				},
 			},
