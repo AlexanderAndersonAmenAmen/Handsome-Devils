@@ -408,11 +408,11 @@ return {
 			b_hnds_circus = {
 				name = "Baraja de Circo",
 				text = {
-					"Copia la habilidad de un",
-					"{C:attention}Comodín{} de tu colección,",
-					"después de derrotar la",
-					"{C:attention}Ciega jefe{}, cambia de comodín",
-					"{C:inactive}(Actualmente: {V:1}#1#{C:inactive})"
+					"Tiene la habilidad de",
+					"un {C:attention}Comodín{} al azar",
+					"cambia de comodín después",
+					"de cada {C:attention}Ciega{}",
+					"{C:inactive}(Actualmente: {V:1}#1#{C:inactive})",
 				}
 			},
 			b_hnds_ol_reliable = {
@@ -421,7 +421,7 @@ return {
 					"Triplica las {C:green}probabilidades{}",
 					"en la {C:money}Tienda{} y durante",
 					"la {C:attention}Ciega Jefe{}",
-					"{C:inactive}(Ej. {C:green}1 en 3{C:inactive} -> {C:green}3 en 3){C:inactive}"
+					"{C:inactive}(Ej. {C:green}1 en 3{C:inactive} -> {C:green}3 en 3){C:inactive}",
 				}
 			},
 			b_hnds_cursed = {
@@ -545,8 +545,8 @@ return {
 				text = {
 					"{C:dark_edition}Laminada{}, {C:dark_edition}Holográfica{},",
 					"{C:dark_edition}Policroma{}, {C:dark_edition}Negativa{},",
-					"{C:green}Inusual{}, {C:red}Raro{},",
-					"{C:attention}Bufón{} y más",
+					"{C:dark_edition}Vintage{}, {C:green}Inusual{}, {C:red}Rara{},",
+					"{C:attention}Bufón{}, {C:red}Maldito{} y más",
 				}
 			},
 			hnds_soul = {
