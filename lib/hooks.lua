@@ -304,14 +304,14 @@ end
 score_card_ref = SMODS.score_card
 -- Black Seal scoring: Force scoring of destroyed cards as if they were played
 function SMODS.score_card(card, context)
-	if not G.scorehand and HNDS.should_hand_destroy(card) and context.cardarea == G.hand then
+	if (not G.scorehand) and HNDS.should_hand_destroy(card) and context.cardarea == G.hand then
 		G.scorehand = true
 		context.cardarea = G.play
 		if context.destroy_card then context.destroying_card = context.destroy_card end
 		SMODS.score_card(card, context)
 		G.scorehand = nil
 		context.destroying_card = nil
-		context.cardarea = G.play
+		context.cardarea = G.hand
 	end
 	return score_card_ref(card, context)
 end
