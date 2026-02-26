@@ -551,13 +551,12 @@ end
 -- IMPOSTOR MULTI RANK CODE
 -------------------------------------------------------------------
 
-<<<<<<< HEAD
 -- When the Impostor is owned by the player, face cards
 -- (J/Q/K, ids 11-13) are treated like any rank for any scoring purpose.
 -- This works by temporarily faking the rank for each Jokers so
 -- `card:get_id()` and `calculate_joker` always works for face cards
 -- Is bit heavy on performance
-=======
+
 local function HNDS_is_stake_active(stake_key)
 	-- Helper function to check if a specific stake is active
 	if not (G and G.GAME and G.GAME.applied_stakes and G.P_STAKES and stake_key) then return false end
@@ -783,7 +782,6 @@ function SMODS.score_card(card, context)
 end
 
 -- Impostor Joker, this is the actual code of the impostor, thinking about moving it to the Joker itself
->>>>>>> a489fb3baf0e5086925e32f5ad60dced8cca4cb7
 if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_imposter then
 	Card._hnds_wrapped_calculate_joker_imposter = true
 	local calculate_joker_ref = Card.calculate_joker
