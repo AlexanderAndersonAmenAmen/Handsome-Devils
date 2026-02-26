@@ -47,8 +47,8 @@ SMODS.Joker({
 	pos = { x = 6, y = 1 },
 	rarity = 1,
 	cost = 4,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	discovered = false,
 	blueprint_compat = true,
 	demicoloncompat = true,
 	eternal_compat = true,
@@ -56,11 +56,30 @@ SMODS.Joker({
 	config = { extra = {
 		draw = 3,
 	} },
+	unlock_condition = { type = 'hand_contents', extra = 3 },
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.draw } }
 	end,
+	check_for_unlock = function(self, args)
+		if args.type == 'hand_contents' and args.cards then
+			local seen = {}
+			local count = 0
+			for _, v in ipairs(args.cards) do
+				if v and v.ability and v.ability.set == "Enhanced" then
+					local key = v.ability.name or v.ability.effect
+					if key and not seen[key] then
+						seen[key] = true
+						count = count + 1
+						if count >= self.unlock_condition.extra then
+							return true
+						end
+					end
+				end
+			end
+		end
+	end,
 	calculate = function(self, card, context)
-		if context.first_hand_drawn or context.forcetrigger and #G.deck.cards > 0 then
+		if (context.first_hand_drawn or context.forcetrigger) and #G.deck.cards > 0 then
 			jokestone_draw(self, card, context)
 			if not context.forcetrigger then
 				G.E_MANAGER:add_event(Event({

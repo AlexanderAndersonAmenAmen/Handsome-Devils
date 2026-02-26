@@ -5,14 +5,15 @@ SMODS.Joker({
 			max_rounds = 2,
 			current_rounds = 0,
 			current_rarity = 1,
-			rarity_strings = { "Common", "Uncommon", "Rare" },
+			rarity_strings = { 'k_common', 'k_uncommon', 'k_rare' },
 		},
 	},
 	rarity = 3,
 	loc_vars = function(self, info_queue, card)
+		local rarity_key = card.ability.extra.rarity_strings[card.ability.extra.current_rarity]
 		return {
 			vars = {
-				card.ability.extra.rarity_strings[card.ability.extra.current_rarity],
+				localize(rarity_key),
 				card.ability.extra.current_rounds,
 				card.ability.extra.max_rounds,
 				colours = {
@@ -65,7 +66,7 @@ SMODS.Joker({
 					}
 				else
 					return {
-						message = card.ability.extra.rarity_strings[card.ability.extra.current_rarity] .. "!",
+						message = localize(card.ability.extra.rarity_strings[card.ability.extra.current_rarity]) .. "!",
 						colour = G.C.RARITY[card.ability.extra.current_rarity],
 					}
 				end

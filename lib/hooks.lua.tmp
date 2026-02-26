@@ -7,6 +7,8 @@ Sections:
   Excommunicado (select_blind, ease_ante, reset_blinds)
   Platinum Stake
   Cycle Spectral (free rerolls cleanup)
+  Walking Joke tracking (shared add_to_deck hook)
+  Pot of Greed consumable counter (reset on blind start)
   Career stats & card destruction unlocks (Energized, Last Laugh)
   Black Seal & voucher card destruction / scoring
   Card cost modifications (Coffee Break, Art, Premium Deck, Curses)
@@ -21,9 +23,9 @@ Sections:
   end_round dispatcher (calls per-subsystem functions)
   Blind.set_blind dispatcher (calls per-subsystem functions)
 ]]
--------------------------------------------------------------------
+==SEP==
 -- BADGE COLOR
--------------------------------------------------------------------
+==SEP==
 
 -- Color for Carcosa badge effect.
 local hnds_loc_colours_injected = false
@@ -44,9 +46,9 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 	end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- CURSED STICKER EXCLUSIVITY
--------------------------------------------------------------------
+==SEP==
 
 -- Cursed Sticker exclusivity functions.
 -- hnds_card_has_cursed: quick check for the cursed sticker on a Joker.
@@ -115,9 +117,9 @@ if Card and Card.add_sticker and not _G._hnds_wrapped_add_sticker_cursed then
 	end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- EXCOMMUNICADO FUNCTIONS
--------------------------------------------------------------------
+==SEP==
 
 -- Excommunicado: Changes all Blind to Boss Blinds
 if G and G.FUNCS and G.FUNCS.select_blind and not _G._hnds_wrapped_select_blind_excomm then
@@ -170,9 +172,9 @@ function reset_blinds()
 	end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- PLATINUM STAKE
--------------------------------------------------------------------
+==SEP==
 
 local function HNDS_is_stake_active(stake_key)
 	if not (G and G.GAME and G.GAME.applied_stakes and G.P_STAKES and stake_key) then return false end
@@ -266,9 +268,9 @@ if not _G._hnds_wrapped_blind_choice then
 	end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- CYCLE REROLL CLEANUP
--------------------------------------------------------------------
+==SEP==
 
 -- remove free rerolls granted by Cycle, the reason why is at the end of the round instead of when leaving the shop is Cryptid
 local function hnds_end_round_cycle_spectral()
@@ -279,9 +281,9 @@ local function hnds_end_round_cycle_spectral()
 	end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- CAREER STATS & CARD DESTRUCTION UNLOCKS (Energized, Last Laugh)
--------------------------------------------------------------------
+==SEP==
 
 if SMODS and SMODS.destroy_cards and not SMODS._hnds_wrapped_destroy_cards_stat then
 	SMODS._hnds_wrapped_destroy_cards_stat = true
@@ -301,9 +303,9 @@ if SMODS and SMODS.destroy_cards and not SMODS._hnds_wrapped_destroy_cards_stat 
 	end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- BLACK SEAL & VOUCHER CARD DESTRUCTION / SCORING
--------------------------------------------------------------------
+==SEP==
 
 HNDS.should_hand_destroy = function(card)
 	return card:get_seal() == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or
@@ -356,9 +358,9 @@ function SMODS.score_card(card, context)
 	return score_card_ref(card, context)
 end
 
--------------------------------------------------------------------
+==SEP==
 -- CARD COST MODIFICATIONS (Coffee Break, Art, Premium Deck, Curses)
--------------------------------------------------------------------
+==SEP==
 
 -- Card cost modifications: Coffee Break, Art, Premium Deck, and curse multiplier.
 local set_cost_ref = Card.set_cost
@@ -388,9 +390,9 @@ function Card.set_cost(self)
 	end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- SHOP CARD CREATION (Most Wanted, Blood Stake curses)
--------------------------------------------------------------------
+==SEP==
 
 -- SMODS.create_card: Most Wanted shop hook + Blood Stake curse application.
 if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
@@ -418,9 +420,9 @@ if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 	end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- KRUSTY (food negative edition)
--------------------------------------------------------------------
+==SEP==
 
 -- Krusty Food negative edition
 local create_card_ref = create_card
@@ -439,9 +441,9 @@ function create_card(_type, area, legendary, _rarity, skip_materialize, soulable
 	return card
 end
 
--------------------------------------------------------------------
+==SEP==
 -- DNA TAG
--------------------------------------------------------------------
+==SEP==
 
 if not Card._hnds_wrapped_add_to_deck_dna then
 Card._hnds_wrapped_add_to_deck_dna = true
@@ -471,9 +473,9 @@ function Card:add_to_deck(from_debuff)
 end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- CIRCUS DECK
--------------------------------------------------------------------
+==SEP==
 
 -- Circus Deck: extend find_joker to include the offscreen joker in results.
 local find_joker_ref = find_joker
@@ -489,9 +491,9 @@ function find_joker(name, non_debuff)
 	return jokers
 end
 
--------------------------------------------------------------------
+==SEP==
 -- CRYSTAL DECK
--------------------------------------------------------------------
+==SEP==
 
 local get_new_boss_ref = get_new_boss
 function get_new_boss()
@@ -504,9 +506,9 @@ function get_new_boss()
 	return boss
 end
 
--------------------------------------------------------------------
+==SEP==
 -- GAMBLING OPPORTUNITY VINTAGE EDITION PATCH
--------------------------------------------------------------------
+==SEP==
 
 -- Patch edition-only cards in the Restrictions tab to show them on a base Joker
 -- card instead of a blank card.
@@ -547,9 +549,9 @@ if G and G.UIDEF and G.UIDEF.challenge_description_tab and not G.UIDEF._hnds_wra
 	end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- IMPOSTOR MULTI RANK CODE
--------------------------------------------------------------------
+==SEP==
 
 -- When the Impostor is owned by the player, face cards
 -- (J/Q/K, ids 11-13) are treated like any rank for any scoring purpose.
@@ -764,9 +766,9 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 	end
 end
 
--------------------------------------------------------------------
+==SEP==
 -- end_round DISPATCHER
--------------------------------------------------------------------
+==SEP==
 
 local end_round_ref = end_round
 function end_round(...)
@@ -780,9 +782,9 @@ function end_round(...)
 	return ret
 end
 
--------------------------------------------------------------------
+==SEP==
 -- Blind.set_blind DISPATCHER
--------------------------------------------------------------------
+==SEP==
 
 local Blind_set_blind_ref = Blind.set_blind
 function Blind:set_blind(blind, reset, silent)

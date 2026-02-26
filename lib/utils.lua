@@ -179,20 +179,16 @@ function HNDS.dyn_level_up(card, hand, level, chips, mult, instant)
 	}))
 end
 
--- Cursed Deck: Check if all joker slots are filled with eternal jokers only
--- Returns true only when player has full board of eternal jokers (allows skipping cursed pack)
-function HNDS.joker_slots_full_of_eternals()
+-- Cursed Deck: Check if all joker slots are filled with unmovable jokers
+-- (eternal or negative). Returns true when no slot can accept a new non-negative joker.
+function HNDS.joker_slots_full_of_unmovables()
 	if not (G and G.jokers and G.jokers.cards and G.jokers.config and G.jokers.config.card_limit) then return false end
 	if #G.jokers.cards < G.jokers.config.card_limit then return false end
 	for _, j in ipairs(G.jokers.cards) do
-		if not j then
-			return false
-		end
-		if j.ability and j.ability.eternal then
-		elseif j.edition and j.edition.negative then
-		else
-			return false
-		end
+		if not j then return false end
+		local is_eternal = j.ability and j.ability.eternal
+		local is_negative = j.edition and j.edition.negative
+		if not (is_eternal or is_negative) then return false end
 	end
 	return true
 end
@@ -302,7 +298,8 @@ function HNDS.get_shop_joker_tags()
 	return tag_list
 end
 
--- Rarity cycling system for jokers (Common -> Uncommon -> Rare -> Epic/Legendary -> Common)
+-- Rarity cycling system: Common -> Uncommon -> Rare -> Epic(Cryptid)/Legendary -> Common.
+-- Used by effects that upgrade or cycle a joker's rarity.
 HNDS.rarity_cycle = {
 	Common = "Uncommon",
 	Uncommon = "Rare",
@@ -310,53 +307,16 @@ HNDS.rarity_cycle = {
 	Legendary = "Common"
 }
 
--- Get next rarity in the cycle (used by rarity-changing effects)
 HNDS.get_next_rarity = function(rarity_key)
 	return HNDS.rarity_cycle[rarity_key]
 end
 
--- Blind soul rewards: Define which jokers are rewarded for defeating specific blinds
-HNDS.blind_souls = {
-    bl_hook = {"j_drunkard", next(SMODS.find_mod("GrabBag")) and "j_gb_hook" or nil},
-    bl_ox = {"j_matador", next(SMODS.find_mod("GrabBag")) and "j_gb_ox" or nil},
-    bl_house = {"j_burnt", "j_family", next(SMODS.find_mod("GrabBag")) and "j_gb_house" or nil},
-    bl_wall = {"j_stone", "j_marble", "j_castle", "j_ancient", "j_bloodstone", next(SMODS.find_mod("GrabBag")) and "j_gb_wall" or nil},
-    bl_wheel = {"j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel", "j_hnds_banana_split", "j_hnds_energized", "j_hnds_jackpot", "j_hnds_ms_fortune", "j_oops", next(SMODS.find_mod("GrabBag")) and "j_gb_wheel" or nil},
-    bl_arm = {"j_juggler", next(SMODS.find_mod("GrabBag")) and "j_gb_arm" or nil},
-    bl_club = {"j_gluttenous_joker", "j_blackboard", "j_onyx_agate", "j_seeing_double", next(SMODS.find_mod("GrabBag")) and "j_gb_club" or nil},
-    bl_fish = {"j_splash", "j_lucky_cat", "j_lucky_cat", "j_lucky_cat", next(SMODS.find_mod("GrabBag")) and "j_gb_fish" or nil},
-	bl_psychic = {"j_sixth_sense", "j_seance", next(SMODS.find_mod("GrabBag")) and "j_gb_psychic" or nil},
-	bl_goad = {"j_wrathful_joker", "j_blackboard", "j_arrowhead", next(SMODS.find_mod("GrabBag")) and "j_gb_goad" or nil},
-	bl_water = {"j_splash", "j_splash", "j_splash", "j_burglar", next(SMODS.find_mod("GrabBag")) and "j_gb_water" or nil},
-    bl_window = {"j_greedy_joker", "j_rough_gem", next(SMODS.find_mod("GrabBag")) and "j_gb_window" or nil},
-    bl_manacle = {"j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_merry_andy", "j_stuntman", next(SMODS.find_mod("GrabBag")) and "j_gb_manacle" or nil},
-    bl_eye = {"j_sixth_sense", "j_obelisk", next(SMODS.find_mod("GrabBag")) and "j_gb_eye" or nil},
-    bl_mouth = {"j_card_sharp", "Food", next(SMODS.find_mod("GrabBag")) and "j_gb_mouth" or nil},
-    bl_plant = {"j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_faceless", "j_green_joker", next(SMODS.find_mod("GrabBag")) and "j_gb_plant" or nil},
-    bl_serpent = {"j_hnds_head_of_medusa", next(SMODS.find_mod("GrabBag")) and "j_gb_serpent" or nil},
-    bl_pillar = {"j_obelisk", next(SMODS.find_mod("GrabBag")) and "j_gb_pillar" or nil},
-    bl_needle = {"j_sixth_sense", "j_dna", next(SMODS.find_mod("GrabBag")) and "j_gb_needle" or nil},
-    bl_head = {"j_lusty_joker", "j_bloodstone", next(SMODS.find_mod("GrabBag")) and "j_gb_head" or nil},
-    bl_tooth = {"j_hnds_coffee_break", next(SMODS.find_mod("GrabBag")) and "j_gb_tooth" or nil},
-    bl_flint = {"j_campfire", "j_campfire", "j_campfire", "j_hiker", next(SMODS.find_mod("GrabBag")) and "j_gb_flint" or nil},
-    bl_mark = {"j_smiley", "j_scary_face", "j_photograph", "j_pareidolia", "j_sock_and_buskin", next(SMODS.find_mod("GrabBag")) and "j_gb_mark" or nil},
-    bl_final_acorn = {"j_half", "j_wee", "j_wee", "j_wee", "j_wee", "j_wee", "j_wee", "j_square"},
-    bl_final_leaf = {"j_luchador", "j_diet_cola", "j_invisible", "j_invisible", "j_invisible", "j_invisible", "j_invisible", "j_invisible"},
-    bl_final_vessel = {"j_four_fingers", "j_8_ball", "j_sixth_sense", "j_fortune_teller"},
-    bl_final_heart = {"j_lusty_joker", "j_bloodstone", "j_bloodstone", "j_bloodstone"},
-    bl_final_bell = {"j_sixth_sense", "j_sixth_sense", "j_dna", "j_dna", "j_dna", "j_idol", "j_idol", "j_idol"}
-}
-
-if next(SMODS.find_mod("Entropy")) then
-	for _ = 1, 4 do
-		HNDS.blind_souls.bl_wheel[#HNDS.blind_souls.bl_wheel+1] = "Dice" --add a roughly 25% chance for a dice joker with entropy
-	end
-end
-
--- Get a random soul joker for defeating a blind (supports custom soul definitions)
-HNDS.get_blind_soul = function (blind, seed) --G.GAME.blind should go in here
-	local soul_opts = blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] or {"j_joker"} --allow other mods to define their own blind souls
-    ret = pseudorandom_element(soul_opts, seed) or "j_joker" --in case someone has an exmpty list of souls for whatever reason
+-- Get a random soul joker for defeating a blind (supports custom soul definitions).
+-- `blind` should be G.GAME.blind. Other mods can define `blind.config.blind.hnds_soul`
+-- to provide their own soul reward pools.
+HNDS.get_blind_soul = function (blind, seed)
+	local soul_opts = blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] or {"j_joker"}
+	local ret = pseudorandom_element(soul_opts, seed) or "j_joker"
 	if G.P_CENTER_POOLS[ret] then
 		ret = pseudorandom_element(G.P_CENTER_POOLS[ret]).key
 	end
@@ -397,103 +357,80 @@ function reset_dark_idol()
 	end
 end
 
--- Circus Deck: Pool of jokers that can be randomly assigned each boss blind
+-- Circus Deck: pool of jokers that can be randomly assigned each ante.
+-- One is picked at random (excluding the previous ante's pick) and placed
+-- in an offscreen CardArea so it appears in find_joker() results.
 HNDS.circus_joker_pool = {
-	'j_hack', 
-	'j_juggler', 
-	'j_drunkard', 
-	'j_chaos', 
-	'j_sock_and_buskin', 
-	'j_smeared', 
-	'j_ring_master', -- why the heck is showman called this in the game files bruh
+	'j_hack',
+	'j_juggler',
+	'j_drunkard',
+	'j_chaos',
+	'j_sock_and_buskin',
+	'j_smeared',
+	'j_ring_master', -- Showman's internal key
 	'j_oops',
-	'j_vagabond', 
-	'j_astronomer', 
-	'j_sixth_sense', 
-	'j_hanging_chad', 
-	'j_dusk', 
-	'j_hnds_supersuit', 
+	'j_vagabond',
+	'j_astronomer',
+	'j_sixth_sense',
+	'j_hanging_chad',
+	'j_dusk',
+	'j_hnds_supersuit',
 	'j_hnds_pot_of_greed'
 }
 
--- Reset game globals: Initialize round-specific variables and deck effects
+-- Reset game globals: called at run start and at the beginning of each round.
+-- Initializes round-specific variables, re-rolls per-round joker state
+-- (Supersuit suit, Dark Idol card, Bizarre suit), and manages the Circus Deck's
+-- rotating joker effect.
 SMODS.current_mod.reset_game_globals = function(run_start)
-	local preserved_next_blind_mult = (G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_next_blind_mult) or (G and G.GAME and G.GAME.hnds_next_blind_mult)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
 		G.GAME.art_queue = 0
 		G.GAME.hnds_exchange_minus = 1
 	end
+
+	-- Re-roll per-round joker state (suit/card changes every round)
 	reset_supersuit_card()
-    reset_dark_idol()
+	reset_dark_idol()
 	bizzare_suit()
 
-	-- The suit changes every round, so we use reset_game_globals to choose a suit.
-
-	
-	-- vv FOR CIRCUS DECK vv --
-
+	-- Circus Deck: assign a random joker from the pool each ante.
+	-- The joker lives in an offscreen CardArea and is found by find_joker().
 	if HNDS.DeckOrSleeve('circus') then
-
 		if not G.hnds_circus_joker then
-			G.hnds_circus_joker = CardArea (
+			G.hnds_circus_joker = CardArea(
 				17.5, 5.75, G.CARD_W, G.CARD_H,
 				{card_limit = 1, highlighted_limit = 0, type = 'title'}
 			)
 		end
 
-		if ((G.GAME and G.GAME.blind) or run_start) then
-			G.GAME.hnds_circus_joker_key = G.GAME.hnds_circus_joker_key or nil
-
+		if (G.GAME and G.GAME.blind) or run_start then
+			-- Remove the previous joker
 			if #G.hnds_circus_joker.cards > 0 then
-				G.hnds_circus_joker.cards[1]:start_dissolve() --remove the previous joker
+				G.hnds_circus_joker.cards[1]:start_dissolve()
 				G.hnds_circus_joker.cards = {}
 			end
-			
+
+			-- Pick a new joker, excluding the one from last ante
 			local poolcopy = HNDS.table_shallow_copy(HNDS.circus_joker_pool)
 			if G.GAME.hnds_circus_joker_key then
 				local i = HNDS.get_key_for_value(poolcopy, G.GAME.hnds_circus_joker_key)
-				if i then
-					table.remove(poolcopy, i) -- can't pick the same joker 2 antes in a row
-				end
+				if i then table.remove(poolcopy, i) end
 			end
-			
+
 			local new_joker = pseudorandom_element(poolcopy, pseudoseed('circus'))
 			G.GAME.hnds_circus_joker_key = new_joker
 
-			local j = SMODS.add_card({set = 'Jokers', area = G.hnds_circus_joker, key = new_joker, no_edition = true, skip_materialize = true}) --silently and sneakily add the joker to the offscreen cardarea
+			-- Silently add the joker to the offscreen area (transparent shader)
+			local j = SMODS.add_card({set = 'Jokers', area = G.hnds_circus_joker, key = new_joker, no_edition = true, skip_materialize = true})
 			j.ignore_base_shader = {true}
-			j.ignore_shadow = {true} -- force ignore shadow/base shader for transparent shader
+			j.ignore_shadow = {true}
 		end
-	
 	else
 		if G.hnds_circus_joker then
 			G.hnds_circus_joker:remove()
 		end
 	end
-	if preserved_next_blind_mult and preserved_next_blind_mult > 1 and G and G.GAME then
-		G.GAME.modifiers = G.GAME.modifiers or {}
-		G.GAME.modifiers.hnds_next_blind_mult = G.GAME.modifiers.hnds_next_blind_mult or preserved_next_blind_mult
-		G.GAME.hnds_next_blind_mult = G.GAME.hnds_next_blind_mult or preserved_next_blind_mult
-	end
-end
-
--- Enhanced find_joker function to include Circus Deck joker in search results
-local find_joker_ref = find_joker
-function find_joker(name, non_debuff)
-
-	local jokers = find_joker_ref(name, non_debuff)
-
-	if G.hnds_circus_joker then
-		for _, v in pairs(G.hnds_circus_joker.cards) do
-			if v and type(v) == 'table' and v.ability.name == name and (non_debuff or not v.debuff) then
-				table.insert(jokers, v)
-			end
-		end
-	end
-
-	return jokers
-
 end
 
 ---Copies the context of the table `t` non-recursively into a new table.
@@ -515,15 +452,19 @@ function HNDS.get_key_for_value(t, value)
   return nil
 end
 
---Checks if the active deck or sleeve is the provided key. Code from Entropy.
+-- Check if the active deck or sleeve matches the provided key.
+-- Returns the match count (truthy) or nil. Supports CardSleeves mod and Entropy's
+-- bought-deck system. (Pattern from Entropy)
 function HNDS.DeckOrSleeve(key)
-    local num = 0
-    if CardSleeves then
-        if G.GAME.selected_sleeve == ("sleeve_hnds_"..key) then num = num + 1 end
-    end
-    for i, v in pairs(G.GAME.entr_bought_decks or {}) do
-        if v == "b_hnds_"..key then num = num + 1 end
-    end
-    if  G.GAME.selected_back and G.GAME.selected_back.effect.center.original_key == key then num = num + 1 end
-    return num > 0 and num or nil
+	local num = 0
+	if CardSleeves and G.GAME.selected_sleeve == ("sleeve_hnds_"..key) then
+		num = num + 1
+	end
+	for _, v in pairs(G.GAME.entr_bought_decks or {}) do
+		if v == "b_hnds_"..key then num = num + 1 end
+	end
+	if G.GAME.selected_back and G.GAME.selected_back.effect.center.original_key == key then
+		num = num + 1
+	end
+	return num > 0 and num or nil
 end

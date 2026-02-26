@@ -12,8 +12,8 @@ end
 
 SMODS.Joker({
     key = "bizzare_joker",
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    discovered = false,
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
@@ -28,6 +28,7 @@ SMODS.Joker({
             sell_value = 2
         }
     },
+    unlock_condition = { type = 'modify_deck' },
     loc_vars = function(self, info_queue, card)
         local cae = card.ability.extra
         local key, vars
@@ -35,6 +36,23 @@ SMODS.Joker({
         vars = {cae.chips, cae.chipsg, cae.mult, cae.multg, cae.xmult, cae.xmultg, cae.sell_value}
 		return { key = key, vars = vars }
     end,
+    check_for_unlock = function(self, args)
+		if args.type == 'modify_deck' then
+			local cards = G.playing_cards or (G.deck and G.deck.cards) or {}
+			if #cards < 5 then return false end
+			local suit = nil
+			for _, v in ipairs(cards) do
+				if v and v.base and v.base.suit then
+					if not suit then
+						suit = v.base.suit
+					elseif suit ~= v.base.suit then
+						return false
+					end
+				end
+			end
+			return suit ~= nil
+		end
+	end,
     rarity = 2,
     cost = 7,
     atlas = "Jokers",

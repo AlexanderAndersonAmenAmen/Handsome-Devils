@@ -17,6 +17,9 @@ Other stuff we should add later
 HNDS = HNDS or {}
 HNDS.XMOD = HNDS.XMOD or {}
 
+-- Session state for tracking active Ortalab consumable usage.
+-- These are reset by _begin_session/_end_session to avoid leaking state
+-- between different consumable uses.
 HNDS.XMOD._ortalab_wrapped = HNDS.XMOD._ortalab_wrapped or false
 HNDS.XMOD._active_consumable_key = HNDS.XMOD._active_consumable_key or nil
 HNDS.XMOD._perfectionist_seen = HNDS.XMOD._perfectionist_seen or setmetatable({}, { __mode = 'k' })
@@ -25,18 +28,16 @@ HNDS.XMOD._transfer_i = HNDS.XMOD._transfer_i or 1
 HNDS.XMOD._bottle_end_scheduled = HNDS.XMOD._bottle_end_scheduled or false
 HNDS.XMOD._ortalab_prefix = HNDS.XMOD._ortalab_prefix or nil
 
+-- Lazily resolve and cache Ortalab's mod prefix (usually 'ortalab').
 local function _get_ortalab_prefix()
-    if HNDS and HNDS.XMOD and HNDS.XMOD._ortalab_prefix then
+    if HNDS.XMOD._ortalab_prefix then
         return HNDS.XMOD._ortalab_prefix
     end
     if not (SMODS and SMODS.find_mod) then return nil end
     local mods = SMODS.find_mod('ortalab')
     if mods and mods[1] then
-        local p = mods[1].prefix or 'ortalab'
-        if HNDS and HNDS.XMOD then
-            HNDS.XMOD._ortalab_prefix = p
-        end
-        return p
+        HNDS.XMOD._ortalab_prefix = mods[1].prefix or 'ortalab'
+        return HNDS.XMOD._ortalab_prefix
     end
     return nil
 end
@@ -71,6 +72,9 @@ local function _apply_bonus_snapshot(dst, snap)
     dst.ability.perma_bonus = (dst.ability.perma_bonus or 0) + (snap.perma_bonus or 0)
 end
 
+-- Begin a compatibility session for an Ortalab consumable.
+-- Snapshots perma_mult/perma_bonus from highlighted cards so they can be
+-- transferred to newly created cards (Bottle splits, Harp merges).
 function HNDS.XMOD._begin_session(consumable_key)
     HNDS.XMOD._active_consumable_key = consumable_key
     HNDS.XMOD._perfectionist_seen = setmetatable({}, { __mode = 'k' })
@@ -93,6 +97,7 @@ function HNDS.XMOD._begin_session(consumable_key)
     end
 end
 
+-- End the current compatibility session and reset all transient state.
 function HNDS.XMOD._end_session()
     HNDS.XMOD._active_consumable_key = nil
     HNDS.XMOD._transfer_list = nil
@@ -101,18 +106,15 @@ function HNDS.XMOD._end_session()
     HNDS.XMOD._bottle_end_scheduled = false
 end
 
+-- Prevents the Perfectionist joker from double-applying its effect when
+-- Ortalab's Bottle/Harp processes multiple cards in sequence.
 function HNDS.XMOD.perfectionist_should_apply(context)
     if not (context and context.other_card) then return true end
-
     local active = HNDS.XMOD._active_consumable_key
     if active == 'lot_bottle' or active == 'lot_harp' then
-        if HNDS.XMOD._perfectionist_seen[context.other_card] then
-            return false
-        end
+        if HNDS.XMOD._perfectionist_seen[context.other_card] then return false end
         HNDS.XMOD._perfectionist_seen[context.other_card] = true
-        return true
     end
-
     return true
 end
 

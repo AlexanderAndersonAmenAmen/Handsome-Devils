@@ -1,9 +1,6 @@
 return {
 	descriptions = {
-		-- this key should match the set ("object type") of your object,
-		-- e.g. Voucher, Tarot, or the key of a modded consumable type
 		Joker = {
-			-- this should be the full key of your object, including any prefixes
 			j_hnds_color_of_madness = {
 				name = "Color of Madness",
 				text = {
@@ -12,11 +9,6 @@ return {
 					"poker hand contains",
 					"{C:attention}4{} different suits",
 				},
-				-- only needed when this object is locked by default
-				-- unlock = {
-				--'This is a condition',
-				--'for unlocking this card',
-				--},
 			},
 			j_hnds_occultist = {
 				name = "Occultist",
@@ -120,6 +112,10 @@ return {
 					"{C:attention}consumable card{},",
 					"draw {C:attention}#1#{} cards",
 				},
+				unlock = {
+					"Use {C:attention}4{} consumables",
+					"during a single {C:attention}Blind{}",
+				},
 			},
 			j_hnds_seismic_activity = {
 				name = "Seismic Activity",
@@ -136,6 +132,10 @@ return {
 					"random {C:attention}Enhancement{}, {C:attention}Seal{} or",
 					"{C:dark_edition}Edition{} if it doesn't have one",
 				},
+				unlock = {
+					"Reach {X:mult,C:white}X5{} Mult",
+					"with {C:attention}Vampire{}",
+				},
 			},
 			j_hnds_jokestone = {
 				name = "Jokestone",
@@ -143,6 +143,10 @@ return {
 					"At the start of round,",
 					"draw up to {C:attention}#1#{} Enhanced", -- Using a var instead bc Dongtong from all in jest, also the var was already there
 					"cards from your deck",
+				},
+				unlock = {
+					"Play a hand with",
+					"{C:attention}3{} different Enhancements",
 				},
 			},
 			j_hnds_meme = {
@@ -185,7 +189,7 @@ return {
 			j_hnds_dark_humor = {
 				name = "Dark Humor",
 				text = {
-					"When hand is played, {c:red}destroy",
+					"When hand is played, {C:red}destroy",
 					"a random {C:attention}held in hand{} card",
 					"and gain its {C:mult}Mult{} and {C:chips}Chips",
 					"{C:inactive}(Currently{} {C:mult}+#2#{} {C:inactive}Mult,{} {C:chips}+#1#{} {C:inactive}Chips)",
@@ -206,6 +210,10 @@ return {
 					"If played hand is a single card,",
 					"retrigger it {C:attention}#3#{} additional times",
 					"{C:green}#1# in #2#{} chance to {C:red}destroy{} it"
+				},
+				unlock = {
+					"Destroy {C:attention}50{} cards",
+					"across all runs",
 				}
 			},
 			j_hnds_pennywise = {
@@ -215,6 +223,50 @@ return {
 					"{C:attention}one hand{}, gain its {C:legendary}Soul{} in a",
 					"form of a {C:dark_edition}Negative{} Joker",
 					"Retrigger your {C:legendary}Souls{}"
+				}
+			},
+			j_hnds_most_wanted = {
+				name = "Most Wanted",
+				text = {
+					"Selects one of your",
+					"owned Jokers: {C:attention}#1#{}",
+					"It appears {C:attention}more often{}",
+					"in the {C:money}Shop{}",
+					"Target changes each {C:attention}Ante{}"
+				}
+			},
+			j_hnds_clown_devil = {
+				name = "The Clown Devil",
+				text = {
+					"When {C:attention}Blind{} is selected,",
+					"eat all held {C:attention}consumables{}",
+					"Create a random {C:attention}Tag{}",
+					"every {C:attention}#2#{} eaten",
+					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/#2#)"
+				}
+			},
+			j_hnds_jester_in_yellow = {
+				name = "Jester in Yellow",
+				text = {
+					"When {C:attention}Blind{} is selected,",
+					"leftmost Joker becomes",
+					"{C:dark_edition}Negative{} for {C:attention}#1#{} rounds"
+				}
+			},
+			j_hnds_wait_what = {
+				name = "Wait, what?",
+				text = {
+					"{X:mult,C:white}X#1#{} Mult",
+				}
+			},
+			j_hnds_excommunicado = {
+				name = "Excommunicado",
+				text = {
+					"Small and Big blinds",
+					"are replaced with",
+					"{C:attention}Boss Blinds{}",
+					"Create a random {C:attention}Tag{}",
+					"when Boss Blind is defeated"
 				}
 			},
 			j_hnds_handsome = {
@@ -240,6 +292,18 @@ return {
 					"{C:attention}Blind{} score was met",
 				}
 			},
+			j_hnds_bizzare_joker = {
+				name = "Bizarre Joker",
+				text = {
+					"Effect changes based on",
+					"the chosen suit each round",
+				},
+				unlock = {
+					"Have all cards in",
+					"your full deck be",
+					"of the same suit",
+				}
+			},
 			j_hnds_bizzare_joker_spades = {
 				name = "Bizarre Joker",
 				text = {
@@ -247,7 +311,7 @@ return {
 					"{s:0.8}Effect changes every round",
 					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
 					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
-				}
+				},
 			},
 			j_hnds_bizzare_joker_clubs = {
 				name = "Bizarre Joker",
@@ -256,7 +320,7 @@ return {
 					"{s:0.8}Effect changes every round",
 					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
 					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
-				}
+				},
 			},
 			j_hnds_bizzare_joker_diamonds = {
 				name = "Bizarre Joker",
@@ -265,7 +329,7 @@ return {
 					"{s:0.8}Effect changes every round",
 					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
 					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
-				}
+				},
 			},
 			j_hnds_bizzare_joker_hearts = {
 				name = "Bizarre Joker",
@@ -274,7 +338,7 @@ return {
 					"{s:0.8}Effect changes every round",
 					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
 					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
-				}
+				},
 			},
 			j_hnds_arthur = {
 				name = "Arthur",
@@ -336,6 +400,10 @@ return {
 					"card from your deck, then",
 					"{C:red}destroy{} all cards in hand",
 					"{s:0.8}Upgrades at end of round",
+				},
+				unlock = {
+					"Destroy {C:attention}100{} cards",
+					"across all runs",
 				}
 			},
 			j_hnds_fregoli = {
@@ -350,6 +418,10 @@ return {
 				text = {
 					"Retrigger adjacent",
 					"{C:blue}Common{} Jokers",
+				},
+				unlock = {
+					"Own only {C:blue}Common{}",
+					"Jokers during a run",
 				}
 			},
 			j_hnds_blackjack = {
@@ -377,6 +449,15 @@ return {
 					"{V:1}#1#{} if played hand",
 					"contains a {C:attention}Four of a Kind{}",
 					"{s:0.8}Effect changes every round",
+				}
+			},
+			j_hnds_creepy = {
+				name = "Creepy Joker",
+				text = {
+					"{X:mult,C:white}X#1#{} Mult",
+					"{C:green}#2# in #3#{} chance to convert",
+					"adjacent Jokers into exact",
+					"copies of this at end of round",
 				}
 			},
 		},
@@ -449,16 +530,15 @@ return {
 			c_hnds_cycle = {
 				name = "Cycle",
 				text = {
-					"Replaces all of your",
-					"{C:attention}Jokers{} with random ones",
-					"of the {C:attention}same rarity{},",
-					"sets money to {C:money}$0{}",
+					"Grants {C:attention}#1#{} free",
+					"{C:green}Rerolls{} in the shop",
+					"until end of round",
 				},
 			},
 			c_hnds_petrify = {
 				name = "Petrify",
 				text = {
-					"Enhaces all {C:attention}face{} cards",
+					"Enhances all {C:attention}face{} cards",
 					"in hand into {C:attention}Stone Cards{},",
 					"gain {C:money}$#1#{} for each petrified",
 				},
@@ -522,6 +602,13 @@ return {
 			},
 		},
 		Other = {
+			hnds_jester_temp_negative = {
+				name = "Chosen by Carcosa",
+				text = {
+					"This Joker fades in",
+					"{C:attention}#1#{} rounds",
+				}
+			},
 			hnds_black_seal = {
 				name = "Black Seal",
 				text = {
@@ -656,7 +743,7 @@ return {
 			offer_random_enhancement = {
 				text = {
 					"Give random",
-					"{C:attention}Ehnacements{} to",
+					"{C:attention}Enhancements{} to",
 					"{C:attention}8{} cards in deck",
 				},
 			},
@@ -896,6 +983,9 @@ return {
 		dictionary = {
 			k_hnds_petrified = "Petrified!",
 			k_hnds_goldfish = "Goldfish!",
+			k_hnds_jester_negative = "Joker Negatived!",
+			k_hnds_jester_fade = "Negative Faded!",
+			k_hnds_clown_eat = "Consumed!",
 			k_hnds_cursed_offers = "Cursed Offers",
 			k_hnds_cursed_prices = "Cursed Prices",
 			k_hnds_boom_timer = "!!!",
@@ -913,6 +1003,7 @@ return {
 			k_hnds_occultist = "Study!",
 			k_hnds_splashed = "Splashed!",
 			hnds_plus_q = "+1 ???", --this is for the cryptid digital hallucinations creation message with magic packs
+			k_hnds_plus_tag = "+Tag",
 			k_hnds_magic_pack = "Magic Pack",
 			k_hnds_cursed_pack = "Cursed Pack",
 			hnds_cursed_pack = "Cursed Pack",
@@ -920,11 +1011,20 @@ return {
 			k_hnds_sarmenti_inactive = "inactive",
 			k_hnds_sarmenti_enhanced = "Enhanced!",
 			k_hnds_enhancements = "Enhancements",
+			k_hnds_creepy_1 = "Join us...",
+			k_hnds_creepy_2 = "You're next.",
+			k_hnds_creepy_3 = "One of us!",
+			k_hnds_creepy_4 = "Don't look away.",
+			k_hnds_creepy_5 = "You can't escape.",
+			k_hnds_creepy_6 = "It spreads...",
+			k_hnds_creepy_7 = "Forever.",
+			k_hnds_creepy_8 = "We are one.",
 		},
 		labels = {
 			hnds_vintage = "Vintage",
 			hnds_black_seal = "Black Seal",
 			hnds_spectralseal_seal = "Spectral Seal",
+			hnds_jester_temp_negative = "Illuminated",
 			hnds_soul = "Soul",
 			hnds_cursed = "Cursed",
 			hnds_offer = "Offer",

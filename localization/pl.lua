@@ -225,6 +225,13 @@ return {
 			},
 		},
 		Other = {
+			hnds_jester_temp_negative = {
+				name = "Wybrany przez Carcosę",
+				text = {
+					"Ten joker znika za",
+					"{C:attention}#1#{} rund",
+				}
+			},
 			hnds_black_seal = {
 				name = "Czarna Pieczęć",
 				text = {
@@ -367,6 +374,8 @@ return {
 		dictionary = {
 			k_hnds_petrified = "Skamieniały!",
 			k_hnds_goldfish = "Złota ryba!",
+			k_hnds_jester_negative = "Negatywny!",
+			k_hnds_jester_fade = "Negatyw zanikł!",
 			k_hnds_cursed_offers = "Przeklęte oferty",
 			k_hnds_cursed_prices = "Przeklęte ceny",
 			k_hnds_green = "Dobierasz!",

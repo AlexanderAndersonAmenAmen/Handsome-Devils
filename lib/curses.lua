@@ -4,9 +4,9 @@ inside of this file and most of the code, other parts of the code are inside hoo
 This file defines the "curse" system used by the Cursed Sticker.
 
 Data model:
-- A Cursed Joker has a sticker (`hnds_cursed`) and a `card.ability.curse` table.
-- `card.ability.curse.offer` is a benefit ID (from `G.CURSE_OFFERS`).
-- `card.ability.curse.price` is a drawback ID (from `G.CURSE_PRICES`).
+- A Cursed Joker has a sticker (`hnds_cursed`) and a `card.ability.hnds_curse` table.
+- `card.ability.hnds_curse.offer` is a benefit ID (from `G.CURSE_OFFERS`).
+- `card.ability.hnds_curse.price` is a drawback ID (from `G.CURSE_PRICES`).
 
 Tooltip/UI:
 - The sticker provides a tooltip (using localization keys under `descriptions.Other`).
@@ -196,9 +196,9 @@ G.CURSE_OFFERS = {
                         local copy = copy_card(c)
                         if copy then
                             copy.ability = copy.ability or {}
-                            copy.ability.curse = nil
+                            copy.ability.hnds_curse = nil
                             copy.ability.hnds_curse_preview = nil
-                            copy.ability.curse_acquire_triggered = true -- Prevent re-triggering
+                            copy.ability.hnds_curse_acquire_triggered = true -- Prevent re-triggering
                             copy.hnds_curse_acquire_triggered = true
                             copy.cursed_shake = nil
                             -- Completely remove cursed sticker from all data structures
@@ -282,6 +282,8 @@ G.CURSE_PRICES = {
         end
     },
     -- 3. Set money to 0
+    -- Uses a 0.7s delay so the event fires AFTER buy_from_shop's cost
+    -- deduction has been applied, preventing negative money.
     [3] = {
         id = 'price_bankrupt',
         func = function(card, context)
@@ -289,10 +291,10 @@ G.CURSE_PRICES = {
                 if G and G.E_MANAGER and Event then
                     G.E_MANAGER:add_event(Event({
                         trigger = 'after',
-                        delay = 0.1,
+                        delay = 0.7,
                         func = function()
                             local current_dollars = tonumber(G.GAME and G.GAME.dollars) or 0
-                            if current_dollars ~= 0 then
+                            if current_dollars > 0 then
                                 ease_dollars(-current_dollars, true)
                             end
                             return true
@@ -300,7 +302,7 @@ G.CURSE_PRICES = {
                     }))
                 else
                     local current_dollars = tonumber(G.GAME and G.GAME.dollars) or 0
-                    if current_dollars ~= 0 then
+                    if current_dollars > 0 then
                         ease_dollars(-current_dollars, true)
                     end
                 end
@@ -382,6 +384,9 @@ if SMODS then
         atlas = 'Stickers',
         pos = { x = 0, y = 0 },
         badge_colour = G.C.RED,
+        should_apply = false,
+        rate = 0,
+        sets = { Joker = true },
 
         loc_vars = function(self, info_queue, card)
             return { vars = { '', '' } }
@@ -429,7 +434,7 @@ if SMODS then
 
             local is_collection = card and card.area and card.area.config and card.area.config.collection
             local is_preview = card and card.ability and card.ability.hnds_curse_preview
-            if (not (card.ability and card.ability.curse)) then
+            if (not (card.ability and card.ability.hnds_curse)) then
                 append_other_key('hnds_cursed')
                 return
             end
@@ -439,48 +444,60 @@ if SMODS then
                 return
             end
 
-            local display_mode = card.ability.curse and card.ability.curse.hnds_collection_display
+            local display_mode = card.ability.hnds_curse and card.ability.hnds_curse.hnds_collection_display
             if display_mode == 'offer' then
-                append_other_key(card.ability.curse.offer)
+                append_other_key(card.ability.hnds_curse.offer)
                 return
             elseif display_mode == 'price' then
-                append_other_key(card.ability.curse.price)
+                append_other_key(card.ability.hnds_curse.price)
                 return
             end
 
             append_other_key('hnds_cursed_offer_title')
-            append_other_key(card.ability.curse.offer)
+            append_other_key(card.ability.hnds_curse.offer)
             desc_nodes[#desc_nodes + 1] = { { n = G.UIT.B, config = { h = 0.05, w = 0 } } }
             append_other_key('hnds_cursed_price_title')
-            append_other_key(card.ability.curse.price)
+            append_other_key(card.ability.hnds_curse.price)
         end,
 
         calculate = function(self, card, context)
-            -- This runs during normal Joker evaluation.
-            -- We use it to enforce curse invariants (strip conflicting stickers/modifiers)
-            -- and to forward evaluation to `trigger_curse`.
-            if card and card.ability and card.ability.curse then
-                card.ability.perishable = nil
-                card.ability.eternal = nil
-
-                if card.stickers and type(card.stickers) == 'table' then
-                    for k, _ in pairs(card.stickers) do
-                        if k ~= 'hnds_cursed' then
-                            card.stickers[k] = nil
+            if card and card.ability and card.ability.hnds_curse then
+                -- One-time safety-net strip (covers stickers that slipped past apply_curse).
+                if not card.ability.hnds_curse_stripped then
+                    card.ability.hnds_curse_stripped = true
+                    card.ability.perishable = nil
+                    card.ability.eternal = nil
+                    card.ability.rental = nil
+                    local to_remove = {}
+                    if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
+                        for _, k in ipairs(SMODS.Sticker.obj_buffer) do
+                            if k ~= 'hnds_cursed' and card.ability[k] then
+                                to_remove[k] = true
+                            end
                         end
                     end
-                end
-
-                if card.ability and card.ability.stickers and type(card.ability.stickers) == 'table' then
-                    for k, _ in pairs(card.ability.stickers) do
-                        if k ~= 'hnds_cursed' then
-                            card.ability.stickers[k] = nil
+                    if card.stickers and type(card.stickers) == 'table' then
+                        for k, _ in pairs(card.stickers) do
+                            if k ~= 'hnds_cursed' then to_remove[k] = true end
                         end
                     end
+                    if card.ability.stickers and type(card.ability.stickers) == 'table' then
+                        for k, _ in pairs(card.ability.stickers) do
+                            if k ~= 'hnds_cursed' then to_remove[k] = true end
+                        end
+                    end
+                    local any_removed = false
+                    for k, _ in pairs(to_remove) do
+                        any_removed = true
+                        if card.remove_sticker then pcall(card.remove_sticker, card, k) end
+                        if card.stickers then card.stickers[k] = nil end
+                        card.ability[k] = nil
+                        if card.ability.stickers then card.ability.stickers[k] = nil end
+                    end
+                    if any_removed and card.set_sticker_display then
+                        pcall(card.set_sticker_display, card)
+                    end
                 end
-            end
-
-            if card and card.ability and card.ability.curse then
                 return trigger_curse(card, context)
             end
         end,
@@ -565,7 +582,7 @@ if not _G.HNDS_curse_collections and SMODS and SMODS.current_mod then
                 if card.add_sticker then card:add_sticker('hnds_cursed', true) end
                 card.ability = card.ability or {}
                 card.ability.hnds_curse_preview = true
-                card.ability.curse = { offer = center.id, price = nil, hnds_collection_display = 'offer' }
+                card.ability.hnds_curse = { offer = center.id, price = nil, hnds_collection_display = 'offer' }
             end,
         })
     end
@@ -583,7 +600,7 @@ if not _G.HNDS_curse_collections and SMODS and SMODS.current_mod then
                 if card.add_sticker then card:add_sticker('hnds_cursed', true) end
                 card.ability = card.ability or {}
                 card.ability.hnds_curse_preview = true
-                card.ability.curse = { offer = nil, price = center.id, hnds_collection_display = 'price' }
+                card.ability.hnds_curse = { offer = nil, price = center.id, hnds_collection_display = 'price' }
             end,
         })
     end
@@ -605,15 +622,15 @@ end
 
 function set_enhancement(card, key)
     if card.area == G.hand then
-        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.15, func = function() card:highlight(true); card:flip(); play_sound('generic1', 0.7, 0.35); card:juice_up(0.3,0.3); return true; end}))
-        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4,
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.05, func = function() card:highlight(true); card:flip(); play_sound('generic1', 0.7, 0.35); card:juice_up(0.3,0.3); return true; end}))
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.15,
             func = function()
                 card:set_ability(G.P_CENTERS[key])
                 card:juice_up()
                 return true
             end
         }))
-        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.15, func = function() card:highlight(false); card:flip(); play_sound('tarot2', 0.85, 0.6); card:juice_up(0.3,0.3); return true; end}))
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.05, func = function() card:highlight(false); card:flip(); play_sound('tarot2', 0.85, 0.6); card:juice_up(0.3,0.3); return true; end}))
     else
         card:set_ability(G.P_CENTERS[key])
         if SMODS and SMODS.enh_cache and SMODS.enh_cache.clear then SMODS.enh_cache:write(card, nil) end
@@ -623,7 +640,9 @@ end
 function apply_curse(card)
     -- Assign a random offer + price to a card, then attach the cursed sticker.
     -- This is used when generating cursed pack cards.
-    if card and card.config and card.config.center and card.config.center.key then
+    -- Guard: only apply to Jokers
+    if not (card and card.config and card.config.center and card.config.center.set == 'Joker') then return end
+    if card.config.center.key then
         local center_key = card.config.center.key
         if center_key == 'c_hnds_dream' or center_key == 'j_hnds_art' then
             return
@@ -631,6 +650,16 @@ function apply_curse(card)
     end
 
     if not card.ability then card.ability = {} end
+    if card.ability.extra == nil then
+        local center_extra = card.config and card.config.center and card.config.center.config and card.config.center.config.extra
+        if type(center_extra) == 'table' then
+            card.ability.extra = copy_table(center_extra)
+        elseif center_extra ~= nil then
+            card.ability.extra = center_extra
+        else
+            card.ability.extra = {}
+        end
+    end
 
     if card.ability then
         card.ability.perishable = nil
@@ -638,20 +667,39 @@ function apply_curse(card)
         card.ability.rental = nil
     end
 
-    if card.stickers and type(card.stickers) == 'table' then
-        for sticker_key, _ in pairs(card.stickers) do
-            if sticker_key ~= 'hnds_cursed' then
-                card.stickers[sticker_key] = nil
+    -- Collect sticker keys to remove. SMODS stores sticker flags in
+    -- card.ability[key] (e.g. card.ability.bunc_reactive), so we iterate
+    -- the registered sticker list to catch them all.
+    local to_remove = {}
+    if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
+        for _, k in ipairs(SMODS.Sticker.obj_buffer) do
+            if k ~= 'hnds_cursed' and card.ability[k] then
+                to_remove[k] = true
             end
         end
     end
-
-    if card.ability and card.ability.stickers and type(card.ability.stickers) == 'table' then
-        for sticker_key, _ in pairs(card.ability.stickers) do
-            if sticker_key ~= 'hnds_cursed' then
-                card.ability.stickers[sticker_key] = nil
-            end
+    if card.stickers and type(card.stickers) == 'table' then
+        for k, _ in pairs(card.stickers) do
+            if k ~= 'hnds_cursed' then to_remove[k] = true end
         end
+    end
+    if card.ability.stickers and type(card.ability.stickers) == 'table' then
+        for k, _ in pairs(card.ability.stickers) do
+            if k ~= 'hnds_cursed' then to_remove[k] = true end
+        end
+    end
+    local any_removed_pre = false
+    for k, _ in pairs(to_remove) do
+        any_removed_pre = true
+        if card.remove_sticker then
+            pcall(card.remove_sticker, card, k)
+        end
+        if card.stickers then card.stickers[k] = nil end
+        card.ability[k] = nil
+        if card.ability.stickers then card.ability.stickers[k] = nil end
+    end
+    if any_removed_pre and card.set_sticker_display then
+        pcall(card.set_sticker_display, card)
     end
 
     local offer_index
@@ -668,7 +716,7 @@ function apply_curse(card)
         local price_entry = G.CURSE_PRICES[price_index]
 
         if offer_entry and price_entry then
-            card.ability.curse = {
+            card.ability.hnds_curse = {
                 offer = offer_entry.id,
                 price = price_entry.id
             }
@@ -677,6 +725,52 @@ function apply_curse(card)
             else
                 print("ERROR: add_sticker method not found on card")
                 card.ability.hnds_cursed = true
+            end
+
+            -- Re-ensure ability.extra is not nil after add_sticker (it may call set_ability internally)
+            if card.ability.extra == nil then
+                local center_extra = card.config and card.config.center and card.config.center.config and card.config.center.config.extra
+                if type(center_extra) == 'table' then
+                    card.ability.extra = copy_table(center_extra)
+                elseif center_extra ~= nil then
+                    card.ability.extra = center_extra
+                else
+                    card.ability.extra = {}
+                end
+            end
+
+            -- Second strip pass: add_sticker may have triggered set_ability
+            -- which re-applies foreign stickers via should_apply internally.
+            local to_remove_post = {}
+            if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
+                for _, k in ipairs(SMODS.Sticker.obj_buffer) do
+                    if k ~= 'hnds_cursed' and card.ability[k] then
+                        to_remove_post[k] = true
+                    end
+                end
+            end
+            if card.stickers and type(card.stickers) == 'table' then
+                for k, _ in pairs(card.stickers) do
+                    if k ~= 'hnds_cursed' then to_remove_post[k] = true end
+                end
+            end
+            if card.ability.stickers and type(card.ability.stickers) == 'table' then
+                for k, _ in pairs(card.ability.stickers) do
+                    if k ~= 'hnds_cursed' then to_remove_post[k] = true end
+                end
+            end
+            local any_removed = false
+            for k, _ in pairs(to_remove_post) do
+                any_removed = true
+                if card.remove_sticker then
+                    pcall(card.remove_sticker, card, k)
+                end
+                if card.stickers then card.stickers[k] = nil end
+                card.ability[k] = nil
+                if card.ability.stickers then card.ability.stickers[k] = nil end
+            end
+            if any_removed and card.set_sticker_display then
+                pcall(card.set_sticker_display, card)
             end
 
             card.cursed_shake = true
@@ -716,7 +810,7 @@ function trigger_curse(card, context)
     -- - lovely card.lua hooks (add_to_deck/remove_from_deck)
     -- - lovely button callback hook (buying_card)
     -- - cursed sticker calculate (normal evaluation)
-    if not card.ability or not card.ability.curse then return end
+    if not card.ability or not card.ability.hnds_curse then return end
     
     -- Prevent re-triggering on eternal copies or when negative edition is being applied by curse
     if card.ability.hnds_eternal_copy_created or card.ability.hnds_curse_negative_applying then return end
@@ -730,46 +824,50 @@ function trigger_curse(card, context)
         if not context.card or context.card ~= card then
             return
         end
-        if (card.ability and card.ability.curse_acquire_triggered) or card.hnds_curse_acquire_triggered then
+        if (card.ability and card.ability.hnds_curse_acquire_triggered) or card.hnds_curse_acquire_triggered then
             return
         end
         card.ability = card.ability or {}
-        card.ability.curse_acquire_triggered = true
+        card.ability.hnds_curse_acquire_triggered = true
         card.hnds_curse_acquire_triggered = true
     end
 
-    -- Find definitions
+    -- Find the offer and price definitions by their stored IDs
     local offer_def, price_def
-    for _, offer_definition in pairs(G.CURSE_OFFERS) do if offer_definition.id == card.ability.curse.offer then offer_def = offer_definition break end end
-    for _, price_definition in pairs(G.CURSE_PRICES) do if price_definition.id == card.ability.curse.price then price_def = price_definition break end end
+    for _, def in pairs(G.CURSE_OFFERS) do
+        if def.id == card.ability.hnds_curse.offer then offer_def = def break end
+    end
+    for _, def in pairs(G.CURSE_PRICES) do
+        if def.id == card.ability.hnds_curse.price then price_def = def break end
+    end
 
     local acquire_ret
     -- Handle challenge creation separately to avoid double-triggering
     if context and context.challenge_creation then
         -- For challenge jokers, trigger both offer and price immediately
         card.ability = card.ability or {}
-        card.ability.curse_acquire_triggered = true -- Set this flag to prevent re-triggering
+        card.ability.hnds_curse_acquire_triggered = true -- Set this flag to prevent re-triggering
         card.hnds_curse_acquire_triggered = true
         local offer_ret, price_ret
         if offer_def and offer_def.func then
             local ok, ret_or_err = pcall(offer_def.func, card, context)
-            if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.curse.offer)..' -> '..tostring(ret_or_err)) end
+            if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse.offer)..' -> '..tostring(ret_or_err)) end
             if ok then offer_ret = ret_or_err end
         end
 
         if price_def and price_def.func then
             local ok, ret_or_err = pcall(price_def.func, card, context)
-            if not ok then print('HNDS CURSE price error: '..tostring(card.ability.curse.price)..' -> '..tostring(ret_or_err)) end
+            if not ok then print('HNDS CURSE price error: '..tostring(card.ability.hnds_curse.price)..' -> '..tostring(ret_or_err)) end
             if ok then price_ret = ret_or_err end
         end
         acquire_ret = offer_ret or price_ret
         -- Skip the normal add_to_deck logic for challenge creations to prevent double-triggering
         return acquire_ret
-    elseif context and context.add_to_deck and not ((card.ability and card.ability.curse_acquire_triggered) or card.hnds_curse_acquire_triggered) then
+    elseif context and context.add_to_deck and not ((card.ability and card.ability.hnds_curse_acquire_triggered) or card.hnds_curse_acquire_triggered) then
         -- When a Joker is first added to the deck, we simulate a single "buy" trigger
         -- so offers/prices that are keyed to context.buying_card still fire once.
         card.ability = card.ability or {}
-        card.ability.curse_acquire_triggered = true
+        card.ability.hnds_curse_acquire_triggered = true
         card.hnds_curse_acquire_triggered = true
         local acquire_context = {}
         for context_key, context_value in pairs(context) do acquire_context[context_key] = context_value end
@@ -781,13 +879,13 @@ function trigger_curse(card, context)
         local offer_ret, price_ret
         if offer_def and offer_def.func then
             local ok, ret_or_err = pcall(offer_def.func, card, acquire_context)
-            if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.curse.offer)..' -> '..tostring(ret_or_err)) end
+            if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse.offer)..' -> '..tostring(ret_or_err)) end
             if ok then offer_ret = ret_or_err end
         end
 
         if price_def and price_def.func then
             local ok, ret_or_err = pcall(price_def.func, card, acquire_context)
-            if not ok then print('HNDS CURSE price error: '..tostring(card.ability.curse.price)..' -> '..tostring(ret_or_err)) end
+            if not ok then print('HNDS CURSE price error: '..tostring(card.ability.hnds_curse.price)..' -> '..tostring(ret_or_err)) end
             if ok then price_ret = ret_or_err end
         end
         acquire_ret = offer_ret or price_ret
@@ -797,12 +895,12 @@ function trigger_curse(card, context)
     local offer_ret, price_ret
     if offer_def and offer_def.func then
         local ok, ret_or_err = pcall(offer_def.func, card, context)
-        if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.curse.offer)..' -> '..tostring(ret_or_err)) end
+        if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse.offer)..' -> '..tostring(ret_or_err)) end
         if ok then offer_ret = ret_or_err end
     end
     if price_def and price_def.func then
         local ok, ret_or_err = pcall(price_def.func, card, context)
-        if not ok then print('HNDS CURSE price error: '..tostring(card.ability.curse.price)..' -> '..tostring(ret_or_err)) end
+        if not ok then print('HNDS CURSE price error: '..tostring(card.ability.hnds_curse.price)..' -> '..tostring(ret_or_err)) end
         if ok then price_ret = ret_or_err end
     end
     return acquire_ret or offer_ret or price_ret

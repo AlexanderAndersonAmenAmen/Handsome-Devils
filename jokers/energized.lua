@@ -9,9 +9,19 @@ SMODS.Joker {
         local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_energized")
         return { vars = { numerator, denominator, card.ability.extra.reps }}
     end,
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    discovered = false,
     blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+    unlock_condition = { type = 'career_stat', extra = 50, stat = 'c_hnds_cards_destroyed' },
+    check_for_unlock = function(self, args)
+        if args.type == 'career_stat' and args.statname == self.unlock_condition.stat then
+            local stats = (G.PROFILES and G.SETTINGS and G.PROFILES[G.SETTINGS.profile] and G.PROFILES[G.SETTINGS.profile].career_stats) or {}
+            local destroyed = stats[self.unlock_condition.stat] or 0
+            return destroyed >= self.unlock_condition.extra
+        end
+    end,
     calculate = function (self, card, context)
         if context.repetition and #G.play.cards == 1 and context.other_card == G.play.cards[1] then
             return {

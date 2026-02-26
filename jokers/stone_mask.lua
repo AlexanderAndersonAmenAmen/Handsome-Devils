@@ -4,13 +4,24 @@ SMODS.Joker({
 	pos = { x = 5, y = 1 },
 	rarity = 3,
 	cost = 10,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	discovered = false,
 	blueprint_compat = false,
 	eternal_compat = true,
 	perishable_compat = true,
+	unlock_condition = { type = 'round_win', extra = 5 },
 	loc_vars = function(self, info_queue, card)
 		-- No tooltips needed
+	end,
+	check_for_unlock = function(self, args)
+		if args.type == 'round_win' then
+			local jokers = SMODS.find_card('j_vampire')
+			for _, v in ipairs(jokers) do
+				if v.ability and v.ability.extra and v.ability.extra.x_mult and v.ability.extra.x_mult >= self.unlock_condition.extra then
+					return true
+				end
+			end
+		end
 	end,
 	calculate = function(self, card, context)
 		if
