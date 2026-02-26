@@ -551,11 +551,239 @@ end
 -- IMPOSTOR MULTI RANK CODE
 -------------------------------------------------------------------
 
+<<<<<<< HEAD
 -- When the Impostor is owned by the player, face cards
 -- (J/Q/K, ids 11-13) are treated like any rank for any scoring purpose.
 -- This works by temporarily faking the rank for each Jokers so
 -- `card:get_id()` and `calculate_joker` always works for face cards
 -- Is bit heavy on performance
+=======
+local function HNDS_is_stake_active(stake_key)
+	-- Helper function to check if a specific stake is active
+	if not (G and G.GAME and G.GAME.applied_stakes and G.P_STAKES and stake_key) then return false end
+	local stake = G.P_STAKES[stake_key]
+	for _, applied in ipairs(G.GAME.applied_stakes) do
+		if applied == stake_key then
+			return true
+		end
+		if stake and stake.order and applied == stake.order then
+			return true
+		end
+	end
+	return false
+end
+
+HNDS_is_platinum_stake_active = function()
+	-- Check if platinum stake is active (supports multiple stake key variations)
+	if not (G and G.GAME) then return false end
+	if HNDS_is_stake_active('platinum') then return true end
+	if HNDS_is_stake_active('stake_hnds_platinum') then return true end
+	if HNDS_is_stake_active('hnds_platinum') then return true end
+	return false
+end
+
+local Blind_set_blind_ref = Blind.set_blind
+-- Apply blind multiplier from platinum stake when setting new blind
+function Blind:set_blind(blind, reset, silent)
+	local ret = Blind_set_blind_ref(self, blind, reset, silent)
+	if not (G and G.GAME and G.GAME.facing_blind) then
+		return ret
+	end
+
+	local mult = nil
+	if G and G.GAME then
+		if G.GAME.modifiers and G.GAME.modifiers.hnds_next_blind_mult and G.GAME.modifiers.hnds_next_blind_mult > 1 then
+			mult = G.GAME.modifiers.hnds_next_blind_mult
+			G.GAME.modifiers.hnds_next_blind_mult = nil
+		end
+	end
+	if mult then
+		if self and self.chips then
+			self.chips = self.chips * mult
+			if number_format then
+				self.chip_text = number_format(self.chips)
+			end
+			if G and G.FUNCS and G.hand_text_area and G.hand_text_area.blind_chips then
+				G.FUNCS.blind_chip_UI_scale(G.hand_text_area.blind_chips)
+			end
+			if G and G.HUD and G.HUD.recalculate then
+				G.HUD:recalculate()
+			end
+		end
+	end
+	return ret
+end
+
+-- Black Seal and voucher card destruction detection
+HNDS.should_hand_destroy = function(card)
+	return card:get_seal() == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or
+	(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
+end
+
+local destroy_cards_ref = SMODS.calculate_destroying_cards
+-- Handle destruction of cards with black seal or voucher effects
+function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand)
+	destroy_cards_ref(context, cards_destroyed, scoring_hand)
+	for i, card in ipairs(G.hand.cards) do
+		if HNDS.should_hand_destroy(card) then
+			local destroyed = nil
+			local new_context = {}
+			for k, v in pairs(context) do
+				new_context[k] = v
+			end
+			new_context.destroy_card = card
+			new_context.cardarea = G.play
+			new_context.destroying_card = card
+			new_context.hnds_hand_trigger = true
+			new_context.full_hand = G.hand.cards
+			local flags = SMODS.calculate_context(new_context)
+			if flags and flags.remove then destroyed = true end
+			if destroyed then
+				card.getting_sliced = true
+				if SMODS.shatters(card) then
+					card.shattered = true
+				else
+					card.destroyed = true
+				end
+				cards_destroyed[#cards_destroyed + 1] = card
+			end
+		end
+	end
+end
+
+local get_new_boss_ref = get_new_boss
+-- Crystal Deck: Halves win ante for double showdown effect
+function get_new_boss()
+	local win_ante = G.GAME.win_ante
+	if G.GAME.modifiers.hnds_double_showdown and G.GAME.round_resets.ante and G.GAME.round_resets.ante < G.GAME.win_ante then
+		G.GAME.win_ante = math.floor(G.GAME.win_ante / 2)
+	end
+	local boss = get_new_boss_ref()
+	G.GAME.win_ante = win_ante
+	return boss
+end
+
+local set_cost_ref = Card.set_cost
+-- Premium Deck and Coffee Break Joker cost modifications
+function Card.set_cost(self)
+	set_cost_ref(self)
+	if self.config.center.key == "j_hnds_coffee_break" then
+		self.sell_cost = 0
+	end
+	if self.config.center.key == "j_hnds_art" then
+		self.sell_cost = -5
+	end
+	if G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_premiumdeck" and self.config.center.set == "Joker" then
+		self.cost = math.floor(self.cost + G.GAME.round_resets.ante)
+	end
+	-- Apply curse price multiplier
+	if G.GAME and G.GAME.hnds_price_multiplier and G.GAME.hnds_price_multiplier > 1 then
+		if self.config.center.set == "Joker" or self.config.center.set == "Booster" then
+			self.cost = math.max(0, math.floor(self.cost * G.GAME.hnds_price_multiplier))
+		end
+	end
+end
+
+if CardArea and CardArea.emplace and not CardArea._hnds_wrapped_emplace_shop then
+	-- Shop curses: Apply curses to jokers when they enter shop (Blood Stake)
+	CardArea._hnds_wrapped_emplace_shop = true
+	local emplace_ref = CardArea.emplace
+	function CardArea:emplace(card, ...)
+		local ret = emplace_ref(self, card, ...)
+		-- Keep existing logic for other scenarios
+		if self == G.shop_jokers and card and card.config and card.config.center and card.config.center.set == 'Joker' and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
+			if (not card.ability or not card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
+				if pseudorandom('hnds_curse_shop'..G.GAME.modifiers.hnds_shop_curse_roll) < 0.25 then
+					apply_curse(card)
+				end
+			end
+		end
+		return ret
+	end
+end
+
+-- Shop curses (Cursed Pack logic)
+if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
+	-- Alternative method for applying curses to shop jokers
+	SMODS._hnds_wrapped_create_card_shop = true
+	local smods_create_card_ref = SMODS.create_card
+	function SMODS.create_card(args)
+		local created_card = smods_create_card_ref(args)
+		-- Apply curses to shop jokers when enable_curses is active (Blood Stake)
+		if created_card and args and args.area == G.shop_jokers and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses then
+			if (not created_card.ability or not created_card.ability.curse) and apply_curse and type(apply_curse) == 'function' then
+				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
+				if pseudorandom('hnds_curse_shop'..G.GAME.modifiers.hnds_shop_curse_roll) < 0.12 then
+					apply_curse(created_card)
+				end
+			end
+		end
+		return created_card
+	end
+end
+
+-- Krusty Food negative edition (separate from curses)
+local create_card_ref = create_card
+function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+	local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+
+	-- Krusty gives negative edition to Food cards when created
+	if card and next(SMODS.find_card("j_hnds_krusty")) and card.config then
+		for _, t in ipairs(G.P_CENTER_POOLS.Food) do
+			if t.key == card.config.center.key then
+				card:set_edition("e_negative")
+				break
+			end
+		end
+	end
+
+	return card
+end
+
+local add_to_deck_ref = Card.add_to_deck
+-- Handle joker copying abilities (e.g., DNA tag)
+function Card:add_to_deck(from_debuff)
+	local ret = add_to_deck_ref(self, from_debuff)
+	if not from_debuff and self.ability.hnds_copies_to_create then
+		for _ = 1, self.ability.hnds_copies_to_create do
+			if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
+				G.GAME.joker_buffer = G.GAME.joker_buffer + 1
+				local c = self
+				G.E_MANAGER:add_event(Event{
+					func = function ()
+						local copy = copy_card(c)
+						copy.ability.hnds_copies_to_create = nil
+						copy:add_to_deck()
+						G.jokers:emplace(copy)
+						G.GAME.joker_buffer = 0
+						return true
+					end
+				})
+			end
+		end
+		self.ability.hnds_copies_to_create = nil
+	end
+	return ret
+end
+
+score_card_ref = SMODS.score_card
+-- Black Seal scoring: Force scoring of destroyed cards as if they were played
+function SMODS.score_card(card, context)
+	if (not G.scorehand) and HNDS.should_hand_destroy(card) and context.cardarea == G.hand then
+		G.scorehand = true
+		context.cardarea = G.play
+		if context.destroy_card then context.destroying_card = context.destroy_card end
+		SMODS.score_card(card, context)
+		G.scorehand = nil
+		context.destroying_card = nil
+		context.cardarea = G.hand
+	end
+	return score_card_ref(card, context)
+end
+
+-- Impostor Joker, this is the actual code of the impostor, thinking about moving it to the Joker itself
+>>>>>>> a489fb3baf0e5086925e32f5ad60dced8cca4cb7
 if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_imposter then
 	Card._hnds_wrapped_calculate_joker_imposter = true
 	local calculate_joker_ref = Card.calculate_joker
