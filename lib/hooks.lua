@@ -550,11 +550,19 @@ end
 -------------------------------------------------------------------
 -- IMPOSTOR MULTI RANK CODE
 -------------------------------------------------------------------
+<<<<<<< HEAD
+=======
+
+>>>>>>> e9405fc882aa93937f554d08f88533b6fb268a23
 -- When the Impostor is owned by the player, face cards
 -- (J/Q/K, ids 11-13) are treated like any rank for any scoring purpose.
 -- This works by temporarily faking the rank for each Jokers so
 -- `card:get_id()` and `calculate_joker` always works for face cards
 -- Is bit heavy on performance
+<<<<<<< HEAD
+=======
+
+>>>>>>> e9405fc882aa93937f554d08f88533b6fb268a23
 local function HNDS_is_stake_active(stake_key)
 	-- Helper function to check if a specific stake is active
 	if not (G and G.GAME and G.GAME.applied_stakes and G.P_STAKES and stake_key) then return false end
