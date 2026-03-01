@@ -17,17 +17,7 @@ SMODS.Joker({
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
-    config = {
-        extra = {
-            chips = 0,
-            chipsg = 5,
-            mult = 0,
-            multg = 1,
-            xmult = 1,
-            xmultg = 0.05,
-            sell_value = 2
-        }
-    },
+    config = { extra = { chips = 0, chipsg = 5, mult = 0, multg = 1, xmult = 1, xmultg = 0.05, sell_value = 2 } },
     unlock_condition = { type = 'modify_deck' },
     loc_vars = function(self, info_queue, card)
         local cae = card.ability.extra
@@ -38,7 +28,9 @@ SMODS.Joker({
     end,
     check_for_unlock = function(self, args)
 		if args.type == 'modify_deck' then
-			local cards = G.playing_cards or (G.deck and G.deck.cards) or {}
+			-- Guard: only check during active gameplay (in a blind), not during deck init
+			if not (G.GAME and G.GAME.blind and G.GAME.blind.in_blind) then return false end
+			local cards = G.playing_cards or {}
 			if #cards < 5 then return false end
 			local suit = nil
 			for _, v in ipairs(cards) do
@@ -56,10 +48,7 @@ SMODS.Joker({
     rarity = 2,
     cost = 7,
     atlas = "Jokers",
-    pos = {
-        x = 7,
-        y = 1
-    },
+    pos = { x = 7, y = 1 },
     demicoloncompat = true,
     calculate = function(self, card, context)
         local cae = card.ability.extra
@@ -90,21 +79,14 @@ SMODS.Joker({
                     elseif G.GAME.hnds_bizzare_suit == "Diamonds" then
                         card.ability.extra_value = (card.ability.extra_value or 0) + cae.sell_value
                         card:set_cost()
-                        return {
-                            message = localize("k_val_up"),
-                            colour = G.C.MONEY
-                        }
+                        return { message = localize("k_val_up"), colour = G.C.MONEY }
                     end
                 end
             end
         end
 
         if context.joker_main then
-            return {
-                chips = cae.chips,
-                mult = cae.mult,
-                extra = { xmult = cae.xmult }
-            }
+            return { chips = cae.chips, mult = cae.mult, extra = { xmult = cae.xmult } }
         end
 
     end

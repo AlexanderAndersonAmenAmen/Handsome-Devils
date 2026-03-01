@@ -12,8 +12,6 @@ SMODS.Joker ({
     unlock_condition = { type = 'win' },
     check_for_unlock = function(self, args)
         if args.type == 'win' then
-            -- Check if any non-common jokers exist in the run history or current deck
-            -- The hook tracks this in G.GAME.hnds_walking_joke_non_common
             return not (G and G.GAME and G.GAME.hnds_walking_joke_non_common)
         end
     end,
@@ -29,9 +27,7 @@ SMODS.Joker ({
 			end
 			if not this_joker_index then return end
 			if is_adjacent_joker(this_joker_index, context.other_card) and context.other_card.config.center.rarity == 1 then
-				return {
-					repetitions = 1,
-				}
+				return { repetitions = 1 }
 			end
 		end
     end

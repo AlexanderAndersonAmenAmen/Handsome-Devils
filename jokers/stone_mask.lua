@@ -9,12 +9,11 @@ SMODS.Joker({
 	blueprint_compat = false,
 	eternal_compat = true,
 	perishable_compat = true,
-	unlock_condition = { type = 'round_win', extra = 5 },
+	unlock_condition = { type = 'modify_jokers', extra = 5 },
 	loc_vars = function(self, info_queue, card)
-		-- No tooltips needed
 	end,
 	check_for_unlock = function(self, args)
-		if args.type == 'round_win' then
+		if args.type == 'modify_jokers' then
 			local jokers = SMODS.find_card('j_vampire')
 			for _, v in ipairs(jokers) do
 				if v.ability and v.ability.extra and v.ability.extra.x_mult and v.ability.extra.x_mult >= self.unlock_condition.extra then
@@ -98,10 +97,7 @@ SMODS.Joker({
 						end,
 					}))
 					
-					return {
-						message = localize("k_hnds_awaken"),
-						colour = G.C.GREY,
-					}
+					return { message = localize("k_hnds_awaken"), colour = G.C.GREY }
 				end
 			end
 		end
