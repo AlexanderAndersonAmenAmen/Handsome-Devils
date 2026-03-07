@@ -16,9 +16,8 @@ SMODS.Joker({
 	} },
 	pools = { Food = true },
 	loc_vars = function(self, info_queue, card)
-		local main_end
+		local main_end = {}
 		if card and card.edition and card.edition.negative then
-			main_end = {}
 			localize { type = 'other', key = 'remove_negative', nodes = main_end, vars = {} }
 		end
 		local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_banana_split")
