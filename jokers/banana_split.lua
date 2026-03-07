@@ -22,7 +22,7 @@ SMODS.Joker({
 			localize { type = 'other', key = 'remove_negative', nodes = main_end, vars = {} }
 		end
 		local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_banana_split")
-		return { vars = { card.ability.extra.Xmult, numerator, denominator }, main_end = main_end }
+		return { vars = { card.ability.extra.Xmult, numerator, denominator }, main_end = main_end[1] }
 	end,
 	calculate = function(self, card, context)
 		if context.joker_main then
