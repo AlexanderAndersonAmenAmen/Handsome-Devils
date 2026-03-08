@@ -44,11 +44,23 @@ SMODS.Joker({
 					card.ability.extra.eaten = card.ability.extra.eaten - card.ability.extra.per_tag
 					add_tag(HNDS.poll_tag('hnds_clown_devil'))
 				end
-				return {
-					message = localize('k_hnds_clown_eat'),
-					colour = G.C.RED
-				}
+				return { message = localize('k_hnds_clown_eat'), colour = G.C.RED }
 			end
 		end
 	end,
+	joker_display_def = function(JokerDisplay)
+        return {
+            text = {
+                { text = "(" },
+                { ref_table = "card.joker_display_values", ref_value = "eaten" },
+                { text = "/" },
+                { ref_table = "card.joker_display_values", ref_value = "per_tag" },
+                { text = ")" }
+            },
+            calc_function = function(card)
+                card.joker_display_values.eaten = card.ability.extra.eaten
+                card.joker_display_values.per_tag = card.ability.extra.per_tag
+            end
+        }
+    end,
 })

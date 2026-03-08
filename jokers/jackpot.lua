@@ -43,4 +43,29 @@ SMODS.Joker({
 			end
 		end
 	end,
+	joker_display_def = function(JokerDisplay)
+        return {
+            text = {
+                { text = "+", colour = G.C.MULT },
+                { ref_table = "card.joker_display_values", ref_value = "mult", colour = G.C.MULT }
+            },
+            extra = {
+                {
+                    { text = "(" },
+                    { ref_table = "card.joker_display_values", ref_value = "odds" },
+                    { text = ")" }
+                }
+            },
+            calc_function = function(card)
+                local seven = 0
+                if G.hand and G.hand.highlighted then
+                    for _, c in ipairs(G.hand.highlighted) do
+                        if c:get_id() == 7 then seven = seven + 1 end
+                    end
+                end
+                card.joker_display_values.mult = card.ability.extra.mult
+                card.joker_display_values.odds = localize { type = 'variable', key = 'jdis_odds', vars = { (G.GAME and G.GAME.probabilities.normal or 1) * (2^seven), card.ability.extra.base_chance } }
+            end
+        }
+    end,
 })

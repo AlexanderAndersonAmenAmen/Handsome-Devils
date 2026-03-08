@@ -64,5 +64,20 @@ SMODS.Joker {
         if not G.GAME.hnds_unique_hands then
             G.GAME.hnds_unique_hands = {}
         end
+    end,
+    joker_display_def = function(JokerDisplay)
+        return {
+            reminder_text = {
+                { text = "(" },
+                { ref_table = "card.joker_display_values", ref_value = "played" },
+                { text = "/" },
+                { ref_table = "card.joker_display_values", ref_value = "req" },
+                { text = ")" }
+            },
+            calc_function = function(card)
+                card.joker_display_values.played = card.ability.extra.hands_played
+                card.joker_display_values.req = card.ability.extra.required_hands
+            end
+        }
     end
 }

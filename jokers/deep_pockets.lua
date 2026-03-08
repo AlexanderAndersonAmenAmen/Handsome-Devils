@@ -48,4 +48,28 @@ SMODS.Joker({
 	remove_from_deck = function(self, card, from_debuff)
 		G.consumeables.config.card_limit = G.consumeables.config.card_limit - card.ability.extra.slots
 	end,
+	joker_display_def = function(JokerDisplay)
+		return {
+			text = {
+				{ text = "+" },
+				{ ref_table = "card.joker_display_values", ref_value = "mult" }
+			},
+			text_config = { colour = G.C.UI.TEXT_LIGHT },
+			calc_function = function(card)
+				local mult = 0
+				if G.consumeables and G.consumeables.cards then
+					for _, c in ipairs(G.consumeables.cards) do
+						if not c.debuff then
+							local c_mult = 1
+							if next(SMODS.find_mod("Overflow")) then
+								c_mult = c.ability.immutable and c.ability.immutable.overflow_amount or c_mult
+							end
+							mult = mult + card.ability.extra.consumeable_mult * c_mult
+						end
+					end
+				end
+				card.joker_display_values.mult = mult
+			end
+		}
+	end
 })

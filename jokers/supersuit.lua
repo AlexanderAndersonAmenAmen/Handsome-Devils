@@ -40,5 +40,31 @@ SMODS.Joker ({
                 }
             end
         end
+    end,
+    joker_display_def = function(JokerDisplay)
+        return {
+            text = {
+                { text = "+" },
+                { ref_table = "card.joker_display_values", ref_value = "repetitions" }
+            },
+            text_config = { colour = G.C.UI.TEXT_LIGHT },
+            reminder_text = {
+                { text = "(" },
+                { ref_table = "card.joker_display_values", ref_value = "suit", colour = G.C.ORANGE },
+                { text = ")" }
+            },
+            calc_function = function(card)
+                local current_suit = (G.GAME and G.GAME.current_round and G.GAME.current_round.supersuit_card) and G.GAME.current_round.supersuit_card.suit or "Spades"
+                card.joker_display_values.suit = localize(current_suit, 'suits_plural')
+                card.joker_display_values.repetitions = card.ability.extra.reps
+            end,
+            retrigger_function = function(playing_card, scoring_hand, held_in_hand, joker_card)
+                local current_suit = (G.GAME and G.GAME.current_round and G.GAME.current_round.supersuit_card) and G.GAME.current_round.supersuit_card.suit or "Spades"
+                if playing_card:is_suit(current_suit) then
+                    return joker_card.ability.extra.reps * JokerDisplay.calculate_joker_triggers(joker_card)
+                end
+                return 0
+            end
+        }
     end
 })

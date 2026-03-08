@@ -16,13 +16,12 @@ SMODS.Joker({
 	} },
 	pools = { Food = true },
 	loc_vars = function(self, info_queue, card)
-		local main_end
+		local main_end = {}
 		if card and card.edition and card.edition.negative then
-			main_end = {}
 			localize { type = 'other', key = 'remove_negative', nodes = main_end, vars = {} }
 		end
 		local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_banana_split")
-		return { vars = { card.ability.extra.Xmult, numerator, denominator }, main_end = main_end }
+		return { vars = { card.ability.extra.Xmult, numerator, denominator }, main_end = main_end[1] }
 	end,
 	calculate = function(self, card, context)
 		if context.joker_main then
@@ -56,4 +55,27 @@ SMODS.Joker({
 			end
 		end
 	end,
+	joker_display_def = function(JokerDisplay)
+        return {
+            text = {
+                {
+                    border_nodes = {
+                        { text = "X" },
+                        { ref_table = "card.joker_display_values", ref_value = "x_mult", retrigger_type = "exp" }
+                    }
+                }
+            },
+            extra = {
+                {
+                    { text = "(" },
+                    { ref_table = "card.joker_display_values", ref_value = "odds" },
+                    { text = ")" },
+                }
+            },
+            calc_function = function(card)
+                card.joker_display_values.x_mult = card.ability.extra.Xmult
+                card.joker_display_values.odds = localize { type = 'variable', key = 'jdis_odds', vars = { (G.GAME and G.GAME.probabilities.normal or 1), card.ability.extra.odds } }
+            end
+        }
+    end,
 })

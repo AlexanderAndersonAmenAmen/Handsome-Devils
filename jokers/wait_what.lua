@@ -61,4 +61,19 @@ SMODS.Joker({
 			return { xmult = card.ability.extra.xmult }
 		end
 	end,
+	joker_display_def = function(JokerDisplay)
+		return {
+			text = {
+				{
+					border_nodes = {
+						{ text = "X" },
+						{ ref_table = "card.joker_display_values", ref_value = "x_mult", retrigger_type = "exp" }
+					}
+				}
+			},
+			calc_function = function(card)
+				card.joker_display_values.x_mult = card.ability.extra.xmult
+			end
+		}
+	end,
 })

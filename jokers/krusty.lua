@@ -40,5 +40,19 @@ SMODS.Joker {
         if context.setting_ability and G.P_CENTER_POOLS.Food and G.P_CENTER_POOLS.Food[context.new] and not (context.other_card.edition and context.other_card.edition == "e_negative") and not context.blueprint then
             context.other_card:set_edition("e_negative", nil, true)
         end
+    end,
+    joker_display_def = function(JokerDisplay)
+        return {
+            extra = {
+                {
+                    { text = "(" },
+                    { ref_table = "card.joker_display_values", ref_value = "odds" },
+                    { text = ")" }
+                }
+            },
+            calc_function = function(card)
+                card.joker_display_values.odds = localize { type = 'variable', key = 'jdis_odds', vars = { (G.GAME and G.GAME.probabilities.normal or 1), card.ability.extra.odds } }
+            end
+        }
     end
 }

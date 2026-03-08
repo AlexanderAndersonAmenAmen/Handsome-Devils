@@ -65,5 +65,16 @@ SMODS.Joker({
 				message = localize("k_hnds_boom_timer"),
 			}
 		end
+	end,
+	joker_display_def = function(JokerDisplay)
+		return {
+			text = {
+				{ ref_table = "card.joker_display_values", ref_value = "destroy_count" }
+			},
+			text_config = { colour = G.C.UI.TEXT_LIGHT },
+			calc_function = function(card)
+				card.joker_display_values.destroy_count = math.min(card.ability.extra.destroy, (G.hand and G.hand.cards and #G.hand.cards) or 0)
+			end
+		}
 	end
 })

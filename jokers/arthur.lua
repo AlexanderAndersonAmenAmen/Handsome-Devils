@@ -59,5 +59,22 @@ SMODS.Joker {
     add_to_deck = function (self, card, from_debuff) --this is for if he gets undebuffed
         G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + card.ability.extra.re
         calculate_reroll_cost(true)
+    end,
+    joker_display_def = function(JokerDisplay)
+        return {
+            reminder_text = {
+                { text = "(" },
+                { ref_table = "card.joker_display_values", ref_value = "suit", colour = G.C.ORANGE },
+                { text = ") " },
+                { text = "(" },
+                { ref_table = "card.joker_display_values", ref_value = "rerolls" },
+                { text = ")" }
+            },
+            calc_function = function(card)
+                local suit = G.GAME.hnds_arthur_suit or "Spades"
+                card.joker_display_values.suit = localize(suit, 'suits_plural')
+                card.joker_display_values.rerolls = card.ability.extra.re
+            end
+        }
     end
 }

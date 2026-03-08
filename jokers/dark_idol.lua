@@ -46,6 +46,31 @@ SMODS.Joker{
                 xmult = card.ability.extra.total
             }
         end
+    end,
+    joker_display_def = function(JokerDisplay)
+        return {
+            text = {
+                {
+                    border_nodes = {
+                        { text = "X" },
+                        { ref_table = "card.joker_display_values", ref_value = "x_mult", retrigger_type = "exp" }
+                    }
+                }
+            },
+            reminder_text = {
+                { text = "(" },
+                { ref_table = "card.joker_display_values", ref_value = "rank" },
+                { text = " " },
+                { ref_table = "card.joker_display_values", ref_value = "suit", colour = G.C.ORANGE },
+                { text = ")" }
+            },
+            calc_function = function(card)
+                card.joker_display_values.x_mult = card.ability.extra.total
+                local idol_card = (G.GAME and G.GAME.current_round and G.GAME.current_round.dark_idol) or { rank = "Ace", suit = "Spades" }
+                card.joker_display_values.rank = localize(idol_card.rank, "ranks")
+                card.joker_display_values.suit = localize(idol_card.suit, "suits_plural")
+            end
+        }
     end
 }
 

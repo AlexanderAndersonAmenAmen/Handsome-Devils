@@ -115,4 +115,28 @@ SMODS.Joker({
 			}
 		end
 	end,
+	-- TO DO Must improve this later
+	joker_display_def = function(JokerDisplay)
+		return {
+			text = {
+				{ text = "-$" },
+				{ ref_table = "card.joker_display_values", ref_value = "money_loss" },
+				{ text = " | +$" },
+				{ ref_table = "card.joker_display_values", ref_value = "money" }
+			},
+			reminder_text = {
+				{ text = "(" },
+				{ ref_table = "card.joker_display_values", ref_value = "coffee_rounds" },
+				{ text = "/" },
+				{ ref_table = "card.joker_display_values", ref_value = "target" },
+				{ text = ")" }
+			},
+			calc_function = function(card)
+				card.joker_display_values.money_loss = card.ability.extra.money_loss
+				card.joker_display_values.money = card.ability.extra.money
+				card.joker_display_values.coffee_rounds = card.ability.extra.coffee_rounds
+				card.joker_display_values.target = card.ability.extra.target
+			end
+		}
+	end,
 })

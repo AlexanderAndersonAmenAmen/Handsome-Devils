@@ -109,4 +109,27 @@ SMODS.Joker({
 			end
 		end
 	end,
+	joker_display_def = function(JokerDisplay)
+		return {
+			text = {
+				{
+					border_nodes = {
+						{ text = "X" },
+						{ ref_table = "card.joker_display_values", ref_value = "x_mult", retrigger_type = "exp" }
+					}
+				}
+			},
+			extra = {
+				{
+					{ text = "(" },
+					{ ref_table = "card.joker_display_values", ref_value = "odds" },
+					{ text = ")" }
+				}
+			},
+			calc_function = function(card)
+				card.joker_display_values.x_mult = card.ability.extra.xmult
+				card.joker_display_values.odds = localize { type = 'variable', key = 'jdis_odds', vars = { (G.GAME and G.GAME.probabilities.normal or 1), card.ability.extra.odds } }
+			end
+		}
+	end,
 })

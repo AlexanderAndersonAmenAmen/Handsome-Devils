@@ -73,4 +73,26 @@ SMODS.Joker({
 			end
 		end
 	end,
+	joker_display_def = function(JokerDisplay)
+        return {
+            reminder_text = {
+                { text = "(" },
+                { ref_table = "card.joker_display_values", ref_value = "rarity" },
+                { text = ") " },
+                { text = "(" },
+                { ref_table = "card.joker_display_values", ref_value = "current_rounds" },
+                { text = "/" },
+                { ref_table = "card.joker_display_values", ref_value = "max_rounds" },
+                { text = ")" }
+            },
+            calc_function = function(card)
+                local r = card.ability.extra.current_rarity
+                if r > 3 then r = 3 end
+                local rarity_key = card.ability.extra.rarity_strings[r]
+                card.joker_display_values.rarity = localize(rarity_key)
+                card.joker_display_values.current_rounds = card.ability.extra.current_rounds
+                card.joker_display_values.max_rounds = card.ability.extra.max_rounds
+            end
+        }
+    end,
 })

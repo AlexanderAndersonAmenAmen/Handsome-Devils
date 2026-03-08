@@ -40,4 +40,19 @@ SMODS.Joker({
 			end
 		end
 	end,
+	joker_display_def = function(JokerDisplay)
+		return {
+			reminder_text = {
+				{ text = "(" },
+				{ ref_table = "card.joker_display_values", ref_value = "suits" },
+				{ text = "/" },
+				{ ref_table = "card.joker_display_values", ref_value = "suits_needed" },
+				{ text = " suits)" }
+			},
+			calc_function = function(card)
+				card.joker_display_values.suits_needed = card.ability.extra.suits_needed
+				card.joker_display_values.suits = (G.play and G.play.cards and next(G.play.cards)) and HNDS.get_unique_suits(G.play.cards) or 0
+			end
+		}
+	end,
 })

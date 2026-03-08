@@ -43,6 +43,17 @@ SMODS.Joker({
             cae.chips = 0
             return {message = localize("k_reset"), card = card}
         end
+    end,
+    joker_display_def = function(JokerDisplay)
+        return {
+            text = {
+                { text = "+", colour = G.C.CHIPS },
+                { ref_table = "card.joker_display_values", ref_value = "chips", colour = G.C.CHIPS }
+            },
+            calc_function = function(card)
+                card.joker_display_values.chips = card.ability.extra.chips
+            end
+        }
     end
 })
 

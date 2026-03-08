@@ -44,4 +44,18 @@ SMODS.Joker({
 			}
 		end
 	end,
+	joker_display_def = function(JokerDisplay)
+		return {
+			text = {
+				{ text = "+", colour = G.C.CHIPS },
+				{ ref_table = "card.joker_display_values", ref_value = "chips", colour = G.C.CHIPS },
+				{ text = " +", colour = G.C.MULT },
+				{ ref_table = "card.joker_display_values", ref_value = "mult", colour = G.C.MULT }
+			},
+			calc_function = function(card)
+				card.joker_display_values.chips = card.ability.extra.chips
+				card.joker_display_values.mult = card.ability.extra.mult
+			end
+		}
+	end
 })

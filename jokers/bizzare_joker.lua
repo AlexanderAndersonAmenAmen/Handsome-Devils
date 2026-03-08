@@ -88,6 +88,45 @@ SMODS.Joker({
         if context.joker_main then
             return { chips = cae.chips, mult = cae.mult, extra = { xmult = cae.xmult } }
         end
-
+    end,
+    joker_display_def = function(JokerDisplay)
+        return {
+            text = {
+                { text = "+", colour = G.C.CHIPS },
+                { ref_table = "card.joker_display_values", ref_value = "chips", colour = G.C.CHIPS },
+                { text = " +", colour = G.C.MULT },
+                { ref_table = "card.joker_display_values", ref_value = "mult", colour = G.C.MULT },
+                { text = "  " },
+                {
+                    border_nodes = {
+                        { text = "X" },
+                        { ref_table = "card.joker_display_values", ref_value = "x_mult", retrigger_type = "exp" }
+                    }
+                }
+            },
+            reminder_text = {
+                { text = "(" },
+                { ref_table = "card.joker_display_values", ref_value = "suit", ref_colour = "suit_colour" },
+                { text = ")" }
+            },
+            calc_function = function(card)
+                card.joker_display_values.chips = card.ability.extra.chips
+                card.joker_display_values.mult = card.ability.extra.mult
+                card.joker_display_values.x_mult = card.ability.extra.xmult
+                local suit = G.GAME.hnds_bizzare_suit or "Spades"
+                card.joker_display_values.suit = localize(suit, 'suits_plural')
+                if suit == "Spades" then
+                    card.joker_display_values.suit_colour = G.C.SUITS.SPADES
+                elseif suit == "Hearts" then
+                    card.joker_display_values.suit_colour = G.C.SUITS.HEARTS
+                elseif suit == "Clubs" then
+                    card.joker_display_values.suit_colour = G.C.SUITS.CLUBS
+                elseif suit == "Diamonds" then
+                    card.joker_display_values.suit_colour = G.C.SUITS.DIAMONDS
+                else
+                    card.joker_display_values.suit_colour = G.C.ORANGE
+                end
+            end
+        }
     end
 })
