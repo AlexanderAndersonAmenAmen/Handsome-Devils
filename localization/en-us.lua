@@ -239,7 +239,7 @@ return {
 				name = "The Clown Devil",
 				text = {
 					"When {C:attention}Blind{} is selected,",
-					"eat all held {C:attention}consumables{}",
+					"eats all held {C:attention}consumables{}",
 					"Create a random {C:attention}Tag{} for",
 					"every {C:attention}#2#{} cards eaten",
 					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/#2#)"
@@ -353,7 +353,7 @@ return {
 			j_hnds_one_punchline_man = {
 				name = "One Punchline Man",
 				text = {
-					"Gains {X:mult,C:white}X0.2{} Mult",
+					"Gains {X:mult,C:white}X0.1{} Mult",
 					"per {C:attention}unused{} {C:blue}hand{}",
 					"at end of round",
 					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
@@ -371,9 +371,9 @@ return {
 			j_hnds_dynamic_duos = {
 				name = "Dynamic Duos",
 				text = {
-					"If played hand is a",
-					"{C:attention}Two Pair{} of {C:attention}odd{} and {C:attention}even{}",
-					"{C:attention}rank{} cards, retrigger them",
+					"If played hand is a {C:attention}Two Pair{}",
+					"of {C:attention}odd{} and {C:attention}even rank{}",
+					"cards, retrigger them",
 					"{C:inactive}(ex: 6, 6, 9, 9)"
 				},
 			},
@@ -456,9 +456,9 @@ return {
 				name = "Creepy Joker",
 				text = {
 					"{X:mult,C:white}X#1#{} Mult",
-					"{C:green}#2# in #3#{} chance to convert",
-					"adjacent Jokers into exact",
-					"copies of this at end of round",
+					"{C:green}#2# in #3#{} chance adjacent",
+					"Jokers become a copy of",
+					"this at end of round",
 				}
 			},
 		},

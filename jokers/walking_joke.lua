@@ -2,7 +2,7 @@ SMODS.Joker ({
     key = "walking_joke",
     config = { extra = {} },
     pos = { x = 5, y = 3 },
-    cost = 5,
+    cost = 10,
     rarity = 3,
 	atlas = "Jokers",
     blueprint_compat = false,
