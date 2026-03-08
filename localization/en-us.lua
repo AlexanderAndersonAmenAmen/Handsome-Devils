@@ -240,8 +240,8 @@ return {
 				text = {
 					"When {C:attention}Blind{} is selected,",
 					"eat all held {C:attention}consumables{}",
-					"Create a random {C:attention}Tag{}",
-					"every {C:attention}#2#{} eaten",
+					"Create a random {C:attention}Tag{} for",
+					"every {C:attention}#2#{} cards eaten",
 					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/#2#)"
 				}
 			},
@@ -250,7 +250,8 @@ return {
 				text = {
 					"When {C:attention}Blind{} is selected,",
 					"leftmost Joker becomes",
-					"{C:dark_edition}Negative{} for {C:attention}#1#{} rounds"
+					"{C:dark_edition}Negative{}, but will fade",
+					"away in {C:attention}#1#{} rounds"
 				}
 			},
 			j_hnds_wait_what = {
@@ -262,11 +263,10 @@ return {
 			j_hnds_excommunicado = {
 				name = "Excommunicado",
 				text = {
-					"Small and Big blinds",
-					"are replaced with",
-					"{C:attention}Boss Blinds{}",
-					"Create a random {C:attention}Tag{}",
-					"when Boss Blind is defeated"
+					"{C:attention}Small{} and {C:attention}Big Blinds{} are",
+					"replaced with {C:attention}Boss Blinds{}",
+					"Create a random {C:attention}Tag{} when",
+					"{C:attention}Boss Blind{} is defeated",
 				}
 			},
 			j_hnds_handsome = {
@@ -363,7 +363,7 @@ return {
 				name = "Jigsaw Joker",
 				text = {
 					"After playing {C:attention}8{} unique",
-					"poker hands, sell this card",
+					"{C:attention}poker hands{}, sell this card",
 					"to create {C:attention}#3#{} random Tags",
 					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/8){}",
 				},
@@ -371,9 +371,10 @@ return {
 			j_hnds_dynamic_duos = {
 				name = "Dynamic Duos",
 				text = {
-					"If played hand is a {C:attention}Two Pair{}",
-					"of {C:attention}odd{} and {C:attention}even{} rank cards,",
-					"retrigger them",
+					"If played hand is a",
+					"{C:attention}Two Pair{} of {C:attention}odd{} and {C:attention}even{}",
+					"{C:attention}rank{} cards, retrigger them",
+					"{C:inactive}(ex: 6, 6, 9, 9)"
 				},
 			},
 			j_hnds_imposter = {
@@ -505,7 +506,7 @@ return {
 					"Triples all {C:attention}listed",
 					"{C:green}probabilities{} during",
 					"{C:attention}shop{} and {C:attention}Boss Blinds",
-					"{C:inactive}(e.x. {C:green}1 in 3{C:inactive} -> {C:green}3 in 3){C:inactive}"
+					"{C:inactive}(e.x. {C:green}1 in 3{C:inactive} -> {C:green}3 in 3{}){}"
 				}
 			},
 			b_hnds_cursed = {
@@ -530,9 +531,8 @@ return {
 			c_hnds_cycle = {
 				name = "Cycle",
 				text = {
-					"Grants {C:attention}#1#{} free",
-					"{C:green}Rerolls{} in the shop",
-					"until end of round",
+					"Gain {C:attention}#1#{} free {C:green}Rerolls{}",
+					"until next {C:attention}Blind{}",
 				},
 			},
 			c_hnds_petrify = {
@@ -547,8 +547,8 @@ return {
 				name = "Exchange",
 				text = {
 					"Add {C:dark_edition}Negative{}",
-					"to {C:attention}#1#{} selected,",
-					"card in your hand",
+					"to {C:attention}#1#{} selected",
+					"card in your hand,",
 					"{C:blue}-#2#{} hand each round",
 				},
 			},
