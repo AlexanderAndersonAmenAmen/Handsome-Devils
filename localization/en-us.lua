@@ -960,8 +960,8 @@ return {
 			stake_hnds_platinum = {
 				name = "Platinum Stake",
 				text = {
-					"Scoring twice the required Chips,",
-					"makes the next {C:attention}Blind{} {C:mult}X2{} larger",
+					"The next {C:attention}Blind{} becomes {C:mult}X2{} larger when",
+					"you exceed required score by {C:mult}X2{} or more",
 					"{s:0.8}Applies all previous Stakes",
 				}
 			},
@@ -969,7 +969,7 @@ return {
 				name = "Blood Stake",
 				text = {
 					"Shop can have {C:red}Cursed{} Jokers",
-					"{C:inactive,s:0.8}(Gains extra {C:green,s:0.8}power{} {C:inactive,s:0.8}but at a {C:red,s:0.8}cost{}{C:inactive,s:0.8}...)",
+					"{C:inactive,s:0.8}(Extra {C:green,s:0.8}power{} {C:inactive,s:0.8}but at what {C:red,s:0.8}cost{}{C:inactive,s:0.8}?)",
 					"{s:0.8}Applies all previous Stakes",
 				},
 				unlock = {
