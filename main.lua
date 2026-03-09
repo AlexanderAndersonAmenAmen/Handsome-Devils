@@ -124,6 +124,12 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.card_added then
 		G.GAME.hnds_dna_tag_copy = context.card.sort_id
 	end
+	-- Obsidian card: draw extra cards
+	if context.drawing_cards and G.GAME.hnds_obsidian_draws > 0 then
+		local d = G.GAME.hnds_obsidian_draws
+		G.GAME.hnds_obsidian_draws = 0
+		return { modify = d }
+	end
 end
 
 SMODS.current_mod.optional_features = {

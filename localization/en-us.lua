@@ -902,18 +902,16 @@ return {
 				name = "Aberrant Card",
 				text = {
 					"Gains {C:mult}+#1#{} Mult",
-					"while stays in hand",
-					"Destroy this card",
-					"when {C:attention}discarded{}",
+					"when held in hand",
+					"{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult)"
 				},
 			},
 			m_hnds_obsidian = {
 				name = "Obsidian Card",
 				text = {
-					"Lose {C:red}$#1#{}",
-					"{C:green}#2# in #3#{} chance to",
-					"create a {C:dark_edition}Negative",
-					"consumable card",
+					"Draw {C:attention}2{} extra cards",
+					"after this is played",
+					"or discarded"
 				},
 			},
 		},

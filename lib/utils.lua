@@ -388,6 +388,8 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 		G.GAME.art_queue = 0
 		G.GAME.hnds_exchange_minus = 1
 	end
+	--Not run start only, obsidian draws shouldnt persist to the next round
+	G.GAME.hnds_obsidian_draws = 0
 
 	-- Re-roll per-round joker state (suit/card changes every round)
 	reset_supersuit_card()

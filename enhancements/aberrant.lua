@@ -20,10 +20,5 @@ SMODS.Enhancement({
 				mult = card.ability.extra.mult
 			}
 		end
-		if context.discard and context.other_card == card then
-			return {
-				remove = true
-			}
-		end
 	end
 })
