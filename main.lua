@@ -128,7 +128,7 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.drawing_cards and G.GAME.hnds_obsidian_draws > 0 then
 		local d = G.GAME.hnds_obsidian_draws
 		G.GAME.hnds_obsidian_draws = 0
-		return { modify = d }
+		return { cards_to_draw = context.amount + d } -- for some reason `modify` also sets the amount instead of modifying so i have to do this
 	end
 end
 
