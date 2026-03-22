@@ -298,7 +298,7 @@ end
 
 -- Colors and editions
 SMODS.Gradient({key = "SEAL_EDITION", colours = { G.C.RED, G.C.BLUE, G.C.GOLD, G.C.PURPLE }, cycle = 7.5,})
-G.C.SEAL_EDITION = SMODS.Gradients.hnds_SEAL_EDITION
+G.C.HNDS_SEAL_EDITION = SMODS.Gradients.hnds_SEAL_EDITION --i dont see a point in doing this tbh but whatever
 G.C.HNDS_CARCOSA = HEX('C9A227')
 G.C.hnds_carcosa = G.C.HNDS_CARCOSA -- lowercase alias used by localization colour tags
 -- Sounds
