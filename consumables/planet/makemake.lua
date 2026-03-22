@@ -37,13 +37,13 @@ if hnds_config.enableStoneOcean then
 				hands = card.ability.hand_type,
 				parameters = { "chips" },
 				level_up = true,
-				func = function (current, base, parameter)
-					return current + G.GAME.hands[card.ability.hand_type].l_chips + (G.GAME.ante_stones_scored or 0) * G.GAME.hands[card.ability.hand_type].l_chips_scaling
+				func = function (base, hand, param)
+					return base + G.GAME.hands[hand]["l_"..param] + (G.GAME.ante_stones_scored or 0) * (G.GAME.hands[hand].l_chips_scaling or 5)
 				end
 			}
 		end,
 		force_use = function(self, card, area)
-			card:use_consumeable(area)
+			self:use(card, area)
 		end,
 		demicoloncompat = true,
 		bulk_use = function (self, card, area, copier, number)
@@ -51,8 +51,8 @@ if hnds_config.enableStoneOcean then
 				hands = card.ability.hand_type,
 				parameters = { "chips" },
 				level_up = number,
-				func = function (current, base, parameter)
-					return current + (G.GAME.hands[card.ability.hand_type].l_chips + (G.GAME.ante_stones_scored or 0) * G.GAME.hands[card.ability.hand_type].l_chips_scaling) * number
+				func = function (base, hand, param)
+					return base + (G.GAME.hands[hand]["l_"..param] + (G.GAME.ante_stones_scored or 0) * (G.GAME.hands[hand].l_chips_scaling or 5)) * number
 				end
 			}
 		end
