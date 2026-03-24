@@ -958,8 +958,8 @@ return {
 			stake_hnds_platinum = {
 				name = "Platinum Stake",
 				text = {
-					"The next {C:attention}Blind{} becomes {C:mult}X2{} larger when",
-					"you exceed required score by {C:mult}X2{} or more",
+					"Next {C:attention}Blind{} becomes {C:mult}X2{} larger when you",
+					"exceed required score by {C:mult}X2{} or more",
 					"{s:0.8}Applies all previous Stakes",
 				}
 			},
