@@ -768,7 +768,7 @@ return {
 			offer_free_rerolls = {
 				text = {
 					"Gives {C:attention}2{} free",
-					"{C:green}rerolls{} per shop",
+					"{C:green}Rerolls{} per shop",
 				},
 			},
 			offer_joker_copy = {
