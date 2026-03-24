@@ -910,8 +910,8 @@ return {
 				name = "Obsidian Card",
 				text = {
 					"Draw {C:attention}2{} extra cards",
-					"after this is played",
-					"or discarded"
+					"after this is {C:attention}played{}",
+					"or {C:attention}discarded{}"
 				},
 			},
 		},
