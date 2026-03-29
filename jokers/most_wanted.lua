@@ -1,27 +1,36 @@
--- Pick a random owned joker key for Most Wanted targeting
-local function pick_owned_joker_key(card, seed, previous_key)
+-- Pick a random discovered joker key for Most Wanted targeting
+local function get_most_wanted_multiplier(total_jokers)
+	if total_jokers > 800 then return 12 end
+	if total_jokers > 500 then return 8 end
+	if total_jokers > 300 then return 6 end
+	return 4
+end
+
+local function get_discovered_joker_pool(previous_key)
 	local pool = {}
-	if not (G and G.jokers and G.jokers.cards) then return nil end
-	for _, j in ipairs(G.jokers.cards) do
-		if j and j ~= card and j.config and j.config.center and j.config.center.key then
-			local k = j.config.center.key
-			if k ~= 'j_hnds_most_wanted' and k ~= previous_key then
-				pool[#pool + 1] = k
+	local total_jokers = 0
+	for _, center in ipairs((G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Joker) or {}) do
+		if center and not center.hidden and center.key and center.key ~= 'j_hnds_most_wanted' then
+			total_jokers = total_jokers + 1
+			if center.discovered and center.key ~= previous_key then
+				pool[#pool + 1] = center.key
 			end
 		end
 	end
 	if #pool == 0 then
-		for _, j in ipairs(G.jokers.cards) do
-			if j and j ~= card and j.config and j.config.center and j.config.center.key then
-				local k = j.config.center.key
-				if k ~= 'j_hnds_most_wanted' then
-					pool[#pool + 1] = k
-				end
+		for _, center in ipairs((G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Joker) or {}) do
+			if center and not center.hidden and center.key and center.key ~= 'j_hnds_most_wanted' and center.discovered then
+				pool[#pool + 1] = center.key
 			end
 		end
 	end
-	if #pool == 0 then return nil end
-	return pseudorandom_element(pool, pseudoseed(seed))
+	return pool, total_jokers
+end
+
+local function pick_discovered_joker_key(seed, previous_key)
+	local pool, total_jokers = get_discovered_joker_pool(previous_key)
+	if #pool == 0 then return nil, total_jokers end
+	return pseudorandom_element(pool, pseudoseed(seed)), total_jokers
 end
 
 HNDS.most_wanted_on_shop_create_card = function(created_card, args)
@@ -33,12 +42,13 @@ HNDS.most_wanted_on_shop_create_card = function(created_card, args)
 
 	local pool = {}
 	for _, v in ipairs(G.P_CENTER_POOLS.Joker or {}) do
-		if v and not v.hidden then
+		if v and not v.hidden and v.key then
 			pool[#pool + 1] = v.key
 		end
 	end
 
-	for i = 1, 3 do
+	local multiplier = (G.GAME.hnds_most_wanted_mult or 4) - 1
+	for i = 1, math.max(0, multiplier) do
 		if pseudorandom_element(pool, pseudoseed('hnds_most_wanted' .. i .. 'shop')) == G.GAME.hnds_most_wanted_key then
 			created_card:set_ability(G.P_CENTERS[G.GAME.hnds_most_wanted_key], true, true)
 			break
@@ -58,20 +68,23 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = false,
 	perishable_compat = true,
-	config = {
-		extra = {
-			target = nil,
-		}
-	},
+	config = { extra = { target = nil, multiplier = 4 } },
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.target and localize({ type = 'name_text', key = card.ability.extra.target, set = 'Joker' }) or localize('k_none') } }
+		return {
+			vars = {
+				card.ability.extra.target and localize({ type = 'name_text', key = card.ability.extra.target, set = 'Joker' }) or localize('k_none'),
+				card.ability.extra.multiplier or 4,
+			}
+		}
 	end,
 	set_ability = function(self, card, initial, delay_sprites)
-		-- Initialize target from currently owned Jokers
+		-- Initialize target from discovered Jokers in collection
 		if G.STAGE == G.STAGES.RUN then
-			card.ability.extra.target = pick_owned_joker_key(card, 'hnds_most_wanted')
+			local target, total_jokers = pick_discovered_joker_key('hnds_most_wanted')
+			card.ability.extra.target = target
+			card.ability.extra.multiplier = get_most_wanted_multiplier(total_jokers)
 			G.GAME.hnds_most_wanted_key = card.ability.extra.target
-			card.ability.extra.last_ante = (G.GAME.round_resets and G.GAME.round_resets.ante) or 0
+			G.GAME.hnds_most_wanted_mult = card.ability.extra.multiplier
 		end
 	end,
 	calculate = function(self, card, context)
@@ -79,22 +92,19 @@ SMODS.Joker({
 			context.card.config and context.card.config.center and context.card.config.center.key == card.ability.extra.target then
 			SMODS.destroy_cards(card)
 			G.GAME.hnds_most_wanted_key = nil
+			G.GAME.hnds_most_wanted_mult = nil
 			return nil, true
 		end
 
-		-- Choose a fresh target each ante from owned Jokers
-		if context.setting_blind then
-			local ante = (G.GAME and G.GAME.round_resets and G.GAME.round_resets.ante) or 0
-			if card.ability.extra.last_ante ~= ante then
-				card.ability.extra.target = pick_owned_joker_key(card, 'hnds_most_wanted' .. tostring(ante), card.ability.extra.target)
-				card.ability.extra.last_ante = ante
-			end
-		end
 		if context.setting_blind and not card.ability.extra.target then
-			card.ability.extra.target = pick_owned_joker_key(card, 'hnds_most_wanted_fallback')
+			local target, total_jokers = pick_discovered_joker_key('hnds_most_wanted_fallback', card.ability.extra.target)
+			card.ability.extra.target = target
+			card.ability.extra.multiplier = get_most_wanted_multiplier(total_jokers)
 			G.GAME.hnds_most_wanted_key = card.ability.extra.target
+			G.GAME.hnds_most_wanted_mult = card.ability.extra.multiplier
 		elseif context.setting_blind then
 			G.GAME.hnds_most_wanted_key = card.ability.extra.target
+			G.GAME.hnds_most_wanted_mult = card.ability.extra.multiplier
 		end
 	end,
 })

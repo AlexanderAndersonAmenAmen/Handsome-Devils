@@ -227,11 +227,10 @@ return {
 			j_hnds_most_wanted = {
 				name = "Se Busca",
 				text = {
-					"{C:attention}#1#{} aparece",
-					"{C:attention}4X{} más seguido",
-					"en tienda y paquetes ponciadores",
-					"Este Comodín se destruye al",
-					"encontrar a {C:attention}#1#{C:inactive}"
+					"{C:attention}#1#{}",
+					"aparece {C:attention}#2#X{} más seguido",
+					"Cuando lo encuentras,",
+					"este Comodín se {C:red}autodestruye{}"
 				}
 			},
 			j_hnds_clown_devil = {

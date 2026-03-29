@@ -228,12 +228,11 @@ return {
 			j_hnds_most_wanted = {
 				name = "Most Wanted",
 				text = {
-					"Selects one of your",
-					"owned Jokers: {C:attention}#1#{}",
-					"It appears {C:attention}more often{}",
-					"in the {C:money}Shop{}",
-					"Target changes each {C:attention}Ante{}"
-				}
+					"{C:attention}#1#{} appears",
+					"{C:attention}#2#X{} more often",
+					"When you find it,",
+					"this Joker self {C:red}destructs{}"
+				},
 			},
 			j_hnds_clown_devil = {
 				name = "The Clown Devil",
