@@ -390,17 +390,40 @@ end
 -- SHOP CARD CREATION (Most Wanted, Blood Stake curses)
 -------------------------------------------------------------------
 
--- SMODS.create_card: Most Wanted shop hook + Blood Stake curse application.
+-- create_card_for_shop: Most Wanted shop hook + SMODS.create_card Blood Stake curse application.
+if create_card_for_shop and not _G._hnds_wrapped_create_card_for_shop_most_wanted then
+	_G._hnds_wrapped_create_card_for_shop_most_wanted = true
+	local create_card_for_shop_ref = create_card_for_shop
+	function create_card_for_shop(area)
+		if area == G.shop_jokers and HNDS and HNDS.most_wanted_should_force_key then
+			local forced_key = HNDS.most_wanted_should_force_key()
+			if forced_key then
+				local args = { set = 'Joker', area = area, key_append = 'sho', key = forced_key, allow_duplicates = true }
+				local card = SMODS.create_card(args)
+				SMODS.calculate_context({modify_shop_card = true, card = card})
+				create_shop_card_ui(card, 'Joker', area)
+				G.E_MANAGER:add_event(Event({
+					func = (function()
+						for k, v in ipairs(G.GAME.tags) do
+							if v:apply_to_run({type = 'store_joker_modify', card = card}) then break end
+						end
+						return true
+					end)
+				}))
+				return card
+			end
+		end
+		return create_card_for_shop_ref(area)
+	end
+end
+
+-- SMODS.create_card: Blood Stake curse application.
 if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 	SMODS._hnds_wrapped_create_card_shop = true
 	local smods_create_card_ref = SMODS.create_card
 	function SMODS.create_card(args)
 		local created_card = smods_create_card_ref(args)
 		if created_card and created_card.config and created_card.config.center and created_card.config.center.set == 'Joker' then
-			-- Most Wanted: delegate to joker-specific shop creation hook
-			if HNDS and HNDS.most_wanted_on_shop_create_card then
-				HNDS.most_wanted_on_shop_create_card(created_card, args)
-			end
 			-- Blood Stake: 12% chance to curse shop jokers
 			if args and args.area == G.shop_jokers
 				and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses

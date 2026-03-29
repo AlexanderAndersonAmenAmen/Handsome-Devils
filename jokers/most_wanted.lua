@@ -33,27 +33,22 @@ local function pick_discovered_joker_key(seed, previous_key)
 	return pseudorandom_element(pool, pseudoseed(seed)), total_jokers
 end
 
-HNDS.most_wanted_on_shop_create_card = function(created_card, args)
-	if not (created_card and args and args.area == G.shop_jokers) then return end
-	if not (created_card.config and created_card.config.center and created_card.config.center.set == 'Joker') then return end
-	if created_card.config.center.key == 'j_hnds_wait_what' then return end
-	if not (G and G.GAME and G.GAME.hnds_most_wanted_key) then return end
-	if created_card.config.center.key == G.GAME.hnds_most_wanted_key then return end
-
+HNDS.most_wanted_should_force_key = function()
+	if not (G and G.GAME and G.GAME.hnds_most_wanted_key and G.GAME.hnds_most_wanted_mult) then return nil end
 	local pool = {}
 	for _, v in ipairs(G.P_CENTER_POOLS.Joker or {}) do
 		if v and not v.hidden and v.key then
 			pool[#pool + 1] = v.key
 		end
 	end
-
-	local multiplier = (G.GAME.hnds_most_wanted_mult or 4) - 1
-	for i = 1, math.max(0, multiplier) do
+	if #pool == 0 then return nil end
+	local multiplier = math.max(1, G.GAME.hnds_most_wanted_mult or 4)
+	for i = 1, multiplier do
 		if pseudorandom_element(pool, pseudoseed('hnds_most_wanted' .. i .. 'shop')) == G.GAME.hnds_most_wanted_key then
-			created_card:set_ability(G.P_CENTERS[G.GAME.hnds_most_wanted_key], true, true)
-			break
+			return G.GAME.hnds_most_wanted_key
 		end
 	end
+	return nil
 end
 
 SMODS.Joker({
@@ -96,13 +91,13 @@ SMODS.Joker({
 			return nil, true
 		end
 
-		if context.setting_blind and not card.ability.extra.target then
+		if context.starting_shop and not card.ability.extra.target then
 			local target, total_jokers = pick_discovered_joker_key('hnds_most_wanted_fallback', card.ability.extra.target)
 			card.ability.extra.target = target
 			card.ability.extra.multiplier = get_most_wanted_multiplier(total_jokers)
 			G.GAME.hnds_most_wanted_key = card.ability.extra.target
 			G.GAME.hnds_most_wanted_mult = card.ability.extra.multiplier
-		elseif context.setting_blind then
+		elseif context.starting_shop then
 			G.GAME.hnds_most_wanted_key = card.ability.extra.target
 			G.GAME.hnds_most_wanted_mult = card.ability.extra.multiplier
 		end
