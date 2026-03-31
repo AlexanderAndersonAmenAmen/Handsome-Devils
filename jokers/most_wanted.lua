@@ -80,11 +80,14 @@ SMODS.Joker({
 		}
 	end,
 	set_ability = function(self, card, initial, delay_sprites)
-		-- Initialize target from discovered Jokers in collection
+		-- Always calculate multiplier based on collection size
+		local _, total_jokers = get_discovered_joker_pool()
+		card.ability.extra.multiplier = get_most_wanted_multiplier(total_jokers)
+		
+		-- Initialize target from discovered Jokers only during a run
 		if G.STAGE == G.STAGES.RUN then
-			local target, total_jokers = pick_discovered_joker_key('hnds_most_wanted')
+			local target, _ = pick_discovered_joker_key('hnds_most_wanted')
 			card.ability.extra.target = target
-			card.ability.extra.multiplier = get_most_wanted_multiplier(total_jokers)
 			G.GAME.hnds_most_wanted_key = card.ability.extra.target
 			G.GAME.hnds_most_wanted_mult = card.ability.extra.multiplier
 		end
