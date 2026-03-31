@@ -65,11 +65,18 @@ SMODS.Joker({
 	perishable_compat = true,
 	config = { extra = { target = nil, multiplier = 8 } },
 	loc_vars = function(self, info_queue, card)
+		local target_name
+		if G.STAGE ~= G.STAGES.RUN then
+			local random_target, _ = pick_discovered_joker_key('hnds_most_wanted_collection')
+			target_name = random_target and localize({ type = 'name_text', key = random_target, set = 'Joker' }) or localize("k_hnds_wanted")
+		else
+			target_name = card.ability.extra.target and localize({ type = 'name_text', key = card.ability.extra.target, set = 'Joker' }) or localize("k_hnds_wanted")
+		end
 		return {
 			vars = {
-				card.ability.extra.target and localize({ type = 'name_text', key = card.ability.extra.target, set = 'Joker' }) or localize("k_hnds_wanted"),
+				target_name,
 				card.ability.extra.multiplier or 4,
-			}
+			},
 		}
 	end,
 	set_ability = function(self, card, initial, delay_sprites)
