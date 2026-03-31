@@ -1,8 +1,8 @@
 -- Pick a random discovered joker key for Most Wanted targeting
 local function get_most_wanted_multiplier(total_jokers)
-	if total_jokers > 800 then return 12 end
-	if total_jokers > 500 then return 8 end
-	if total_jokers > 300 then return 6 end
+	if total_jokers > 800 then return 24 end
+	if total_jokers > 500 then return 16 end
+	if total_jokers > 300 then return 12 end
 	return 4
 end
 
@@ -63,7 +63,7 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = false,
 	perishable_compat = true,
-	config = { extra = { target = nil, multiplier = 4 } },
+	config = { extra = { target = nil, multiplier = 8 } },
 	loc_vars = function(self, info_queue, card)
 		return {
 			vars = {
