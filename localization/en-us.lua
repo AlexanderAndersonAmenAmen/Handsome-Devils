@@ -1016,6 +1016,14 @@ return {
 			k_hnds_creepy_6 = "It spreads...",
 			k_hnds_creepy_7 = "Forever.",
 			k_hnds_creepy_8 = "We are one.",
+			-- CONFIG TAB LOCALIZATION
+			hnds_require_restart = "Requires restart",
+			hnds_config_StoneOcean = "Enable Stone Ocean hand",
+			hnds_config_vintage = "Enable Vintage edition",
+			hnds_config_UltraSpec = "Enable Ultra Spectral packs spawning",
+			hnds_config_MagicPack = "Enable Magic packs spawning",
+			hnds_config_CursedPack = "Enable Cursed packs spawning",
+			hnds_config_CustomSounds = "Enable custom joker sounds"
 		},
 		labels = {
 			hnds_vintage = "Vintage",

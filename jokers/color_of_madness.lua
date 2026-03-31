@@ -38,7 +38,7 @@ SMODS.Joker({
 				G.E_MANAGER:add_event(Event({
 					func = function()
 						card_to_enhance:juice_up()
-						play_sound("hnds_madnesscolor", 1.25, 0.25)
+						if hnds_config["enableCustomSounds"] then play_sound("hnds_madnesscolor", 1.25, 0.25) end
 						return true
 					end,
 				}))
@@ -49,7 +49,7 @@ SMODS.Joker({
 				}
 			end
 		end
-		if context.forcetrigger then
+		if context.forcetrigger and (G.STATE ~= G.STATES.HAND_PLAYED and next(G.hand or {}) or next(G.play or {}) ) then
 			local did_a_thing
 			if #G.play > 0 then
 				local card_to_enhance = G.play[1]
@@ -58,7 +58,7 @@ SMODS.Joker({
 				G.E_MANAGER:add_event(Event({
 					func = function()
 						card_to_enhance:juice_up()
-						play_sound("hnds_madnesscolor", 1.25, 0.25)
+						if hnds_config["enableCustomSounds"] then play_sound("hnds_madnesscolor", 1.25, 0.25) end
 						return true
 					end,
 				}))
@@ -69,7 +69,7 @@ SMODS.Joker({
 				G.E_MANAGER:add_event(Event({
 					func = function()
 						card_to_enhance:juice_up()
-						play_sound("hnds_madnesscolor", 1.25, 0.25)
+						if hnds_config["enableCustomSounds"] then play_sound("hnds_madnesscolor", 1.25, 0.25) end
 						return true
 					end,
 				}))

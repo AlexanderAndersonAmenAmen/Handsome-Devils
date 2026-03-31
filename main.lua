@@ -53,11 +53,12 @@ SMODS.current_mod.config_tab = function()
 			colour = G.C.BLACK, r = 0.1, hover = true, shadow = true, emboss = 0.05,
 		},
 		nodes = {
-			config_toggle_row("Enable Stone Ocean hand",           "enableStoneOcean",          "Requires restart"),
-			config_toggle_row("Enable Vintage edition",            "enableVintageEdition",      "Requires restart"),
-			config_toggle_row("Enable Ultra Spectral packs spawning", "enablePackSpawning"),
-			config_toggle_row("Enable Magic packs spawning",       "enableMagicPackSpawning"),
-			config_toggle_row("Enable Cursed packs spawning",      "enableCursedPackSpawning"),
+			config_toggle_row(localize("hnds_config_StoneOcean"),           "enableStoneOcean",          localize("hnds_require_restart")),
+			config_toggle_row(localize("hnds_config_vintage"),            "enableVintageEdition",      localize("hnds_require_restart")),
+			config_toggle_row(localize("hnds_config_UltraSpec"), "enablePackSpawning"),
+			config_toggle_row(localize("hnds_config_MagicPack"),       "enableMagicPackSpawning"),
+			config_toggle_row(localize("hnds_config_CursedPack"),      "enableCursedPackSpawning"),
+			config_toggle_row(localize("hnds_config_CustomSounds"), "enableCustomSounds"),
 		},
 	}
 end
