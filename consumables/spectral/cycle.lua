@@ -8,7 +8,7 @@ SMODS.Consumable({
 	cost = 4,
 	atlas = "Consumables",
 	pos = { x = 1, y = 0 },
-	config = { extra = { free_rerolls = 5 } },
+	config = { extra = { free_rerolls = 3 } },
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.free_rerolls } }
 	end,
