@@ -228,10 +228,10 @@ return {
 			j_hnds_most_wanted = {
 				name = "Most Wanted",
 				text = {
-					"{C:attention}#1#{} appears",
-					"{C:attention}#2#X{} more often",
-					"When you find it,",
-					"this Joker self {C:red}destructs{}"
+					"{C:attention}#1#{}",
+					"appears {C:attention}#2#X{} more often",
+					"When you buy it, this",
+					"Joker {C:red}self destructs{}"
 				},
 			},
 			j_hnds_clown_devil = {
@@ -371,8 +371,8 @@ return {
 				name = "Dynamic Duos",
 				text = {
 					"If played hand is a {C:attention}Two Pair{}",
-					"of {C:attention}odd{} and {C:attention}even rank{}",
-					"cards, retrigger them",
+					"of {C:attention}odd{} and {C:attention}even rank{} cards,",
+					"retrigger them",
 					"{C:inactive}(ex: 6, 6, 9, 9)"
 				},
 			},
@@ -1016,6 +1016,7 @@ return {
 			k_hnds_creepy_6 = "It spreads...",
 			k_hnds_creepy_7 = "Forever.",
 			k_hnds_creepy_8 = "We are one.",
+			k_hnds_wanted = "[Joker name]",
 			-- CONFIG TAB LOCALIZATION
 			hnds_require_restart = "Requires restart",
 			hnds_config_StoneOcean = "Enable Stone Ocean hand",
