@@ -900,10 +900,9 @@ return {
 			m_hnds_obsidian = {
 				name = "Carta de Obsidiana",
 				text = {
-					"Pierdes {C:red}$#1#{}",
-					"cuando anota.",
-					"Prob. de {C:green}#2# en #3#{} de crear",
-					"un consumible {C:dark_edition}negativo{}",
+					"Sacas {C:attention}2{} cartas después",
+					"de que esta sea {C:blue}jugada{}",
+					"o {C:red}descartada{}"
 				},
 			},
 		},
