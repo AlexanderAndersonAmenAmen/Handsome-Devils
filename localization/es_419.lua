@@ -228,8 +228,8 @@ return {
 				name = "Se Busca",
 				text = {
 					"{C:attention}#1#{}",
-					"aparece {C:attention}#2#X{} más seguido",
-					"al obtenerlo, este",
+					"aparece {C:attention}#2#X{} veces más",
+					"seguido al obtenerlo, este",
 					"Comodín se {C:red}autodestruye{}"
 				}
 			},
