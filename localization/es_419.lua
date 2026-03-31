@@ -229,8 +229,8 @@ return {
 				text = {
 					"{C:attention}#1#{}",
 					"aparece {C:attention}#2#X{} más seguido",
-					"Cuando lo encuentras,",
-					"este Comodín se {C:red}autodestruye{}"
+					"al obtenerlo, este",
+					"Comodín se {C:red}autodestruye{}"
 				}
 			},
 			j_hnds_clown_devil = {
@@ -1007,6 +1007,14 @@ return {
 			k_hnds_creepy_6 = "Se propaga...",
 			k_hnds_creepy_7 = "Para siempre.",
 			k_hnds_creepy_8 = "Somos uno.",
+			-- CONFIG TAB LOCALIZATION
+			hnds_require_restart = "Requiere reiniciar",
+			hnds_config_StoneOcean = "Habilitar mano de Stone Ocean",
+			hnds_config_vintage = "Habilitar edición Vintage",
+			hnds_config_UltraSpec = "Habilitar paquetes Ultra Espectrales",
+			hnds_config_MagicPack = "Habilitar paquetes Mágicos",
+			hnds_config_CursedPack = "Habilitar Paquetes Malditos",
+			hnds_config_CustomSounds = "Habilitar sonidos personalizados"
 		},
 		labels = {
 			hnds_vintage = "Vintage",
