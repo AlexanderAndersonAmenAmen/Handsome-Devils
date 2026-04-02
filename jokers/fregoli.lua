@@ -45,5 +45,6 @@ SMODS.Joker {
                 return SMODS.blueprint_effect(card, c, context)
             end
         end
-    end
+    end,
+    attributes = { "copying" }
 }

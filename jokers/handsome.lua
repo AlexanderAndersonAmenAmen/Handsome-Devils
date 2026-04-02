@@ -13,5 +13,6 @@ SMODS.Joker {
                 repetitions = 1
             }
         end
-    end
+    end,
+    attributes = { "retrigger" }
 }

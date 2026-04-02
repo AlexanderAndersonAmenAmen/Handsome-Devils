@@ -175,4 +175,5 @@ SMODS.Joker({
 			return { message = localize('k_hnds_plus_tag'), colour = G.C.GREEN }
 		end
 	end,
+	attributes = { "generation" }
 })

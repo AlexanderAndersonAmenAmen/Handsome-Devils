@@ -54,6 +54,7 @@ SMODS.Joker({
                 card.joker_display_values.chips = card.ability.extra.chips
             end
         }
-    end
+    end,
+    attributes = { "chips", "scaling", "reset", }
 })
 

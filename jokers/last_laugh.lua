@@ -76,5 +76,6 @@ SMODS.Joker({
 				card.joker_display_values.destroy_count = math.min(card.ability.extra.destroy, (G.hand and G.hand.cards and #G.hand.cards) or 0)
 			end
 		}
-	end
+	end,
+	attributes = { "destroy_card" }
 })

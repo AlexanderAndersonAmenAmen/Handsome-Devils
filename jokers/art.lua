@@ -26,5 +26,6 @@ SMODS.Joker {
             G.GAME.art_queue = G.GAME.art_queue + 1
             return nil, true
         end
-    end
+    end,
+    attributes = { "generation", "on_sell" }
 }

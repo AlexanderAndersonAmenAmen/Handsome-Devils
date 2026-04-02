@@ -93,16 +93,8 @@ SMODS.Joker({
 						end
 					end
 
-					-- Pick a random disturbing phrase
-					local phrases = {
-						"k_hnds_creepy_1", "k_hnds_creepy_2", "k_hnds_creepy_3",
-						"k_hnds_creepy_4", "k_hnds_creepy_5", "k_hnds_creepy_6",
-						"k_hnds_creepy_7", "k_hnds_creepy_8",
-					}
-					local phrase_key = phrases[math.ceil(pseudorandom("hnds_creepy_phrase") * #phrases)]
-
 					return {
-						message = localize(phrase_key),
+						message = localize("k_hnds_creepy_"..pseudorandom("hnds_creepy_phrase", 1, 8)), --update to highest phrase number
 						colour = G.C.RED,
 					}
 				end
@@ -132,4 +124,5 @@ SMODS.Joker({
 			end
 		}
 	end,
+	attributes = { "xmult", "chance" }
 })

@@ -63,5 +63,6 @@ SMODS.Joker {
                 message = localize('k_reset')
             }
         end
-    end
+    end,
+    attributes = { "hand_type", "seals", "enhancements", "modify_card" }
 }

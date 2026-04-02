@@ -15,5 +15,6 @@ SMODS.Joker {
     end,
     calculate = function(self, card, context)
         -- Effect in hooks file, the Joker is the Boolean
-    end
+    end,
+    attributes = { "passive", "face" }
 }

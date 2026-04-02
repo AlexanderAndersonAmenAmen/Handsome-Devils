@@ -93,5 +93,5 @@ SMODS.Joker({
 			card.ability.extra.multiplier = get_most_wanted_multiplier(total_jokers)
 		end
 	end,
-	attributes = { "joker" }
+	attributes = { "joker", "passive", }
 })

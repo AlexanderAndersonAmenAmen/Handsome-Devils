@@ -76,5 +76,6 @@ SMODS.Joker {
                 card.joker_display_values.rerolls = card.ability.extra.re
             end
         }
-    end
+    end,
+    attributes = { "suit", "reroll", "destroy_card" }
 }

@@ -79,5 +79,6 @@ SMODS.Joker {
                 card.joker_display_values.req = card.ability.extra.required_hands
             end
         }
-    end
+    end,
+    attributes = { "generation" }
 }

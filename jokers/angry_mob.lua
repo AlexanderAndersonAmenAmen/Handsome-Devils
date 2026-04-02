@@ -47,6 +47,7 @@ SMODS.Joker({
                 card.joker_display_values.x_mult = card.ability.extra.xmult
             end
         }
-    end
+    end,
+    attributes = { "attributes", "joker" }
 })
 

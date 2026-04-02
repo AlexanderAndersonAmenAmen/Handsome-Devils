@@ -11,7 +11,7 @@ SMODS.Joker {
     perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
     config = { extra = { Xmult = 1, Xmult_extra = 0.1 } },
     loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.Xmult, card.ability.extra.Xmult_extra, card.ability.extra.xmult_gains } }
+        return { vars = { card.ability.extra.Xmult, card.ability.extra.Xmult_extra } }
     end,
     calculate = function(self, card, context)
         if context.end_of_round and not context.individual and not context.repetition and not context.blueprint then
@@ -48,5 +48,6 @@ SMODS.Joker {
                 card.joker_display_values.x_mult = card.ability.extra.Xmult
             end
         }
-    end
+    end,
+    attributes = { "hands", "xmult", "scaling" }
 }

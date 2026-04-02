@@ -30,7 +30,8 @@ SMODS.Joker ({
 				return { repetitions = 1 }
 			end
 		end
-    end
+    end,
+	attributes = { "retrigger", "joker" }
 })
 
 function is_adjacent_joker(cardindex, joker)

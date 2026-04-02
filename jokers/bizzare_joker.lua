@@ -128,5 +128,6 @@ SMODS.Joker({
                 end
             end
         }
-    end
+    end,
+    attributes = { "suit", "chips", "mult", "xmult", "economy" }
 })

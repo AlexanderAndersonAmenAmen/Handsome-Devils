@@ -49,4 +49,5 @@ SMODS.Joker {
             end
         end
     end,
+    attributes = { "rank", "retrigger" }
 }
