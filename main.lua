@@ -131,6 +131,20 @@ SMODS.current_mod.calculate = function(self, context)
 		G.GAME.hnds_obsidian_draws = 0
 		return { cards_to_draw = context.amount + d } -- for some reason `modify` also sets the amount instead of modifying so i have to do this
 	end
+	-- Jester in Yellow: Count down temporary negative
+	if context.end_of_round and context.main_eval then
+		for _, c in ipairs(G.I.CARD) do
+			if c.ability and c.ability.hnds_jester_negative_rounds then
+				c.ability.hnds_jester_negative_rounds = c.ability.hnds_jester_negative_rounds - 1
+				if c.ability.hnds_jester_negative_rounds <= 0 then
+					SMODS.calculate_effect({ message = localize("k_hnds_jester_fade") }, c)
+					SMODS.destroy_cards(c, nil, nil, true)
+				else
+					SMODS.calculate_effect({ message = localize{ type = "variable", key = "a_remaining", vars = { c.ability.hnds_jester_negative_rounds } } }, c)
+				end
+			end
+		end
+	end
 end
 
 SMODS.current_mod.optional_features = {

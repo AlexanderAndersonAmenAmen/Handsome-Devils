@@ -981,7 +981,7 @@ return {
 			k_hnds_petrified = "Petrified!",
 			k_hnds_goldfish = "Goldfish!",
 			k_hnds_jester_negative = "Joker Negatived!",
-			k_hnds_jester_fade = "Negative Faded!",
+			k_hnds_jester_fade = "Faded...",
 			k_hnds_clown_eat = "Consumed!",
 			k_hnds_cursed_offers = "Cursed Offers",
 			k_hnds_cursed_prices = "Cursed Prices",

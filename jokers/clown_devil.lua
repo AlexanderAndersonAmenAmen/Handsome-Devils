@@ -63,4 +63,5 @@ SMODS.Joker({
             end
         }
     end,
+	attributes = { "destroy_card", "generation", }
 })
