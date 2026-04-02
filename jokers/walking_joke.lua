@@ -43,7 +43,7 @@ end
 -- Tracks if any non-common jokers were obtained
 local function hnds_walking_joke_on_add_to_deck(card, from_debuff)
 	if not from_debuff and card and card.config and card.config.center and card.config.center.set == 'Joker' then
-		if card.config.center.rarity and card.config.center.rarity > 1 and G and G.GAME then
+		if card.config.center.rarity and card.config.center.rarity ~= 1 and G and G.GAME then
 			G.GAME.hnds_walking_joke_non_common = true
 		end
 	end
