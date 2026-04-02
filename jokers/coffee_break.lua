@@ -139,4 +139,5 @@ SMODS.Joker({
 			end
 		}
 	end,
+	attributes = { "economy", "on_sell" }
 })

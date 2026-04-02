@@ -71,5 +71,6 @@ SMODS.Joker({
 				card.joker_display_values.mult = mult
 			end
 		}
-	end
+	end,
+	attributes = {"mult"}
 })

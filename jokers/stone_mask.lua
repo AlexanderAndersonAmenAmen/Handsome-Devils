@@ -102,4 +102,5 @@ SMODS.Joker({
 			end
 		end
 	end,
+	attributes = { "modify_card", "enhancements", "seals", "hands", }
 })

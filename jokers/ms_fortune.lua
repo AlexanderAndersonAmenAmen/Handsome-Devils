@@ -26,4 +26,5 @@ SMODS.Joker({
 			}
 		end
 	end,
+	attributes = { "mod_chance", } -- i dont think this is economy
 })

@@ -27,7 +27,8 @@ SMODS.Joker {
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         SMODS.add_card({
-                            set = "Food",
+                            set = "Joker",
+                            attributes = { "food" },
                             edition = 'e_negative',
                             allow_duplicates = false --this shouldnt be needed but like maybe?
                         })
@@ -54,5 +55,6 @@ SMODS.Joker {
                 card.joker_display_values.odds = localize { type = 'variable', key = 'jdis_odds', vars = { (G.GAME and G.GAME.probabilities.normal or 1), card.ability.extra.odds } }
             end
         }
-    end
+    end,
+    attributes = { "joker", "modify_card", "chance", }
 }

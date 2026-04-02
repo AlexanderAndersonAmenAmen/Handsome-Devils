@@ -55,4 +55,5 @@ SMODS.Joker({
 			end
 		}
 	end,
+	attributes = { "suit", "generation", "hands", "joker", "tarot", "planet", "spectral" } -- card types because the tags are associated with those types
 })

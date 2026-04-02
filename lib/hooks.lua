@@ -234,7 +234,8 @@ if not _G._hnds_wrapped_blind_choice then
 		if G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_next_blind_mult then
 			local mult = G.GAME.modifiers.hnds_next_blind_mult
 			if mult and mult > 1 then
-				local blind_key = G.GAME.round_resets and G.GAME.round_resets.blind_choices and G.GAME.round_resets.blind_choices[blind_type]
+				local blind_key = G.GAME.round_resets and G.GAME.round_resets.blind_choices and
+				G.GAME.round_resets.blind_choices[blind_type]
 				local blind_cfg = nil
 				if type(blind_key) == 'string' then
 					blind_cfg = G.P_BLINDS and G.P_BLINDS[blind_key]
@@ -242,8 +243,10 @@ if not _G._hnds_wrapped_blind_choice then
 					blind_cfg = blind_key
 				end
 				if blind_cfg and blind_cfg.mult and get_blind_amount and number_format and score_number_scale then
-					local ante = (G.GAME.round_resets and G.GAME.round_resets.blind_ante) or (G.GAME.round_resets and G.GAME.round_resets.ante)
-					local base_amt = get_blind_amount(ante) * blind_cfg.mult * (G.GAME.starting_params and G.GAME.starting_params.ante_scaling or 1)
+					local ante = (G.GAME.round_resets and G.GAME.round_resets.blind_ante) or
+					(G.GAME.round_resets and G.GAME.round_resets.ante)
+					local base_amt = get_blind_amount(ante) * blind_cfg.mult *
+					(G.GAME.starting_params and G.GAME.starting_params.ante_scaling or 1)
 					local from_text = number_format(base_amt)
 					local to_amt = base_amt * mult
 					local to_text = number_format(to_amt)
@@ -273,7 +276,8 @@ end
 -- remove free rerolls granted by Cycle, the reason why is at the end of the round instead of when leaving the shop is Cryptid
 local function hnds_end_round_cycle_spectral()
 	if G.GAME.hnds_cycle_free_rerolls and G.GAME.hnds_cycle_free_rerolls > 0 then
-		G.GAME.current_round.free_rerolls = math.max(0, G.GAME.current_round.free_rerolls - G.GAME.hnds_cycle_free_rerolls)
+		G.GAME.current_round.free_rerolls = math.max(0,
+			G.GAME.current_round.free_rerolls - G.GAME.hnds_cycle_free_rerolls)
 		G.GAME.hnds_cycle_free_rerolls = 0
 		calculate_reroll_cost(true)
 	end
@@ -307,7 +311,7 @@ end
 
 HNDS.should_hand_destroy = function(card)
 	return card:get_seal() == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or
-	(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
+		(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
 end
 
 local destroy_cards_ref = SMODS.calculate_destroying_cards
@@ -387,35 +391,8 @@ function Card.set_cost(self)
 end
 
 -------------------------------------------------------------------
--- SHOP CARD CREATION (Most Wanted, Blood Stake curses)
+-- SHOP CARD CREATION (Blood Stake curses)
 -------------------------------------------------------------------
-
--- create_card_for_shop: Most Wanted shop hook + SMODS.create_card Blood Stake curse application.
-if create_card_for_shop and not _G._hnds_wrapped_create_card_for_shop_most_wanted then
-	_G._hnds_wrapped_create_card_for_shop_most_wanted = true
-	local create_card_for_shop_ref = create_card_for_shop
-	function create_card_for_shop(area)
-		if area == G.shop_jokers and HNDS and HNDS.most_wanted_should_force_key then
-			local forced_key = HNDS.most_wanted_should_force_key()
-			if forced_key then
-				local args = { set = 'Joker', area = area, key_append = 'sho', key = forced_key, allow_duplicates = true }
-				local card = SMODS.create_card(args)
-				SMODS.calculate_context({modify_shop_card = true, card = card})
-				create_shop_card_ui(card, 'Joker', area)
-				G.E_MANAGER:add_event(Event({
-					func = (function()
-						for k, v in ipairs(G.GAME.tags) do
-							if v:apply_to_run({type = 'store_joker_modify', card = card}) then break end
-						end
-						return true
-					end)
-				}))
-				return card
-			end
-		end
-		return create_card_for_shop_ref(area)
-	end
-end
 
 -- SMODS.create_card: Blood Stake curse application.
 if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
@@ -430,7 +407,7 @@ if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 				and (not created_card.ability or not created_card.ability.hnds_curse)
 				and apply_curse and type(apply_curse) == 'function' then
 				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
-				if pseudorandom('hnds_curse_shop'..G.GAME.modifiers.hnds_shop_curse_roll) < 0.12 then
+				if pseudorandom('hnds_curse_shop' .. G.GAME.modifiers.hnds_shop_curse_roll) < 0.12 then
 					apply_curse(created_card)
 				end
 			end
@@ -465,31 +442,31 @@ end
 -------------------------------------------------------------------
 
 if not Card._hnds_wrapped_add_to_deck_dna then
-Card._hnds_wrapped_add_to_deck_dna = true
-local add_to_deck_ref = Card.add_to_deck
-function Card:add_to_deck(from_debuff)
-	local ret = add_to_deck_ref(self, from_debuff)
-	if not from_debuff and self.ability.hnds_copies_to_create then
-		for _ = 1, self.ability.hnds_copies_to_create do
-			if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
-				G.GAME.joker_buffer = G.GAME.joker_buffer + 1
-				local c = self
-				G.E_MANAGER:add_event(Event{
-					func = function ()
-						local copy = copy_card(c)
-						copy.ability.hnds_copies_to_create = nil
-						copy:add_to_deck()
-						G.jokers:emplace(copy)
-						G.GAME.joker_buffer = 0
-						return true
-					end
-				})
+	Card._hnds_wrapped_add_to_deck_dna = true
+	local add_to_deck_ref = Card.add_to_deck
+	function Card:add_to_deck(from_debuff)
+		local ret = add_to_deck_ref(self, from_debuff)
+		if not from_debuff and self.ability.hnds_copies_to_create then
+			for _ = 1, self.ability.hnds_copies_to_create do
+				if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
+					G.GAME.joker_buffer = G.GAME.joker_buffer + 1
+					local c = self
+					G.E_MANAGER:add_event(Event {
+						func = function()
+							local copy = copy_card(c)
+							copy.ability.hnds_copies_to_create = nil
+							copy:add_to_deck()
+							G.jokers:emplace(copy)
+							G.GAME.joker_buffer = 0
+							return true
+						end
+					})
+				end
 			end
+			self.ability.hnds_copies_to_create = nil
 		end
-		self.ability.hnds_copies_to_create = nil
+		return ret
 	end
-	return ret
-end
 end
 
 -------------------------------------------------------------------
@@ -676,7 +653,7 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 	end
 
 	function Card:calculate_joker(context, ...)
-		local hnds_args = {...}
+		local hnds_args = { ... }
 
 		-- Skip spoofing in collection view or outside a run
 		if (self.area and self.area.config and self.area.config.collection)
@@ -693,8 +670,8 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 			return calculate_joker_ref(self, context, hnds_unpack(hnds_args))
 		end
 		if not (context.individual or context.repetition or context.other_joker or context.before
-			or context.after or context.cardarea or context.joker_main or context.joker_act
-			or context.joker_post or context.destroying_card or context.setting_blind) then
+				or context.after or context.cardarea or context.joker_main or context.joker_act
+				or context.joker_post or context.destroying_card or context.setting_blind) then
 			return calculate_joker_ref(self, context, hnds_unpack(hnds_args))
 		end
 

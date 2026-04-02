@@ -54,4 +54,5 @@ SMODS.Joker({
 			end
 		}
 	end,
+	attributes = { "xmult", "scaling", "suit", }
 })

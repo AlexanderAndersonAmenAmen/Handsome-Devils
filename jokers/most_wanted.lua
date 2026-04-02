@@ -33,24 +33,6 @@ local function pick_discovered_joker_key(seed, previous_key)
 	return pseudorandom_element(pool, pseudoseed(seed)), total_jokers
 end
 
-HNDS.most_wanted_should_force_key = function()
-	if not (G and G.GAME and G.GAME.hnds_most_wanted_key and G.GAME.hnds_most_wanted_mult) then return nil end
-	local pool = {}
-	for _, v in ipairs(G.P_CENTER_POOLS.Joker or {}) do
-		if v and not v.hidden and v.key then
-			pool[#pool + 1] = v.key
-		end
-	end
-	if #pool == 0 then return nil end
-	local multiplier = math.max(1, G.GAME.hnds_most_wanted_mult or 4)
-	for i = 1, multiplier do
-		if pseudorandom_element(pool, pseudoseed('hnds_most_wanted' .. i .. 'shop')) == G.GAME.hnds_most_wanted_key then
-			return G.GAME.hnds_most_wanted_key
-		end
-	end
-	return nil
-end
-
 SMODS.Joker({
 	key = "most_wanted",
 	atlas = "Jokers",
@@ -88,28 +70,28 @@ SMODS.Joker({
 		if G.STAGE == G.STAGES.RUN then
 			local target, _ = pick_discovered_joker_key('hnds_most_wanted')
 			card.ability.extra.target = target
-			G.GAME.hnds_most_wanted_key = card.ability.extra.target
-			G.GAME.hnds_most_wanted_mult = card.ability.extra.multiplier
 		end
 	end,
 	calculate = function(self, card, context)
 		if context.buying_card and context.card and card.ability.extra.target and
 			context.card.config and context.card.config.center and context.card.config.center.key == card.ability.extra.target then
 			SMODS.destroy_cards(card)
-			G.GAME.hnds_most_wanted_key = nil
-			G.GAME.hnds_most_wanted_mult = nil
 			return nil, true
+		end
+
+		if context.modify_weights then
+			for _, v in ipairs(context.pool) do
+				if v.key == card.ability.extra.target then
+					v.weight = (v.weight or 1) * (card.ability.extra.multiplier or 1)
+				end
+			end
 		end
 
 		if context.starting_shop and not card.ability.extra.target then
 			local target, total_jokers = pick_discovered_joker_key('hnds_most_wanted_fallback', card.ability.extra.target)
 			card.ability.extra.target = target
 			card.ability.extra.multiplier = get_most_wanted_multiplier(total_jokers)
-			G.GAME.hnds_most_wanted_key = card.ability.extra.target
-			G.GAME.hnds_most_wanted_mult = card.ability.extra.multiplier
-		elseif context.starting_shop then
-			G.GAME.hnds_most_wanted_key = card.ability.extra.target
-			G.GAME.hnds_most_wanted_mult = card.ability.extra.multiplier
 		end
 	end,
+	attributes = { "joker" }
 })

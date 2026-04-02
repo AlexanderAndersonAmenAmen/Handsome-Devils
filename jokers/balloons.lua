@@ -39,4 +39,5 @@ SMODS.Joker({
 			return nil, true
 		end
 	end,
+	attributes = { "generation", "hands", }
 })

@@ -92,4 +92,5 @@ SMODS.Joker({
 			return nil, true
 		end
 	end,
+	attributes = { "enhancements" }
 })

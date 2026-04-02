@@ -68,4 +68,5 @@ SMODS.Joker({
             end
         }
     end,
+	attributes = { "rank", "seven", "mult", "economy", "chance", }
 })

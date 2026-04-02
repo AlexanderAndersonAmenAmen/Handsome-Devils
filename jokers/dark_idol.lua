@@ -71,7 +71,8 @@ SMODS.Joker{
                 card.joker_display_values.suit = localize(idol_card.suit, "suits_plural")
             end
         }
-    end
+    end,
+    attributes = { "scaling", "xmult", "suit", "rank" }
 }
 
 local init_ret = Game.init_game_object

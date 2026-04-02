@@ -66,5 +66,6 @@ SMODS.Joker ({
                 return 0
             end
         }
-    end
+    end,
+    attributes = { "retrigger", "suit", }
 })

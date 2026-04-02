@@ -32,4 +32,5 @@ SMODS.Joker({
 		end
 		return false
 	end,
+	attributes = { "enhancements", "retrigger" }
 })

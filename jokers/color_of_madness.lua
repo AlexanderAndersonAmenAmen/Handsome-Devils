@@ -83,4 +83,5 @@ SMODS.Joker({
 			end
 		end
 	end,
+	attributes = { "enhancements", "suit", }
 })

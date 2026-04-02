@@ -28,5 +28,6 @@ SMODS.Joker({
                 message = localize("k_upgrade_ex")
             }
         end
-    end
+    end,
+    attributes = { "modify_card", "chips", "mult", "enhancements", }
 })

@@ -78,4 +78,5 @@ SMODS.Joker({
             end
         }
     end,
+	attributes = { "food", "generation", "xmult", "chance", }
 })

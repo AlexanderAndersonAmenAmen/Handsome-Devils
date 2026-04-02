@@ -33,5 +33,6 @@ SMODS.Joker {
                 remove = true
             }
         end
-    end
+    end,
+    attributes = { "destroy_card", "retrigger", "chance", }
 }
