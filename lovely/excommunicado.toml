@@ -1,0 +1,117 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# ---------------------------------------------------------------
+# Code yoinked from Lost Edition (Men I miss that mod :c )
+# ---------------------------------------------------------------
+
+# Patch game.lua blind assignment
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "self.GAME.round_resets.blind_choices.Boss = get_new_boss()"
+position = "at"
+match_indent = true
+payload = '''
+if G.GAME.modifiers.hnds_excommunicado_active then
+    self.GAME.round_resets.blind_choices.Small = get_new_boss()
+    self.GAME.round_resets.blind_choices.Big = get_new_boss()
+    self.GAME.round_resets.blind_choices.Boss = get_new_boss()
+else
+    self.GAME.round_resets.blind_choices.Boss = get_new_boss()
+end
+'''
+
+# Patch common_events.lua blind assignment
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "G.GAME.round_resets.blind_choices.Boss = get_new_boss()"
+position = "at"
+match_indent = true
+payload = '''
+if G.GAME.modifiers.hnds_excommunicado_active then
+    G.GAME.round_resets.blind_choices.Small = get_new_boss()
+    G.GAME.round_resets.blind_choices.Big = get_new_boss()
+    G.GAME.round_resets.blind_choices.Boss = get_new_boss()
+else
+    G.GAME.round_resets.blind_choices.Boss = get_new_boss()
+end
+'''
+
+# Patch blind.lua chip calculation for replaced blinds
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "self.chips = get_blind_amount(G.GAME.round_resets.ante)*self.mult*G.GAME.starting_params.ante_scaling"
+position = "at"
+match_indent = true
+payload = '''
+if G.GAME.modifiers.hnds_excommunicado_active then
+    local base_score = get_blind_amount(G.GAME.round_resets.ante) * self.mult * G.GAME.starting_params.ante_scaling
+    if G.GAME.blind_on_deck == 'Small' then
+        self.chips = math.floor(base_score * 0.5)
+    elseif G.GAME.blind_on_deck == 'Big' then
+        self.chips = math.floor(base_score * 0.75)
+    else
+        self.chips = base_score
+    end
+else
+    self.chips = get_blind_amount(G.GAME.round_resets.ante) * self.mult * G.GAME.starting_params.ante_scaling
+end
+'''
+
+# Patch UI blind amount display
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "local blind_amt = get_blind_amount(G.GAME.round_resets.blind_ante)*blind_choice.config.mult*G.GAME.starting_params.ante_scaling"
+position = "after"
+match_indent = true
+payload = '''
+if G.GAME.modifiers.hnds_excommunicado_active then
+    if type == 'Small' then
+        blind_amt = math.floor(blind_amt * 0.5)
+    elseif type == 'Big' then
+        blind_amt = math.floor(blind_amt * 0.75)
+    end
+end
+'''
+
+# Patch state_events.lua: boss check
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.blind:get_type() == 'Boss' then"
+position = "at"
+match_indent = true
+payload = "if G.GAME.blind_on_deck == 'Boss' then"
+
+# Patch state_events.lua: small blind check
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.round_resets.blind == G.P_BLINDS.bl_small then"
+position = "at"
+match_indent = true
+payload = "if G.GAME.blind_on_deck == 'Small' then"
+
+# Patch state_events.lua: win condition
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then"
+position = "at"
+match_indent = true
+payload = "if G.GAME.round_resets.ante >= G.GAME.win_ante and G.GAME.blind_on_deck == 'Boss' then"
+
+# Patch state_events.lua: big blind check
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "elseif G.GAME.round_resets.blind == G.P_BLINDS.bl_big then"
+position = "at"
+match_indent = true
+payload = "elseif G.GAME.blind_on_deck == 'Big' then"

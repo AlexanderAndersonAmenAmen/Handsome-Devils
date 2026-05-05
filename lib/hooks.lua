@@ -4,7 +4,6 @@ We have a lot of hooks here, they do global stuff and helps with specifit effect
 Sections:
   Badge colour
   Cursed Sticker exclusivity
-  Excommunicado (select_blind, ease_ante, reset_blinds)
   Platinum Stake
   Cycle Spectral (free rerolls cleanup)
   Career stats & card destruction unlocks (Energized, Last Laugh)
@@ -112,61 +111,6 @@ if Card and Card.add_sticker and not _G._hnds_wrapped_add_sticker_cursed then
 			hnds_strip_other_stickers(self)
 		end
 		return ret
-	end
-end
-
--------------------------------------------------------------------
--- EXCOMMUNICADO FUNCTIONS
--------------------------------------------------------------------
-
--- Excommunicado: Changes all Blind to Boss Blinds
-if G and G.FUNCS and G.FUNCS.select_blind and not _G._hnds_wrapped_select_blind_excomm then
-	_G._hnds_wrapped_select_blind_excomm = true
-	local select_blind_ref = G.FUNCS.select_blind
-	function G.FUNCS.select_blind(e)
-		if G.GAME and G.GAME.blind_on_deck and (G.GAME.blind_on_deck == 'Small' or G.GAME.blind_on_deck == 'Big')
-			and next(SMODS.find_card('j_hnds_excommunicado')) and HNDS and HNDS.excommunicado_on_reset_blinds then
-			local slot = G.GAME.blind_on_deck
-			local ante_key = (G.GAME.round_resets and G.GAME.round_resets.ante) or -1
-			-- Lock the selected slot so it is never overwritten again
-			G.GAME.hnds_excomm_locked = G.GAME.hnds_excomm_locked or {}
-			G.GAME.hnds_excomm_locked[ante_key] = G.GAME.hnds_excomm_locked[ante_key] or {}
-			G.GAME.hnds_excomm_locked[ante_key][slot] = true
-			-- Re-roll only the next slot
-			if slot == 'Small' then
-				G.GAME.hnds_excomm_selected = G.GAME.hnds_excomm_selected or {}
-				G.GAME.hnds_excomm_selected[ante_key] = G.GAME.hnds_excomm_selected[ante_key] or {}
-				G.GAME.hnds_excomm_selected[ante_key].Big = nil
-				HNDS.excommunicado_on_reset_blinds('Big')
-			end
-		end
-		return select_blind_ref(e)
-	end
-end
-
--- Excommunicado: prevent the game to ante up when you win a boss blind that is not the actual boss blind xd
-if not _G._hnds_wrapped_ease_ante then
-	_G._hnds_wrapped_ease_ante = true
-	local ease_ante_ref = ease_ante
-	function ease_ante(mod, ...)
-		if mod and mod > 0 and G.GAME and G.GAME.current_round and G.GAME.current_round.hnds_excomm_skip_ante then
-			G.GAME.current_round.hnds_excomm_skip_ante = nil
-			return
-		end
-		local ret = ease_ante_ref(mod, ...)
-		if G.GAME and G.GAME.current_round then
-			G.GAME.current_round.hnds_excomm_skip_ante = nil
-		end
-		return ret
-	end
-end
-
--- Excommunicado: Boss blind cycle on each ante
-local reset_blinds_ref = reset_blinds
-function reset_blinds()
-	reset_blinds_ref()
-	if HNDS and HNDS.excommunicado_on_reset_blinds then
-		HNDS.excommunicado_on_reset_blinds()
 	end
 end
 
@@ -284,7 +228,7 @@ local function hnds_end_round_cycle_spectral()
 end
 
 -------------------------------------------------------------------
--- CAREER STATS & CARD DESTRUCTION UNLOCKS (Energized, Last Laugh)
+-- CARD DESTRUCTION UNLOCKS (Energized, Last Laugh)
 -------------------------------------------------------------------
 
 if SMODS and SMODS.destroy_cards and not SMODS._hnds_wrapped_destroy_cards_stat then
@@ -763,8 +707,76 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 end
 
 -------------------------------------------------------------------
--- end_round DISPATCHER
+-- EXCOMMUNICADO: Boss Blind Replacement
 -------------------------------------------------------------------
+
+-- Helper: Check if Excommunicado effect should be active
+local function hnds_excommunicado_active()
+	return G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_excommunicado_active
+end
+
+-- Ensure Blind:get_type() returns Small/Big for replaced blinds
+local Blind_get_type_ref = Blind.get_type
+function Blind:get_type()
+	if not hnds_excommunicado_active() then
+		return Blind_get_type_ref(self)
+	end
+
+	-- For the active blind, use blind_on_deck which always knows the slot
+	if G.GAME and G.GAME.blind == self and G.GAME.blind_on_deck then
+		return G.GAME.blind_on_deck
+	end
+
+	return Blind_get_type_ref(self)
+end
+
+-- Replace current vanilla Small/Big blinds with random bosses
+-- Called from excommunicado.lua add_to_deck to handle mid-round acquisition
+HNDS = HNDS or {}
+function HNDS.replace_current_blinds_with_bosses()
+	if not (G.GAME and G.GAME.round_resets and G.GAME.round_resets.blind_choices) then return end
+	local blind_choices = G.GAME.round_resets.blind_choices
+	local blind_states = G.GAME.round_resets.blind_states or {}
+	local used_bosses = {}
+
+	if blind_choices.Boss then
+		table.insert(used_bosses, blind_choices.Boss)
+	end
+
+	local function replace_if_vanilla(blind_type, seed_key)
+		local choice = blind_choices[blind_type]
+		local state = blind_states[blind_type]
+		if not (choice and state ~= 'Defeated' and choice == 'bl_' .. blind_type:lower()) then return end
+
+		local eligible_bosses = {}
+		for k, v in pairs(G.P_BLINDS) do
+			if v.boss and not v.boss.showdown then
+				local is_used = false
+				for _, used in ipairs(used_bosses) do
+					if used == k then is_used = true break end
+				end
+				if not is_used then
+					eligible_bosses[k] = (G.GAME.bosses_used and G.GAME.bosses_used[k]) or 0
+				end
+			end
+		end
+		local min_use = 100
+		for k, v in pairs(eligible_bosses) do
+			if v < min_use then min_use = v end
+		end
+		for k, v in pairs(eligible_bosses) do
+			if v > min_use then eligible_bosses[k] = nil end
+		end
+		local _, new_boss = pseudorandom_element(eligible_bosses, pseudoseed(seed_key .. '_' .. G.GAME.round_resets.ante))
+		if new_boss then
+			blind_choices[blind_type] = new_boss
+			table.insert(used_bosses, new_boss)
+		end
+	end
+
+	replace_if_vanilla('Small', 'excom_small')
+	replace_if_vanilla('Big', 'excom_big')
+end
 
 local end_round_ref = end_round
 function end_round(...)
@@ -786,14 +798,7 @@ local Blind_set_blind_ref = Blind.set_blind
 function Blind:set_blind(blind, reset, silent)
 	local ret = Blind_set_blind_ref(self, blind, reset, silent)
 	if not (G.GAME and G.GAME.facing_blind) then return ret end
-
-	-- Excommunicado: replace small/big blinds with boss blinds
-	if HNDS and HNDS.excommunicado_on_set_blind then
-		HNDS.excommunicado_on_set_blind(self, blind)
-	end
-
 	-- Platinum Stake: apply queued blind chip multiplier from previous round
 	hnds_set_blind_platinum_stake(self)
-
 	return ret
 end
