@@ -16,7 +16,7 @@ SMODS.Joker({
 	eternal_compat = true,
 	perishable_compat = false,
 	calculate = function(self, card, context)
-		if context.end_of_round and context.individual and context.other_card and context.other_card:is_face() then
+		if context.end_of_round and context.individual and context.other_card and context.other_card:is_face() and context.other_card.area == G.hand then
 			local c = context.other_card
 			
 			-- Avoid re-queuing the same card multiple times in the same end-of-round pass
