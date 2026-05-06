@@ -732,7 +732,6 @@ end
 
 -- Replace current vanilla Small/Big blinds with random bosses
 -- Called from excommunicado.lua add_to_deck to handle mid-round acquisition
-HNDS = HNDS or {}
 function HNDS.replace_current_blinds_with_bosses()
 	if not (G.GAME and G.GAME.round_resets and G.GAME.round_resets.blind_choices) then return end
 	local blind_choices = G.GAME.round_resets.blind_choices

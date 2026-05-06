@@ -15,7 +15,7 @@ pattern = "self.GAME.round_resets.blind_choices.Boss = get_new_boss()"
 position = "at"
 match_indent = true
 payload = '''
-if G.GAME.modifiers.hnds_excommunicado_active then
+if next(SMODS.find_card("j_hnds_excommunicado")) then
     self.GAME.round_resets.blind_choices.Small = get_new_boss()
     self.GAME.round_resets.blind_choices.Big = get_new_boss()
     self.GAME.round_resets.blind_choices.Boss = get_new_boss()
@@ -32,7 +32,7 @@ pattern = "G.GAME.round_resets.blind_choices.Boss = get_new_boss()"
 position = "at"
 match_indent = true
 payload = '''
-if G.GAME.modifiers.hnds_excommunicado_active then
+if next(SMODS.find_card("j_hnds_excommunicado")) then
     G.GAME.round_resets.blind_choices.Small = get_new_boss()
     G.GAME.round_resets.blind_choices.Big = get_new_boss()
     G.GAME.round_resets.blind_choices.Boss = get_new_boss()
@@ -49,7 +49,7 @@ pattern = "self.chips = get_blind_amount(G.GAME.round_resets.ante)*self.mult*G.G
 position = "at"
 match_indent = true
 payload = '''
-if G.GAME.modifiers.hnds_excommunicado_active then
+if next(SMODS.find_card("j_hnds_excommunicado")) then
     local base_score = get_blind_amount(G.GAME.round_resets.ante) * self.mult * G.GAME.starting_params.ante_scaling
     if G.GAME.blind_on_deck == 'Small' then
         self.chips = math.floor(base_score * 0.5)
@@ -71,7 +71,7 @@ pattern = "local blind_amt = get_blind_amount(G.GAME.round_resets.blind_ante)*bl
 position = "after"
 match_indent = true
 payload = '''
-if G.GAME.modifiers.hnds_excommunicado_active then
+if next(SMODS.find_card("j_hnds_excommunicado")) then
     if type == 'Small' then
         blind_amt = math.floor(blind_amt * 0.5)
     elseif type == 'Big' then

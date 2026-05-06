@@ -13,18 +13,11 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = true,
 	perishable_compat = true,
-
 	add_to_deck = function(self, card, from_debuff)
-		G.GAME.modifiers.hnds_excommunicado_active = true
 		if HNDS and HNDS.replace_current_blinds_with_bosses then
 			HNDS.replace_current_blinds_with_bosses()
 		end
 	end,
-
-	remove_from_deck = function(self, card, from_debuff)
-		G.GAME.modifiers.hnds_excommunicado_active = nil
-	end,
-
 	calculate = function(self, card, context)
 		if context.end_of_round and context.main_eval then
 			-- Add a random tag for beating any blind
