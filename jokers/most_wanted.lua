@@ -3,7 +3,7 @@ local function get_most_wanted_multiplier(total_jokers)
 	if total_jokers > 800 then return 24 end
 	if total_jokers > 500 then return 16 end
 	if total_jokers > 300 then return 12 end
-	return 4
+	return 8
 end
 
 local function get_discovered_joker_pool(previous_key)
@@ -38,7 +38,7 @@ SMODS.Joker({
 	atlas = "Jokers",
 	pos = { x = 0, y = 4 },
 	rarity = 1,
-	cost = 3,
+	cost = 2,
 	unlocked = true,
 	discovered = true,
 	blueprint_compat = true,
