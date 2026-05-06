@@ -14,9 +14,10 @@ SMODS.Joker({
 	eternal_compat = true,
 	perishable_compat = true,
 	add_to_deck = function(self, card, from_debuff)
-		if HNDS and HNDS.replace_current_blinds_with_bosses then
-			HNDS.replace_current_blinds_with_bosses()
-		end
+		HNDS.replace_current_blinds_with_bosses()
+	end,
+	remove_from_deck = function (self, card, from_debuff)
+		HNDS.update_excom()
 	end,
 	calculate = function(self, card, context)
 		if context.end_of_round and context.main_eval then
@@ -26,5 +27,5 @@ SMODS.Joker({
 			return { message = localize('k_hnds_plus_tag'), colour = G.C.GREEN }
 		end
 	end,
-	attributes = { "generation" }
+	attributes = { "generation", "boss_blind" }
 })

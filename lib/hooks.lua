@@ -776,6 +776,14 @@ function HNDS.replace_current_blinds_with_bosses()
 	replace_if_vanilla('Small', 'excom_small')
 	replace_if_vanilla('Big', 'excom_big')
 end
+function HNDS.update_excom()
+	if next(SMODS.find_card("j_hnds_excommunicado")) then
+		HNDS.replace_current_blinds_with_bosses()
+	else
+		G.GAME.round_resets.blind_choices.Small = "bl_small"
+		G.GAME.round_resets.blind_choices.Big = "bl_big"
+	end
+end
 
 local end_round_ref = end_round
 function end_round(...)
