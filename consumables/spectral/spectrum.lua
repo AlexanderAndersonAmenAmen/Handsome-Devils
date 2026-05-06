@@ -8,7 +8,6 @@ SMODS.Consumable {
     cost = 4,
     hidden = true,
     soul_set = "Base",
-    soul_rate = 0.06,
     use = function(self, card, area, copier)
         local enh_options = get_current_pool("Enhanced")
         for i, k in pairs(enh_options) do
@@ -86,3 +85,35 @@ SMODS.Consumable {
         end
     end
 }
+
+local standards = { --hardcoded whatever, take_ownership_by_kind doesnt let you do this as nicely
+    "p_standard_normal_1", "p_standard_normal_2", "p_standard_normal_3", "p_standard_normal_4",
+    "p_standard_jumbo_1", "p_standard_jumbo_2", "p_standard_mega_1", "p_standard_mega_2"
+}
+
+for _, pack in ipairs(standards) do
+    local ref = G.P_CENTERS[pack].create_card
+    local trimmed = pack:sub(3)
+    SMODS.Booster:take_ownership(trimmed, {
+        create_card = function (self, card, i)
+            if pseudorandom("soul_smods_HNDS_SPECTRUM"..G.GAME.round_resets.ante) < G.P_CENTERS.c_hnds_spectrum.soul_rate then
+                return {
+                    key = "c_hnds_spectrum",
+                    set = "Spectral",
+                    skip_materialize = true,
+                    key_append = "sta",
+                    area = G.pack_cards,
+                }
+            elseif ref and type(ref == "function") then
+                return ref(self, card, i)
+            else
+                local card2 = create_card((pseudorandom(pseudoseed('stdset'..G.GAME.round_resets.ante)) > 0.6) and "Enhanced" or "Base", G.pack_cards, nil, nil, nil, true, nil, 'sta')
+                local edition_rate = 2
+                local edition = poll_edition('standard_edition'..G.GAME.round_resets.ante, edition_rate, true)
+                card2:set_edition(edition)
+                card2:set_seal(SMODS.poll_seal({mod = 10}), true, true)
+                return card2
+            end
+        end
+    })
+end
