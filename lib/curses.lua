@@ -504,41 +504,6 @@ if SMODS then
     }
 end
 
-if not _G.HNDS_generate_card_ui_wrap and type(generate_card_ui) == 'function' then
-    _G.HNDS_generate_card_ui_wrap = true
-
-    local _HNDS_generate_card_ui_prev_card = nil
-    local _HNDS_generate_card_ui_ref = generate_card_ui
-    generate_card_ui = function(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
-        -- Sticker tooltips are rendered via `generate_card_ui` using a special `Other` center.
-        -- We only provide a "previous card" fallback for our cursed sticker so we don't leak
-        -- a stale card into unrelated tooltips (this previously caused hover crashes).
-        if card ~= nil and type(card) == 'table' and card.ability ~= nil then _HNDS_generate_card_ui_prev_card = card end
-        local use_card = card
-        if use_card == nil and _HNDS_generate_card_ui_prev_card ~= nil and type(_HNDS_generate_card_ui_prev_card) == 'table' and _HNDS_generate_card_ui_prev_card.ability ~= nil then
-            use_card = _HNDS_generate_card_ui_prev_card
-        end
-
-        if SMODS and SMODS.Stickers and type(_c) == 'table' and _c.set == 'Other' and type(_c.key) == 'string' then
-            local st = SMODS.Stickers[_c.key]
-            if st and type(st.generate_ui) == 'function' then
-                local vars = specific_vars
-                if vars == nil and type(_c.vars) == 'table' then vars = _c.vars end
-                local pass_card = card
-                if _c.key == 'hnds_cursed' then pass_card = use_card end
-                local ok, ret_or_err = pcall(_HNDS_generate_card_ui_ref, st, full_UI_table, vars, card_type, badges, hide_desc, main_start, main_end, pass_card)
-                if ok then return ret_or_err end
-                print('HNDS generate_card_ui sticker error: '..tostring(ret_or_err))
-                return full_UI_table
-            end
-        end
-
-        local ok, ret_or_err = pcall(_HNDS_generate_card_ui_ref, _c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
-        if ok then return ret_or_err end
-        print('HNDS generate_card_ui error: '..tostring(ret_or_err))
-        return full_UI_table
-    end
-end
 
 if not _G.HNDS_curse_collections and SMODS and SMODS.current_mod then
     _G.HNDS_curse_collections = true
