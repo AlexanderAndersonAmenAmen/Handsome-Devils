@@ -43,12 +43,22 @@ SMODS.Joker({
 				end
 
 				if #adjacent > 0 then
+					-- Check if there's at least one valid non-Creepy target
+					local has_valid_target = false
+					for _, target in ipairs(adjacent) do
+						if target and target.area == G.jokers and target.config.center.key ~= card.config.center.key then
+							has_valid_target = true
+							break
+						end
+					end
+					if not has_valid_target then return end
+
 					-- Snapshot Creepy Joker's edition and stickers ONCE before events
 					local creepy_edition = card.edition and copy_table(card.edition) or nil
 					local creepy_ability_snapshot = copy_table(card.ability)
 
 					for _, target in ipairs(adjacent) do
-						if target and target.area == G.jokers and not SMODS.is_eternal(target, card) then
+						if target and target.area == G.jokers and target.config.center.key ~= card.config.center.key then
 							-- Flip animation
 							G.E_MANAGER:add_event(Event({
 								trigger = 'after',
