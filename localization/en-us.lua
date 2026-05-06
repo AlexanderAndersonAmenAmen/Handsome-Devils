@@ -352,7 +352,7 @@ return {
 			j_hnds_one_punchline_man = {
 				name = "One Punchline Man",
 				text = {
-					"Gains {X:mult,C:white}#2#{} Mult",
+					"Gains {X:mult,C:white}X#2#{} Mult",
 					"per {C:attention}unused{} {C:blue}hand{}",
 					"at end of round",
 					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
