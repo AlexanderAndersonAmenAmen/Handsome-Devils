@@ -49,12 +49,9 @@ local function hnds_walking_joke_on_add_to_deck(card, from_debuff)
 	end
 end
 
-if Card and Card.add_to_deck and not Card._hnds_wrapped_add_to_deck_walkingjoke then
-	Card._hnds_wrapped_add_to_deck_walkingjoke = true
-	local add_to_deck_ref = Card.add_to_deck
-	function Card:add_to_deck(from_debuff)
-		local ret = add_to_deck_ref(self, from_debuff)
-		hnds_walking_joke_on_add_to_deck(self, from_debuff)
-		return ret
-	end
+local add_to_deck_ref = Card.add_to_deck
+function Card:add_to_deck(from_debuff)
+	local ret = add_to_deck_ref(self, from_debuff)
+	hnds_walking_joke_on_add_to_deck(self, from_debuff)
+	return ret
 end
