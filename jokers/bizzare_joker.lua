@@ -28,7 +28,6 @@ SMODS.Joker({
     end,
     check_for_unlock = function(self, args)
 		if args.type == 'modify_deck' then
-			-- Guard: only check during active gameplay (in a blind), not during deck init
 			if not (G.GAME and G.GAME.blind and G.GAME.blind.in_blind) then return false end
 			local cards = G.playing_cards or {}
 			if #cards < 5 then return false end

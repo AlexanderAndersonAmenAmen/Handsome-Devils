@@ -306,7 +306,7 @@ return {
 			j_hnds_bizzare_joker_spades = {
 				name = "Bizarre Joker",
 				text = {
-					"{C:chips}+#2#{} Chips per scored {C:spades}Spade{} card",
+					"{C:chips}+#2#{} Chips per played {C:spades}Spade{} card",
 					"{s:0.8}Effect changes every round",
 					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
 					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
@@ -315,7 +315,7 @@ return {
 			j_hnds_bizzare_joker_clubs = {
 				name = "Bizarre Joker",
 				text = {
-					"{C:mult}+#4#{} Mult per scored {C:clubs}Club{} card",
+					"{C:mult}+#4#{} Mult per played {C:clubs}Club{} card",
 					"{s:0.8}Effect changes every round",
 					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
 					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
@@ -324,7 +324,7 @@ return {
 			j_hnds_bizzare_joker_diamonds = {
 				name = "Bizarre Joker",
 				text = {
-					"{C:money}+$#7#{} sell value per scored {C:diamonds}Diamond{} card",
+					"{C:money}+$#7#{} sell value per played {C:diamonds}Diamond{} card",
 					"{s:0.8}Effect changes every round",
 					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
 					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
@@ -333,7 +333,7 @@ return {
 			j_hnds_bizzare_joker_hearts = {
 				name = "Bizarre Joker",
 				text = {
-					"{X:mult,C:white}X#6#{} Mult per scored {C:hearts}Heart{} card",
+					"{X:mult,C:white}X#6#{} Mult per played {C:hearts}Heart{} card",
 					"{s:0.8}Effect changes every round",
 					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
 					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
