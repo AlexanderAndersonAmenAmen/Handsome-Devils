@@ -505,7 +505,7 @@ return {
 					"Triples all {C:attention}listed",
 					"{C:green}probabilities{} during",
 					"{C:attention}shop{} and {C:attention}Boss Blinds",
-					"{C:inactive}(e.x. {C:green}1 in 3{C:inactive} -> {C:green}3 in 3{}){}"
+					"{C:inactive}(e.x. {C:green}1 in 3{C:inactive} -> {C:green}3 in 3{C:inactive}){}"
 				}
 			},
 			b_hnds_cursed = {
