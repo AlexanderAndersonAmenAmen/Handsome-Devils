@@ -474,11 +474,11 @@ return {
 				},
 			},
 			b_hnds_crystal = {
-				name = "Crystal Deck",
+				name = "Baraja Cristalina",
 				text = {
 					"En la Apuesta {C:attention}4{},",
-					"enfrenta una {C:attention}Ciega Final{}",
-					"y ganas un",
+					"enfrentas una {C:attention}Ciega Final{}",
+					"ganas obtienes",
 					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Paquete Espectral{}",
 				}
 			},
@@ -573,7 +573,7 @@ return {
 				},
 			},
 			c_hnds_gateway = {
-				name = "Gateway",
+				name = "Umbral",
 				text = {
 					"Mejora {C:attention}#1#{} cartas",
 					"a {C:dark_edition}#2#s",
