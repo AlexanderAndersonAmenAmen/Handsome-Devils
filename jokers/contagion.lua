@@ -23,25 +23,34 @@ SMODS.Joker {
                         local right_card = context.scoring_hand[right_index]
                         if right_card.config.center == G.P_CENTERS.c_base then
                             if SMODS.pseudorandom_probability(card, 'hnds_contagion', 1, card.ability.extra.odds) then
-                                right_card:set_ability(scoring_card.config.center)
+                                local center = scoring_card.config.center
                                 G.E_MANAGER:add_event(Event({
                                     trigger = 'after',
-                                    delay = 0.4,
+                                    delay = 0.15,
                                     func = function()
-                                        right_card:juice_up()
+                                        right_card:flip()
                                         play_sound('card1', 1)
+                                        right_card:juice_up(0.3, 0.3)
+                                        return true
+                                    end
+                                }))
+                                G.E_MANAGER:add_event(Event({
+                                    func = function()
+                                        right_card:set_ability(center)
                                         return true
                                     end
                                 }))
                                 G.E_MANAGER:add_event(Event({
                                     trigger = 'after',
-                                    delay = 0.2,
+                                    delay = 0.15,
                                     func = function()
                                         right_card:flip()
                                         play_sound('tarot2', 1, 0.6)
+                                        right_card:juice_up()
                                         return true
                                     end
                                 }))
+                                delay(0.5)
                             end
                         end
                     end
