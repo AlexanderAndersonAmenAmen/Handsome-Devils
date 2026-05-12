@@ -419,14 +419,17 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 				local i = HNDS.get_key_for_value(poolcopy, G.GAME.hnds_circus_joker_key)
 				if i then table.remove(poolcopy, i) end
 			end
-
+			
 			local new_joker = pseudorandom_element(poolcopy, pseudoseed('circus'))
 			G.GAME.hnds_circus_joker_key = new_joker
 
-			-- Silently add the joker to the offscreen area (transparent shader)
-			local j = SMODS.add_card({set = 'Jokers', area = G.hnds_circus_joker, key = new_joker, no_edition = true, skip_materialize = true})
+			-- Use Card() directly to bypass get_current_pool (which crashes when all jokers are banned)
+			local center = G.P_CENTERS[new_joker]
+			local j = Card(G.hnds_circus_joker.T.x, G.hnds_circus_joker.T.y, G.CARD_W, G.CARD_H, nil, center)
+			j:start_materialize(nil, true)
 			j.ignore_base_shader = {true}
 			j.ignore_shadow = {true}
+			G.hnds_circus_joker:emplace(j)
 		end
 	else
 		if G.hnds_circus_joker then
