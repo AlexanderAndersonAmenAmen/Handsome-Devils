@@ -17,7 +17,7 @@ SMODS.Joker({
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
-    config = { extra = { chips = 0, chipsg = 5, mult = 0, multg = 1, xmult = 1, xmultg = 0.05, sell_value = 2 } },
+    config = { extra = { chips = 0, chipsg = 5, mult = 0, multg = 1, xmult = 1, xmultg = 0.05, sell_value = 1 } },
     unlock_condition = { type = 'modify_deck' },
     loc_vars = function(self, info_queue, card)
         local cae = card.ability.extra
@@ -53,6 +53,7 @@ SMODS.Joker({
     calculate = function(self, card, context)
         local cae = card.ability.extra
         if context.before then
+            local value_increased = false
             for k, v in pairs(G.play.cards) do
                 if v:is_suit(G.GAME.hnds_bizzare_suit) then
                     if G.GAME.hnds_bizzare_suit == "Spades" then
@@ -79,9 +80,12 @@ SMODS.Joker({
                     elseif G.GAME.hnds_bizzare_suit == "Diamonds" then
                         card.ability.extra_value = (card.ability.extra_value or 0) + cae.sell_value
                         card:set_cost()
-                        return { message = localize("k_val_up"), colour = G.C.MONEY }
+                        value_increased = true
                     end
                 end
+            end
+            if value_increased then
+                return { message = localize("k_val_up"), colour = G.C.MONEY }
             end
         end
 
