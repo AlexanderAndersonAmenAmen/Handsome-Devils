@@ -4,36 +4,39 @@ HNDS = {}
 ----------------------------
 HD = SMODS.current_mod
 hnds_config = SMODS.current_mod.config
--- Helper: builds a single toggle row for the config tab.
 -- `label` is the main text, `config_key` is the key in hnds_config,
 -- `subtitle` is optional small grey text below the label (e.g. "Requires restart").
 local function config_toggle_row(label, config_key, subtitle)
 	local label_nodes = {
 		{
 			n = G.UIT.R,
-			config = { padding = 0, align = "cm", minh = 0 },
+			config = { padding = 0, align = "l", minh = 0 },
 			nodes = {
-				{ n = G.UIT.T, config = { text = label, scale = 0.45, colour = G.C.UI.TEXT_LIGHT } },
+				{ n = G.UIT.T, config = { text = label, scale = 0.4, colour = G.C.UI.TEXT_LIGHT } },
 			},
 		},
 	}
 	if subtitle then
 		label_nodes[#label_nodes + 1] = {
 			n = G.UIT.R,
-			config = { padding = 0, align = "cm", minh = 0 },
+			config = { padding = 0, align = "l", minh = 0 },
 			nodes = {
-				{ n = G.UIT.T, config = { text = subtitle, scale = 0.35, colour = G.C.JOKER_GREY } },
+				{ n = G.UIT.T, config = { text = subtitle, scale = 0.32, colour = G.C.JOKER_GREY } },
 			},
 		}
 	end
 	return {
 		n = G.UIT.R,
-		config = { padding = 0, align = "cm", minh = 0.1 },
+		config = { padding = 0, align = "cm", minh = 0.28 },
 		nodes = {
-			{ n = G.UIT.C, config = { align = "c", padding = 0, minh = 0.1 }, nodes = label_nodes },
 			{
 				n = G.UIT.C,
-				config = { align = "cl", padding = 0.05 },
+				config = { align = "l", padding = 0, minh = 0.1, minw = 6, maxw = 6 },
+				nodes = label_nodes,
+			},
+			{
+				n = G.UIT.C,
+				config = { align = "c", padding = 0, minw = 1.2, maxw = 1.2 },
 				nodes = {
 					create_toggle({
 						col = true, label = "", scale = 1, w = 0,
@@ -47,17 +50,18 @@ end
 
 SMODS.current_mod.config_tab = function()
 	return {
+
 		n = G.UIT.ROOT,
 		config = {
-			align = "tm", padding = 0.2, minw = 8, minh = 2,
+			align = "tm", padding = 0.05, minw = 8, minh = 2,
 			colour = G.C.BLACK, r = 0.1, hover = true, shadow = true, emboss = 0.05,
 		},
-		nodes = {
-			config_toggle_row(localize("hnds_config_StoneOcean"),           "enableStoneOcean",          localize("hnds_require_restart")),
-			config_toggle_row(localize("hnds_config_vintage"),            "enableVintageEdition",      localize("hnds_require_restart")),
+		nodes = { -- Here are the localize text variables, you can change the order here to alter the order in the config menu
+			config_toggle_row(localize("hnds_config_StoneOcean"), "enableStoneOcean", localize("hnds_require_restart")),
+			config_toggle_row(localize("hnds_config_vintage"), "enableVintageEdition", localize("hnds_require_restart")),
 			config_toggle_row(localize("hnds_config_UltraSpec"), "enablePackSpawning"),
-			config_toggle_row(localize("hnds_config_MagicPack"),       "enableMagicPackSpawning"),
-			config_toggle_row(localize("hnds_config_CursedPack"),      "enableCursedPackSpawning"),
+			config_toggle_row(localize("hnds_config_MagicPack"), "enableMagicPackSpawning"),
+			config_toggle_row(localize("hnds_config_CursedPack"), "enableCursedPackSpawning"),
 			config_toggle_row(localize("hnds_config_CustomSounds"), "enableCustomSounds"),
 		},
 	}
