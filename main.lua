@@ -286,6 +286,7 @@ local files = {
 			"magic_tag",
 			"dna_tag",
 			"cursed_tag",
+			"extinction_tag"
 		 },
 		directory = "tags/",
 	},

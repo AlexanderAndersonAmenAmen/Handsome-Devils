@@ -952,6 +952,14 @@ return {
 					"{C:red,T:p_hnds_cursed_pack}Cursed Pack{}",
 				},
 			},
+			tag_hnds_extinction_tag = {
+				name = "Extinction Tag",
+				text = {
+					"Replace all held {C:attention}Jokers{}",
+					"with new ones of the",
+					"{C:attention}same rarity{}",
+				},
+			},
 		},
 		Stake = {
 			stake_hnds_platinum = {
@@ -994,6 +1002,7 @@ return {
 			k_hnds_seismic = "Tremor!",
 			k_hnds_awaken = "Awaken!",
 			k_hnds_IPLAYPOTOFGREED = "I PLAY!...",
+			k_hnds_extint = "Extinct!",
 			k_hnds_balloons = "All gone!",
 			k_hnds_banana_split = "Split!",
 			k_hnds_color_of_madness = "Madness!",

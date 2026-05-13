@@ -944,13 +944,21 @@ return {
 					"{C:red}Paquete Maldito{} \"gratis\"",
 				},
 			},
+			tag_hnds_extinction_tag = {
+				name = "Etiqueta de Extinción",
+				text = {
+					"Reemplaza todos los {C:attention}Comodines{}",
+					"que poseas por otros de la",
+					"misma {C:attention}rareza{}",
+				},
+			},
 		},
 		Stake = {
 			stake_hnds_platinum = {
 				name = "Pozo de Platino",
 				text = {
-					"Si la {C:attention}Ciega{} es derrotada con el {C:attention}doble{}",
-					"fichas requeridas, la siguiente {C:attention}Ciega{} es {C:mult}X2{} más grande",
+					"Si la {C:attention}Ciega{} es derrotada con el {C:attention}doble{} de fichas",
+					"requeridas, la siguiente {C:attention}Ciega{} es {C:mult}X2{} veces más grande",
                     "{s:0.8}Aplica todos los pozos anteriores{}",
 				}
 			},
@@ -985,6 +993,7 @@ return {
 			k_hnds_seismic = "¡Sismo!",
 			k_hnds_awaken = "¡Despierto!",
 			k_hnds_IPLAYPOTOFGREED = "¡YO JUEGO!...",
+			k_hnds_extint = "¡Extinto!",
 			k_hnds_balloons = "¡Sin Globos!",
 			k_hnds_banana_split = "¡Split!",
 			k_hnds_color_of_madness = "¡Locura!",
