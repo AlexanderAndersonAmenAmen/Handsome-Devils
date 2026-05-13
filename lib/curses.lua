@@ -5,8 +5,8 @@ This file defines the "curse" system used by the Cursed Sticker.
 
 Data model:
 - A Cursed Joker has a sticker (`hnds_cursed`) and a `card.ability.hnds_curse` table.
-- `card.ability.hnds_curse.offer` is a benefit ID (from `G.CURSE_OFFERS`).
-- `card.ability.hnds_curse.price` is a drawback ID (from `G.CURSE_PRICES`).
+- `card.ability.hnds_curse_offer` is a benefit ID (from `G.CURSE_OFFERS`).
+- `card.ability.hnds_curse_price` is a drawback ID (from `G.CURSE_PRICES`).
 
 Tooltip/UI:
 - The sticker provides a tooltip (using localization keys under `descriptions.Other`).
@@ -387,81 +387,16 @@ if SMODS then
         should_apply = false,
         rate = 0,
         sets = { Joker = true },
-
+        -- Dynamic tooltip using loc_vars with global state
+        -- Store current card data in globals for loc_vars to access
         loc_vars = function(self, info_queue, card)
-            return { vars = { '', '' } }
-        end,
-
-        -- This builds the tooltip text for the sticker.
-        -- The cursed sticker tooltip is composed from `descriptions.Other` localization keys:
-        -- - `hnds_cursed_offer_title`
-        -- - `<offer_id>`
-        -- - `hnds_cursed_price_title`
-        -- - `<price_id>`
-        generate_ui = function(self, info_queue, card, desc_nodes, specific_vars, full_UI_table)
-            if not (card and G and G.localization and desc_nodes) then return end
-
-            for i = #desc_nodes, 1, -1 do
-                desc_nodes[i] = nil
-            end
-
-            local function append_other_key(key)
-                -- Render a `descriptions.Other[key]` localization entry into `desc_nodes`.
-                -- We parse text lazily (text_parsed) so formatting tokens like {C:...} work.
-                if not key then return end
-                local loc = (G.localization and G.localization.descriptions and G.localization.descriptions.Other) and G.localization.descriptions.Other[key] or nil
-
-                if type(loc) == 'table' and not loc.text_parsed and type(loc.text) == 'table' and loc_parse_string then
-                    loc.text_parsed = {}
-                    for _, line in ipairs(loc.text) do
-                        loc.text_parsed[#loc.text_parsed + 1] = loc_parse_string(line)
-                    end
-                end
-
-                local vars = specific_vars
-                if vars == nil then vars = {} end
-                if vars.colours == nil then vars.colours = {} end
-
-                if type(loc) ~= 'table' then
-                    desc_nodes[#desc_nodes + 1] = {
-                        { n = G.UIT.T, config = { text = tostring(key), colour = G.C.UI.TEXT_DARK, scale = 0.32, shadow = false } }
-                    }
-                    return
-                end
-
-                localize ( { type = 'other', key = key, nodes = desc_nodes, vars = vars, shadow = false, default_col = G.C.UI.TEXT_DARK, } )
-            end
-
-            local is_collection = card and card.area and card.area.config and card.area.config.collection
-            local is_preview = card and card.ability and card.ability.hnds_curse_preview
-            if (not (card.ability and card.ability.hnds_curse)) then
-                append_other_key('hnds_cursed')
-                return
-            end
-
-            if is_collection and not is_preview then
-                append_other_key('hnds_cursed')
-                return
-            end
-
-            local display_mode = card.ability.hnds_curse and card.ability.hnds_curse.hnds_collection_display
-            if display_mode == 'offer' then
-                append_other_key(card.ability.hnds_curse.offer)
-                return
-            elseif display_mode == 'price' then
-                append_other_key(card.ability.hnds_curse.price)
-                return
-            end
-
-            append_other_key('hnds_cursed_offer_title')
-            append_other_key(card.ability.hnds_curse.offer)
-            desc_nodes[#desc_nodes + 1] = { { n = G.UIT.B, config = { h = 0.05, w = 0 } } }
-            append_other_key('hnds_cursed_price_title')
-            append_other_key(card.ability.hnds_curse.price)
+            -- Store reference for potential use
+            _G.HNDS_CURRENT_CURSE_CARD = card
+            return { vars = {} }
         end,
 
         calculate = function(self, card, context)
-            if card and card.ability and card.ability.hnds_curse then
+            if card and card.ability and (card.ability.hnds_curse_offer or card.ability.hnds_curse_price) then
                 -- One-time safety-net strip (covers stickers that slipped past apply_curse).
                 if not card.ability.hnds_curse_stripped then
                     card.ability.hnds_curse_stripped = true
@@ -502,6 +437,10 @@ if SMODS then
             end
         end,
     }
+    -- Setup hook to capture card reference during loc_vars evaluation
+    if HNDS_setup_cursed_sticker_hook then
+        HNDS_setup_cursed_sticker_hook(SMODS.Stickers['hnds_cursed'])
+    end
 end
 
 
@@ -547,7 +486,9 @@ if not _G.HNDS_curse_collections and SMODS and SMODS.current_mod then
                 if card.add_sticker then card:add_sticker('hnds_cursed', true) end
                 card.ability = card.ability or {}
                 card.ability.hnds_curse_preview = true
-                card.ability.hnds_curse = { offer = center.id, price = nil, hnds_collection_display = 'offer' }
+                card.ability.hnds_curse_offer = center.id
+                card.ability.hnds_curse_price = nil
+                card.ability.hnds_curse_display_mode = 'offer'
             end,
         })
     end
@@ -565,7 +506,9 @@ if not _G.HNDS_curse_collections and SMODS and SMODS.current_mod then
                 if card.add_sticker then card:add_sticker('hnds_cursed', true) end
                 card.ability = card.ability or {}
                 card.ability.hnds_curse_preview = true
-                card.ability.hnds_curse = { offer = nil, price = center.id, hnds_collection_display = 'price' }
+                card.ability.hnds_curse_offer = nil
+                card.ability.hnds_curse_price = center.id
+                card.ability.hnds_curse_display_mode = 'price'
             end,
         })
     end
@@ -681,10 +624,8 @@ function apply_curse(card)
         local price_entry = G.CURSE_PRICES[price_index]
 
         if offer_entry and price_entry then
-            card.ability.hnds_curse = {
-                offer = offer_entry.id,
-                price = price_entry.id
-            }
+            card.ability.hnds_curse_offer = offer_entry.id
+            card.ability.hnds_curse_price = price_entry.id
             if card.add_sticker then
                 card:add_sticker('hnds_cursed', true)
             else
@@ -775,7 +716,7 @@ function trigger_curse(card, context)
     -- - lovely card.lua hooks (add_to_deck/remove_from_deck)
     -- - lovely button callback hook (buying_card)
     -- - cursed sticker calculate (normal evaluation)
-    if not card.ability or not card.ability.hnds_curse then return end
+    if not card.ability or not (card.ability.hnds_curse_offer or card.ability.hnds_curse_price) then return end
     
     -- Prevent re-triggering on eternal copies or when negative edition is being applied by curse
     if card.ability.hnds_eternal_copy_created or card.ability.hnds_curse_negative_applying then return end
@@ -800,10 +741,10 @@ function trigger_curse(card, context)
     -- Find the offer and price definitions by their stored IDs
     local offer_def, price_def
     for _, def in pairs(G.CURSE_OFFERS) do
-        if def.id == card.ability.hnds_curse.offer then offer_def = def break end
+        if def.id == card.ability.hnds_curse_offer then offer_def = def break end
     end
     for _, def in pairs(G.CURSE_PRICES) do
-        if def.id == card.ability.hnds_curse.price then price_def = def break end
+        if def.id == card.ability.hnds_curse_price then price_def = def break end
     end
 
     local acquire_ret
@@ -816,13 +757,13 @@ function trigger_curse(card, context)
         local offer_ret, price_ret
         if offer_def and offer_def.func then
             local ok, ret_or_err = pcall(offer_def.func, card, context)
-            if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse.offer)..' -> '..tostring(ret_or_err)) end
+            if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse_offer)..' -> '..tostring(ret_or_err)) end
             if ok then offer_ret = ret_or_err end
         end
 
         if price_def and price_def.func then
             local ok, ret_or_err = pcall(price_def.func, card, context)
-            if not ok then print('HNDS CURSE price error: '..tostring(card.ability.hnds_curse.price)..' -> '..tostring(ret_or_err)) end
+            if not ok then print('HNDS CURSE price error: '..tostring(card.ability.hnds_curse_price)..' -> '..tostring(ret_or_err)) end
             if ok then price_ret = ret_or_err end
         end
         acquire_ret = offer_ret or price_ret
@@ -844,13 +785,13 @@ function trigger_curse(card, context)
         local offer_ret, price_ret
         if offer_def and offer_def.func then
             local ok, ret_or_err = pcall(offer_def.func, card, acquire_context)
-            if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse.offer)..' -> '..tostring(ret_or_err)) end
+            if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse_offer)..' -> '..tostring(ret_or_err)) end
             if ok then offer_ret = ret_or_err end
         end
 
         if price_def and price_def.func then
             local ok, ret_or_err = pcall(price_def.func, card, acquire_context)
-            if not ok then print('HNDS CURSE price error: '..tostring(card.ability.hnds_curse.price)..' -> '..tostring(ret_or_err)) end
+            if not ok then print('HNDS CURSE price error: '..tostring(card.ability.hnds_curse_price)..' -> '..tostring(ret_or_err)) end
             if ok then price_ret = ret_or_err end
         end
         acquire_ret = offer_ret or price_ret
@@ -860,12 +801,12 @@ function trigger_curse(card, context)
     local offer_ret, price_ret
     if offer_def and offer_def.func then
         local ok, ret_or_err = pcall(offer_def.func, card, context)
-        if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse.offer)..' -> '..tostring(ret_or_err)) end
+        if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse_offer)..' -> '..tostring(ret_or_err)) end
         if ok then offer_ret = ret_or_err end
     end
     if price_def and price_def.func then
         local ok, ret_or_err = pcall(price_def.func, card, context)
-        if not ok then print('HNDS CURSE price error: '..tostring(card.ability.hnds_curse.price)..' -> '..tostring(ret_or_err)) end
+        if not ok then print('HNDS CURSE price error: '..tostring(card.ability.hnds_curse_price)..' -> '..tostring(ret_or_err)) end
         if ok then price_ret = ret_or_err end
     end
     return acquire_ret or offer_ret or price_ret
