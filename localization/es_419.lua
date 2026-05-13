@@ -893,6 +893,7 @@ return {
 				text = {
 					"Gana {C:mult}+#1#{} Multi",
 					"al estar en mano.",
+					"{C:inactive}(Actualmente {C:mult}+#2#{C:inactive} Multi)"
 				},
 			},
 			m_hnds_obsidian = {
