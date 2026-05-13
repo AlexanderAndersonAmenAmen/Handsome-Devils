@@ -660,7 +660,7 @@ return {
 			p_hnds_cursed_pack = {
 				name = "Paquete Maldito",
 				text = {
-					"Escoge {C:attention}#2#{} de hasta {C:attention}#1#{},",
+					"Escoge {C:attention}#1#{} de hasta {C:attention}#2#{},",
 					"Comodines {C:red}Malditos{}"
 				}
 			},
