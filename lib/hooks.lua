@@ -37,9 +37,88 @@ end
 if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 	_G._hnds_wrapped_localize_colours = true
 	local localize_ref = localize
-	function localize(args, ...)
+	function localize(args, misc_cat, misc_loc, silent)
 		HNDS_ensure_loc_colours()
-		return localize_ref(args, ...)
+		
+		-- Cursed sticker tooltip workaround: dynamically modify localization entry
+		if type(args) == 'table' and args.key == 'hnds_cursed' and args.type == 'other' then
+			local card = _G.HNDS_CURRENT_CURSE_CARD
+			if card and card.ability then
+				local offer = card.ability.hnds_curse_offer
+				local price = card.ability.hnds_curse_price
+				local display_mode = card.ability.hnds_curse_display_mode
+				
+				if offer or price then
+					-- Build dynamic description
+					local desc_lines = {}
+					
+					if display_mode == 'offer' and offer then
+						local offer_loc = G.localization.descriptions.Other[offer]
+						if offer_loc and offer_loc.text then
+							for _, line in ipairs(offer_loc.text) do
+								table.insert(desc_lines, line)
+							end
+						end
+					elseif display_mode == 'price' and price then
+						local price_loc = G.localization.descriptions.Other[price]
+						if price_loc and price_loc.text then
+							for _, line in ipairs(price_loc.text) do
+								table.insert(desc_lines, line)
+							end
+						end
+					else
+						local offer_title = G.localization.descriptions.Other.hnds_cursed_offer_title
+						if offer_title and offer_title.text then
+							for _, line in ipairs(offer_title.text) do
+								table.insert(desc_lines, line)
+							end
+						end
+						local offer_loc = offer and G.localization.descriptions.Other[offer]
+						if offer_loc and offer_loc.text then
+							for _, line in ipairs(offer_loc.text) do
+								table.insert(desc_lines, line)
+							end
+						end
+						local price_title = G.localization.descriptions.Other.hnds_cursed_price_title
+						if price_title and price_title.text then
+							for _, line in ipairs(price_title.text) do
+								table.insert(desc_lines, line)
+							end
+						end
+						local price_loc = price and G.localization.descriptions.Other[price]
+						if price_loc and price_loc.text then
+							for _, line in ipairs(price_loc.text) do
+								table.insert(desc_lines, line)
+							end
+						end
+					end
+					-- Temporarily modify the localization entry
+					local loc_entry = G.localization.descriptions.Other.hnds_cursed
+					local original_text = loc_entry and loc_entry.text
+					local original_text_parsed = loc_entry and loc_entry.text_parsed
+					if loc_entry then
+						loc_entry.text = desc_lines
+						-- Regenerate text_parsed for the new text
+						loc_entry.text_parsed = nil
+						if loc_parse_string then
+							loc_entry.text_parsed = {}
+							for _, line in ipairs(desc_lines) do
+								table.insert(loc_entry.text_parsed, loc_parse_string(line))
+							end
+						end
+					end
+					-- Call original localize
+					local result = localize_ref(args, misc_cat, misc_loc, silent)
+					-- Restore original entry
+					if loc_entry then
+						loc_entry.text = original_text
+						loc_entry.text_parsed = original_text_parsed
+					end
+					return result
+				end
+			end
+		end
+		return localize_ref(args, misc_cat, misc_loc, silent)
 	end
 end
 
@@ -348,7 +427,7 @@ if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 			-- Blood Stake: 12% chance to curse shop jokers
 			if args and args.area == G.shop_jokers
 				and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses
-				and (not created_card.ability or not created_card.ability.hnds_curse)
+				and (not created_card.ability or not (created_card.ability.hnds_curse_offer or created_card.ability.hnds_curse_price))
 				and apply_curse and type(apply_curse) == 'function' then
 				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
 				if pseudorandom('hnds_curse_shop' .. G.GAME.modifiers.hnds_shop_curse_roll) < 0.12 then
@@ -808,4 +887,44 @@ function Blind:set_blind(blind, reset, silent)
 	-- Platinum Stake: apply queued blind chip multiplier from previous round
 	hnds_set_blind_platinum_stake(self)
 	return ret
+end
+
+-------------------------------------------------------------------
+-- CURSED STICKER TOOLTIP WORKAROUND
+-------------------------------------------------------------------
+-- SMODS doesn't support generate_ui for stickers, only loc_vars.
+-- We dynamically modify the localization entry for hnds_cursed
+-- based on the current card being evaluated.
+
+-- Store reference to current card during loc_vars evaluation
+_G.HNDS_CURRENT_CURSE_CARD = nil
+
+-- Hook into the sticker's loc_vars to capture the card reference
+local original_loc_vars = nil
+
+-- We'll set this up after the sticker is defined in curses.lua
+function HNDS_setup_cursed_sticker_hook(sticker)
+	if not sticker then return end
+	original_loc_vars = sticker.loc_vars
+	sticker.loc_vars = function(self, info_queue, card)
+		_G.HNDS_CURRENT_CURSE_CARD = card
+		if original_loc_vars then
+			return original_loc_vars(self, info_queue, card)
+		end
+		return { vars = {} }
+	end
+end
+
+-------------------------------------------------------------------
+-- EXTINCTION TAG: PREVENT SELF DESTRUCTION OF JOKERS BEFORE EXTINCTION ACTIVATES
+-------------------------------------------------------------------
+-- Prevent external destruction of jokers during extinction animation
+
+local start_dissolve_ref = Card.start_dissolve
+function Card:start_dissolve(dissolve_time, first_dissolve)
+	-- Check if this joker is protected by extinction animation
+	if self.ability and self.ability.set == 'Joker' and self.hnds_extinction_prevent_external_destruction then
+		return false -- Prevent external destruction
+	end
+	return start_dissolve_ref(self, dissolve_time, first_dissolve)
 end

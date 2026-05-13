@@ -1,0 +1,35 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# Fire a post-hand hook for tags after each hand is played completely
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''
+G.E_MANAGER:add_event(Event({
+                    trigger = 'immediate',
+                    func = function()
+                        G.STATE_COMPLETE = false
+                        return true
+                    end
+                }))
+'''
+position = 'after'
+payload = '''
+                -- Safe moment after hand evaluation completes
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.2,
+                    func = function()
+                        if G.GAME and G.GAME.tags then
+                            for i = 1, #G.GAME.tags do
+                                if G.GAME.tags[i]:apply_to_run({type = 'hnds_after_hand'}) then break end
+                            end
+                        end
+                        return true
+                    end
+                }))
+'''
+match_indent = true
