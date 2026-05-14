@@ -599,8 +599,8 @@ return {
 			sleeve_hnds_conjuring_sleeve_alt = {
 				name = "Conjuring Sleeve",
 				text = {
-					"Start with {C:attention,T:v_stuffed}Stuffed{}",
-					"and {C:attention,T:v_wholesale}Wholesale{}"
+					"Start with {C:attention,T:v_hnds_stuffed}Stuffed{}",
+					"and {C:attention,T:v_hnds_wholesale}Wholesale{}"
 				}
 			},
 			sleeve_hnds_ol_sleeve = {
