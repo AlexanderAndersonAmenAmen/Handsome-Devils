@@ -36,6 +36,7 @@ CardSleeves.Sleeve({
 
         if self.get_current_deck_key() == "b_hnds_premiumdeck" then
             G.GAME.modifiers.premium_sleeve_active = true
+            G.GAME.common_mod = (G.GAME.common_mod or 1) * 0.5
         end
     end,
     calculate = function(self, sleeve, context)
@@ -46,3 +47,4 @@ CardSleeves.Sleeve({
         end
     end,
 })
+
