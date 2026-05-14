@@ -462,7 +462,7 @@ end
 -- bought-deck system. (Pattern from Entropy)
 function HNDS.DeckOrSleeve(key)
 	local num = 0
-	if CardSleeves and G.GAME.selected_sleeve == ("sleeve_hnds_"..key) then
+	if CardSleeves and G.GAME.selected_sleeve == ("sleeve_hnds_"..key.."_sleeve") then
 		num = num + 1
 	end
 	for _, v in pairs(G.GAME.entr_bought_decks or {}) do

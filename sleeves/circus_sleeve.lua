@@ -31,24 +31,8 @@ CardSleeves.Sleeve({
         end
     end,
     calculate = function(self, sleeve, context)
-        -- Base effect: Random joker ability (same as deck)
-        if context.end_of_round and context.main_eval and not context.blueprint then
-            if G.GAME.hnds_circus_joker then
-                G.hnds_circus_joker = nil
-            end
-            local jokers = {}
-            for _, v in ipairs(G.jokers.cards) do
-                if v.config.center.key ~= 'j_hnds_joker_copy' then
-                    table.insert(jokers, v.config.center.key)
-                end
-            end
-            if #jokers > 0 then
-                local chosen_joker = jokers[pseudorandom(pseudoseed('circus')) % #jokers + 1]
-                G.GAME.hnds_circus_joker_key = chosen_joker
-                G.hnds_circus_joker = G.jokers
-            end
-        end
-        
+        -- Base effect (random joker) is handled by reset_game_globals in lib/utils.lua
+
         -- Sleeve Stacked effect
         if self.get_current_deck_key() == "b_hnds_circus" and context.end_of_round and context.main_eval and context.beat_boss and not G.GAME.circus_copy_created then
             if G.hnds_circus_joker and G.hnds_circus_joker.cards and #G.hnds_circus_joker.cards > 0 then
