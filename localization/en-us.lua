@@ -518,6 +518,111 @@ return {
 				}
 			},
 		},
+		Sleeve = {
+			sleeve_hnds_premium_sleeve = {
+				name = "Premium Sleeve",
+				text = {
+					"Start run with",
+					"{C:green,T:v_hnds_premium}Premium{} and {C:red,T:v_hnds_top_shelf}Top Shelf{}",
+					"Jokers cost extra {C:money}${}",
+					"equal to your {C:attention}Ante{}",
+				}
+			},
+			sleeve_hnds_premium_sleeve_alt = {
+				name = "Premium Sleeve",
+				text = {
+					"{C:blue}Common{} Jokers appear",
+					"{C:blue}X#3#{} less often",
+				}
+			},
+			sleeve_hnds_circus_sleeve = {
+				name = "Circus Sleeve",
+				text = {
+					"Has an ability",
+					"of a random {C:attention}Joker",
+					"After defeating each",
+					"{C:attention}Blind{}, ability changes",
+					"{C:inactive}(Currently: {V:1}#1#{C:inactive})",
+				}
+			},
+			sleeve_hnds_circus_sleeve_alt = {
+				name = "Circus Sleeve",
+				text = {
+					"Creates a {C:dark_edition}Copy{} of the",
+					"first {C:attention}Joker{} chosen after defeating",
+					"the first {C:attention}Boss Blind{}"
+				}
+			},
+			sleeve_hnds_cursed_sleeve = {
+				name = "Cursed Sleeve",
+				text = {
+					"Defeat the {C:attention}first",
+					"{C:attention}Boss Blind{} to open",
+					"an {C:red}unskippable{}",
+					"{C:red,T:p_hnds_cursed_pack}Cursed Pack{}"
+				}
+			},
+			sleeve_hnds_cursed_sleeve_alt = {
+				name = "Cursed Sleeve",
+				text = {
+					"The first {C:red,T:p_hnds_cursed_pack}Cursed Pack{}",
+					"opened only offers {C:red}Rare Jokers{}"
+				}
+			},
+			sleeve_hnds_crystal_sleeve = {
+				name = "Crystal Sleeve",
+				text = {
+					"On Ante {C:attention}4{}, face",
+					"the {C:attention}Showdown Blind{}",
+					"Defeat it to open an",
+					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
+				}
+			},
+			sleeve_hnds_crystal_sleeve_alt = {
+				name = "Crystal Sleeve",
+				text = {
+					"Also Face a Showdown Blind",
+					"in Antes {C:attention}2{} and {C:attention}6{}",
+					"Defeat them to open an",
+					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}",
+				}
+			},
+			sleeve_hnds_conjuring_sleeve = {
+				name = "Conjuring Sleeve",
+				text = {
+					"All {C:attention}Booster Packs{}",
+					"in shop are replaced",
+					"by {C:attention,T:p_hnds_magic_1}Magic Packs{} which",
+					"contain {C:dark_edition,E:1}random cards"
+				}
+			},
+			sleeve_hnds_conjuring_sleeve_alt = {
+				name = "Conjuring Sleeve",
+				text = {
+					"Start with {C:attention,T:v_stuffed}Stuffed{}",
+					"and {C:attention,T:v_wholesale}Wholesale{}"
+				}
+			},
+			sleeve_hnds_ol_sleeve = {
+				name = "Ol' Sleeve",
+				text = {
+					"Triples all {C:attention}listed",
+					"{C:green}probabilities{} during",
+					"{C:attention}shop{} and {C:attention}Boss Blinds",
+					"{C:inactive}(e.x. {C:green}1 in 3{C:inactive} -> {C:green}3 in 3{C:inactive}){}"
+				}
+			},
+			sleeve_hnds_ol_sleeve_alt = {
+				name = "Ol' Sleeve",
+				text = {
+					"Doubles all {C:attention}listed{} {C:green}probabilities{},",
+					"and Cuadruples all {C:attention}listed{} {C:green}probabilities{}",
+					"during boss blinds and the shop",
+					"{C:inactive}(replaces deck effect){}",
+					"{C:inactive}(e.x. {C:green}1 in 3{C:inactive} -> {C:green}4 in 3{C:inactive}){}"
+				}
+			},
+		},
 		Spectral = {
 			c_hnds_abyss = {
 				name = "Abyss",

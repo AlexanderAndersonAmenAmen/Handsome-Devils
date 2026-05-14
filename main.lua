@@ -306,8 +306,8 @@ local files = {
 			"gambling_opportunity",
 		},
 		directory = "challenges/"
+	},
 	}
-}
 
 if hnds_config.enableStoneOcean then
 	table.insert(files.poker_hands.list, "stone_ocean")
@@ -334,6 +334,7 @@ SMODS.Atlas({ key = "Vouchers",    path = "VHD.png",     px = 71, py = 95 })
 SMODS.Atlas({ key = "Extras",      path = "EHD.png",     px = 71, py = 95 })
 SMODS.Atlas({ key = "Stakes", path = "HDstakes.png", px = 29, py = 29 })
 SMODS.Atlas({ key = "Stickers", path = "HDstickers.png", px = 71, py = 95 })
+SMODS.Atlas({ key = "hnds_sleeves", path = "HDS.png", px = 73, py = 95 })
 
 ----------------------------
 -- Object types and utility functions
@@ -385,6 +386,16 @@ end
 assert(SMODS.load_file("lib/hooks.lua"))()
 assert(SMODS.load_file("lib/blind_souls.lua"))()
 assert(SMODS.load_file("lib/utils.lua"))()
+
+-- Load sleeves
+if CardSleeves then
+    assert(SMODS.load_file("sleeves/premium_sleeve.lua"))()
+    assert(SMODS.load_file("sleeves/circus_sleeve.lua"))()
+    assert(SMODS.load_file("sleeves/cursed_sleeve.lua"))()
+    assert(SMODS.load_file("sleeves/crystal_sleeve.lua"))()
+    assert(SMODS.load_file("sleeves/conjuring_sleeve.lua"))()
+    assert(SMODS.load_file("sleeves/ol_sleeve.lua"))()
+end
 assert(SMODS.load_file("lib/curses.lua"))()
 assert(SMODS.load_file("lib/cross_mod_compat.lua"))()
 assert(SMODS.load_file("lib/challenge_rules.lua"))()
