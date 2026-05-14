@@ -478,7 +478,7 @@ return {
 				text = {
 					"En la Apuesta {C:attention}4{},",
 					"enfrentas una {C:attention}Ciega Final{}",
-					"ganas obtienes",
+					"si ganas obtienes",
 					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Paquete Espectral{}",
 				}
 			},
@@ -516,6 +516,109 @@ return {
 					"Derrota la {C:attention}primera",
 					"{C:attention}Ciega Jefe{} para abrir un",
 					"{C:red,T:p_hnds_cursed_pack}Paquete Maldito Inevitable{}",
+				}
+			},
+		},
+		Sleeve = {
+			sleeve_hnds_premium_sleeve = {
+				name = "Funda Premium",
+				text = {
+					"Comienzas con los vales",
+					"{C:green,T:v_hnds_premium}Premium{} y {C:red,T:v_hnds_top_shelf}Exclusividad{}",
+					"Los comodines cuestan {C:money}dinero{}",
+					"adicional igual a tu {C:attention}Apuesta{}",
+				},
+			},
+			sleeve_hnds_premium_sleeve_alt = {
+				name = "Funda Premium",
+				text = {
+					"{C:blue}Comodines Comunes{} aparecen",
+					"con {C:blue}X#3#{} menos frecuencia",
+				}
+			},
+			sleeve_hnds_circus_sleeve = {
+				name = "Funda de Circo",
+				text = {
+					"Tiene la habilidad de",
+					"un {C:attention}Comodín{} al azar",
+					"cambia de comodín después",
+					"de cada {C:attention}Ciega{}",
+					"{C:inactive}(Actualmente: {V:1}#1#{C:inactive})",
+				}
+			},
+			sleeve_hnds_circus_sleeve_alt = {
+				name = "Funda de Circo",
+				text = {
+					"Crea una {C:dark_edition}Copia{} del",
+					"primer {C:attention}Comodín{} elegido después de",
+					"derrotar la primer {C:attention}Ciega Jefe{}",
+				}
+			},
+			sleeve_hnds_cursed_sleeve = {
+				name = "Funda Maldita",
+				text = {
+					"Derrota la {C:attention}primera",
+					"{C:attention}Ciega Jefe{} para abrir un",
+					"{C:red,T:p_hnds_cursed_pack}Paquete Maldito Inevitable{}",
+				}
+			},
+			sleeve_hnds_cursed_sleeve_alt = {
+				name = "Funda Maldita",
+				text = {
+					"El primer {C:red,T:p_hnds_cursed_pack}Paquete Maldito{}",
+					"abierto solo ofrece {C:red}Comodines Raros{}"
+				}
+			},
+			sleeve_hnds_crystal_sleeve = {
+				name = "Funda Cristalina",
+				text = {
+					"En la Apuesta {C:attention}4{},",
+					"enfrentas una {C:attention}Ciega Final{}",
+					"si ganas, obtienes",
+					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Paquete Espectral{}",
+				}
+			},
+			sleeve_hnds_crystal_sleeve_alt = {
+				name = "Funda Cristalina",
+				text = {
+					"También enfrentas una Ciega Final",
+					"en las Apuestas {C:attention}2{} y {C:attention}6{}",
+					"Derrotalas para obtener un",
+					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Paquete Espectral{}",
+				}
+			},
+			sleeve_hnds_conjuring_sleeve = {
+				name = "Funda de Conjuradora",
+				text = {
+					"La {C:money}Tienda{} reemplaza",
+					"los {C:attention}Paquetes Potenciadores{}",
+					"por {C:attention,T:p_hnds_magic_1}Paquetes Mágicos{}",
+					"que contienen {C:dark_edition,E:1}cartas al azar{}",
+				}
+			},
+			sleeve_hnds_conjuring_sleeve_alt = {
+				name = "Funda de Conjuradora",
+				text = {
+					"Comienzas con {C:attention,T:v_stuffed}Paquetes Amplios{}",
+					"y {C:attention,T:v_wholesale}Mayorista de Paquetes{}"
+				}
+			},
+			sleeve_hnds_ol_sleeve = {
+				name = "Funda de la Suerte",
+				text = {
+					"Triplica las {C:green}probabilidades{}",
+					"en la {C:money}Tienda{} y durante",
+					"la {C:attention}Ciega Jefe{}",
+					"{C:inactive}(Ej. {C:green}1 en 3{C:inactive} -> {C:green}3 en 3){C:inactive}",
+				}
+			},
+			sleeve_hnds_ol_sleeve_alt = {
+				name = "Funda de la Suerte",
+				text = {
+					"Duplica las {C:green}probabilidades{} y las",
+					"{C:attention,E:1}Cuadriplica{} en la {C:money}Tienda{} y",
+					"durante la {C:attention}Ciega Jefe{}",
+					"{C:inactive}(Ej. {C:green}1 en 3{C:inactive} -> {C:green}4 en 3){C:inactive}",
 				}
 			},
 		},
@@ -852,7 +955,7 @@ return {
 				},
 			},
 			v_hnds_wholesale = {
-				name = "Oferta de Paquetes",
+				name = "Mayorista de Paquetes",
 				text = {
 					"Agrega {C:attention}1{} {C:attention}Paquete{}",
 					"{C:attention}Potenciador{} a las tiendas",
@@ -1051,115 +1154,6 @@ return {
 		},
 		poker_hand_descriptions = {
 			hnds_stone_ocean = { "Una mano de 5 cartas de piedra" },
-		},
-		Funda = {
-			sleeve_hnds_premium_sleeve = {
-				name = "Funda Premium",
-				text = {
-					"Comienza la partida con",
-					"{C:green,T:v_hnds_premium}Premium{} y {C:red,T:v_hnds_top_shelf}Exclusividad{}",
-					"Los Comodines cuestan {C:money}${} extra igual a tu {C:attention}Ante{}"
-				},
-				unlock = {
-					'Gana con',
-					'Mazo Premium en',
-					'Green Stake'
-				}
-			},
-			sleeve_hnds_premium_sleeve_alt = {
-				name = "Funda Premium",
-				text = {
-					"{C:blue}Comodines Comunes{} aparecen",
-					"{C:blue}X#3#{} menos seguido",
-				}
-			},
-			sleeve_hnds_circus_sleeve = {
-				name = "Funda de Circo",
-				text = {
-					"Tiene una habilidad",
-					"de un {C:attention}Comodín{} al azar",
-					"Después de derrotar cada",
-					"{C:attention}Ciego{}, la habilidad cambia",
-					"{C:inactive}(Actualmente: {V:1}#1#{C:inactive})",
-				}
-			},
-			sleeve_hnds_circus_sleeve_alt = {
-				name = "Funda de Circo",
-				text = {
-					"Crea una {C:dark_edition}Copia{} del",
-					"primer {C:attention}Comodín{} elegido después de derrotar",
-					"el primer {C:attention}Ciega Jefe{}"
-				}
-			},
-			sleeve_hnds_cursed_sleeve = {
-				name = "Funda Maldita",
-				text = {
-					"Derrota al {C:attention}primer",
-					"{C:attention}Ciega Jefe{} para abrir",
-					"un {C:red}no skippable{}",
-					"{C:red,T:p_hnds_cursed_pack}Paquete Maldito{}"
-				}
-			},
-			sleeve_hnds_cursed_sleeve_alt = {
-				name = "Funda Maldita",
-				text = {
-					"El primer {C:red,T:p_hnds_cursed_pack}Paquete Maldito{}",
-					"abierto solo ofrece {C:red}Comodines Raros{}"
-				}
-			},
-			sleeve_hnds_crystal_sleeve = {
-				name = "Funda de Cristal",
-				text = {
-					"En la Apuesta {C:attention}4{},",
-					"enfrentas una {C:attention}Ciega Final{}",
-					"Derrotala para obtener un",
-					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Paquete Espectral{}"
-				}
-			},
-			sleeve_hnds_crystal_sleeve_alt = {
-				name = "Funda de Cristal",
-				text = {
-					"También enfrenta una Ciega Final",
-					"en las Apuestas {C:attention}2{} y {C:attention}6{}",
-					"Derrotalas para obtener un",
-					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Paquete Espectral{}",
-				}
-			},
-			sleeve_hnds_conjuring_sleeve = {
-				name = "Funda de Conjuro",
-				text = {
-					"Todos los {C:attention}Paquetes de Impulso{}",
-					"en la tienda son reemplazados",
-					"por {C:attention,T:p_hnds_magic_1}Paquetes Mágicos{} que",
-					"contienen {C:dark_edition,E:1}cartas aleatorias"
-				}
-			},
-			sleeve_hnds_conjuring_sleeve_alt = {
-				name = "Funda de Conjuro",
-				text = {
-					"Comienza con {C:attention,T:v_stuffed}Paquetes Amplios{}",
-					"y {C:attention,T:v_wholesale}Mayorista{}"
-				}
-			},
-			sleeve_hnds_ol_sleeve = {
-				name = "Funda de la Suerte",
-				text = {
-					"Triplica las {C:green}probabilidades{} listadas",
-					"durante la {C:attention}tienda{} y",
-					"{C:attention}Ciegas Jefe{}",
-					"{C:inactive}(ej. {C:green}1 en 3{C:inactive} -> {C:green}3 en 3{C:inactive})"
-				}
-			},
-			sleeve_hnds_ol_sleeve_alt = {
-				name = "Funda de la Suerte",
-				text = {
-					"Duplica las probabilidades listadas",
-					"y Cuadruplica las probabilidades listadas",
-					"durante ciegas jefe y la tienda",
-					"{C:inactive}(reemplaza efecto del mazo){}",
-					"{C:inactive}(ej. {C:green}1 en 3{C:inactive} -> {C:green}4 en 3{C:inactive}){}"
-				}
-			},
 		},
 	},
 }
