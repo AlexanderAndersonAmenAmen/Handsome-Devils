@@ -9,30 +9,31 @@ CardSleeves.Sleeve({
         local key
         if self.get_current_deck_key() ~= "b_hnds_ol_reliable" then
             key = self.key
-            self.config = {multiplier = 3}
         else
             key = self.key .. "_alt"
-            self.config = {matching = true, multiplier = 3, sleeve_multiplier = 2}
         end
-        return {key = key, vars = {self.config.multiplier, self.config.sleeve_multiplier}}
+        -- 3 = base deck multiplier, 4 = sleeve paired multiplier during shop/boss
+        return {key = key, vars = {3, 4}}
     end,
     calculate = function(self, sleeve, context)
-        -- Base effect: Triple probabilities during shop and boss blinds (same as deck)
-        if not self.config.matching and context.mod_probability and not context.blueprint and (G.shop or (G.GAME.blind and G.GAME.blind.boss)) then
-            return {
-                numerator = context.numerator * self.config.multiplier
-            }
-        end
-        
-        -- Sleeve additional effect: Double normally, cuadruple during shop and boss blinds (replaces deck effect)
-        if self.config.matching and context.mod_probability and not context.blueprint then
-            local multiplier = 2 -- Default double
+        if not context.mod_probability or context.blueprint then return end
+
+        -- Check if paired with Ol' Reliable Deck
+        local is_paired = self.get_current_deck_key() == "b_hnds_ol_reliable"
+
+        if is_paired then
+            -- Paired: Double normally (2x), Cuadruple during shop and boss blinds (4x)
+            -- This REPLACES the deck's 3x effect
+            local multiplier = 2
             if G.shop or (G.GAME.blind and G.GAME.blind.boss) then
-                multiplier = 4 -- Cuadruple during shop and boss blinds
+                multiplier = 4
             end
-            return {
-                numerator = context.numerator * multiplier
-            }
+            return { numerator = context.numerator * multiplier }
+        else
+            -- Not paired: Same as deck - Triple during shop and boss blinds (3x)
+            if G.shop or (G.GAME.blind and G.GAME.blind.boss) then
+                return { numerator = context.numerator * 3 }
+            end
         end
     end,
 })
