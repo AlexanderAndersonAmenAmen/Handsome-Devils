@@ -11,7 +11,6 @@ CardSleeves.Sleeve({
             key = self.key
         else
             key = self.key .. "_alt"
-            self.config = {matching = true}
         end
         return {key = key}
     end,
@@ -19,11 +18,12 @@ CardSleeves.Sleeve({
         -- Base effect: Initialize cursed deck variables
         G.GAME.hnds_cursed_pack_queued = false
         G.GAME.hnds_cursed_pack_opened = false
-        
-        -- Sleeve additional effect: Enable rare-only for first cursed pack
-        if self.config.matching then
+
+        -- Sleeve additional effect: Enable rare-only for first cursed pack when paired with Cursed Deck
+        if self.get_current_deck_key() == "b_hnds_cursed" then
             G.GAME.modifiers.cursed_sleeve_active = true
             G.GAME.hnds_first_cursed_pack = true
+            G.GAME.hnds_first_cursed_pack_count = 0
         end
     end,
     calculate = function(self, sleeve, context)
@@ -35,14 +35,20 @@ CardSleeves.Sleeve({
     end,
 })
 
--- Modify unskippable pack for Cursed Sleeve
-local orig_get_pack = get_pack
-function get_pack(key)
-    local pack = orig_get_pack(key)
-    if pack and pack.key == 'p_hnds_cursed_pack' and G.GAME.modifiers.cursed_sleeve_active and G.GAME.hnds_first_cursed_pack then
-        -- Modify pack to only offer rare jokers
-        G.GAME.hnds_first_cursed_pack = false
-        -- This would need to be implemented in the cursed pack creation logic
+-- Hook create_card to force rare jokers for first cursed pack
+local orig_create_card = create_card
+function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+    -- Check if this is for the cursed pack and should be rare-only
+    if _type == "Joker" and key_append == "cur" and G.GAME.modifiers.cursed_sleeve_active and G.GAME.hnds_first_cursed_pack then
+        -- Force rare rarity (3)
+        _rarity = 3
+        -- Track count and disable after enough cards to cover pack size + modifiers
+        G.GAME.hnds_first_cursed_pack_count = (G.GAME.hnds_first_cursed_pack_count or 0) + 1
+        -- Using 50 to cover any pack size increases from vouchers/effects
+        if G.GAME.hnds_first_cursed_pack_count >= 50 then
+            G.GAME.hnds_first_cursed_pack = false
+        end
     end
-    return pack
+    local card = orig_create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+    return card
 end
