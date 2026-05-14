@@ -34,10 +34,6 @@ SMODS.Tag {
 
                 -- Pre-calculate replacements and capture sticker/edition data before touching cards
                 local replacements = {}
-                -- Mark all jokers as protected during extinction animation
-                for _, card in ipairs(G.jokers.cards) do
-                    card.hnds_extinction_prevent_external_destruction = true
-                end
                 for i, card in ipairs(G.jokers.cards) do
                     local rarity = card.config.center.rarity
                     local new_center = nil
@@ -182,10 +178,6 @@ SMODS.Tag {
                     trigger = 'after',
                     delay = 0.3,
                     func = function()
-                        -- Remove protection from all jokers after animation completes
-                        for _, card in ipairs(G.jokers.cards) do
-                            card.hnds_extinction_prevent_external_destruction = nil
-                        end
                         G.CONTROLLER.locks[lock] = nil
                         return true
                     end
