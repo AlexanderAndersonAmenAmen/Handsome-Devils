@@ -12,8 +12,12 @@ CardSleeves.Sleeve({
         else
             key = self.key .. "_alt"
         end
-        -- 3 = base deck multiplier, 4 = sleeve paired multiplier during shop/boss
         return {key = key, vars = {3, 4}}
+    end,
+    apply = function(self)
+        if self.get_current_deck_key() == "b_hnds_ol_reliable" then
+            G.GAME.modifiers.hnds_ol_sleeve_paired = true
+        end
     end,
     calculate = function(self, sleeve, context)
         if not context.mod_probability or context.blueprint then return end

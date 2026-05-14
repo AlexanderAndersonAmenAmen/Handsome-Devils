@@ -5,9 +5,12 @@ SMODS.Back {
     unlocked = true,
     calculate = function(self, back, context)
          if context.mod_probability and not context.blueprint and (G.shop or (G.GAME.blind and G.GAME.blind.boss)) then
-            return {
-                numerator = context.numerator * 3
-            }
+            if G.GAME and G.GAME.selected_sleeve == "sleeve_hnds_ol_sleeve" then
+            else
+                return {
+                    numerator = context.numerator * 3
+                }
+            end
         end
     end,
     pools = { RedeemableBacks = true }
