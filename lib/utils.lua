@@ -468,7 +468,7 @@ function HNDS.DeckOrSleeve(key)
 	for _, v in pairs(G.GAME.entr_bought_decks or {}) do
 		if v == "b_hnds_"..key then num = num + 1 end
 	end
-	if G.GAME.selected_back and G.GAME.selected_back.effect.center.original_key == key then
+	if G.GAME.selected_back and G.GAME.selected_back.effect.center.key == ("b_hnds_"..key) then
 		num = num + 1
 	end
 	return num > 0 and num or nil
