@@ -8,9 +8,6 @@ SMODS.DrawStep({ -- for drawing semi-transparent shader on circus joker
 			card.children.center:draw_shader('hnds_transparent')
 		end
 	end,
-	conditions = {
-		facing = 'front'
-	}
 })
 
 SMODS.Back({

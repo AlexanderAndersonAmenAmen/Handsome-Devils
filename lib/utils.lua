@@ -399,13 +399,6 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	-- Circus Deck: assign a random joker from the pool each ante.
 	-- The joker lives in an offscreen CardArea and is found by find_joker().
 	if HNDS.DeckOrSleeve('circus') then
-		if not G.hnds_circus_joker then
-			G.hnds_circus_joker = CardArea(
-				17.5, 5.75, G.CARD_W, G.CARD_H,
-				{card_limit = 1, highlighted_limit = 0, type = 'title'}
-			)
-		end
-
 		if (G.GAME and G.GAME.blind) or run_start then
 			-- Remove the previous joker
 			if #G.hnds_circus_joker.cards > 0 then
@@ -414,27 +407,31 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 			end
 
 			-- Pick a new joker, excluding the one from last ante
-			local poolcopy = HNDS.table_shallow_copy(HNDS.circus_joker_pool)
+			local poolcopy = SMODS.shallow_copy(HNDS.circus_joker_pool)
 			if G.GAME.hnds_circus_joker_key then
 				local i = HNDS.get_key_for_value(poolcopy, G.GAME.hnds_circus_joker_key)
 				if i then table.remove(poolcopy, i) end
 			end
-			
+
 			local new_joker = pseudorandom_element(poolcopy, pseudoseed('circus'))
 			G.GAME.hnds_circus_joker_key = new_joker
 
-			-- Use Card() directly to bypass get_current_pool (which crashes when all jokers are banned)
-			local center = G.P_CENTERS[new_joker]
-			local j = Card(G.hnds_circus_joker.T.x, G.hnds_circus_joker.T.y, G.CARD_W, G.CARD_H, nil, center)
-			j:start_materialize(nil, true)
-			j.ignore_base_shader = {true}
-			j.ignore_shadow = {true}
-			G.hnds_circus_joker:emplace(j)
+			local old_ban_state = G.GAME.banned_keys[new_joker]
+			G.GAME.banned_keys[new_joker] = nil
+			SMODS.add_card{ area = G.hnds_circus_joker, key = new_joker, set = "Joker", no_edition = true, key_append = "hnds_circus" }
+			G.GAME.banned_keys[new_joker] = old_ban_state
 		end
-	else
-		if G.hnds_circus_joker then
-			G.hnds_circus_joker:remove()
-		end
+	elseif G.hnds_circus_joker then
+		G.hnds_circus_joker:remove()
+	end
+end
+
+SMODS.current_mod.custom_card_areas = function (game)
+	if HNDS.DeckOrSleeve("circus") then
+		game.hnds_circus_joker = CardArea(
+			17.5, 5.75, G.CARD_W, G.CARD_H,
+			{ card_limit = 1, highlighted_limit = 0, type = 'title' }
+		)
 	end
 end
 
