@@ -1,0 +1,14 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "-- TARGET: evaluate your own repetition effects" #guess what im not using this for
+position = "before"
+payload = '''
+ret.HNDS_offer, ret.HNDS_price = card:hnds_calculate_curse(context)
+'''
+match_indent = true

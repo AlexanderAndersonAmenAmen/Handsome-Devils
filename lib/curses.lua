@@ -378,73 +378,129 @@ G.CURSE_PRICES = {
     }
 }
 
-if SMODS then
-    SMODS.Sticker{
-        key = 'hnds_cursed',
-        atlas = 'Stickers',
-        pos = { x = 0, y = 0 },
-        badge_colour = G.C.RED,
-        should_apply = false,
-        rate = 0,
-        sets = { Joker = true },
-        -- Dynamic tooltip using loc_vars with global state
-        -- Store current card data in globals for loc_vars to access
-        loc_vars = function(self, info_queue, card)
-            -- Store reference for potential use
-            _G.HNDS_CURRENT_CURSE_CARD = card
-            return { vars = {} }
-        end,
-
-        calculate = function(self, card, context)
-            if card and card.ability and (card.ability.hnds_curse_offer or card.ability.hnds_curse_price) then
-                -- One-time safety-net strip (covers stickers that slipped past apply_curse).
-                if not card.ability.hnds_curse_stripped then
-                    card.ability.hnds_curse_stripped = true
-                    card.ability.perishable = nil
-                    card.ability.eternal = nil
-                    card.ability.rental = nil
-                    local to_remove = {}
-                    if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
-                        for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-                            if k ~= 'hnds_cursed' and card.ability[k] then
-                                to_remove[k] = true
-                            end
-                        end
-                    end
-                    if card.stickers and type(card.stickers) == 'table' then
-                        for k, _ in pairs(card.stickers) do
-                            if k ~= 'hnds_cursed' then to_remove[k] = true end
-                        end
-                    end
-                    if card.ability.stickers and type(card.ability.stickers) == 'table' then
-                        for k, _ in pairs(card.ability.stickers) do
-                            if k ~= 'hnds_cursed' then to_remove[k] = true end
-                        end
-                    end
-                    local any_removed = false
-                    for k, _ in pairs(to_remove) do
-                        any_removed = true
-                        if card.remove_sticker then pcall(card.remove_sticker, card, k) end
-                        if card.stickers then card.stickers[k] = nil end
-                        card.ability[k] = nil
-                        if card.ability.stickers then card.ability.stickers[k] = nil end
-                    end
-                    if any_removed and card.set_sticker_display then
-                        pcall(card.set_sticker_display, card)
-                    end
-                end
-                return trigger_curse(card, context)
-            end
-        end,
-    }
-    -- Setup hook to capture card reference during loc_vars evaluation
-    if HNDS_setup_cursed_sticker_hook then
-        HNDS_setup_cursed_sticker_hook(SMODS.Stickers['hnds_cursed'])
+HNDS.Curses = {}
+HNDS.Curse = SMODS.GameObject:extend{
+    obj_table = HNDS.Curses,
+    obj_buffer = {},
+    required_params = {
+        "key",
+        "kind", -- "offer" or "price" for the different curse types
+    },
+    register = function (self)
+        if self.registered then
+            sendWarnMessage(('Detected duplicate register call on object %s'):format(self.key), self.set)
+            return
+        end
+        HNDS.Curse.super.register(self)
+    end,
+}
+function Card:hnds_calculate_curse(context)
+    local offer = self.ability.hnds_curse_offer
+    local price = self.ability.hnds_curse_price
+    local ret1, ret2
+    if offer and HNDS.Curses[offer].calculate then
+        ret1 = HNDS.Curses[offer]:calculate(self, context)
     end
+    if price and HNDS.Curses[price].calculate then
+        ret2 = HNDS.Curses[offer]:calculate(self, context)
+    end
+    return ret1, ret2
+end
+function HNDS.poll_curse(type, append)
+    local pool = {}
+    for _, v in ipairs(HNDS.Curse.obj_buffer) do
+        local curse_obj = HNDS.Curses[v]
+        if curse_obj.type == type then
+            if (not curse_obj.in_pool or curse_obj:in_pool({ source = append })) and not G.GAME.banned_keys[v] then
+                pool[#pool+1] = v
+            else
+                pool[#pool+1] = "UNAVAILABLE"
+            end
+        end
+    end
+    local all_unavailable = true
+    for _, v in ipairs(pool) do
+        if v ~= "UNAVAILABLE" then all_unavailable = false end
+    end
+    if all_unavailable then
+        if type == "offer" then
+            pool[#pool+1] = "hnds_offer_copy_random_tarot"
+        elseif type == "price" then
+            pool[#pool+1] = "hnds_price_destroy_jokers"
+        end
+    end
+    local roll = pseudorandom_element(pool, append)
+    local it = 1
+    while roll == "UNAVAILABLE" do
+        roll = pseudorandom_element(pool, append.."resample"..it)
+        it = it + 1
+    end
+    return roll
 end
 
+SMODS.Sticker {
+    key = 'hnds_cursed',
+    atlas = 'Stickers',
+    pos = { x = 0, y = 0 },
+    badge_colour = G.C.RED,
+    should_apply = false,
+    rate = 0,
+    sets = { Joker = true },
+    -- Dynamic tooltip using loc_vars with global state
+    -- Store current card data in globals for loc_vars to access
+    loc_vars = function(self, info_queue, card)
+        -- Store reference for potential use
+        _G.HNDS_CURRENT_CURSE_CARD = card
+        return { vars = {} }
+    end,
 
-if not _G.HNDS_curse_collections and SMODS and SMODS.current_mod then
+    calculate = function(self, card, context)
+        if card and card.ability and (card.ability.hnds_curse_offer or card.ability.hnds_curse_price) then
+            -- One-time safety-net strip (covers stickers that slipped past apply_curse).
+            if not card.ability.hnds_curse_stripped then
+                card.ability.hnds_curse_stripped = true
+                card.ability.perishable = nil
+                card.ability.eternal = nil
+                card.ability.rental = nil
+                local to_remove = {}
+                if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
+                    for _, k in ipairs(SMODS.Sticker.obj_buffer) do
+                        if k ~= 'hnds_cursed' and card.ability[k] then
+                            to_remove[k] = true
+                        end
+                    end
+                end
+                if card.stickers and type(card.stickers) == 'table' then
+                    for k, _ in pairs(card.stickers) do
+                        if k ~= 'hnds_cursed' then to_remove[k] = true end
+                    end
+                end
+                if card.ability.stickers and type(card.ability.stickers) == 'table' then
+                    for k, _ in pairs(card.ability.stickers) do
+                        if k ~= 'hnds_cursed' then to_remove[k] = true end
+                    end
+                end
+                local any_removed = false
+                for k, _ in pairs(to_remove) do
+                    any_removed = true
+                    if card.remove_sticker then pcall(card.remove_sticker, card, k) end
+                    if card.stickers then card.stickers[k] = nil end
+                    card.ability[k] = nil
+                    if card.ability.stickers then card.ability.stickers[k] = nil end
+                end
+                if any_removed and card.set_sticker_display then
+                    pcall(card.set_sticker_display, card)
+                end
+            end
+            return trigger_curse(card, context)
+        end
+    end,
+}
+-- Setup hook to capture card reference during loc_vars evaluation
+HNDS_setup_cursed_sticker_hook(SMODS.Stickers['hnds_cursed'])
+
+
+if not _G.HNDS_curse_collections then
     _G.HNDS_curse_collections = true
 
     HNDS = HNDS or {}
