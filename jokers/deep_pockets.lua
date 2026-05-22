@@ -3,7 +3,7 @@ SMODS.Joker({
 	config = {
 		extra = {
 			slots = 2,
-			consumeable_mult = 8,
+			consumeable_mult = 5,
 		},
 	},
 	rarity = 2,
