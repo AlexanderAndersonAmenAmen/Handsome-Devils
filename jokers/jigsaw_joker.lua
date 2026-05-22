@@ -25,8 +25,9 @@ SMODS.Joker {
                     card.ability.extra.hands_played = card.ability.extra.hands_played + 1
                     if card.ability.extra.hands_played >= card.ability.extra.required_hands then
                         card.ability.extra.complete = true
-                        card:juice_up()
-                        return { message = "Complete!", colour = G.C.GOLD, }
+                        local eval = function(c) return not c.REMOVED end
+                        juice_card_until(card, eval, true)
+                        return { message = "Complete!", colour = G.C.RED, }
                     else
                         return {
                             message = card.ability.extra.hands_played .. "/" .. card.ability.extra.required_hands,
