@@ -3,7 +3,7 @@ SMODS.Joker({
 	config = {
 		extra = {
 			base_chance = 20,
-			money = 20,
+			money = 7,
 			mult = 20,
 		},
 	},
