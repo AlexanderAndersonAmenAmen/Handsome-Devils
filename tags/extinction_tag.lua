@@ -1,3 +1,4 @@
+-- I hate whoever wrote this code
 SMODS.Tag {
     key = "extinction_tag",
     atlas = "HDtags",
