@@ -12,26 +12,19 @@ priority = 0
 # This workaround forces draw_from_deck_to_hand() to make it selectable and alert the player
 [[patches]]
 [patches.pattern]
-target = "card.lua"
+target = '=[SMODS _ "src/game_object.lua"]'
 pattern = '''
-                    for k, v in ipairs(pack_cards) do
-                        G.pack_cards:emplace(v)
-                    end
+if self.draw_hand == true then G.FUNCS.draw_from_deck_to_hand() end
 '''
 position = "after"
 match_indent = true
 payload = '''
-                    -- Force draw_hand when Spectrum appears so it's useable
-                    if self.ability.name and self.ability.name:find('Standard') and G.FUNCS and G.FUNCS.draw_from_deck_to_hand then
-                        local has_spectrum = false
-                        for _, c in ipairs(pack_cards) do
-                            if c and c.config and c.config.center_key and c.config.center_key == "c_hnds_spectrum" then
-                                has_spectrum = true
-                                break
-                            end
-                        end
-                        if has_spectrum then
-                            G.FUNCS.draw_from_deck_to_hand()
-                        end
-                    end
+if self.draw_hand ~= true and self.kind == "Standard" then
+    for _, c in ipairs(G.pack_cards.cards) do
+        if c.config and c.config.center_key == "c_hnds_spectrum" then
+            G.FUNCS.draw_from_deck_to_hand()
+            break
+        end
+    end
+end
 '''
