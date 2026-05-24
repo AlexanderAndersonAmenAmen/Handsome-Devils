@@ -7,8 +7,8 @@ SMODS.Joker {
     unlocked = true,
     discovered = true,
     blueprint_compat = true,
-    eternal_compat = true,
-    perishable_compat = true,
+    eternal_compat = false,
+    perishable_compat = false,
     config = { extra = { hands_played = 0, required_hands = 8, tags = 3 } },
     loc_vars = function(self, info_queue, card)
         return { vars = { card.ability.extra.hands_played, card.ability.extra.required_hands, card.ability.extra.tags } }
