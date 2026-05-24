@@ -9,6 +9,6 @@ target = "functions/common_events.lua"
 pattern = "-- TARGET: evaluate your own repetition effects" #guess what im not using this for
 position = "before"
 payload = '''
-ret.HNDS_offer, ret.HNDS_price = card:hnds_calculate_curse(context)
+if card and card.hnds_calculate_curse then ret.HNDS_offer, ret.HNDS_price = card:hnds_calculate_curse(context) end
 '''
 match_indent = true

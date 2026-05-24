@@ -402,7 +402,7 @@ function Card:hnds_calculate_curse(context)
         ret1 = HNDS.Curses[offer]:calculate(self, context)
     end
     if price and HNDS.Curses[price].calculate then
-        ret2 = HNDS.Curses[offer]:calculate(self, context)
+        ret2 = HNDS.Curses[price]:calculate(self, context)
     end
     return ret1, ret2
 end
