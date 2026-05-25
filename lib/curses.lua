@@ -144,6 +144,7 @@ G.CURSE_OFFERS = {
     [5] = {
         id = 'offer_retrigger',
         func = function(card, context)
+            if not (card and card.config and card.config.center and card.config.center.calculate) then return end
             if context.retrigger_joker_check and not context.retrigger_joker and context.other_card == card then
                 return { message = localize('k_again_ex'), repetitions = 1, card = card }
             end
@@ -670,6 +671,19 @@ function apply_curse(card)
     local price_index
     local attempt_count = 0
 
+    -- Check if a Joker have a "calculate" function is a bit generic way to prevent passive joker
+    -- from obtaining the trigger again effect
+    local can_be_retriggered = card.config and card.config.center and card.config.center.calculate ~= nil
+
+    -- Whether the joker already has an edition. If so, offer_self_negative
+    -- would overwrite it on purchase, so we reroll to a different offer.
+    local has_existing_edition = false
+    if card.edition then
+        for k, _ in pairs(card.edition) do
+            if k ~= 'type' then has_existing_edition = true break end
+        end
+    end
+
     while attempt_count < 10 do
         attempt_count = attempt_count + 1
         -- Use unique seed per attempt
@@ -678,6 +692,16 @@ function apply_curse(card)
 
         local offer_entry = G.CURSE_OFFERS[offer_index]
         local price_entry = G.CURSE_PRICES[price_index]
+
+        -- Reroll if offer_retrigger landed on a non-retriggerable joker.
+        if offer_entry and offer_entry.id == 'offer_retrigger' and not can_be_retriggered then
+            offer_entry = nil
+        end
+
+        -- Reroll if offer_self_negative landed on a joker that already has an edition
+        if offer_entry and offer_entry.id == 'offer_self_negative' and has_existing_edition then
+            offer_entry = nil
+        end
 
         if offer_entry and price_entry then
             card.ability.hnds_curse_offer = offer_entry.id
