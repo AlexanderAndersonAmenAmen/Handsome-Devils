@@ -218,15 +218,13 @@ end
 -- Platinum Stake end_of_round: double next blind if player scored >2x
 local function hnds_end_round_platinum_stake()
 	local blind_chips = G.GAME and G.GAME.blind and G.GAME.blind.chips
-	local last_hand_chips = G.GAME and G.GAME.hnds_last_hand_chips
-	local won_round = G.GAME and G.GAME.chips and blind_chips and (G.GAME.chips >= blind_chips)
-	
+	local chips = G.GAME and G.GAME.chips
+	local won_round = chips and blind_chips and (chips >= blind_chips)
 	if HNDS_is_platinum_stake_active and HNDS_is_platinum_stake_active()
-		and won_round and blind_chips > 0 and last_hand_chips and last_hand_chips > blind_chips * 2 then
+		and won_round and blind_chips > 0 and chips > blind_chips * 2 then
 		G.GAME.modifiers = G.GAME.modifiers or {}
 		G.GAME.modifiers.hnds_next_blind_mult = (G.GAME.modifiers.hnds_next_blind_mult or 1) * 2
 	end
-	if G.GAME then G.GAME.hnds_last_hand_chips = nil end
 end
 
 -- Platinum Stake set_blind: apply queued blind multiplier
