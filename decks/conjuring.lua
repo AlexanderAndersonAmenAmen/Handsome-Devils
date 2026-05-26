@@ -34,7 +34,7 @@ local magic_diha_compat = { --cryptid digital hallucinations compat
 
 SMODS.Booster {
     key = "magic_1",
-    weight = 0.1,
+    weight = 0.25,
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
@@ -91,7 +91,7 @@ SMODS.Booster {
 
 SMODS.Booster {
     key = "magic_2",
-    weight = 0.1,
+    weight = 0.25,
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
@@ -148,7 +148,7 @@ SMODS.Booster {
 
 SMODS.Booster {
     key = "magic_3",
-    weight = 0.1,
+    weight = 0.25,
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
@@ -205,7 +205,7 @@ SMODS.Booster {
 
 SMODS.Booster {
     key = "magic_4",
-    weight = 0.1,
+    weight = 0.25,
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
@@ -262,7 +262,7 @@ SMODS.Booster {
 
 SMODS.Booster {
     key = "magic_5",
-    weight = 0.1,
+    weight = 0.25,
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
@@ -319,7 +319,7 @@ SMODS.Booster {
 
 SMODS.Booster {
     key = "magic_6",
-    weight = 0.1,
+    weight = 0.25,
     kind = "hnds_magic",
     cost = 10,
     atlas = "Extras",
