@@ -774,7 +774,7 @@ SMODS.Booster{
     group_key = 'k_hnds_cursed_pack',
     config = {extra = 4, choose = 1},
     cost = 6,
-    weight = 0.10,
+    weight = 0.8,
     ease_background_colour = function(self)
         local cursed_col = mix_colours(G.C.RED, G.C.BLACK, 0.75)
         ease_colour(G.C.DYN_UI.MAIN, cursed_col)
