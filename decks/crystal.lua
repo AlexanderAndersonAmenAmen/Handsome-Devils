@@ -18,7 +18,7 @@ SMODS.Booster { --putting this in the same file for convenience
     key = "spectral_ultra",
     weight = 0.01,
     kind = "Spectral",
-    cost = 10,
+    cost = 25,
     pos = { x = 2, y = 2 },
     atlas = "Extras",
     config = { extra = 5, choose = 2 },
@@ -66,7 +66,7 @@ SMODS.Booster { --putting this in the same file for convenience
         end
     end,
     in_pool = function(self, args)
-        return hnds_config.enablePackSpawning
+        return hnds_config.enablePackSpawning and G.GAME.round_resets.ante >= 3
     end,
     cry_digital_hallucinations = { --cryptid digital hallucinations compat
         colour = G.C.SECONDARY_SET.Spectral,
