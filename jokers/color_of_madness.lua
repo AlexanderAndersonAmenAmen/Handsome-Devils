@@ -25,13 +25,6 @@ SMODS.Joker({
 			and not context.blueprint
 		then
 			if HNDS.get_unique_suits(context.scoring_hand) >= card.ability.extra.suits_needed then
-				--[[
-                local unenhanced_cards = {}
-                for i, v in ipairs(context.scoring_hand) do
-                    if not next(SMODS.get_enhancements(v)) then
-                        table.insert(unenhanced_cards, v)
-                    end
-                end]]
 				local card_to_enhance = context.scoring_hand[1] --pseudorandom_element(unenhanced_cards, pseudoseed("color_of_madness"))
 				card_to_enhance:set_ability(G.P_CENTERS.m_wild, nil, true)
 				G.E_MANAGER:add_event(Event({
