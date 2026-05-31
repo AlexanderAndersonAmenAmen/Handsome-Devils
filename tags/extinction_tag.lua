@@ -4,7 +4,6 @@ SMODS.Tag {
     atlas = "HDtags",
     pos = { x = 4, y = 0 },
     discovered = true,
-    in_pool = function() return false end,
     apply = function(self, tag, context)
         if context.type == 'new_blind_choice' or context.type == 'hnds_after_hand' then
             local lock = tag.ID
@@ -25,6 +24,10 @@ SMODS.Tag {
                             end
                         end
                         if add and G.GAME.banned_keys and G.GAME.banned_keys[center.key] then add = false end
+                        if add and center.in_pool then
+                            local ok, res = pcall(center.in_pool, center, {})
+                            if not ok or not res then add = false end
+                        end
                         if add then pool[#pool + 1] = center end
                     end
                     return pool
@@ -41,7 +44,7 @@ SMODS.Tag {
                         if c.key ~= card.config.center.key then filtered[#filtered + 1] = c end
                     end
                     if #filtered > 0 then
-                        new_center = pseudorandom_element(filtered, pseudoseed('extinction' .. i), {in_pool = function() return true end})
+                        new_center = pseudorandom_element(filtered, pseudoseed('extinction' .. i))
                     end
 
                     -- Capture this joker's own edition (transfers to its own replacement)
