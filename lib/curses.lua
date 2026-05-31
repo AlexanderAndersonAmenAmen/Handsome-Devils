@@ -406,13 +406,14 @@ HNDS.Curse = SMODS.GameObject:extend{
     end,
 }
 function Card:hnds_calculate_curse(context)
+    if not self.ability then return end
     local offer = self.ability.hnds_curse_offer
     local price = self.ability.hnds_curse_price
     local ret1, ret2
-    if offer and HNDS.Curses[offer].calculate then
+    if offer and HNDS.Curses[offer] and HNDS.Curses[offer].calculate then
         ret1 = HNDS.Curses[offer]:calculate(self, context)
     end
-    if price and HNDS.Curses[price].calculate then
+    if price and HNDS.Curses[price] and HNDS.Curses[price].calculate then
         ret2 = HNDS.Curses[price]:calculate(self, context)
     end
     return ret1, ret2
@@ -800,6 +801,19 @@ SMODS.Booster{
     end
 }
 
+local hnds_offer_lookup, hnds_price_lookup
+local function hnds_build_lookups()
+    if hnds_offer_lookup then return end
+    hnds_offer_lookup = {}
+    hnds_price_lookup = {}
+    for _, def in pairs(G.CURSE_OFFERS) do
+        hnds_offer_lookup[def.id] = def
+    end
+    for _, def in pairs(G.CURSE_PRICES) do
+        hnds_price_lookup[def.id] = def
+    end
+end
+
 function trigger_curse(card, context)
     -- Central dispatcher: looks up the selected offer/price by ID and executes them.
     -- This is called from:
@@ -828,14 +842,9 @@ function trigger_curse(card, context)
         card.hnds_curse_acquire_triggered = true
     end
 
-    -- Find the offer and price definitions by their stored IDs
-    local offer_def, price_def
-    for _, def in pairs(G.CURSE_OFFERS) do
-        if def.id == card.ability.hnds_curse_offer then offer_def = def break end
-    end
-    for _, def in pairs(G.CURSE_PRICES) do
-        if def.id == card.ability.hnds_curse_price then price_def = def break end
-    end
+    hnds_build_lookups()
+    local offer_def = hnds_offer_lookup[card.ability.hnds_curse_offer]
+    local price_def = hnds_price_lookup[card.ability.hnds_curse_price]
 
     local acquire_ret
     -- Handle challenge creation separately to avoid double-triggering
