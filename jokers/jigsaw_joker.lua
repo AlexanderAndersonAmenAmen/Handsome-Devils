@@ -9,19 +9,16 @@ SMODS.Joker {
     blueprint_compat = true,
     eternal_compat = false,
     perishable_compat = false,
-    config = { extra = { hands_played = 0, required_hands = 8, tags = 3 } },
+    config = { extra = { hands_played = 0, required_hands = 8, tags = 3, unique_hands = {} } },
     loc_vars = function(self, info_queue, card)
         return { vars = { card.ability.extra.hands_played, card.ability.extra.required_hands, card.ability.extra.tags } }
     end,
     calculate = function(self, card, context)
         if context.joker_main and not context.repetition and not context.blueprint then
             local hand_type = context.scoring_name
-            if hand_type and not G.GAME.hnds_unique_hands then
-                G.GAME.hnds_unique_hands = {}
-            end
-            if hand_type and G.GAME.hnds_unique_hands then
-                if not G.GAME.hnds_unique_hands[hand_type] then
-                    G.GAME.hnds_unique_hands[hand_type] = true
+            if hand_type and card.ability.extra.unique_hands then
+                if not card.ability.extra.unique_hands[hand_type] then
+                    card.ability.extra.unique_hands[hand_type] = true
                     card.ability.extra.hands_played = card.ability.extra.hands_played + 1
                     if card.ability.extra.hands_played >= card.ability.extra.required_hands then
                         card.ability.extra.complete = true
@@ -42,8 +39,10 @@ SMODS.Joker {
             G.E_MANAGER:add_event(Event({
                 func = function()
                     local tag_types = {}
-                    for k, _ in pairs(G.P_TAGS) do
-                        table.insert(tag_types, k)
+                    for k, v in pairs(G.P_TAGS) do
+                        if not v.in_pool or v:in_pool() then
+                            table.insert(tag_types, k)
+                        end
                     end
 
                     for i = 1, card.ability.extra.tags do
@@ -58,12 +57,6 @@ SMODS.Joker {
                     return true
                 end
             }))
-        end
-    end,
-    add_to_deck = function(self, card, from_debuff)
-        -- Initialize unique hands tracking if not exists
-        if not G.GAME.hnds_unique_hands then
-            G.GAME.hnds_unique_hands = {}
         end
     end,
     joker_display_def = function(JokerDisplay)
