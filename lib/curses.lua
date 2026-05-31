@@ -283,8 +283,6 @@ G.CURSE_PRICES = {
         end
     },
     -- 3. Set money to 0
-    -- Uses a 0.7s delay so the event fires AFTER buy_from_shop's cost
-    -- deduction has been applied, preventing negative money.
     [3] = {
         id = 'price_bankrupt',
         func = function(card, context)
