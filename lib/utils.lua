@@ -298,19 +298,6 @@ function HNDS.get_shop_joker_tags()
 	return tag_list
 end
 
--- Rarity cycling system: Common -> Uncommon -> Rare -> Epic(Cryptid)/Legendary -> Common.
--- Used by effects that upgrade or cycle a joker's rarity.
-HNDS.rarity_cycle = {
-	Common = "Uncommon",
-	Uncommon = "Rare",
-	Rare = next(SMODS.find_mod("Cryptid")) and "cry_epic" or "Legendary",
-	Legendary = "Common"
-}
-
-HNDS.get_next_rarity = function(rarity_key)
-	return HNDS.rarity_cycle[rarity_key]
-end
-
 -- Get a random soul joker for defeating a blind (supports custom soul definitions).
 -- `blind` should be G.GAME.blind. Other mods can define `blind.config.blind.hnds_soul`
 -- to provide their own soul reward pools.
