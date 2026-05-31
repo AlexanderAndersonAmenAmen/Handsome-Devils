@@ -290,14 +290,26 @@ G.CURSE_PRICES = {
         func = function(card, context)
             if context.buying_card then
                 if G and G.E_MANAGER and Event then
+                    local attempts = 0
                     G.E_MANAGER:add_event(Event({
                         trigger = 'after',
-                        delay = 0.7,
+                        delay = 0.1,
                         func = function()
-                            local current_dollars = tonumber(G.GAME and G.GAME.dollars) or 0
-                            if current_dollars > 0 then
-                                ease_dollars(-current_dollars, true)
+                            attempts = attempts + 1
+                            if attempts < 30 and card and card.area and (card.area == G.shop_jokers or card.area == G.shop_booster) then
+                                return false
                             end
+                            G.E_MANAGER:add_event(Event({
+                                trigger = 'after',
+                                delay = 0.1,
+                                func = function()
+                                    local current_dollars = tonumber(G.GAME and G.GAME.dollars) or 0
+                                    if current_dollars > 0 then
+                                        ease_dollars(-current_dollars, true)
+                                    end
+                                    return true
+                                end
+                            }))
                             return true
                         end
                     }))
