@@ -2,7 +2,7 @@ SMODS.Joker {
     key = "one_punchline_man",
     atlas = "Jokers",
     pos = { x = 9, y = 4 },
-    rarity = "Rare",
+    rarity = 3,
     cost = 10,
     unlocked = true,
     discovered = true,

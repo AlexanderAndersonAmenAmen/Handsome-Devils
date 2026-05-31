@@ -1,16 +1,15 @@
 SMODS.Joker({
-	key = "color_of_madness", --joker key
-	atlas = "Jokers", --atlas' key
+	key = "color_of_madness",
+	atlas = "Jokers",
 	pos = { x = 4, y = 2 },
-	rarity = 2, --rarity: 1 = Common, 2 = Uncommon, 3 = Rare, 4 = Legendary
-	--soul_pos = { x = 0, y = 0 },
-	cost = 4, --cost
-	unlocked = true, --whether it is unlocked or not
-	discovered = true, --whether or not it starts discovered
-	blueprint_compat = false, --can it be blueprinted/brainstormed/other
+	rarity = 2,
+	cost = 4,
+	unlocked = true,
+	discovered = true,
+	blueprint_compat = false,
 	demicoloncompat = true,
-	eternal_compat = true, --can it be eternal
-	perishable_compat = true, --can it be perishable
+	eternal_compat = true,
+	perishable_compat = true,
 	config = {
 		extra = {
 			suits_needed = 4,
