@@ -16,6 +16,11 @@ SMODS.Tag {
                 G.play.T.y + G.play.T.h/2 - G.CARD_H*1.27/2, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[key], {bypass_discovery_center = true, bypass_discovery_ui = true})
                 booster.cost = 0
                 booster.from_tag = true
+                if tag.ability and tag.ability.hnds_forced then
+                    if not (HNDS and HNDS.joker_slots_full_of_unmovables and HNDS.joker_slots_full_of_unmovables()) then
+                        G.GAME.hnds_forced_pack_no_skip = true
+                    end
+                end
                 G.FUNCS.use_card({config = {ref_table = booster}})
                 booster:start_materialize()
                 G.CONTROLLER.locks[lock] = nil

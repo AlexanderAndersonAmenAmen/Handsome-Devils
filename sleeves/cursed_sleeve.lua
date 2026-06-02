@@ -16,7 +16,6 @@ CardSleeves.Sleeve({
     end,
     apply = function(self)
         -- Base effect: Initialize cursed deck variables
-        G.GAME.hnds_cursed_pack_queued = false
         G.GAME.hnds_cursed_pack_opened = false
 
         -- Sleeve additional effect: Enable rare-only for first cursed pack when paired with Cursed Deck
@@ -28,9 +27,12 @@ CardSleeves.Sleeve({
     end,
     calculate = function(self, sleeve, context)
         -- Base effect: Cursed pack on first boss blind (same as deck)
-        if context.end_of_round and context.main_eval and context.beat_boss and G.GAME.round_resets.ante == 1 and not G.GAME.hnds_cursed_pack_queued and not G.GAME.hnds_cursed_pack_opened then
-            G.GAME.hnds_cursed_pack_queued = true
+        if context.end_of_round and context.main_eval and context.beat_boss and G.GAME.round_resets.ante == 1 and not G.GAME.hnds_cursed_pack_opened then
             G.GAME.hnds_cursed_pack_opened = true
+            local tag = Tag('tag_hnds_cursed_tag')
+            tag.ability = tag.ability or {}
+            tag.ability.hnds_forced = true
+            add_tag(tag)
         end
     end,
 })
