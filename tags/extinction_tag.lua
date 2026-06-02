@@ -4,6 +4,9 @@ SMODS.Tag {
     atlas = "HDtags",
     pos = { x = 4, y = 0 },
     discovered = true,
+    in_pool = function(self)
+        return true
+    end,
     apply = function(self, tag, context)
         if context.type == 'new_blind_choice' or context.type == 'hnds_after_hand' then
             local lock = tag.ID
