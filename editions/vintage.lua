@@ -19,7 +19,7 @@ SMODS.Edition({
 		return { vars = {} }
 	end,
 	calculate = function(self, card, context)
-		if (context.cardarea == G.jokers or context.cardarea == G.hand) and (context.end_of_round and context.main_eval or context.playing_card_end_of_round) then
+		if not card.debuff and (context.cardarea == G.jokers or context.cardarea == G.hand) and (context.end_of_round and context.main_eval or context.playing_card_end_of_round) then
 			return { dollars = math.floor(math.min(G.GAME.dollars, G.GAME.interest_cap) / 5)}
 		end
 	end
