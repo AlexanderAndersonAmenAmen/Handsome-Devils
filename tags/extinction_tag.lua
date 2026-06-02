@@ -4,8 +4,11 @@ SMODS.Tag {
     atlas = "HDtags",
     pos = { x = 4, y = 0 },
     discovered = true,
-    in_pool = function(self)
-        return true
+    in_pool = function(self, args)
+        if args and args.append then
+            return false
+        end
+        return G.GAME.round_resets.ante >= 3
     end,
     apply = function(self, tag, context)
         if context.type == 'new_blind_choice' or context.type == 'hnds_after_hand' then
