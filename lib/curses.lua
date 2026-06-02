@@ -246,7 +246,7 @@ G.CURSE_PRICES = {
         func = function(card, context)
             if context.buying_card then
                 for i=#G.jokers.cards, 1, -1 do
-                    if G.jokers.cards[i] ~= card then
+                    if G.jokers.cards[i] ~= card and not (G.jokers.cards[i].ability and G.jokers.cards[i].ability.eternal) then
                         G.jokers.cards[i]:start_dissolve()
                     end
                 end
