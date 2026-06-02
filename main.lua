@@ -98,15 +98,6 @@ SMODS.current_mod.calculate = function(self, context)
 		spawn_queued_booster('p_hnds_spectral_ultra')
 		G.GAME.hnds_crystal_queued = nil
 	end
-	if context.starting_shop and G.GAME.hnds_cursed_pack_queued then
-		spawn_queued_booster('p_hnds_cursed_pack', function(booster)
-			-- Force the player to pick a card unless all joker slots are filled with eternals
-			if not (HNDS and HNDS.joker_slots_full_of_unmovables and HNDS.joker_slots_full_of_unmovables()) then
-				G.GAME.hnds_forced_pack_no_skip = true
-			end
-		end)
-		G.GAME.hnds_cursed_pack_queued = nil
-	end
 	-- Arthur Joker: inject an Art card into any opened booster pack
 	if context.open_booster and G.GAME.art_queue > 0 then
 		G.E_MANAGER:add_event(Event({

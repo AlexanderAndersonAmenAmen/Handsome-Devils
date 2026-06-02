@@ -51,6 +51,7 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 				if offer or price then
 					-- Build dynamic description
 					local desc_lines = {}
+					local offer_lines_count = 0
 					
 					if display_mode == 'offer' and offer then
 						local offer_loc = G.localization.descriptions.Other[offer]
@@ -67,22 +68,11 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 							end
 						end
 					else
-						local offer_title = G.localization.descriptions.Other.hnds_cursed_offer_title
-						if offer_title and offer_title.text then
-							for _, line in ipairs(offer_title.text) do
-								table.insert(desc_lines, line)
-							end
-						end
 						local offer_loc = offer and G.localization.descriptions.Other[offer]
 						if offer_loc and offer_loc.text then
 							for _, line in ipairs(offer_loc.text) do
 								table.insert(desc_lines, line)
-							end
-						end
-						local price_title = G.localization.descriptions.Other.hnds_cursed_price_title
-						if price_title and price_title.text then
-							for _, line in ipairs(price_title.text) do
-								table.insert(desc_lines, line)
+								offer_lines_count = offer_lines_count + 1
 							end
 						end
 						local price_loc = price and G.localization.descriptions.Other[price]
@@ -109,6 +99,15 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 					end
 					-- Call original localize
 					local result = localize_ref(args, misc_cat, misc_loc, silent)
+					
+					-- Insert a native UI separator line between offer and price
+					if offer_lines_count > 0 and args.nodes then
+						local separator_line = {
+							{n=G.UIT.C, config={align = "cm", minh = 0.03, minw = 2.4, colour = G.C.UI.TEXT_INACTIVE}}
+						}
+						table.insert(args.nodes, offer_lines_count + 1, separator_line)
+					end
+					
 					-- Restore original entry
 					if loc_entry then
 						loc_entry.text = original_text
