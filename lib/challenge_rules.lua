@@ -188,13 +188,7 @@ function Card:add_to_deck(from_debuff)
 	local ret = add_to_deck_ref(self, from_debuff)
 	if not from_debuff then
 		if self.ability and self.ability.hnds_curse then
-			G.E_MANAGER:add_event(Event{ --cursed sound
-				blockable = false, blocking = false,
-				func = function (n)
-					play_sound("hnds_curse_used")
-					return true
-				end
-			})
+			play_sound("hnds_curse_used")
 		end
 		try_devils_round_curse(self)
 		if self.ability and self.ability.hnds_curse and not self.ability.hnds_curse_acquire_triggered
