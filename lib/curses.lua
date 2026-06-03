@@ -450,6 +450,11 @@ function HNDS.poll_curse(type, append)
     return roll
 end
 
+SMODS.Sound{
+    key = "curse_used",
+    path = "CursedLaugh.ogg",
+}
+
 SMODS.Sticker {
     key = 'hnds_cursed',
     atlas = 'Stickers',

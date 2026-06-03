@@ -214,6 +214,13 @@ function Card:add_to_deck(from_debuff)
 		if self.ability and self.ability.hnds_curse and not self.ability.hnds_curse_acquire_triggered
 			and trigger_curse and type(trigger_curse) == 'function' then
 			trigger_curse(self, {buying_card = true, challenge_creation = true})
+			G.E_MANAGER:add_event(Event{ --cursed sound
+				blockable = false, blocking = false,
+				func = function (n)
+					play_sound("hnds_curse_used")
+					return true
+				end
+			})
 		end
 	end
 	return ret
