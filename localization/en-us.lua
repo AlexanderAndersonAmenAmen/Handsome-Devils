@@ -823,31 +823,26 @@ return {
 			hnds_cursed = { -- Display in the Collection
 				name = "Cursed",
 				text = {
-					"You get an {C:green}Offer{}:",
-					"{C:inactive}({C:green}no offer{C:inactive}){}",
-					"for a {C:red}Price{}:",
-					"{C:inactive}({C:red}no price{C:inactive}){}",
+					"Extra {C:green}power{} but",
+					"at what {C:red}cost{}?",
 				}
 			},
 			-- Cursed Offers Descriptions
 			offer_copy_random_tarot = {
 				text = {
 					"Creates a {C:tarot}Tarot{}",
-					"card at the end",
-					"of the {C:attention}round{}",
+					"card each round",
 				},
 			},
 			offer_copy_random_planet = {
 				text = {
 					"Creates a {C:planet}Planet{}",
-					"card at the end",
-					"of the {C:attention}round{}",
+					"card each round",
 				},
 			},
 			offer_random_enhancement = {
 				text = {
-					"Give random",
-					"{C:attention}Enhancements{} to",
+					"Randomly enhance",
 					"{C:attention}8{} cards in deck",
 				},
 			},
@@ -859,7 +854,7 @@ return {
 			},
 			offer_retrigger = {
 				text = {
-					"{C:attention}Retriggers{} an",
+					"Retriggers an",
 					"additional time",
 				},
 			},
@@ -891,7 +886,7 @@ return {
 			price_destroy_cards = {
 				text = {
 					"Destroy {C:attention}8{} random",
-					"cards in your deck",
+					"cards in deck",
 				},
 			},
 			price_bankrupt = {
@@ -901,8 +896,9 @@ return {
 			},
 			price_inflation = {
 				text = {
-					"Permanently increase",
-					"all {C:attention}shop prices{} by {C:red}25%{}",
+					"{C:red}+25%{} mark up on all",
+					"cards and packs in",
+					"shop permanently",
 				},
 			},
 			price_lose_hand = {
@@ -925,8 +921,8 @@ return {
 			},
 			price_ante_scaling = {
 				text = {
-					"All {C:attention}Blinds{} become {C:red}50%{}",
-					"bigger permanently",
+					"{C:red}+50%{} base Blind",
+					"size permanently",
 				},
 			},
 		},
