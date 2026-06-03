@@ -1,0 +1,21 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# fix the bottle doing like a million context calculations
+[[patches]]
+[patches.pattern]
+target = '''=[SMODS ortalab "objects/loteria.lua"]'''
+pattern = "bottle_randomise(new_cards[i])"
+position = "before"
+payload = "G._ortalab_bottle_rolling = true"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = '''=[SMODS ortalab "objects/loteria.lua"]'''
+pattern = "bottle_randomise(new_cards[i])"
+position = "after"
+payload = "G._ortalab_bottle_rolling = nil"
+match_indent = true

@@ -17,7 +17,7 @@ SMODS.Joker({
     discovered = true,
     blueprint_compat = false,
     calculate = function(self, card, context)
-        if context.setting_ability and context.old and context.old ~= "c_base" and context.new ~= "c_base" and not context.unchanged then
+        if context.setting_ability and context.old and context.old ~= "c_base" and context.new ~= "c_base" and not context.unchanged and not G._ortalab_bottle_rolling then
             print(context.old)
             if HNDS and HNDS.XMOD and HNDS.XMOD.perfectionist_should_apply and not HNDS.XMOD.perfectionist_should_apply(context) then
                 return
