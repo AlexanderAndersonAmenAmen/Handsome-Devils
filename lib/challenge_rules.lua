@@ -210,10 +210,7 @@ local add_to_deck_ref = Card.add_to_deck
 function Card:add_to_deck(from_debuff)
 	local ret = add_to_deck_ref(self, from_debuff)
 	if not from_debuff then
-		try_devils_round_curse(self)
-		if self.ability and self.ability.hnds_curse and not self.ability.hnds_curse_acquire_triggered
-			and trigger_curse and type(trigger_curse) == 'function' then
-			trigger_curse(self, {buying_card = true, challenge_creation = true})
+		if self.ability and self.ability.hnds_curse then
 			G.E_MANAGER:add_event(Event{ --cursed sound
 				blockable = false, blocking = false,
 				func = function (n)
@@ -221,6 +218,11 @@ function Card:add_to_deck(from_debuff)
 					return true
 				end
 			})
+		end
+		try_devils_round_curse(self)
+		if self.ability and self.ability.hnds_curse and not self.ability.hnds_curse_acquire_triggered
+			and trigger_curse and type(trigger_curse) == 'function' then
+			trigger_curse(self, {buying_card = true, challenge_creation = true})
 		end
 	end
 	return ret
