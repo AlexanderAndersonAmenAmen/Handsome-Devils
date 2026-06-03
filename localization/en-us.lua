@@ -860,8 +860,8 @@ return {
 			},
 			offer_interest_cap = {
 				text = {
-					"Raises interest",
-					"cap by {C:money}$5{}",
+					"Raises the cap",
+					"on interest by {C:money}$5{}",
 				},
 			},
 			offer_free_rerolls = {
@@ -879,7 +879,7 @@ return {
 			-- Cursed Prices Descriptions
 			price_destroy_jokers = {
 				text = {
-					"Destroy all",
+					"Destroy your",
 					"other Jokers"
 				},
 			},
