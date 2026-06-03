@@ -1056,9 +1056,9 @@ return {
 			tag_hnds_extinction_tag = {
 				name = "Extinction Tag",
 				text = {
-					"Replace all held {C:attention}Jokers{}",
-					"with new ones of the",
-					"{C:attention}same rarity{}",
+					"Replace your {C:attention}Jokers{}",
+					"with new ones of",
+					"the {C:attention}same rarity{}",
 				},
 			},
 		},
