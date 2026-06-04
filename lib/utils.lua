@@ -519,7 +519,7 @@ function replace_jokers_keep_rarity(jokers, sticker_removal_chance)
 					-- Wait then reshape
 					G.E_MANAGER:add_event(Event({
 						trigger = 'after',
-						delay = 0.4,
+						delay = i == 1 and 0.2 or 0.4,
 						func = function()
 							-- Remove from deck if method exists
 							if card.remove_from_deck and type(card.remove_from_deck) == 'function' then
