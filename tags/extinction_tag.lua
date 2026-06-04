@@ -9,7 +9,10 @@ SMODS.Tag {
     end,
     apply = function(self, tag, context)
         if context.type == 'new_blind_choice' then
-            replace_jokers_keep_rarity(G.jokers.cards, 0.5)
+            tag:yep('+', G.C.GREEN, function()
+                replace_jokers_keep_rarity(G.jokers.cards, 0.5)
+                return true
+            end)
             tag.triggered = true
             return true
         end
