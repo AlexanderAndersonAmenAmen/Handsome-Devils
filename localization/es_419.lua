@@ -633,9 +633,8 @@ return {
 			c_hnds_cycle = {
 				name = "Ciclo",
 				text = {
-					"Otorga {C:attention}#1#{} {C:green}Renovaciones{}",
-					"gratis en la tienda hasta",
-					"el final de la ronda",
+					"Transforma todos tus {C:attention}Comodines{}",
+					"en otros de la misma {C:attention}rareza{}",
 				},
 			},
 			c_hnds_petrify = {
@@ -856,7 +855,8 @@ return {
 			},
 			price_inflation = {
 				text = {
-					"Aumenta todos los {C:money}precios{}",
+					"Aumenta {C:money}precios{} de las {C:attention}Cartas{}",
+					"y {C:attention}Paquetes Potenciadores{}",
 					"en un {C:red}25%{}",
 				},
 			},
@@ -1049,9 +1049,8 @@ return {
 			tag_hnds_extinction_tag = {
 				name = "Etiqueta de Extinción",
 				text = {
-					"Reemplaza todos los {C:attention}Comodines{}",
-					"que poseas por otros de la",
-					"misma {C:attention}rareza{}",
+					"Transforma todos tus {C:attention}Comodines{}",
+					"en otros de la misma {C:attention}rareza{}",
 				},
 			},
 		},

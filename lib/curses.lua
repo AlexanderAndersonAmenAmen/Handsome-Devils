@@ -328,8 +328,6 @@ G.CURSE_PRICES = {
             if not context.buying_card then return end
 
             G.GAME.hnds_curse_inflation_count = (G.GAME.hnds_curse_inflation_count or 0) + 1
-            G.GAME.discount_percent = (G.GAME.discount_percent or 0) - 25
-            
             G.GAME.hnds_price_multiplier = (G.GAME.hnds_price_multiplier or 1) * 1.25
 
             if G.shop_jokers and G.shop_jokers.cards then
@@ -339,6 +337,11 @@ G.CURSE_PRICES = {
             end
             if G.shop_booster and G.shop_booster.cards then
                 for _, c in ipairs(G.shop_booster.cards) do
+                    if c and c.set_cost then c:set_cost() end
+                end
+            end
+            if G.shop_consumables and G.shop_consumables.cards then
+                for _, c in ipairs(G.shop_consumables.cards) do
                     if c and c.set_cost then c:set_cost() end
                 end
             end
@@ -383,8 +386,8 @@ G.CURSE_PRICES = {
     [8] = {
         id = 'price_ante_scaling',
         func = function(card, context)
-            if not (context and context.buying_card and G and G.GAME and G.GAME.starting_params) then return end
-            G.GAME.starting_params.ante_scaling = (G.GAME.starting_params.ante_scaling or 1) * 1.50
+            if not (context and context.buying_card and G and G.GAME and G.GAME.modifiers) then return end
+            G.GAME.modifiers.hnds_base_blind_increase = true
         end
     }
 }

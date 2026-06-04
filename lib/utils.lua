@@ -464,3 +464,101 @@ function HNDS.DeckOrSleeve(key)
 	end
 	return num > 0 and num or nil
 end
+
+-- Shared Cycle / Extinction tag code
+-- Preserves all stickers/editions; %0% chance of removing stickers
+-- Ignores Eternal and Cursed Sticker
+function replace_jokers_keep_rarity(jokers, sticker_removal_chance)
+	if not jokers or #jokers == 0 then return end
+	
+	local replacements = {}
+	
+	-- Pre-calculate all replacements
+	for i, card in ipairs(jokers) do
+		local rarity = card.config.center.rarity
+		local pool = {}
+		local src = G.P_JOKER_RARITY_POOLS and G.P_JOKER_RARITY_POOLS[rarity] or G.P_CENTER_POOLS['Joker']
+		
+		-- Build pool excluding current joker
+		for _, center in ipairs(src) do
+			if center.key ~= card.config.center.key then
+				pool[#pool + 1] = center
+			end
+		end
+		
+		local new_center = nil
+		if #pool > 0 then
+			new_center = pseudorandom_element(pool, pseudoseed('replace_joker' .. i))
+		end
+		
+		-- Roll for sticker removal
+		local remove_stickers = pseudorandom('replace_sticker' .. i) < sticker_removal_chance
+		
+		-- Preserve Cursed Sticker
+		local has_cursed = card.ability and card.ability.hnds_cursed
+		local curse_data = has_cursed and card.ability.hnds_curse and copy_table(card.ability.hnds_curse) or nil
+		
+		replacements[i] = {
+			card = card,
+			center = new_center,
+			remove_stickers = remove_stickers,
+			has_cursed = has_cursed,
+			curse_data = curse_data,
+		}
+	end
+	
+	-- Perform replacements with reshape animation
+	for i, rep in ipairs(replacements) do
+		if rep.center then
+			G.E_MANAGER:add_event(Event({
+				trigger = 'after',
+				delay = i == 1 and 0 or 0.45,
+				func = function()
+					local card = rep.card
+					
+					-- Wait then reshape
+					G.E_MANAGER:add_event(Event({
+						trigger = 'after',
+						delay = 0.4,
+						func = function()
+							-- Remove from deck if method exists
+							if card.remove_from_deck and type(card.remove_from_deck) == 'function' then
+								pcall(card.remove_from_deck, card)
+							end
+							
+							-- Change ability (preserves position, edition, stickers by default)
+							card:set_ability(rep.center, true)
+							
+							-- Re-add to deck
+							card:add_to_deck()
+							
+							-- Remove stickers if roll failed (Eternal and Cursed ignored)
+							if rep.remove_stickers then
+								-- Remove base stickers
+								if card.ability then
+									card.ability.perishable = nil
+									card.ability.rental = nil
+								end
+								-- Remove modded stickers
+								if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
+									for _, k in ipairs(SMODS.Sticker.obj_buffer) do
+										if card.ability and card.ability[k] then
+											card.ability[k] = nil
+										end
+									end
+								end
+							end
+							
+							-- Materialize animation
+							card:start_materialize()
+							card:juice_up(0.5, 0.3)
+							play_sound('card1', 1 + (i - 1) * 0.05, 0.6)
+							return true
+						end
+					}))
+					return true
+				end
+			}))
+		end
+	end
+end

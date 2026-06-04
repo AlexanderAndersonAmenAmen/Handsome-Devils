@@ -5,11 +5,9 @@ Sections:
   Badge colour
   Cursed Sticker exclusivity
   Platinum Stake
-  Cycle Spectral (free rerolls cleanup)
   Career stats & card destruction unlocks (Energized, Last Laugh)
   Black Seal & voucher card destruction / scoring
   Card cost modifications (Coffee Break, Art, Premium Deck, Curses)
-  CardArea.emplace safety guards
   Shop card creation (Most Wanted, Blood Stake curses)
   Krusty food negative edition
   DNA Tag joker copy
@@ -17,6 +15,7 @@ Sections:
   Crystal Deck (double-showdown boss selection)
   Challenge description tab edition patch
   Impostor rank-spoofing system
+  Base blind increase curse (price_ante_scaling)
   end_round dispatcher (calls per-subsystem functions)
   Blind.set_blind dispatcher (calls per-subsystem functions)
 ]]
@@ -292,20 +291,6 @@ if not _G._hnds_wrapped_blind_choice then
 end
 
 -------------------------------------------------------------------
--- CYCLE REROLL CLEANUP
--------------------------------------------------------------------
-
--- remove free rerolls granted by Cycle, the reason why is at the end of the round instead of when leaving the shop is Cryptid
-local function hnds_end_round_cycle_spectral()
-	if G.GAME.hnds_cycle_free_rerolls and G.GAME.hnds_cycle_free_rerolls > 0 then
-		G.GAME.current_round.free_rerolls = math.max(0,
-			G.GAME.current_round.free_rerolls - G.GAME.hnds_cycle_free_rerolls)
-		G.GAME.hnds_cycle_free_rerolls = 0
-		calculate_reroll_cost(true)
-	end
-end
-
--------------------------------------------------------------------
 -- CARD DESTRUCTION UNLOCKS (Energized, Last Laugh)
 -------------------------------------------------------------------
 
@@ -404,9 +389,9 @@ function Card.set_cost(self)
 		self.cost = math.floor(self.cost + G.GAME.round_resets.ante)
 	end
 
-	-- Curse price multiplier (affects jokers and boosters)
+	-- Curse price multiplier (affects jokers, boosters, and consumables; NOT vouchers)
 	if G.GAME and G.GAME.hnds_price_multiplier and G.GAME.hnds_price_multiplier > 1 then
-		if set == "Joker" or set == "Booster" then
+		if set == "Joker" or set == "Booster" or set == "Consumable" then
 			self.cost = math.max(0, math.floor(self.cost * G.GAME.hnds_price_multiplier))
 		end
 	end
@@ -867,8 +852,6 @@ local end_round_ref = end_round
 function end_round(...)
 	-- Platinum Stake: double next blind if player scored >2x the required chips
 	hnds_end_round_platinum_stake()
-	-- Cycle Spectral: remove free rerolls granted by the Cycle consumable
-	hnds_end_round_cycle_spectral()
 
 	local ret = end_round_ref(...)
 
@@ -915,15 +898,14 @@ function HNDS_setup_cursed_sticker_hook(sticker)
 end
 
 -------------------------------------------------------------------
--- EXTINCTION TAG: PREVENT SELF DESTRUCTION OF JOKERS BEFORE EXTINCTION ACTIVATES
+-- CURSE: BASE BLIND INCREASE (price_ante_scaling)
 -------------------------------------------------------------------
--- Prevent external destruction of jokers during extinction animation
 
-local start_dissolve_ref = Card.start_dissolve
-function Card:start_dissolve(dissolve_time, first_dissolve)
-	-- Check if this joker is protected by extinction animation
-	if self.ability and self.ability.set == 'Joker' and self.hnds_extinction_prevent_external_destruction then
-		return false -- Prevent external destruction
+local get_blind_amount_ref = get_blind_amount
+function get_blind_amount(ante)
+	local amount = get_blind_amount_ref(ante)
+	if G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_base_blind_increase then
+		amount = math.floor(amount * 1.5)
 	end
-	return start_dissolve_ref(self, dissolve_time, first_dissolve)
+	return amount
 end

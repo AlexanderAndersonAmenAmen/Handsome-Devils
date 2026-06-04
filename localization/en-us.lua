@@ -635,8 +635,8 @@ return {
 			c_hnds_cycle = {
 				name = "Cycle",
 				text = {
-					"Gain {C:attention}#1#{} free {C:green}Rerolls{}",
-					"until next {C:attention}Blind{}",
+					"Reroll all your {C:attention}Jokers{} into",
+					"new ones of the {C:attention}same rarity{}",
 				},
 			},
 			c_hnds_petrify = {
@@ -1056,9 +1056,8 @@ return {
 			tag_hnds_extinction_tag = {
 				name = "Extinction Tag",
 				text = {
-					"Replace your {C:attention}Jokers{}",
-					"with new ones of",
-					"the {C:attention}same rarity{}",
+					"Reroll all your {C:attention}Jokers{} into",
+					"new ones of the {C:attention}same rarity{}",
 				},
 			},
 		},

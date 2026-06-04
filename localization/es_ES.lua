@@ -478,7 +478,7 @@ return {
 				text = {
 					"En la Apuesta {C:attention}4{},",
 					"enfrentas una {C:attention}Ciega Final{}",
-					"ganas obtienes",
+					"si ganas obtienes",
 					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Paquete Espectral{}",
 				}
 			},
@@ -633,9 +633,8 @@ return {
 			c_hnds_cycle = {
 				name = "Ciclo",
 				text = {
-					"Otorga {C:attention}#1#{} {C:green}Renovaciones{}",
-					"gratis en la tienda hasta",
-					"el final de la ronda",
+					"Transforma todos tus {C:attention}Comodines{}",
+					"en otros de la misma {C:attention}rareza{}",
 				},
 			},
 			c_hnds_petrify = {
@@ -856,7 +855,8 @@ return {
 			},
 			price_inflation = {
 				text = {
-					"Aumenta todos los {C:money}precios{}",
+					"Aumenta {C:money}precios{} de las {C:attention}Cartas{}",
+					"y {C:attention}Paquetes Potenciadores{}",
 					"en un {C:red}25%{}",
 				},
 			},
@@ -955,7 +955,7 @@ return {
 				},
 			},
 			v_hnds_wholesale = {
-				name = "Oferta de Paquetes",
+				name = "Mayorista de Paquetes",
 				text = {
 					"Agrega {C:attention}1{} {C:attention}Paquete{}",
 					"{C:attention}Potenciador{} a las tiendas",
@@ -1049,9 +1049,8 @@ return {
 			tag_hnds_extinction_tag = {
 				name = "Etiqueta de Extinción",
 				text = {
-					"Reemplaza todos los {C:attention}Comodines{}",
-					"que poseas por otros de la",
-					"misma {C:attention}rareza{}",
+					"Transforma todos tus {C:attention}Comodines{}",
+					"en otros de la misma {C:attention}rareza{}",
 				},
 			},
 		},
@@ -1154,9 +1153,6 @@ return {
 		},
 		poker_hand_descriptions = {
 			hnds_stone_ocean = { "Una mano de 5 cartas de piedra" },
-		},
-		ranks = {
-			hnds_creepycard = 'Algo está mal...',
 		},
 	},
 }
