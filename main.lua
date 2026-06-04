@@ -388,5 +388,4 @@ if CardSleeves then
     assert(SMODS.load_file("sleeves/ol_sleeve.lua"))()
 end
 assert(SMODS.load_file("lib/curses.lua"))()
-assert(SMODS.load_file("lib/cross_mod_compat.lua"))()
 assert(SMODS.load_file("lib/challenge_rules.lua"))()
