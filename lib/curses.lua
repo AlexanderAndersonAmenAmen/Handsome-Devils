@@ -383,11 +383,12 @@ G.CURSE_PRICES = {
             end
         end
     },
+    -- 8. Ante Scaling
     [8] = {
         id = 'price_ante_scaling',
         func = function(card, context)
             if not (context and context.buying_card and G and G.GAME and G.GAME.modifiers) then return end
-            G.GAME.modifiers.hnds_base_blind_increase = true
+            G.GAME.modifiers.hnds_base_blind_increase = (G.GAME.modifiers.hnds_base_blind_increase or 0) + 1
         end
     }
 }
@@ -917,4 +918,16 @@ function trigger_curse(card, context)
         if ok then price_ret = ret_or_err end
     end
     return acquire_ret or offer_ret or price_ret
+end
+
+-- Hook set_cost to apply inflation curse multiplier
+local set_cost_ref = Card.set_cost
+function Card:set_cost()
+    set_cost_ref(self)
+    local mult = G and G.GAME and G.GAME.hnds_price_multiplier
+    if mult and mult > 1 and self.cost then
+        self.cost = math.max(1, math.floor(self.cost * mult + 0.5))
+        self.sell_cost = math.max(1, math.floor(self.cost/2)) + (self.ability.extra_value or 0)
+        self.sell_cost_label = self.facing == 'back' and '?' or self.sell_cost
+    end
 end

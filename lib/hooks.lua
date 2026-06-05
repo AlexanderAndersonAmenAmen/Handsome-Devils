@@ -904,8 +904,9 @@ end
 local get_blind_amount_ref = get_blind_amount
 function get_blind_amount(ante)
 	local amount = get_blind_amount_ref(ante)
-	if G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_base_blind_increase then
-		amount = math.floor(amount * 1.5)
+	local count = G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_base_blind_increase
+	if count and count > 0 then
+		amount = math.floor(amount * (1.5 ^ count))
 	end
 	return amount
 end
