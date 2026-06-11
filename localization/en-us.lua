@@ -794,7 +794,7 @@ return {
 					"{C:attention}Stake{} difficulty",
 				}
 			},
-			hnds_blood_sticker = {
+			hnds_blood_stake_sticker = {
 				name = "Blood Sticker",
 				text = {
 					"Used this Joker",

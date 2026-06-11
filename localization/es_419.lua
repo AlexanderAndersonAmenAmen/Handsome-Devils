@@ -907,7 +907,7 @@ return {
                     "ganar el Pozo de {C:attention}Platino{}",
 				}
 			},
-			hnds_blood_sticker = {
+			hnds_blood_stake_sticker = {
 				name = "Sticker de Sangre",
 				text = {
 					"Usaste este comodín para",
