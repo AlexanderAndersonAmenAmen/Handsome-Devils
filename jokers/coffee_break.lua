@@ -32,10 +32,7 @@ SMODS.Joker({
 					return true
 				end,
 			}))
-			return {
-				message = localize("k_hnds_coffee"),
-				colour = G.C.CHIP,
-			}
+			return { message = localize("k_hnds_coffee"), colour = G.C.CHIP, }
 		end
 		local function advance_round()
 			card.ability.extra.coffee_rounds = card.ability.extra.coffee_rounds + 1
@@ -76,9 +73,7 @@ SMODS.Joker({
 			}
 		end
 		if context.selling_self and card.ability.extra.active then
-			return {
-				dollars = card.ability.extra.money,
-			}
+			return { dollars = card.ability.extra.money, }
 		end
 
 		if context.forcetrigger then
