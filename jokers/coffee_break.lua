@@ -11,12 +11,7 @@ SMODS.Joker({
 	eternal_compat = false,
 	perishable_compat = true,
 	config = {
-		extra = {
-			money = 35,
-			coffee_rounds = 0,
-			target = 2,
-			money_loss = 1,
-		},
+		extra = { money = 35, coffee_rounds = 0, target = 2, money_loss = 1, active = false },
 	},
 	pools = { Food = true },
 	loc_vars = function(self, info_queue, card)
@@ -30,6 +25,29 @@ SMODS.Joker({
 		}
 	end,
 	calculate = function(self, card, context)
+		local function dissolve_and_pop()
+			G.E_MANAGER:add_event(Event({
+				func = function()
+					card:start_dissolve({ G.C.GOLD })
+					return true
+				end,
+			}))
+			return {
+				message = localize("k_hnds_coffee"),
+				colour = G.C.CHIP,
+			}
+		end
+		local function advance_round()
+			card.ability.extra.coffee_rounds = card.ability.extra.coffee_rounds + 1
+			if card.ability.extra.coffee_rounds >= card.ability.extra.target and not card.ability.extra.active then
+				card.ability.extra.active = true
+				local eval = function()
+					return card.ability.extra.active
+				end
+				juice_card_until(card, eval, true)
+			end
+		end
+
 		if context.before then
 			for _, played_card in pairs(context.full_hand) do
 				SMODS.scale_card(card, {
@@ -46,27 +64,11 @@ SMODS.Joker({
 			end
 		end
 		if context.after and card.ability.extra.money <= 0 then
-			G.E_MANAGER:add_event(Event({
-				func = function()
-					card:start_dissolve({ G.C.GOLD })
-					return true
-				end,
-			}))
-			return {
-				message = localize("k_hnds_coffee"),
-				colour = G.C.CHIP,
-			}
+			return dissolve_and_pop()
 		end
 
 		if context.end_of_round and context.main_eval then
-			card.ability.extra.coffee_rounds = card.ability.extra.coffee_rounds + 1
-			if card.ability.extra.coffee_rounds == card.ability.extra.target then
-				card.ability.extra.active = true
-				local eval = function()
-					return card.ability.extra.active
-				end
-				juice_card_until(card, eval, true)
-			end
+			advance_round()
 			return {
 				message = card.ability.extra.active and localize("k_active_ex")
 					or card.ability.extra.coffee_rounds .. "/" .. card.ability.extra.target,
@@ -91,28 +93,10 @@ SMODS.Joker({
 				},
 			})
 			if card.ability.extra.money <= 0 then
-				G.E_MANAGER:add_event(Event({
-					func = function()
-						card:start_dissolve({ G.C.GOLD })
-						return true
-					end,
-				}))
-				return {
-					message = localize("k_hnds_coffee"),
-					colour = G.C.CHIP,
-				}
+				return dissolve_and_pop()
 			end
-			card.ability.extra.coffee_rounds = card.ability.extra.coffee_rounds + 1
-			if card.ability.extra.coffee_rounds == card.ability.extra.target then
-				card.ability.extra.active = true
-				local eval = function()
-					return card.ability.extra.active
-				end
-				juice_card_until(card, eval, true)
-			end
-			return {
-				dollars = card.ability.extra.money,
-			}
+			advance_round()
+			return { dollars = card.ability.extra.money, }
 		end
 	end,
 	-- TO DO Must improve this later
@@ -139,5 +123,5 @@ SMODS.Joker({
 			end
 		}
 	end,
-	attributes = { "economy", "on_sell" }
+	attributes = { "economy", "on_sell", "scaling", "food" } -- Ramen has scaling too so i guess descaling counts, you can check the Attribute section on smods wiki
 })
