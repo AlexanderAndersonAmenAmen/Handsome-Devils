@@ -393,67 +393,6 @@ G.CURSE_PRICES = {
     }
 }
 
-HNDS.Curses = {}
-HNDS.Curse = SMODS.GameObject:extend{
-    obj_table = HNDS.Curses,
-    obj_buffer = {},
-    required_params = {
-        "key",
-        "kind", -- "offer" or "price" for the different curse types
-    },
-    register = function (self)
-        if self.registered then
-            sendWarnMessage(('Detected duplicate register call on object %s'):format(self.key), self.set)
-            return
-        end
-        HNDS.Curse.super.register(self)
-    end,
-}
-function Card:hnds_calculate_curse(context)
-    if not self.ability then return end
-    local offer = self.ability.hnds_curse_offer
-    local price = self.ability.hnds_curse_price
-    local ret1, ret2
-    if offer and HNDS.Curses[offer] and HNDS.Curses[offer].calculate then
-        ret1 = HNDS.Curses[offer]:calculate(self, context)
-    end
-    if price and HNDS.Curses[price] and HNDS.Curses[price].calculate then
-        ret2 = HNDS.Curses[price]:calculate(self, context)
-    end
-    return ret1, ret2
-end
-function HNDS.poll_curse(type, append)
-    local pool = {}
-    for _, v in ipairs(HNDS.Curse.obj_buffer) do
-        local curse_obj = HNDS.Curses[v]
-        if curse_obj.type == type then
-            if (not curse_obj.in_pool or curse_obj:in_pool({ source = append })) and not G.GAME.banned_keys[v] then
-                pool[#pool+1] = v
-            else
-                pool[#pool+1] = "UNAVAILABLE"
-            end
-        end
-    end
-    local all_unavailable = true
-    for _, v in ipairs(pool) do
-        if v ~= "UNAVAILABLE" then all_unavailable = false end
-    end
-    if all_unavailable then
-        if type == "offer" then
-            pool[#pool+1] = "hnds_offer_copy_random_tarot"
-        elseif type == "price" then
-            pool[#pool+1] = "hnds_price_destroy_jokers"
-        end
-    end
-    local roll = pseudorandom_element(pool, append)
-    local it = 1
-    while roll == "UNAVAILABLE" do
-        roll = pseudorandom_element(pool, append.."resample"..it)
-        it = it + 1
-    end
-    return roll
-end
-
 SMODS.Sound{
     key = "curse_used",
     path = "CursedLaugh.ogg",
@@ -920,14 +859,3 @@ function trigger_curse(card, context)
     return acquire_ret or offer_ret or price_ret
 end
 
--- Hook set_cost to apply inflation curse multiplier
-local set_cost_ref = Card.set_cost
-function Card:set_cost()
-    set_cost_ref(self)
-    local mult = G and G.GAME and G.GAME.hnds_price_multiplier
-    if mult and mult > 1 and self.cost then
-        self.cost = math.max(1, math.floor(self.cost * mult + 0.5))
-        self.sell_cost = math.max(1, math.floor(self.cost/2)) + (self.ability.extra_value or 0)
-        self.sell_cost_label = self.facing == 'back' and '?' or self.sell_cost
-    end
-end

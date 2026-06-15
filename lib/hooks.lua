@@ -424,54 +424,89 @@ if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 end
 
 -------------------------------------------------------------------
--- KRUSTY (food negative edition)
+-- CREATE_CARD WRAPPER (Krusty + Devil's Round)
 -------------------------------------------------------------------
 
--- Krusty Food negative edition
-local create_card_ref = create_card
-function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
-	local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+-- Consolidated hook: Krusty negative edition + Devil's Round curse application.
+-- Each feature is a separate concern; both run independently.
+if not _G._hnds_wrapped_create_card then
+	_G._hnds_wrapped_create_card = true
+	local create_card_ref = create_card
+	function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+		local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
 
-	-- Krusty gives negative edition to Food cards when created
-	if card and next(SMODS.find_card("j_hnds_krusty")) and card.config then
-		for _, t in ipairs(G.P_CENTER_POOLS.Food) do
-			if t.key == card.config.center.key then
-				card:set_edition("e_negative")
-				break
+		-- Feature: Krusty gives negative edition to Food cards when created
+		if card and next(SMODS.find_card("j_hnds_krusty")) and card.config then
+			for _, t in ipairs(G.P_CENTER_POOLS.Food) do
+				if t.key == card.config.center.key then
+					card:set_edition("e_negative")
+					break
+				end
 			end
 		end
+
+		-- Feature: Devil's Round challenge - curse jokers on creation
+		if HNDS and HNDS.try_devils_round_curse then
+			HNDS.try_devils_round_curse(card)
+		end
+
+		return card
 	end
-	return card
 end
 
 -------------------------------------------------------------------
--- DNA TAG
+-- ADD_TO_DECK WRAPPER (DNA Tag + Devil's Round)
 -------------------------------------------------------------------
 
-if not Card._hnds_wrapped_add_to_deck_dna then
-	Card._hnds_wrapped_add_to_deck_dna = true
+-- Consolidated hook: DNA tag copies + Devil's Round curse application.
+-- Each feature is a separate concern; both run independently.
+if not Card._hnds_wrapped_add_to_deck then
+	Card._hnds_wrapped_add_to_deck = true
 	local add_to_deck_ref = Card.add_to_deck
 	function Card:add_to_deck(from_debuff)
 		local ret = add_to_deck_ref(self, from_debuff)
-		if not from_debuff and self.ability.hnds_copies_to_create then
-			for _ = 1, self.ability.hnds_copies_to_create do
-				if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
-					G.GAME.joker_buffer = G.GAME.joker_buffer + 1
-					local c = self
-					G.E_MANAGER:add_event(Event {
-						func = function()
-							local copy = copy_card(c)
-							copy.ability.hnds_copies_to_create = nil
-							copy:add_to_deck()
-							G.jokers:emplace(copy)
-							G.GAME.joker_buffer = 0
-							return true
-						end
-					})
+
+		if not from_debuff then
+			-- Feature: DNA Tag - create copies when hnds_copies_to_create is set
+			if self.ability and self.ability.hnds_copies_to_create then
+				for _ = 1, self.ability.hnds_copies_to_create do
+					if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
+						G.GAME.joker_buffer = G.GAME.joker_buffer + 1
+						local c = self
+						G.E_MANAGER:add_event(Event {
+							func = function()
+								local copy = copy_card(c)
+								copy.ability.hnds_copies_to_create = nil
+								copy:add_to_deck()
+								G.jokers:emplace(copy)
+								G.GAME.joker_buffer = 0
+								return true
+							end
+						})
+					end
+				end
+				self.ability.hnds_copies_to_create = nil
+			end
+
+			-- Feature: Devil's Round challenge - curse jokers on add to deck
+			if HNDS and HNDS.try_devils_round_curse then
+				HNDS.try_devils_round_curse(self)
+			end
+
+			-- Feature: Devil's Round - trigger curse acquire for challenge-created jokers
+			if HNDS and HNDS.is_challenge and HNDS.is_challenge('devils_round') then
+				if self.ability and self.ability.hnds_curse and not self.ability.hnds_curse_acquire_triggered
+					and trigger_curse and type(trigger_curse) == 'function' then
+					trigger_curse(self, {buying_card = true, challenge_creation = true})
 				end
 			end
-			self.ability.hnds_copies_to_create = nil
+
+			-- Play sound when cursed jokers are added (general, not just Devil's Round)
+			if self.ability and self.ability.hnds_curse then
+				play_sound("hnds_curse_used")
+			end
 		end
+
 		return ret
 	end
 end

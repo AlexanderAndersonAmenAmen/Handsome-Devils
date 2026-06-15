@@ -40,8 +40,10 @@ local function HNDS_dark_ritual_should_skip_shop()
 	return true
 end
 
-	local cash_out_ref = G.FUNCS.cash_out
-	function G.FUNCS.cash_out(e, delay_seconds)
+	if not G.FUNCS._hnds_wrapped_cash_out then
+		G.FUNCS._hnds_wrapped_cash_out = true
+		local cash_out_ref = G.FUNCS.cash_out
+		function G.FUNCS.cash_out(e, delay_seconds)
 		if not HNDS_dark_ritual_should_skip_shop() then
 			return cash_out_ref(e, delay_seconds)
 		end
@@ -82,6 +84,7 @@ end
 		end
 		return
 	end
+end
 
 -- Gambling Opportunity: banned money-generating enhancements, seals, and editions.
 -- Other mods can append to these tables to extend the ban list.
@@ -164,7 +167,8 @@ end
 
 -- Devil's Round: all jokers get cursed on creation.
 -- Shared helper: apply curse to a joker if it's eligible and the challenge is active.
-local function try_devils_round_curse(card)
+-- Exposed publicly so hooks.lua can invoke it from consolidated wrappers.
+function HNDS.try_devils_round_curse(card)
 	if not HNDS.is_challenge('devils_round') then return end
 	if not (card and card.config and card.config.center and card.config.center.set == 'Joker') then return end
 	if card.ability and card.ability.hnds_eternal_copy_created then return end
@@ -173,28 +177,3 @@ local function try_devils_round_curse(card)
 	apply_curse(card)
 end
 
--- Wrap three card-creation paths to ensure full coverage. (The first two literally require going through the third, who the fuck wrote this code)
-local create_card_ref = create_card
-function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
-	local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
-	try_devils_round_curse(card)
-	return card
-end
-
--- Also apply curses when a joker is added to the deck
--- (catches jokers that bypass the creation wrappers, e.g. from tags).
-local add_to_deck_ref = Card.add_to_deck
-function Card:add_to_deck(from_debuff)
-	local ret = add_to_deck_ref(self, from_debuff)
-	if not from_debuff then
-		if self.ability and self.ability.hnds_curse then
-			play_sound("hnds_curse_used")
-		end
-		try_devils_round_curse(self)
-		if self.ability and self.ability.hnds_curse and not self.ability.hnds_curse_acquire_triggered
-			and trigger_curse and type(trigger_curse) == 'function' then
-			trigger_curse(self, {buying_card = true, challenge_creation = true})
-		end
-	end
-	return ret
-end

@@ -20,14 +20,11 @@ Notable helpers
 - `HNDS.poll_tag(seed, options, exclusions)`
   - Re-implements tag selection with exclusions, and fixes Orbital tag selection for modded hands.
 
-- `HNDS.dyn_level_up(card, hand, level, chips, mult, instant)`
-  - Applies hand level changes with the same timing/juice patterns as vanilla tarot/planet animations.
-
 - `HNDS.get_shop_joker_tags()`
   - Returns a list of tag keys that can create shop jokers (extended when other mods are installed).
 
-- `HNDS.table_shallow_copy`, `HNDS.get_key_for_value`
-  - Small utility helpers used by deck/stake effects.
+- `HNDS.get_key_for_value`
+  - Small utility helper used by deck/stake effects.
 
 Notes / invariants
 - Some functions consult `SMODS.find_mod(...)` to include optional compatibility behavior.
@@ -118,65 +115,6 @@ function HNDS.poll_tag(seed, options, exclusions)
 	end
 
 	return tag
-end
-
--- Dynamic hand level up with animation and effects (used by various jokers/consumables)
-function HNDS.dyn_level_up(card, hand, level, chips, mult, instant)
-	level = level or 1
-	chips = chips or G.GAME.hands[hand].l_chips * level
-	mult = mult or G.GAME.hands[hand].l_mult * level
-	G.GAME.hands[hand].level = G.GAME.hands[hand].level + level
-	if not instant then
-		G.E_MANAGER:add_event(Event({
-			trigger = "after",
-			delay = 0.2,
-			func = function()
-				play_sound("tarot1")
-				if card then
-					card:juice_up(0.8, 0.5)
-				end
-				G.TAROT_INTERRUPT_PULSE = true
-				return true
-			end,
-		}))
-		update_hand_text({ delay = 0 }, { mult = G.GAME.hands[hand].mult, StatusText = true })
-		G.E_MANAGER:add_event(Event({
-			trigger = "after",
-			delay = 0.9,
-			func = function()
-				play_sound("tarot1")
-				if card then
-					card:juice_up(0.8, 0.5)
-				end
-				return true
-			end,
-		}))
-		update_hand_text({ delay = 0 }, { chips = G.GAME.hands[hand].chips, StatusText = true })
-		G.E_MANAGER:add_event(Event({
-			trigger = "after",
-			delay = 0.9,
-			func = function()
-				play_sound("tarot1")
-				if card then
-					card:juice_up(0.8, 0.5)
-				end
-				G.TAROT_INTERRUPT_PULSE = nil
-				return true
-			end,
-		}))
-		update_hand_text(
-			{ sound = "button", volume = 0.7, pitch = 0.9, delay = 0 },
-			{ level = G.GAME.hands[hand].level }
-		)
-		delay(1.3)
-	end
-	G.E_MANAGER:add_event(Event({
-		trigger = "immediate",
-		func = function()
-			check_for_unlock({ type = "upgrade_hand", hand = hand, level = G.GAME.hands[hand].level })
-			return true
-		end,
-	}))
 end
 
 -- Cursed Deck: Check if all joker slots are filled with unmovable jokers
@@ -427,17 +365,6 @@ SMODS.current_mod.custom_card_areas = function (game)
 			{ card_limit = 1, highlighted_limit = 0, type = 'title' }
 		)
 	end
-end
-
----Copies the context of the table `t` non-recursively into a new table.
----@param t table
----@return table
-function HNDS.table_shallow_copy(t)
-	local t2 = {}
-	for k,v in pairs(t) do
-		t2[k] = v
-	end
-	return t2
 end
 
 -- Utility: Get key for a given value in a table
