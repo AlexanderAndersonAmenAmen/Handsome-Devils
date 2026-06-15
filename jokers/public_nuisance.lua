@@ -11,18 +11,18 @@ SMODS.Joker({
 	eternal_compat = true,
 	perishable_compat = true,
 	loc_vars = function(self, info_queue, card)
-		return { vars = {} }
+		return {}
 	end,
-	remove_from_deck = function (self, card, from_debuff)
-		if G.GAME.chips >= G.GAME.blind.chips and G.GAME.blind.in_blind then
+	remove_from_deck = function(self, card, from_debuff)
+		if not (G.GAME.blind and G.GAME.blind.in_blind) then return end
+		if G.GAME.chips >= G.GAME.blind.chips then
 			if G.deck and G.deck.cards and #G.deck.cards > 0 then
 				G.STATE = G.STATES.HAND_PLAYED
-		        G.STATE_COMPLETE = true
-		        end_round()
-			else -- If the player have no cards in his deck
-				-- Did he score the required chips?
+				G.STATE_COMPLETE = true
+				end_round()
+			else
+				-- Player has no cards left; check if chips were scored
 				if G.GAME.chips >= G.GAME.blind.chips then
-					-- He win and has no cards
 					G.GAME.blind.chips = 0
 					G.GAME.blind.disabled = true
 					G.STATE = G.STATES.POST_BLIND
