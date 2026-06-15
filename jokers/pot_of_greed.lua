@@ -22,12 +22,22 @@ SMODS.Joker({
 		end
 	end,
 	calculate = function(self, card, context)
+		if context.setting_blind then
+			G.GAME.current_round = G.GAME.current_round or {}
+			G.GAME.current_round.hnds_consumables_used_in_blind = 0
+		end
+		if context.using_consumeable and G.GAME.blind and G.GAME.blind.in_blind then
+			G.GAME.current_round = G.GAME.current_round or {}
+			G.GAME.current_round.hnds_consumables_used_in_blind = (G.GAME.current_round.hnds_consumables_used_in_blind or 0) + 1
+			check_for_unlock({ type = 'hnds_consumable_in_blind', count = G.GAME.current_round.hnds_consumables_used_in_blind })
+		end
 		if (context.using_consumeable or context.forcetrigger) and G.hand and G.hand.cards and #G.hand.cards > 0 then
-			-- If booster pack have less than 1 option, Pot of Greed does nothing, prevents trigger if booster pack is empty
-			if G.pack_cards and G.pack_cards.config and #G.pack_cards.cards < G.pack_cards.config.card_limit then
+			-- Do not trigger inside joker booster packs (cursed_pack, buffoon pack, etc.)
+			if G.STATE == G.STATES.BUFFOON_PACK then return nil end
+			-- If in a booster pack with no cards left (all selections used), do nothing
+			if G.pack_cards and G.pack_cards.cards and #G.pack_cards.cards == 0 then
 				return nil
 			end
-			
 			G.E_MANAGER:add_event(Event({
 				func = function()
 					card:juice_up()
@@ -43,31 +53,3 @@ SMODS.Joker({
 		end
 	end,
 })
-
--- Pot of Greed Unlock Tracker
--- The counter resets when a new blind starts (called from select_blind)
-if G and G.FUNCS and G.FUNCS.select_blind and not _G._hnds_wrapped_select_blind_potofgreed then
-	_G._hnds_wrapped_select_blind_potofgreed = true
-	local select_blind_ref = G.FUNCS.select_blind
-	function G.FUNCS.select_blind(e)
-		if G.GAME and G.GAME.current_round then
-			G.GAME.current_round.hnds_consumables_used_in_blind = 0
-		end
-		return select_blind_ref(e)
-	end
-end
-
--- Pot of Greed: hook Card.use_consumeable to count uses during a blind
-if Card and Card.use_consumeable and not Card._hnds_wrapped_use_consumeable_potofgreed then
-	Card._hnds_wrapped_use_consumeable_potofgreed = true
-	local use_consumeable_ref = Card.use_consumeable
-	function Card:use_consumeable(area, copier)
-		local ret = use_consumeable_ref(self, area, copier)
-		if check_for_unlock and G.GAME and G.GAME.blind and G.GAME.blind.in_blind then
-			G.GAME.current_round = G.GAME.current_round or {}
-			G.GAME.current_round.hnds_consumables_used_in_blind = (G.GAME.current_round.hnds_consumables_used_in_blind or 0) + 1
-			check_for_unlock({ type = 'hnds_consumable_in_blind', count = G.GAME.current_round.hnds_consumables_used_in_blind })
-		end
-		return ret
-	end
-end
