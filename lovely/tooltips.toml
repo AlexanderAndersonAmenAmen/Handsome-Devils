@@ -17,9 +17,5 @@ payload = '''
         local copies = card.ability.hnds_copies_to_create
         info_queue[#info_queue+1] = { set = "Other", key = "dna_tag_tooltip_"..(copies ~= 1 and "plural" or "singular"), vars = {copies}}
     end
-    if card and card.ability and card.ability.hnds_jester_negative_rounds then
-        local c = card.ability.hnds_jester_negative_rounds
-        info_queue[#info_queue+1] = { set = "Other", key = "hnds_jester_temp_negative", vars = {c} }
-    end
 '''
 match_indent = true

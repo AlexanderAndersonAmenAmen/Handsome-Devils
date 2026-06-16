@@ -41,10 +41,15 @@ SMODS.Joker {
 SMODS.Sticker {
     key = "hnds_soul",
     badge_colour = G.C.RARITY[4],
-    pos = { x = 10, y = 10 }, --make it not have a sprite
+    atlas = "Stickers",
+    pos = { x = 1, y = 1 },
     rate = 0,
+    sets = { Joker = true },
+    should_apply = function(self, card, center, area, bypass_roll)
+        if card.ability.eternal or card.ability.hnds_cursed then return false end
+        return SMODS.Sticker.should_apply(self, card, center, area, bypass_roll)
+    end,
     apply = function(self, card, val)
         card.ability[self.key] = val
     end,
-    sets = { Joker = true }
 }
