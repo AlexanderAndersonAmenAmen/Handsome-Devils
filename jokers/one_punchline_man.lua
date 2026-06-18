@@ -19,31 +19,18 @@ SMODS.Joker {
             if unused_hands > 0 then
                 local xmult_gains = card.ability.extra.Xmult_extra * unused_hands
                 card.ability.extra.Xmult = card.ability.extra.Xmult + xmult_gains
-                return {
-                    message = localize{type='variable',key='a_xmult',vars={card.ability.extra.Xmult}},
-                    colour = G.C.RED
-                }
+                return { message = localize({type='variable', key='a_xmult', vars={card.ability.extra.Xmult}}), colour = G.C.RED }
             end
         end
         if context.joker_main then
             if card.ability.extra.Xmult > 1 then
-                return {
-                    Xmult_mod = card.ability.extra.Xmult,
-                    message = localize{type='variable',key='a_xmult',vars={card.ability.extra.Xmult}}
-                }
+                return { Xmult_mod = card.ability.extra.Xmult, message = localize({type='variable', key='a_xmult', vars={card.ability.extra.Xmult}}) }
             end
         end
     end,
     joker_display_def = function(JokerDisplay)
         return {
-            text = {
-                {
-                    border_nodes = {
-                        { text = "X" },
-                        { ref_table = "card.joker_display_values", ref_value = "x_mult", retrigger_type = "exp" }
-                    }
-                }
-            },
+            text = { { border_nodes = { { text = "X" }, { ref_table = "card.joker_display_values", ref_value = "x_mult", retrigger_type = "exp" } } } },
             calc_function = function(card)
                 card.joker_display_values.x_mult = card.ability.extra.Xmult
             end
