@@ -14,40 +14,15 @@ SMODS.Joker {
         return { vars = { card.ability.extra.repetitions } }
     end,
     calculate = function(self, card, context)
-        if context.repetition and context.cardarea == G.play then
-            -- Check if hand is Two Pair with odd and even ranks
-            if context.scoring_name == "Two Pair" and context.scoring_hand then
-                local ranks = {}
-                local odd_found = false
-                local even_found = false
-                
-                for _, playing_card in ipairs(context.scoring_hand) do
-                    local rank = playing_card:get_id()
-                    ranks[rank] = (ranks[rank] or 0) + 1
-                    
-                    -- Check if odd or even (Aces count as odd like Odd Todd)
-                    if rank % 2 == 1 or rank == 14 then
-                        odd_found = true
-                    else
-                        even_found = true
-                    end
-                end
-                
-                -- Check if we have exactly two pairs
-                local pair_count = 0
-                for rank, count in pairs(ranks) do
-                    if count == 2 then
-                        pair_count = pair_count + 1
-                    end
-                end
-                
-                if pair_count == 2 and odd_found and even_found then
-                    return {
-                        repetitions = card.ability.extra.repetitions,
-                    }
-                end
-            end
+        if not (context.repetition and context.cardarea == G.play and context.scoring_name == "Two Pair") then return end
+        local rank_a, rank_b
+        for _, c in ipairs(context.scoring_hand) do
+            local r = c:get_id()
+            if not rank_a then rank_a = r elseif r ~= rank_a and not rank_b then rank_b = r end
         end
+        if not (rank_a and rank_b) then return end
+        local is_odd = function(x) return x % 2 == 1 or x == 14 end
+        if is_odd(rank_a) ~= is_odd(rank_b) then return { repetitions = card.ability.extra.repetitions } end
     end,
     attributes = { "rank", "retrigger" }
 }
