@@ -1,4 +1,3 @@
--- Weighted pick helper. Returns a key chosen from {{key=..., weight=...}, ...}.
 local function hnds_stone_mask_weighted_pick(seed, options)
 	local total = 0
 	for _, o in ipairs(options) do total = total + (o.weight or 1) end
@@ -67,7 +66,6 @@ SMODS.Joker({
 
 		local seed_id = tostring(target.sort_id or target.ID or '')
 
-		-- Apply synchronously so the played card scores the new bonus this hand.
 		if choice == 'enhancement' then
 			local enh = hnds_stone_mask_weighted_pick('hnds_stone_mask_enh' .. seed_id, {
 				{ key = 'm_wild',  weight = 20 },
@@ -79,7 +77,6 @@ SMODS.Joker({
 				{ key = 'm_stone', weight = 9 },
 			})
 			if enh and G.P_CENTERS[enh] then
-				-- 3rd arg (delay_sprites) must be falsy so the sprite refreshes immediately.
 				target:set_ability(G.P_CENTERS[enh], nil, nil)
 			end
 		elseif choice == 'edition' then
@@ -90,10 +87,9 @@ SMODS.Joker({
 				{ key = 'e_negative',   weight = 5 },
 			})
 			if ed_key then
-				target:set_edition({ [ed_key:sub(3)] = true }, true)
+				target:set_edition(ed_key, true, true)
 			end
 		elseif choice == 'seal' then
-			-- Seal keys match G.P_SEALS storage: vanilla capitalised, modded prefixed.
 			local seal_key = hnds_stone_mask_weighted_pick('hnds_stone_mask_seal' .. seed_id, {
 				{ key = 'Red',        weight = 20 },
 				{ key = 'Blue',       weight = 20 },
@@ -105,11 +101,8 @@ SMODS.Joker({
 		end
 		target:juice_up()
 
-		card_eval_status_text(card, 'jokers', nil, nil, nil, {
-			message = localize('k_hnds_awaken'),
-			colour = G.C.GREY,
-		})
+		card_eval_status_text(card, 'jokers', nil, nil, nil, { message = localize('k_hnds_awaken'), colour = G.C.GREY, delay = 0.4 })
 		return nil, true
 	end,
-	attributes = { "modify_card", "enhancements", "seals", "hands", }
+	attributes = { "modify_card", "enhancements", "editions", "seals", "hands" }
 })
