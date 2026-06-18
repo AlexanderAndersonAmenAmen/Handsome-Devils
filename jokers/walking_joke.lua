@@ -4,7 +4,7 @@ SMODS.Joker ({
     pos = { x = 5, y = 3 },
     cost = 10,
     rarity = 3,
-	atlas = "Jokers",
+    atlas = "Jokers",
     blueprint_compat = false,
     eternal_compat = true,
     unlocked = false,
@@ -26,15 +26,15 @@ SMODS.Joker ({
 				end
 			end
 			if not this_joker_index then return end
-			if is_adjacent_joker(this_joker_index, context.other_card) and context.other_card.config.center.rarity == 1 then
+            if HNDS.is_adjacent_joker(this_joker_index, context.other_card) and context.other_card.config.center.rarity == 1 then
 				return { repetitions = 1 }
 			end
 		end
     end,
-	attributes = { "retrigger", "joker" }
+    attributes = { "retrigger", "joker" }
 })
 
-function is_adjacent_joker(cardindex, joker)
+function HNDS.is_adjacent_joker(cardindex, joker)
 	return (cardindex > 1 and G.jokers.cards[cardindex - 1] == joker) or
 	       (cardindex < #G.jokers.cards and G.jokers.cards[cardindex + 1] == joker)
 end
