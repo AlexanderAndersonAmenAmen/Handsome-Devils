@@ -1,12 +1,11 @@
--- Pick a random discovered joker key for Most Wanted targeting
-local function get_most_wanted_multiplier(total_jokers)
+function HNDS.get_most_wanted_multiplier(total_jokers)
 	if total_jokers > 800 then return 24 end
 	if total_jokers > 500 then return 16 end
 	if total_jokers > 300 then return 12 end
 	return 8
 end
 
-local function get_discovered_joker_pool(previous_key)
+function HNDS.get_discovered_joker_pool(previous_key)
 	local pool = {}
 	local total_jokers = 0
 	for _, center in ipairs((G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Joker) or {}) do
@@ -27,8 +26,8 @@ local function get_discovered_joker_pool(previous_key)
 	return pool, total_jokers
 end
 
-local function pick_discovered_joker_key(seed, previous_key)
-	local pool, total_jokers = get_discovered_joker_pool(previous_key)
+function HNDS.pick_discovered_joker_key(seed, previous_key)
+	local pool, total_jokers = HNDS.get_discovered_joker_pool(previous_key)
 	if #pool == 0 then return nil, total_jokers end
 	return pseudorandom_element(pool, pseudoseed(seed)), total_jokers
 end
@@ -49,7 +48,7 @@ SMODS.Joker({
 	loc_vars = function(self, info_queue, card)
 		local target_name
 		if G.STAGE ~= G.STAGES.RUN then
-			local random_target, _ = pick_discovered_joker_key('hnds_most_wanted_collection')
+			local random_target, _ = HNDS.pick_discovered_joker_key('hnds_most_wanted_collection')
 			target_name = random_target and localize({ type = 'name_text', key = random_target, set = 'Joker' }) or localize("k_hnds_wanted")
 		else
 			target_name = card.ability.extra.target and localize({ type = 'name_text', key = card.ability.extra.target, set = 'Joker' }) or localize("k_hnds_wanted")
@@ -63,12 +62,12 @@ SMODS.Joker({
 	end,
 	set_ability = function(self, card, initial, delay_sprites)
 		-- Always calculate multiplier based on collection size
-		local _, total_jokers = get_discovered_joker_pool()
-		card.ability.extra.multiplier = get_most_wanted_multiplier(total_jokers)
+		local _, total_jokers = HNDS.get_discovered_joker_pool()
+		card.ability.extra.multiplier = HNDS.get_most_wanted_multiplier(total_jokers)
 		
 		-- Initialize target from discovered Jokers only during a run
 		if G.STAGE == G.STAGES.RUN then
-			local target, _ = pick_discovered_joker_key('hnds_most_wanted')
+			local target, _ = HNDS.pick_discovered_joker_key('hnds_most_wanted')
 			card.ability.extra.target = target
 		end
 	end,
@@ -79,7 +78,7 @@ SMODS.Joker({
 			return nil, true
 		end
 
-		if context.modify_weights then
+		if context.modify_weights and context.pool_types and context.pool_types.Joker then
 			for _, v in ipairs(context.pool) do
 				if v.key == card.ability.extra.target then
 					v.weight = (v.weight or 1) * (card.ability.extra.multiplier or 1)
@@ -88,9 +87,9 @@ SMODS.Joker({
 		end
 
 		if context.starting_shop and not card.ability.extra.target then
-			local target, total_jokers = pick_discovered_joker_key('hnds_most_wanted_fallback', card.ability.extra.target)
+			local target, total_jokers = HNDS.pick_discovered_joker_key('hnds_most_wanted_fallback', card.ability.extra.target)
 			card.ability.extra.target = target
-			card.ability.extra.multiplier = get_most_wanted_multiplier(total_jokers)
+			card.ability.extra.multiplier = HNDS.get_most_wanted_multiplier(total_jokers)
 		end
 	end,
 	attributes = { "joker", "passive", }
