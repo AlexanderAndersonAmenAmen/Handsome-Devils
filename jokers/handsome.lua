@@ -7,12 +7,11 @@ SMODS.Joker {
     unlocked = true,
     discovered = true,
     blueprint_compat = true,
+    perishable_compat = true,
     calculate = function (self, card, context)
         if (context.repetition or (context.retrigger_joker_check and not context.retrigger_joker)) and context.other_card.edition and context.other_card ~= card then --should this also retrigger jokers
-            return {
-                repetitions = 1
-            }
+            return { repetitions = 1 }
         end
     end,
-    attributes = { "retrigger" }
+    attributes = { "retrigger", "edition" }
 }
