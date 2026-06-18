@@ -1,11 +1,6 @@
 SMODS.Joker({
     key = "perfectionist",
-    config = {
-        extra = {
-            mult = 4,
-            chips = 30
-        }
-    },
+    config = { extra = { mult = 4, chips = 30 } },
     loc_vars = function(self, info_queue, card)
         return { vars = { card.ability.extra.mult, card.ability.extra.chips } }
     end,
@@ -18,16 +13,10 @@ SMODS.Joker({
     blueprint_compat = false,
     calculate = function(self, card, context)
         if context.setting_ability and context.old and context.old ~= "c_base" and context.new ~= "c_base" and not context.unchanged and not G._ortalab_bottle_rolling then
-            print(context.old)
-            if HNDS and HNDS.XMOD and HNDS.XMOD.perfectionist_should_apply and not HNDS.XMOD.perfectionist_should_apply(context) then
-                return
-            end
             context.other_card.ability.perma_mult = context.other_card.ability.perma_mult + card.ability.extra.mult
             context.other_card.ability.perma_bonus = context.other_card.ability.perma_bonus + card.ability.extra.chips
-            return {
-                message = localize("k_upgrade_ex")
-            }
+            return { message = localize("k_upgrade_ex") }
         end
     end,
-    attributes = { "modify_card", "chips", "mult", "enhancements", }
+    attributes = { "modify_card", "chips", "mult", "enhancements", "perma_bonus" }
 })
