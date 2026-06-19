@@ -1,15 +1,7 @@
 -- Blind Soul Rewards
--- Maps blind keys to arrays of joker rewards. When a blind is defeated,
--- a random joker from its pool is offered as a "soul" reward.
--- Duplicate entries increase the weight of that joker in the pool.
--- String entries matching a P_CENTER_POOLS key (e.g. "Food") pick a random
--- joker from that pool instead of a specific one.
+-- gets card creation args to pass into SMODS.add_card based on the blind. used by pennywise
 
-HNDS = HNDS or {}
-
--------------------------------
--- Vanilla Blinds
--------------------------------
+--old hardcoded list (UNUSED, BUT KEPT FOR USE AS REFERENCE)
 HNDS.blind_souls = {
     -- The Hook:
     bl_hook = { "j_drunkard" },
@@ -73,9 +65,7 @@ HNDS.blind_souls = {
     bl_final_bell = { "j_sixth_sense", "j_sixth_sense", "j_dna", "j_dna", "j_dna", "j_idol", "j_idol", "j_idol" },
 }
 
--------------------------------
--- GrabBag Bossblinds
--------------------------------
+--[[
 if next(SMODS.find_mod("GrabBag")) then
     local gb_souls = {
         bl_hook    = "j_gb_hook",
@@ -109,11 +99,124 @@ if next(SMODS.find_mod("GrabBag")) then
     end
 end
 
--------------------------------
--- Entropy Compatibility
--------------------------------
 if next(SMODS.find_mod("Entropy")) then
     for _ = 1, 4 do
         HNDS.blind_souls.bl_wheel[#HNDS.blind_souls.bl_wheel + 1] = "Dice"
     end
+end
+]]
+-- Get a random soul joker for defeating a blind (supports custom soul definitions).
+-- `blind` should be an instance of `Blind`
+-- for modded, get_hnds_soul(self, seed) can be added to support this. seed should in some way be used for the internal rng
+HNDS.get_blind_soul = function (blind, seed)
+	local blind_obj = blind.config.blind
+    local k = blind_obj.key
+    if type(blind_obj.get_hnds_soul) == "function" then
+        return blind_obj:get_hnds_soul(seed)
+    -- GIANT FUCKING ELSEIF CHAIN
+    elseif k == "bl_hook" then return { key = "j_drunkard", }
+    elseif k == "bl_ox" then return { key = "j_matador" }
+    elseif k == "bl_house" then return { key = pseudorandom_element({ "j_burnt", "j_family" }, seed) }
+    elseif k == "bl_wall" then return { key = pseudorandom_element({ "j_stone", "j_marble", "j_castle", "j_ancient", "j_bloodstone" }, seed) }
+    elseif k == "bl_wheel" then
+        return {
+            attributes = {"chance", "mod_chance"},
+            union = true,
+        }
+    elseif k == "bl_arm" then return { key = "j_juggler" }
+    elseif k == "bl_club" then
+        return { --maybe suit ones to old?
+            attributes = {"clubs"}
+        }
+    elseif k == "bl_fish" then
+        if pseudorandom(seed) < 0.75 then
+            return{key="j_lucky_cat"}
+        else
+            return{ key = "j_splash"}
+        end
+    elseif k == "bl_psychic" then return { key = pseudorandom_element({ "j_sixth_sense", "j_seance" }, seed) }
+    elseif k == "bl_goad" then
+        return {
+            attributes = {"spades"}
+        }
+    elseif k == "bl_water" then
+        if pseudorandom(seed)<0.75 then
+            return { key = "j_splash" }
+        else
+            return { key = "j_burglar" }
+        end
+    elseif k == "bl_window" then
+        return {
+            attributes = {"diamonds"}
+        }
+    elseif k == "bl_manacle" then
+        if pseudorandom(seed)<0.75 then
+            return { key = "j_burglar" }
+        else
+            return { key = pseudorandom_element({ "j_merry_andy", "j_stuntman"}, seed.."_2" )}
+        end
+    elseif k == "bl_eye" then return { key = pseudorandom_element({"j_sixth_sense","j_obelisk"},seed)}
+    elseif k == "bl_mouth" then
+        if pseudorandom(seed)<0.5 then
+            return { key = "j_card_sharp" }
+        else
+            return { attributes = {"food"} }
+        end
+    elseif k == "bl_plant" then
+        if pseudorandom(seed)<0.75 then
+            return { key = "j_flower_pot" }
+        else
+            return { key = pseudorandom_element({"j_green_joker","j_faceless"}, seed.."_2")}
+        end
+    elseif k == "bl_serpent" then return { key = "j_hnds_head_of_medusa" }
+    elseif k == "bl_pillar" then return { key = "j_obelisk" }
+    elseif k == "bl_needle" then return { key = pseudorandom_element({"j_sixth_sense","j_dna"}, seed)}
+    elseif k == "bl_head" then
+        return {
+            attributes = {"diamonds"}
+        }
+    elseif k == "bl_tooth" then return { key = "j_hnds_coffee_break" }
+    elseif k == "bl_flint" then
+        if pseudorandom(seed)<0.75 then
+            return { key = "j_campfire" }
+        else
+            return { key = "j_hiker" }
+        end
+    elseif k == "bl_mark" then
+        return {
+            attributes = { "face" }
+        }
+    elseif k == "bl_final_acorn" then
+        if pseudorandom(seed)<0.75 then
+            return { key = "j_wee" }
+        else
+            return { key = pseudorandom_element({"j_half", "j_square"}, seed.."_2")}
+        end
+    elseif k == "bl_final_leaf" then
+        if pseudorandom(seed)<0.75 then
+            return { key = "j_invisible" }
+        else
+            return {
+                attributes = {"on_sell"},
+                filter = function (pool)
+                    pool["j_invisible"] = nil --praying that this works
+                    return pool
+                end
+            }
+        end
+    elseif k == "bl_final_leaf" then return { key = pseudorandom_element({ "j_four_fingers", "j_8_ball", "j_sixth_sense", "j_fortune_teller" }, seed)}
+    elseif k == "bl_final_heart" then
+        if pseudorandom(seed)<0.75 then
+            return { key = "j_bloodstone" }
+        else
+            return { key = "j_lusty_joker" }
+        end
+    elseif k == "bl_final_bell" then
+        if pseudorandom(seed) < 0.75 then
+            return { key = pseudorandom_element({ "j_dna", "j_idol"}, seed.."_2")}
+        else
+            return { key = "j_sixth_sense" }
+        end
+    end
+	return nil
 end
