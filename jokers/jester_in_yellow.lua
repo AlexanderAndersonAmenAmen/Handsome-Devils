@@ -47,7 +47,7 @@ SMODS.Sticker {
 		if val then
 			if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
 				for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-					if k ~= self.key and k ~= 'hnds_cursed' and card.ability[k] then
+					if k ~= self.key and k ~= 'eternal' and k ~= 'hnds_cursed' and card.ability[k] then
 						card:remove_sticker(k)
 					end
 				end
@@ -77,7 +77,7 @@ SMODS.Sticker {
 			card.ability.hnds_jester_negative_rounds = card.ability.hnds_jester_negative_rounds - 1
 			if card.ability.hnds_jester_negative_rounds <= 0 then
 				SMODS.calculate_effect({ message = localize("k_hnds_jester_fade") }, card)
-				SMODS.destroy_cards(card, nil, nil, true)
+				SMODS.destroy_cards(card, {immediate = true, bypass_eternal = true})
 			else
 				SMODS.calculate_effect({ message = localize{ type = "variable", key = "a_remaining", vars = { card.ability.hnds_jester_negative_rounds } } }, card)
 			end
