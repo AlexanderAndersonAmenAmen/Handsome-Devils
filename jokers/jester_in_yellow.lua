@@ -39,7 +39,7 @@ SMODS.Sticker {
 	rate = 0,
 	sets = { Joker = true },
 	should_apply = function(self, card, center, area, bypass_roll)
-		if card.ability.eternal or card.ability.hnds_cursed then return false end
+		if card.ability.hnds_cursed then return false end
 		return SMODS.Sticker.should_apply(self, card, center, area, bypass_roll)
 	end,
 	apply = function(self, card, val)
@@ -47,7 +47,7 @@ SMODS.Sticker {
 		if val then
 			if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
 				for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-					if k ~= self.key and k ~= 'eternal' and k ~= 'hnds_cursed' and card.ability[k] then
+					if k ~= self.key and k ~= 'hnds_cursed' and card.ability[k] then
 						card:remove_sticker(k)
 					end
 				end
