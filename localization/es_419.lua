@@ -702,6 +702,13 @@ return {
 			},
 		},
 		Other = {
+			hnds_jester_temp_negative = {
+				name = "Elegido por Carcosa",
+				text = {
+					"Este Comodín se desvanece en",
+					"{C:attention}#1#{} rondas",
+				},
+			},
 			hnds_black_seal = {
 				name = "Sello Negro",
 				text = {
