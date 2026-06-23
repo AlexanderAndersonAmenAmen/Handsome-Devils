@@ -126,7 +126,7 @@ end
 
 -- Cursed Sticker exclusivity functions.
 -- hnds_card_has_cursed: quick check for the cursed sticker on a Joker.
--- hnds_strip_other_stickers: remove every sticker except hnds_cursed from args cursed Joker. prevents stickers from mods that are implemented from any way different to add.sticker.
+-- hnds_strip_other_stickers: remove every sticker except hnds_cursed and rental from args cursed Joker. prevents stickers from mods that are implemented from any way different to add.sticker.
 local function hnds_card_has_cursed(card)
 	if not card then return false end
 	return (card.ability and card.ability.hnds_cursed)
@@ -139,12 +139,11 @@ local function hnds_strip_other_stickers(card)
 	if not card.ability then return end
 	card.ability.perishable = nil
 	card.ability.eternal = nil
-	card.ability.rental = nil
 	-- Collect all sticker keys, mostly exist bc Bunco creates stickers with card.ability
 	local to_remove = {}
 	if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
 		for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-			if k ~= 'hnds_cursed' and card.ability[k] then
+			if k ~= 'hnds_cursed' and k ~= 'rental' and card.ability[k] then
 				to_remove[k] = true
 			end
 		end
@@ -152,12 +151,12 @@ local function hnds_strip_other_stickers(card)
 	-- Also checks card.stickers table
 	if card.stickers and type(card.stickers) == 'table' then
 		for k, _ in pairs(card.stickers) do
-			if k ~= 'hnds_cursed' then to_remove[k] = true end
+			if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove[k] = true end
 		end
 	end
 	if card.ability.stickers and type(card.ability.stickers) == 'table' then
 		for k, _ in pairs(card.ability.stickers) do
-			if k ~= 'hnds_cursed' then to_remove[k] = true end
+			if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove[k] = true end
 		end
 	end
 	-- Remove other stickers
@@ -182,7 +181,7 @@ if Card and Card.add_sticker and not _G._hnds_wrapped_add_sticker_cursed then
 	_G._hnds_wrapped_add_sticker_cursed = true
 	local add_sticker_ref = Card.add_sticker
 	function Card:add_sticker(key, ...)
-		if key ~= 'hnds_cursed' and hnds_card_has_cursed(self) then return end
+		if key ~= 'hnds_cursed' and key ~= 'rental' and hnds_card_has_cursed(self) then return end
 		local ret = add_sticker_ref(self, key, ...)
 		if key == 'hnds_cursed' then
 			hnds_strip_other_stickers(self)

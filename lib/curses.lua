@@ -421,23 +421,22 @@ SMODS.Sticker {
                 card.ability.hnds_curse_stripped = true
                 card.ability.perishable = nil
                 card.ability.eternal = nil
-                card.ability.rental = nil
                 local to_remove = {}
                 if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
                     for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-                        if k ~= 'hnds_cursed' and card.ability[k] then
+                        if k ~= 'hnds_cursed' and k ~= 'rental' and card.ability[k] then
                             to_remove[k] = true
                         end
                     end
                 end
                 if card.stickers and type(card.stickers) == 'table' then
                     for k, _ in pairs(card.stickers) do
-                        if k ~= 'hnds_cursed' then to_remove[k] = true end
+                        if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove[k] = true end
                     end
                 end
                 if card.ability.stickers and type(card.ability.stickers) == 'table' then
                     for k, _ in pairs(card.ability.stickers) do
-                        if k ~= 'hnds_cursed' then to_remove[k] = true end
+                        if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove[k] = true end
                     end
                 end
                 local any_removed = false
@@ -588,7 +587,6 @@ function apply_curse(card)
     if card.ability then
         card.ability.perishable = nil
         card.ability.eternal = nil
-        card.ability.rental = nil
     end
 
     -- Collect sticker keys to remove. SMODS stores sticker flags in
@@ -597,19 +595,19 @@ function apply_curse(card)
     local to_remove = {}
     if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
         for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-            if k ~= 'hnds_cursed' and card.ability[k] then
+            if k ~= 'hnds_cursed' and k ~= 'rental' and card.ability[k] then
                 to_remove[k] = true
             end
         end
     end
     if card.stickers and type(card.stickers) == 'table' then
         for k, _ in pairs(card.stickers) do
-            if k ~= 'hnds_cursed' then to_remove[k] = true end
+            if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove[k] = true end
         end
     end
     if card.ability.stickers and type(card.ability.stickers) == 'table' then
         for k, _ in pairs(card.ability.stickers) do
-            if k ~= 'hnds_cursed' then to_remove[k] = true end
+            if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove[k] = true end
         end
     end
     local any_removed_pre = false
@@ -689,19 +687,19 @@ function apply_curse(card)
             local to_remove_post = {}
             if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
                 for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-                    if k ~= 'hnds_cursed' and card.ability[k] then
+                    if k ~= 'hnds_cursed' and k ~= 'rental' and card.ability[k] then
                         to_remove_post[k] = true
                     end
                 end
             end
             if card.stickers and type(card.stickers) == 'table' then
                 for k, _ in pairs(card.stickers) do
-                    if k ~= 'hnds_cursed' then to_remove_post[k] = true end
+                    if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove_post[k] = true end
                 end
             end
             if card.ability.stickers and type(card.ability.stickers) == 'table' then
                 for k, _ in pairs(card.ability.stickers) do
-                    if k ~= 'hnds_cursed' then to_remove_post[k] = true end
+                    if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove_post[k] = true end
                 end
             end
             local any_removed = false
