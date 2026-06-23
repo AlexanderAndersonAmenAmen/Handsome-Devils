@@ -121,8 +121,8 @@ SMODS.current_mod.calculate = function(self, context)
 		G.GAME.hnds_dna_tag_copy = context.card.sort_id
 	end
 	-- Obsidian card: draw extra cards
-	if context.drawing_cards and G.GAME.hnds_obsidian_draws > 0 then
-		local d = G.GAME.hnds_obsidian_draws
+	if context.drawing_cards and (G.GAME.hnds_obsidian_draws or 0) > 0 then
+		local d = G.GAME.hnds_obsidian_draws or 0
 		G.GAME.hnds_obsidian_draws = 0
 		return { cards_to_draw = context.amount + d } -- for some reason `modify` also sets the amount instead of modifying so i have to do this
 	end

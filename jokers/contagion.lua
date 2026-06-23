@@ -16,6 +16,7 @@ SMODS.Joker {
     end,
     calculate = function(self, card, context)
         if context.after and context.scoring_hand and not context.blueprint then
+            local applied = false
             for i, scoring_card in ipairs(context.scoring_hand) do
                 if scoring_card.config.center ~= G.P_CENTERS.c_base then
                     local right_index = i + 1
@@ -23,6 +24,7 @@ SMODS.Joker {
                         local right_card = context.scoring_hand[right_index]
                         if right_card.config.center == G.P_CENTERS.c_base then
                             if SMODS.pseudorandom_probability(card, 'hnds_contagion', 1, card.ability.extra.odds) then
+                                applied = true
                                 local center = scoring_card.config.center
                                 G.E_MANAGER:add_event(Event({
                                     trigger = 'after',
@@ -50,11 +52,19 @@ SMODS.Joker {
                                         return true
                                     end
                                 }))
-                                delay(0.5)
                             end
                         end
                     end
                 end
+            end
+            if applied then
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 1.5,
+                    func = function()
+                        return true
+                    end
+                }))
             end
         end
     end,
