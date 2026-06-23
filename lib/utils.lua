@@ -236,18 +236,6 @@ function HNDS.get_shop_joker_tags()
 	return tag_list
 end
 
--- Get a random soul joker for defeating a blind (supports custom soul definitions).
--- `blind` should be G.GAME.blind. Other mods can define `blind.config.blind.hnds_soul`
--- to provide their own soul reward pools.
-HNDS.get_blind_soul = function (blind, seed)
-	local soul_opts = blind.config.blind.hnds_soul or HNDS.blind_souls[blind.config.blind.key] or {"j_joker"}
-	local ret = pseudorandom_element(soul_opts, seed) or "j_joker"
-	if G.P_CENTER_POOLS[ret] then
-		ret = pseudorandom_element(G.P_CENTER_POOLS[ret]).key
-	end
-	return ret
-end
-
 -- Supersuit Joker: Reset the randomly chosen suit for the round
 function reset_supersuit_card()
 	local supersuit_suits = {}
