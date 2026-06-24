@@ -294,8 +294,9 @@ return {
 			j_hnds_bizzare_joker = {
 				name = "Bizarre Joker",
 				text = {
-					"Effect changes based on",
-					"the chosen suit each round",
+					"Gains {X:mult,C:white}XMult{}, {C:mult}+Mult{}, {C:chips}+Chips{} or",
+					"{C:money}Sell Value{} based on the suit chosen",
+					"that changes every round",
 				},
 				unlock = {
 					"Have all cards in",

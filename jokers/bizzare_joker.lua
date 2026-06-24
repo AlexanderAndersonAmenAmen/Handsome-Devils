@@ -20,10 +20,15 @@ SMODS.Joker({
     unlock_condition = { type = 'modify_deck' },
     loc_vars = function(self, info_queue, card)
         local cae = card.ability.extra
-        local key, vars
-		key = (self.key .. "_" .. (string.lower(G.GAME.hnds_bizzare_suit or "spades") or "spades"))
-        vars = {cae.chips, cae.chipsg, cae.mult, cae.multg, cae.xmult, cae.xmultg, cae.sell_value}
-		return { key = key, vars = vars }
+        local in_collection = card.area and card.area.config and card.area.config.collection
+        if in_collection then
+            local suit = string.lower(G.GAME.hnds_bizzare_suit or "spades")
+            return {
+                key = self.key .. "_" .. suit,
+                vars = { cae.chips, cae.chipsg, cae.mult, cae.multg, cae.xmult, cae.xmultg, cae.sell_value },
+            }
+        end
+        return { key = self.key, vars = {} }
     end,
     check_for_unlock = function(self, args)
 		if args.type == 'modify_deck' then

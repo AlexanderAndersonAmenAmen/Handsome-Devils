@@ -294,8 +294,9 @@ return {
 			j_hnds_bizzare_joker = {
 				name = "Comodín Desalinado",
 				text = {
-					"Su efecto cambia según",
-					"el palo elegido cada ronda",
+					"Obtiene {X:mult,C:white} XMulti {}, {C:mult}+Multi{}, {C:chips}+Fichas{} o",
+					"{C:money}Valor de Venta{} según el palo",
+					"elegido que cambia cada ronda",
 				},
 				unlock = {
 					"Tener todas las cartas de",
@@ -306,7 +307,7 @@ return {
 			j_hnds_bizzare_joker_spades = {
 				name = "El Comodín desalinado",
 				text = {
-					"Gana {C:chips}+#2#{} Fichas al jugar {C:spades}Espadas{}",
+					"Gana {C:chips}+#2#{} Fichas al anotar {C:spades}Espadas{}",
 					"{s:0.8}Su efecto cambia cada ronda",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#5#{C:inactive} Multi,",
 					"{C:mult}+#3#{C:inactive} Multi, {C:chips}+#1#{C:inactive} Fichas)",
@@ -315,7 +316,7 @@ return {
 			j_hnds_bizzare_joker_clubs = {
 				name = "El Comodín desalinado",
 				text = {
-					"Gana {C:mult}+#4#{} Multi al jugar {C:clubs}Club{}",
+					"Gana {C:mult}+#4#{} Multi al anotar {C:clubs}Treboles{}",
 					"{s:0.8}Su efecto cambia cada ronda",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#5#{C:inactive} Multi,",
 					"{C:mult}+#3#{C:inactive} Multi, {C:chips}+#1#{C:inactive} Fichas)",
@@ -334,7 +335,7 @@ return {
 			j_hnds_bizzare_joker_hearts = {
 				name = "El Comodín desalinado",
 				text = {
-					"Gana {X:mult,C:white}X#6#{} Multi al jugar {C:hearts}Corazones{}",
+					"Gana {X:mult,C:white}X#6#{} Multi al anotar {C:hearts}Corazones{}",
 					"{s:0.8}Su efecto cambia cada ronda",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#5#{C:inactive} Multi,",
 					"{C:mult}+#3#{C:inactive} Multi, {C:chips}+#1#{C:inactive} Fichas)",
