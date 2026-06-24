@@ -10,18 +10,11 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = false,
 	perishable_compat = false,
-	config = { extra = {
-		Xmult = 1.5,
-		odds = 6,
-	} },
+	config = { extra = { Xmult = 1.5, odds = 6, } },
 	pools = { Food = true },
 	loc_vars = function(self, info_queue, card)
-		local main_end = {}
-		if card and card.edition and card.edition.negative then
-			localize { type = 'other', key = 'remove_negative', nodes = main_end, vars = {} }
-		end
 		local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_banana_split")
-		return { vars = { card.ability.extra.Xmult, numerator, denominator }, main_end = main_end[1] }
+		return { vars = { card.ability.extra.Xmult, numerator, denominator } }
 	end,
 	calculate = function(self, card, context)
 		if context.joker_main then
