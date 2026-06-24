@@ -416,8 +416,8 @@ return {
 				text = {
 					"{X:mult,C:white}X#1#{} Multi",
 					"prob. de {C:green}#2# en #3#{} de convertir",
-					"comodines adyacentes en copias",
-					"exactas al final de la ronda",
+					"comodines adyacentes al",
+					"final de la ronda",
 				}
 			},
 			j_hnds_one_punchline_man = {

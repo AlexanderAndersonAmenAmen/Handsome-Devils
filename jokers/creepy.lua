@@ -53,10 +53,6 @@ SMODS.Joker({
 					end
 					if not has_valid_target then return end
 
-					-- Snapshot Creepy Joker's edition and stickers ONCE before events
-					local creepy_edition = card.edition and copy_table(card.edition) or nil
-					local creepy_ability_snapshot = copy_table(card.ability)
-
 					for _, target in ipairs(adjacent) do
 						if target and target.area == G.jokers and target.config.center.key ~= card.config.center.key then
 							-- Flip animation
@@ -78,10 +74,6 @@ SMODS.Joker({
 								func = function()
 									if target and target.area == G.jokers then
 										copy_card(card, target, nil, nil, true)
-										-- Restore exact edition from snapshot
-										target:set_edition(creepy_edition, true, true)
-										-- Overwrite ability with exact snapshot (preserves stickers, extra, etc.)
-										target.ability = copy_table(creepy_ability_snapshot)
 									end
 									return true
 								end
