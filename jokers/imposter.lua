@@ -10,9 +10,6 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = true,
     config = { extra = {} },
-    loc_vars = function(self, info_queue, card)
-        return { vars = {} }
-    end,
     calculate = function(self, card, context)
         -- Effect in hooks file, the Joker is the Boolean
     end,
