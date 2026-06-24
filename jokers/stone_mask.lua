@@ -53,16 +53,8 @@ SMODS.Joker({
 
 		-- Priority: enhancement > edition > seal. Pick first missing slot.
 		local has_enhancement = target.ability and target.ability.set ~= 'Default' and target.ability.set ~= nil
-		local choice
-		if not has_enhancement then
-			choice = 'enhancement'
-		elseif not target.edition then
-			choice = 'edition'
-		elseif not target.seal then
-			choice = 'seal'
-		else
-			return
-		end
+		local choice = not has_enhancement and 'enhancement' or not target.edition and 'edition' or not target.seal and 'seal'
+		if not choice then return end
 
 		local seed_id = tostring(target.sort_id or target.ID or '')
 
