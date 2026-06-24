@@ -1,3 +1,19 @@
+local function hnds_enhance_wild(card_self, card_to_enhance)
+	card_to_enhance:set_ability(G.P_CENTERS.m_wild, nil, true)
+	G.E_MANAGER:add_event(Event({
+		func = function()
+			card_to_enhance:juice_up()
+			if hnds_config["enableCustomSounds"] then play_sound("hnds_madnesscolor", 1.25, 0.25) end
+			return true
+		end,
+	}))
+	return {
+		colour = G.C.GREEN,
+		card = card_self,
+		message = localize("k_hnds_color_of_madness"),
+	}
+end
+
 SMODS.Joker({
 	key = "color_of_madness",
 	atlas = "Jokers",
@@ -10,11 +26,7 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = true,
 	perishable_compat = true,
-	config = {
-		extra = {
-			suits_needed = 4,
-		},
-	},
+	config = { extra = { suits_needed = 4, }, },
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.suits_needed } }
 	end,
@@ -25,54 +37,12 @@ SMODS.Joker({
 			and not context.blueprint
 		then
 			if HNDS.get_unique_suits(context.scoring_hand) >= card.ability.extra.suits_needed then
-				local card_to_enhance = context.scoring_hand[1] --pseudorandom_element(unenhanced_cards, pseudoseed("color_of_madness"))
-				card_to_enhance:set_ability(G.P_CENTERS.m_wild, nil, true)
-				G.E_MANAGER:add_event(Event({
-					func = function()
-						card_to_enhance:juice_up()
-						if hnds_config["enableCustomSounds"] then play_sound("hnds_madnesscolor", 1.25, 0.25) end
-						return true
-					end,
-				}))
-				return {
-					colour = G.C.GREEN,
-					card = card,
-					message = localize("k_hnds_color_of_madness"),
-				}
+				return hnds_enhance_wild(card, context.scoring_hand[1])
 			end
 		end
 		if context.forcetrigger and (G.STATE ~= G.STATES.HAND_PLAYED and next(G.hand or {}) or next(G.play or {}) ) then
-			local did_a_thing
-			if #G.play > 0 then
-				local card_to_enhance = G.play[1]
-				did_a_thing = true
-				card_to_enhance:set_ability(G.P_CENTERS.m_wild, nil, true)
-				G.E_MANAGER:add_event(Event({
-					func = function()
-						card_to_enhance:juice_up()
-						if hnds_config["enableCustomSounds"] then play_sound("hnds_madnesscolor", 1.25, 0.25) end
-						return true
-					end,
-				}))
-			elseif #G.hand > 0 then
-				local card_to_enhance = G.hand[1]
-				did_a_thing = true
-				card_to_enhance:set_ability(G.P_CENTERS.m_wild, nil, true)
-				G.E_MANAGER:add_event(Event({
-					func = function()
-						card_to_enhance:juice_up()
-						if hnds_config["enableCustomSounds"] then play_sound("hnds_madnesscolor", 1.25, 0.25) end
-						return true
-					end,
-				}))
-			end
-			if did_a_thing then
-				return {
-					colour = G.C.GREEN,
-					card = card,
-					message = localize("k_hnds_color_of_madness"),
-				}
-			end
+			local target = (#G.play > 0 and G.play[1]) or (#G.hand > 0 and G.hand[1])
+			if target then return hnds_enhance_wild(card, target) end
 		end
 	end,
 	attributes = { "enhancements", "suit", }
