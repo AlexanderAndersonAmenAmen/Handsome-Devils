@@ -1,4 +1,3 @@
-
 function bizzare_suit()
     local ancient_suits = {}
     for _, v in ipairs({'Spades', 'Hearts', 'Clubs', 'Diamonds'}) do
@@ -52,39 +51,32 @@ SMODS.Joker({
     calculate = function(self, card, context)
         local cae = card.ability.extra
         if context.before then
-            local value_increased = false
-            for k, v in pairs(G.play.cards) do
-                if v:is_suit(G.GAME.hnds_bizzare_suit) then
-                    if G.GAME.hnds_bizzare_suit == "Spades" then
-                        SMODS.scale_card(card, {
-                            ref_table = cae,
-                            ref_value = "chips",
-                            scalar_value = "chipsg",
-                            message = { colour = G.C.CHIPS }
-                        })
-                    elseif G.GAME.hnds_bizzare_suit == "Clubs" then
-                        SMODS.scale_card(card, {
-                            ref_table = cae,
-                            ref_value = "mult",
-                            scalar_value = "multg",
-                            message = { colour = G.C.RED }
-                        })
-                    elseif G.GAME.hnds_bizzare_suit == "Hearts" then
-                        SMODS.scale_card(card, {
-                            ref_table = cae,
-                            ref_value = "xmult",
-                            scalar_value = "xmultg",
-                            message = { colour = G.C.MULT }
-                        })
-                    elseif G.GAME.hnds_bizzare_suit == "Diamonds" then
+            local suit = G.GAME.hnds_bizzare_suit
+            if suit == "Diamonds" then
+                for _, v in pairs(G.play.cards) do
+                    if v:is_suit(suit) then
                         card.ability.extra_value = (card.ability.extra_value or 0) + cae.sell_value
-                        card:set_cost()
-                        value_increased = true
                     end
                 end
-            end
-            if value_increased then
+                card:set_cost()
                 return { message = localize("k_val_up"), colour = G.C.MONEY }
+            end
+            local spec = ({
+                Spades  = { ref = "chips",  scalar = "chipsg",  colour = G.C.CHIPS },
+                Clubs   = { ref = "mult",   scalar = "multg",   colour = G.C.RED },
+                Hearts  = { ref = "xmult",  scalar = "xmultg",  colour = G.C.MULT },
+            })[suit]
+            if spec then
+                for _, v in pairs(G.play.cards) do
+                    if v:is_suit(suit) then
+                        SMODS.scale_card(card, {
+                            ref_table = cae,
+                            ref_value = spec.ref,
+                            scalar_value = spec.scalar,
+                            message = { colour = spec.colour },
+                        })
+                    end
+                end
             end
         end
 
@@ -118,17 +110,7 @@ SMODS.Joker({
                 card.joker_display_values.x_mult = card.ability.extra.xmult
                 local suit = G.GAME.hnds_bizzare_suit or "Spades"
                 card.joker_display_values.suit = localize(suit, 'suits_plural')
-                if suit == "Spades" then
-                    card.joker_display_values.suit_colour = G.C.SUITS.SPADES
-                elseif suit == "Hearts" then
-                    card.joker_display_values.suit_colour = G.C.SUITS.HEARTS
-                elseif suit == "Clubs" then
-                    card.joker_display_values.suit_colour = G.C.SUITS.CLUBS
-                elseif suit == "Diamonds" then
-                    card.joker_display_values.suit_colour = G.C.SUITS.DIAMONDS
-                else
-                    card.joker_display_values.suit_colour = G.C.ORANGE
-                end
+                card.joker_display_values.suit_colour = G.C.SUITS[suit:upper()] or G.C.ORANGE
             end
         }
     end,
