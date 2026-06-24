@@ -16,13 +16,6 @@ function HNDS.get_discovered_joker_pool(previous_key)
 			end
 		end
 	end
-	if #pool == 0 then
-		for _, center in ipairs((G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Joker) or {}) do
-			if center and not center.hidden and center.key and center.key ~= 'j_hnds_most_wanted' and center.discovered then
-				pool[#pool + 1] = center.key
-			end
-		end
-	end
 	return pool, total_jokers
 end
 
