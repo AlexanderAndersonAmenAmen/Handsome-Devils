@@ -1,5 +1,9 @@
-local RARITY_NAMES = { 'k_common', 'k_uncommon', 'k_rare' }
-local RARITY_KEYS = { 'Common', 'Uncommon', 'Rare' }
+-- patatas
+local RARITY = {
+	[1] = { name = 'k_common',  key = 'Common' },
+	[2] = { name = 'k_uncommon', key = 'Uncommon' },
+	[3] = { name = 'k_rare',     key = 'Rare' },
+}
 
 SMODS.Joker({
 	key = "digital_circus",
@@ -9,7 +13,7 @@ SMODS.Joker({
 		local r = math.min(3, card.ability.extra.current_rarity)
 		return {
 			vars = {
-				localize(RARITY_NAMES[r]),
+				localize(RARITY[r].name),
 				card.ability.extra.current_rounds,
 				card.ability.extra.max_rounds,
 				colours = { G.C.RARITY[r] },
@@ -31,7 +35,7 @@ SMODS.Joker({
 				return { message = localize("k_no_room_ex") }
 			end
 			local r = math.min(3, card.ability.extra.current_rarity)
-			SMODS.add_card({ set = "Joker", area = G.jokers, rarity = RARITY_KEYS[r], edition = poll_edition("digital_circus", 1, false, true) })
+			SMODS.add_card({ set = "Joker", area = G.jokers, rarity = RARITY[r].key, edition = poll_edition("digital_circus", 1, false, true) })
 			return nil, true
 		end
 
@@ -45,7 +49,7 @@ SMODS.Joker({
 			r = math.min(3, r + 1)
 			card.ability.extra.current_rarity = r
 			card.ability.extra.current_rounds = 0
-			return { message = localize(RARITY_NAMES[r]) .. "!", colour = G.C.RARITY[r] }
+			return { message = localize(RARITY[r].name) .. "!", colour = G.C.RARITY[r] }
 		end
 	end,
 	joker_display_def = function(JokerDisplay)
@@ -61,7 +65,7 @@ SMODS.Joker({
             },
             calc_function = function(card)
                 local r = math.min(3, card.ability.extra.current_rarity)
-                card.joker_display_values.rarity = localize(RARITY_NAMES[r])
+                card.joker_display_values.rarity = localize(RARITY[r].name)
                 card.joker_display_values.rounds = card.ability.extra.current_rounds
                 card.joker_display_values.max = card.ability.extra.max_rounds
             end
