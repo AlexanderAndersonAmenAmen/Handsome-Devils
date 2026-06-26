@@ -14,6 +14,15 @@ SMODS.Back {
     pools = { RedeemableBacks = true }
 }
 
+-- Pick a random hidden (soul-type) Consumeable key.
+local function random_hidden_consumeable(seed)
+    local options = {}
+    for _, center in ipairs(G.P_CENTER_POOLS.Consumeables) do
+        if center.hidden then options[#options + 1] = center.key end
+    end
+    return pseudorandom_element(options, seed)
+end
+
 SMODS.Booster { --putting this in the same file for convenience
     key = "spectral_ultra",
     weight = 0.01,
@@ -23,7 +32,6 @@ SMODS.Booster { --putting this in the same file for convenience
     atlas = "Extras",
     config = { extra = 5, choose = 2 },
     group_key = "k_spectral_pack",
-    --no_collection = true,
     draw_hand = true,
     loc_vars = function(self, info_queue, card)
         local cfg = (card and card.ability) or self.config
@@ -49,11 +57,7 @@ SMODS.Booster { --putting this in the same file for convenience
     end,
     create_card = function(self, card, i)
         if i == 1 then
-            local options = {}
-            for _, center in ipairs(G.P_CENTER_POOLS.Consumeables) do
-                if center.hidden then options[#options + 1] = center.key end
-            end
-            return { key = pseudorandom_element(options, "spe"), key_append = "spe", area = G.pack_cards, skip_materialize = true }
+            return { key = random_hidden_consumeable("spe"), key_append = "spe", area = G.pack_cards, skip_materialize = true }
         else
             return {
                 set = "Spectral",
@@ -73,12 +77,8 @@ SMODS.Booster { --putting this in the same file for convenience
         loc_key = "k_plus_spectral",
         create = function ()
             if pseudorandom("diha_ultraspec") < 0.2 then
-                local options = {}
-                for _, center in ipairs(G.P_CENTER_POOLS.Consumeables) do
-                    if center.hidden then options[#options + 1] = center.key end
-                end
                 SMODS.add_card({
-                    key = pseudorandom_element(options, "diha_spe"),
+                    key = random_hidden_consumeable("diha_spe"),
                     key_append = "diha",
                     area = G.consumeables,
                     edition = "e_negative"
