@@ -1,4 +1,15 @@
 HNDS = {}
+
+function reset_arthur()
+	local ancient_suits = {}
+	for _, v in pairs(SMODS.Suits) do
+		if v.key ~= G.GAME.hnds_arthur_suit then
+			ancient_suits[#ancient_suits + 1] = v.key
+		end
+	end
+	local ancient_card = pseudorandom_element(ancient_suits, pseudoseed("slurp"))
+	G.GAME.hnds_arthur_suit = ancient_card or "Spades"
+end
 ----------------------------
 -- Config tab
 ----------------------------
