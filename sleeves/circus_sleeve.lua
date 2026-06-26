@@ -6,17 +6,11 @@ CardSleeves.Sleeve({
     unlocked = false,
     unlock_condition = {deck = "b_hnds_circus", stake = "stake_green"},
     loc_vars = function(self)
-        local key
-        if self.get_current_deck_key() ~= "b_hnds_circus" then
-            key = self.key
-        else
-            key = self.key .. "_alt"
-        end
         local joker_name = "None"
         if G.GAME and G.GAME.hnds_circus_joker_key and type(G.GAME.hnds_circus_joker_key) == "string" then
             joker_name = localize({type = 'name_text', key = G.GAME.hnds_circus_joker_key, set = 'Joker'}) or "None"
         end
-        return {key = key, vars = {joker_name, colours = {G.C.ORANGE}}}
+        return HNDS.sleeve_loc(self, "b_hnds_circus", {joker_name, colours = {G.C.ORANGE}})
     end,
     apply = function(self)
         -- Base effect: Set up circus deck functionality

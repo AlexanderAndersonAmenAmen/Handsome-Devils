@@ -6,13 +6,7 @@ CardSleeves.Sleeve({
     unlocked = false,
     unlock_condition = {deck = "b_hnds_cursed", stake = "stake_green"},
     loc_vars = function(self)
-        local key
-        if self.get_current_deck_key() ~= "b_hnds_cursed" then
-            key = self.key
-        else
-            key = self.key .. "_alt"
-        end
-        return {key = key}
+        return HNDS.sleeve_loc(self, "b_hnds_cursed")
     end,
     apply = function(self)
         -- Base effect: Initialize cursed deck variables

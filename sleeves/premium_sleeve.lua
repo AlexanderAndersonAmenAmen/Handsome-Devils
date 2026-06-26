@@ -6,33 +6,15 @@ CardSleeves.Sleeve({
     unlocked = false,
     unlock_condition = {deck = "b_hnds_premiumdeck", stake = "stake_green"},
     loc_vars = function(self)
-        local key
-        if self.get_current_deck_key() ~= "b_hnds_premiumdeck" then
-            key = self.key
-        else
-            key = self.key .. "_alt"
-        end
-        return {key = key, vars = {
+        return HNDS.sleeve_loc(self, "b_hnds_premiumdeck", {
             localize { type = 'name_text', key = 'v_hnds_premium', set = 'Voucher' },
             localize { type = 'name_text', key = 'v_hnds_top_shelf', set = 'Voucher' },
             0.5
-        }}
+        })
     end,
     apply = function(self)
         -- Base effect: Start with Premium and Top Shelf vouchers (always given)
-        local vouchers = {'v_hnds_premium', 'v_hnds_top_shelf'}
-        for _, v in ipairs(vouchers) do
-            if G.P_CENTERS[v] then
-                G.GAME.used_vouchers[v] = true
-                G.GAME.starting_voucher_count = (G.GAME.starting_voucher_count or 0) + 1
-                G.E_MANAGER:add_event(Event({
-                    func = function()
-                        Card.apply_to_run(nil, G.P_CENTERS[v])
-                        return true
-                    end
-                }))
-            end
-        end
+        HNDS.grant_vouchers({'v_hnds_premium', 'v_hnds_top_shelf'})
 
         if self.get_current_deck_key() == "b_hnds_premiumdeck" then
             G.GAME.modifiers.premium_sleeve_active = true
