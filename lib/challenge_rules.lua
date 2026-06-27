@@ -35,16 +35,11 @@ function HNDS.is_challenge(key)
 end
 
 -- Dark Ritual
-local function HNDS_dark_ritual_should_skip_shop()
-	if not HNDS.is_challenge('dark_ritual') then return false end
-	return true
-end
-
 	if not G.FUNCS._hnds_wrapped_cash_out then
 		G.FUNCS._hnds_wrapped_cash_out = true
 		local cash_out_ref = G.FUNCS.cash_out
 		function G.FUNCS.cash_out(e, delay_seconds)
-		if not HNDS_dark_ritual_should_skip_shop() then
+		if not HNDS.is_challenge('dark_ritual') then
 			return cash_out_ref(e, delay_seconds)
 		end
 
@@ -172,7 +167,6 @@ function HNDS.try_devils_round_curse(card)
 	if not HNDS.is_challenge('devils_round') then return end
 	if not (card and card.config and card.config.center and card.config.center.set == 'Joker') then return end
 	if card.ability and card.ability.hnds_eternal_copy_created then return end
-	if card.ability and card.ability.hnds_curse then return end
 	if not (apply_curse and type(apply_curse) == 'function') then return end
 	apply_curse(card)
 end
