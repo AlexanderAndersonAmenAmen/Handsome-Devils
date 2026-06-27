@@ -1,37 +1,6 @@
---[[
-Curses Logic and Implementation (Cursed Stickers, Booster Pack and Random Cursed Offer/Price System are
-inside of this file and most of the code, other parts of the code are inside hooks, lovely.toml and the loc files)
-This file defines the "curse" system used by the Cursed Sticker.
-
-Data model:
-- A Cursed Joker has the `hnds_cursed` sticker.
-- `card.ability.hnds_curse_offer` is a benefit ID (from `G.CURSE_OFFERS`).
-- `card.ability.hnds_curse_price` is a drawback ID (from `G.CURSE_PRICES`).
-
-Tooltip/UI:
-- The sticker provides a tooltip (using localization keys under `descriptions.Other`).
-- The code also adds "Cursed Offers" and "Cursed Prices" pages to the collection.
-
-Primary entry points (functions)
-- `apply_curse(card)`
-  - Assigns a random offer/price pair to a Joker and attaches the `hnds_cursed` sticker.
-  - Used when generating cursed content (e.g. cursed pack, cursed shop rolls, Devil's Round challenge).
-
-Who calls this code
-- lovely patches (outside this file) call `trigger_curse`
-  - add_to_deck
-  - remove_from_deck
-  - buying_card
-
-- Collection UI
-  - Custom collection tabs so players can browse the offers/price descriptions.
-  - The collection cards are "fake" preview cards with `card.ability.hnds_curse_preview = true`.
---]]
-
 G.CURSE_OFFERS = {
     -- Offers are benefits
     -- They technically work like a Jokers
-
     -- 1. Create a copy of a random tarot card
     [1] = {
         id = 'offer_copy_random_tarot',
@@ -750,4 +719,3 @@ function trigger_curse(card, context)
 
     return acquire_ret or hnds_run_defs(card, context, offer_def, price_def)
 end
-
