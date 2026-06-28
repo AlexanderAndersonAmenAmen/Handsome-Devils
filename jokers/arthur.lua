@@ -16,19 +16,14 @@ SMODS.Joker {
     end,
     calculate = function (self, card, context)
         if context.after and not context.blueprint and not context.retrigger_joker then
-            return{
-                message = "Changed!",
-            }
+            return{ message = "Changed!", }
         end
         if context.individual and context.cardarea == G.play and context.other_card:is_suit(G.GAME.hnds_arthur_suit) and not context.blueprint then
             
             card.ability.extra.re = card.ability.extra.re + card.ability.extra.rep
             G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + card.ability.extra.rep
             calculate_reroll_cost(true)
-            return{
-                message = localize("k_upgrade_ex"),
-                colour = G.C.GREEN,
-            }
+            return{ message = localize("k_upgrade_ex"), colour = G.C.GREEN, }
             
         end
 
