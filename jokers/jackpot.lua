@@ -1,12 +1,6 @@
 SMODS.Joker({
 	key = "jackpot",
-	config = {
-		extra = {
-			base_chance = 20,
-			money = 7,
-			mult = 20,
-		},
-	},
+	config = { extra = { base_chance = 20, money = 7, mult = 20, }, },
 	rarity = 2,
 	loc_vars = function(self, info_queue, card)
 		local seven = 0
@@ -27,7 +21,7 @@ SMODS.Joker({
 	discovered = true,
 	blueprint_compat = false,
 	demicoloncompat = true,
-	eternal_compat = false, -- Why is eternal incompatible?
+	eternal_compat = false, -- Why is eternal incompatible? -- No really why STILL eternal incompatible?
 	perishable_compat = true,
 	calculate = function(self, card, context)
 		if context.joker_main then

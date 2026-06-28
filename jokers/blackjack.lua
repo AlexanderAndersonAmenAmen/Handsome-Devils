@@ -5,16 +5,9 @@ SMODS.Joker({
     blueprint_compat = true,
     atlas = "Jokers",
     pos = { x = 6, y = 3 },
-    config = {
-        extra = {
-            chips = 0,
-            chipg = 21
-        }
-    },
+    config = { extra = { chips = 0, chipg = 21 } },
     loc_vars = function(self, info_queue, card)
-        return {
-            vars = {card.ability.extra.chips, card.ability.extra.chipg}
-        }
+        return { vars = { card.ability.extra.chips, card.ability.extra.chipg } }
     end,
     calculate = function(self, card, context)
         local cae = card.ability.extra
@@ -34,9 +27,7 @@ SMODS.Joker({
         end
 
         if context.joker_main then
-            return{
-                chips = cae.chips
-            }
+            return{ chips = cae.chips }
         end
 
         if context.end_of_round and not context.blueprint and G.GAME.blind.boss and context.main_eval then
