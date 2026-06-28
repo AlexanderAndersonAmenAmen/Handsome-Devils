@@ -133,7 +133,6 @@ end
 
 -- Devil's Round: all jokers get cursed on creation.
 -- Shared helper: apply curse to a joker if it's eligible and the challenge is active.
--- Exposed publicly so hooks.lua can invoke it from consolidated wrappers.
 function HNDS.try_devils_round_curse(card)
 	if not HNDS.is_challenge('devils_round') then return end
 	if not (card and card.config and card.config.center and card.config.center.set == 'Joker') then return end

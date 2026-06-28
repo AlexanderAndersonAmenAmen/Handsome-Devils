@@ -32,11 +32,6 @@ SMODS.Joker({
 			check_for_unlock({ type = 'hnds_consumable_in_blind', count = G.GAME.current_round.hnds_consumables_used_in_blind })
 		end
 		if (context.using_consumeable or context.forcetrigger) and G.hand and G.hand.cards and #G.hand.cards > 0 then
-			-- Do not trigger inside joker booster packs (cursed_pack, buffoon pack, etc.)
-			if G.STATE == G.STATES.BUFFOON_PACK then return nil end
-			-- Do not trigger on the last selection of a booster pack (only when using a pack card, not own consumables)
-			local from_pack = context.consumeable and context.consumeable.from_area == G.pack_cards
-			if from_pack and G.GAME.pack_choices and G.GAME.pack_choices <= 1 then return nil end
 			G.E_MANAGER:add_event(Event({
 				func = function()
 					card:juice_up()
