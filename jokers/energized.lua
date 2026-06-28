@@ -24,14 +24,10 @@ SMODS.Joker {
     end,
     calculate = function (self, card, context)
         if context.repetition and #G.play.cards == 1 and context.other_card == G.play.cards[1] then
-            return {
-                repetitions = card.ability.extra.reps
-            }
+            return { repetitions = card.ability.extra.reps }
         end
         if context.destroy_card and #G.play.cards == 1 and context.destroy_card == G.play.cards[1] and not context.blueprint and SMODS.pseudorandom_probability(card, "hnds_energized", 1, card.ability.extra.odds) then
-            return {
-                remove = true
-            }
+            return { remove = true }
         end
     end,
     attributes = { "destroy_card", "retrigger", "chance", }
