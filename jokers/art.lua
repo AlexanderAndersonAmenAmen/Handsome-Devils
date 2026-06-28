@@ -17,15 +17,14 @@ SMODS.Joker {
                 G.E_MANAGER:add_event(Event({
                     func = function ()
                         add_tag(HNDS.poll_tag("_hnds_art"))
-                        play_sound("generic1", 0.9 + math.random() * 0.1, 0.8)
                         play_sound('holo1', 1.2 + math.random() * 0.1, 0.4)
                         return true
                     end
                 }))
             end
-            G.GAME.art_queue = G.GAME.art_queue + 1
+            G.GAME.art_queue = (G.GAME.art_queue or 0) + card.ability.extra.tags
             return nil, true
         end
     end,
-    attributes = { "generation", "on_sell" }
+    attributes = { "generation", "on_sell", "tag" }
 }
