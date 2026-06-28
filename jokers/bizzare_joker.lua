@@ -22,13 +22,13 @@ SMODS.Joker({
         local cae = card.ability.extra
         local in_collection = card.area and card.area.config and card.area.config.collection
         if in_collection then
-            local suit = string.lower(G.GAME.hnds_bizzare_suit or "spades")
-            return {
-                key = self.key .. "_" .. suit,
-                vars = { cae.chips, cae.chipsg, cae.mult, cae.multg, cae.xmult, cae.xmultg, cae.sell_value },
-            }
+            return { key = self.key, vars = {} }
         end
-        return { key = self.key, vars = {} }
+        local suit = string.lower(G.GAME.hnds_bizzare_suit or "spades")
+        return {
+            key = self.key .. "_" .. suit,
+            vars = { cae.chips, cae.chipsg, cae.mult, cae.multg, cae.xmult, cae.xmultg, cae.sell_value },
+        }
     end,
     check_for_unlock = function(self, args)
 		if args.type == 'modify_deck' then
