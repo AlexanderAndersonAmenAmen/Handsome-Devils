@@ -10,11 +10,7 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = true,
 	perishable_compat = true,
-	config = {
-		extra = {
-			suits_needed = 4,
-		},
-	},
+	config = { extra = { suits_needed = 4, } },
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.suits_needed } }
 	end,

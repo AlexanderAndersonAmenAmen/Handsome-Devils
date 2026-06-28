@@ -16,14 +16,10 @@ SMODS.Joker({
 	demicoloncompat = true,
 	calculate = function(self, card, context)
 		if context.mod_probability and not context.blueprint then
-			return {
-				numerator = context.numerator * card.ability.extra.numerator,
-			}
+			return { numerator = context.numerator * card.ability.extra.numerator, }
 		end
 		if context.setting_blind or context.forcetrigger and not context.blueprint then
-			return {
-				dollars = -G.GAME.dollars,
-			}
+			return { dollars = -G.GAME.dollars, }
 		end
 	end,
 	attributes = { "mod_chance", } -- i dont think this is economy

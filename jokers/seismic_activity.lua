@@ -9,11 +9,7 @@ SMODS.Joker({
 	blueprint_compat = true,
 	eternal_compat = true,
 	perishable_compat = true,
-	config = {
-		extra = {
-			repetitions = 1,
-		},
-	},
+	config = { extra = { repetitions = 1, }, },
 	calculate = function(self, card, context)
 		if (context.cardarea == G.play or context.cardarea == G.hand) and context.repetition then
 			if SMODS.has_enhancement(context.other_card, "m_stone") then

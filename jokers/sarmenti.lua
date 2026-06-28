@@ -47,9 +47,7 @@ SMODS.Joker {
                     end
                 })
             end
-            return {
-                message = localize('k_hnds_sarmenti_enhanced')
-            }
+            return { message = localize('k_hnds_sarmenti_enhanced') }
         end
 
         if context.end_of_round and context.cardarea == G.jokers and not context.blueprint then
@@ -59,9 +57,7 @@ SMODS.Joker {
             
             card.ability.extra.active = true
 
-            return {
-                message = localize('k_reset')
-            }
+            return { message = localize('k_reset') }
         end
     end,
     attributes = { "hand_type", "seals", "enhancements", "modify_card" }

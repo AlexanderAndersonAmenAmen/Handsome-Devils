@@ -1,11 +1,6 @@
 SMODS.Joker({
 	key = "jokes_aside",
-	config = {
-		extra = {
-			x_mult = 1,
-			scaling = 0.25,
-		},
-	},
+	config = { extra = { x_mult = 1, scaling = 0.25, }, },
 	rarity = 2,
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.x_mult, card.ability.extra.scaling } }
