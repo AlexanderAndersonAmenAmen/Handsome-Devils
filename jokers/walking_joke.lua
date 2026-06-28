@@ -1,3 +1,9 @@
+-- patatas
+function HNDS.is_adjacent_joker(cardindex, joker)
+	return (cardindex > 1 and G.jokers.cards[cardindex - 1] == joker) or
+	       (cardindex < #G.jokers.cards and G.jokers.cards[cardindex + 1] == joker)
+end
+
 SMODS.Joker ({
     key = "walking_joke",
     config = { extra = {} },
@@ -17,7 +23,6 @@ SMODS.Joker ({
     end,
     calculate = function (self, card, context)
         if context.retrigger_joker_check and not context.retrigger_joker and context.other_card ~= card then
-			-- Check if the joker is adjacent
 			local this_joker_index = nil
 			for i, current_card in ipairs(G.jokers.cards) do
 				if current_card == card then
@@ -34,24 +39,21 @@ SMODS.Joker ({
     attributes = { "retrigger", "joker" }
 })
 
-function HNDS.is_adjacent_joker(cardindex, joker)
-	return (cardindex > 1 and G.jokers.cards[cardindex - 1] == joker) or
-	       (cardindex < #G.jokers.cards and G.jokers.cards[cardindex + 1] == joker)
-end
-
--- Walking Joke Unlock Tracker
--- Tracks if any non-common jokers were obtained
-local function hnds_walking_joke_on_add_to_deck(card, from_debuff)
-	if not from_debuff and card and card.config and card.config.center and card.config.center.set == 'Joker' then
-		if card.config.center.rarity and card.config.center.rarity ~= 1 and G and G.GAME then
+-- ponytail: tracks non-common joker acquisition to gate Walking Joke unlock.
+-- Global Card hook is the only SMODS-blessed observer; per-joker check_for_unlock
+-- fires too late. Single-line guard, runs only on add (not on debuff).
+if Card and Card.add_to_deck and not Card._hnds_walking_joke_hook then
+	Card._hnds_walking_joke_hook = true
+	local add_to_deck_ref = Card.add_to_deck
+	function Card:add_to_deck(from_debuff)
+		local ret = add_to_deck_ref(self, from_debuff)
+		if not from_debuff
+			and self and self.config and self.config.center
+			and self.config.center.set == 'Joker'
+			and self.config.center.rarity and self.config.center.rarity ~= 1
+			and G and G.GAME then
 			G.GAME.hnds_walking_joke_non_common = true
 		end
+		return ret
 	end
-end
-
-local add_to_deck_ref = Card.add_to_deck
-function Card:add_to_deck(from_debuff)
-	local ret = add_to_deck_ref(self, from_debuff)
-	hnds_walking_joke_on_add_to_deck(self, from_debuff)
-	return ret
 end
