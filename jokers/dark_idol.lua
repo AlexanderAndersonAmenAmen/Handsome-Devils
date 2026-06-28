@@ -74,10 +74,3 @@ SMODS.Joker{
     end,
     attributes = { "scaling", "xmult", "suit", "rank" }
 }
-
-local init_ret = Game.init_game_object
-function Game:init_game_object()
-	local ret = init_ret(self)
-	ret.current_round.dark_idol = { suit = 'Spades', rank = 'Ace' }
-	return ret
-end
