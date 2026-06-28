@@ -194,8 +194,9 @@ end
 -- PLATINUM STAKE
 -------------------------------------------------------------------
 
-local function HNDS_is_stake_active(stake_key)
-	if not (G and G.GAME and G.GAME.applied_stakes and G.P_STAKES and stake_key) then return false end
+HNDS_is_platinum_stake_active = function()
+	local stake_key = 'stake_hnds_platinum'
+	if not (G and G.GAME and G.GAME.applied_stakes and G.P_STAKES) then return false end
 	local stake = G.P_STAKES[stake_key]
 	for _, applied in ipairs(G.GAME.applied_stakes) do
 		if applied == stake_key then
@@ -208,16 +209,12 @@ local function HNDS_is_stake_active(stake_key)
 	return false
 end
 
-HNDS_is_platinum_stake_active = function()
-	return HNDS_is_stake_active('stake_hnds_platinum')
-end
-
 -- Platinum Stake end_of_round: double next blind if player scored >2x
 local function hnds_end_round_platinum_stake()
 	local blind_chips = G.GAME and G.GAME.blind and G.GAME.blind.chips
 	local chips = G.GAME and G.GAME.chips
 	local won_round = chips and blind_chips and (chips >= blind_chips)
-	if HNDS_is_platinum_stake_active and HNDS_is_platinum_stake_active()
+	if HNDS_is_platinum_stake_active()
 		and won_round and blind_chips > 0 and chips > blind_chips * 2 then
 		G.GAME.modifiers = G.GAME.modifiers or {}
 		G.GAME.modifiers.hnds_next_blind_mult = (G.GAME.modifiers.hnds_next_blind_mult or 1) * 2
@@ -296,10 +293,32 @@ end
 if SMODS and SMODS.destroy_cards and not SMODS._hnds_wrapped_destroy_cards_stat then
 	SMODS._hnds_wrapped_destroy_cards_stat = true
 	local destroy_cards_stat_ref = SMODS.destroy_cards
+	-- ponytail: only count playing-card destructions (Default/Enhanced sets).
+	-- Consumable/Spectral/Tarot source cards going through start_dissolve are
+	-- filtered out by the helper below; here we just have to handle both
+	-- "single Card" and "list of Cards" argument shapes correctly.
+	local function hnds_count_playing_cards(cards)
+		if not cards then return 0 end
+		local count = 0
+		local function tally(c)
+			if c.ability then
+				local set = c.ability.set
+				if set == 'Default' or set == 'Enhanced' or set == 'Joker' then
+					count = count + 1
+				end
+			end
+		end
+		if type(cards) == 'table' and cards.config then
+			tally(cards)
+		elseif type(cards) == 'table' then
+			for _, c in ipairs(cards) do tally(c) end
+		end
+		return count
+	end
 	function SMODS.destroy_cards(cards, ...)
 		local ret = destroy_cards_stat_ref(cards, ...)
-		if inc_career_stat and type(cards) == 'table' then
-			local count = cards.config and 1 or #cards
+		if inc_career_stat then
+			local count = hnds_count_playing_cards(cards)
 			if count > 0 then
 				inc_career_stat('c_hnds_cards_destroyed', count)
 				if check_for_unlock then
@@ -307,6 +326,46 @@ if SMODS and SMODS.destroy_cards and not SMODS._hnds_wrapped_destroy_cards_stat 
 				end
 			end
 		end
+		return ret
+	end
+end
+
+-- Catch-all: vanilla destroy paths (Death, Hanged Man, The Hermit, Black Seal,
+-- etc.) and Glass shatters all funnel through Card:start_dissolve or
+-- Card:shatter. The SMODS.destroy_cards wrapper above also reaches these for
+-- non-Glass cards; the hnds_destroy_counted flag prevents double counting.
+local function hnds_maybe_count_destroyed(self)
+	if not (inc_career_stat and self.ability) then return end
+	-- ponytail: count playing cards (Default/Enhanced) AND destroyed Jokers.
+	-- The Hermit grants money and never calls start_dissolve, so it is naturally
+	-- excluded. Consumable/Spectral/Tarot/Planet/Voucher/Booster sources that
+	-- dissolve themselves on use are excluded by the set check.
+	local set = self.ability.set
+	if set ~= 'Default' and set ~= 'Enhanced' and set ~= 'Joker' then return end
+	if self.hnds_destroy_counted then return end
+	self.hnds_destroy_counted = true
+	inc_career_stat('c_hnds_cards_destroyed', 1)
+	if check_for_unlock then
+		check_for_unlock({ type = 'career_stat', statname = 'c_hnds_cards_destroyed' })
+	end
+end
+
+if Card and not Card._hnds_wrapped_start_dissolve_stat then
+	Card._hnds_wrapped_start_dissolve_stat = true
+	local start_dissolve_ref = Card.start_dissolve
+	function Card:start_dissolve(dissolve_colours, silent, dissolve_time_fac, no_juice)
+		local ret = start_dissolve_ref(self, dissolve_colours, silent, dissolve_time_fac, no_juice)
+		hnds_maybe_count_destroyed(self)
+		return ret
+	end
+end
+
+if Card and Card.shatter and not Card._hnds_wrapped_shatter_stat then
+	Card._hnds_wrapped_shatter_stat = true
+	local shatter_ref = Card.shatter
+	function Card:shatter()
+		local ret = shatter_ref(self)
+		hnds_maybe_count_destroyed(self)
 		return ret
 	end
 end
@@ -492,16 +551,8 @@ if not Card._hnds_wrapped_add_to_deck then
 				HNDS.try_devils_round_curse(self)
 			end
 
-			-- Feature: Devil's Round - trigger curse acquire for challenge-created jokers
-			if HNDS and HNDS.is_challenge and HNDS.is_challenge('devils_round') then
-				if self.ability and self.ability.hnds_curse and not self.ability.hnds_curse_acquire_triggered
-					and trigger_curse and type(trigger_curse) == 'function' then
-					trigger_curse(self, {buying_card = true, challenge_creation = true})
-				end
-			end
-
 			-- Play sound when cursed jokers are added (general, not just Devil's Round)
-			if self.ability and self.ability.hnds_curse then
+			if self.ability and (self.ability.hnds_curse_offer or self.ability.hnds_curse_price) then
 				play_sound("hnds_curse_used")
 			end
 		end

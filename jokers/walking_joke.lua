@@ -1,4 +1,3 @@
--- patatas
 function HNDS.is_adjacent_joker(cardindex, joker)
 	return (cardindex > 1 and G.jokers.cards[cardindex - 1] == joker) or
 	       (cardindex < #G.jokers.cards and G.jokers.cards[cardindex + 1] == joker)
@@ -39,9 +38,6 @@ SMODS.Joker ({
     attributes = { "retrigger", "joker" }
 })
 
--- ponytail: tracks non-common joker acquisition to gate Walking Joke unlock.
--- Global Card hook is the only SMODS-blessed observer; per-joker check_for_unlock
--- fires too late. Single-line guard, runs only on add (not on debuff).
 if Card and Card.add_to_deck and not Card._hnds_walking_joke_hook then
 	Card._hnds_walking_joke_hook = true
 	local add_to_deck_ref = Card.add_to_deck
