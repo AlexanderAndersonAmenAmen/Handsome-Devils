@@ -1,10 +1,10 @@
 SMODS.Joker({
 	key = "balloons",
 	config = {
-		extra = { balloons = 3, amount = 3, },},
+		extra = { balloons = 3, balloons_ammount = 3 },},
 	rarity = 1,
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.balloons, card.ability.extra.amount } }
+		return { vars = { card.ability.extra.balloons, card.ability.extra.balloons_ammount } }
 	end,
 	atlas = "Jokers",
 	pos = { x = 9, y = 1 },
