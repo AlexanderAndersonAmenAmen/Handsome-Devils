@@ -380,6 +380,39 @@ function HNDS.DeckOrSleeve(key)
 	return num > 0 and num or nil
 end
 
+-- Shared sleeve loc_vars helper. Sleeves show their "_alt" description text when
+-- paired with their matching deck; otherwise the base description.
+function HNDS.sleeve_loc(self, deck_key, vars)
+	local key = self.key
+	if self.get_current_deck_key() == deck_key then key = key .. "_alt" end
+	return { key = key, vars = vars }
+end
+
+-- Grant a list of vouchers immediately at run start (used by sleeves/decks).
+function HNDS.grant_vouchers(vouchers)
+	for _, v in ipairs(vouchers) do
+		if G.P_CENTERS[v] then
+			G.GAME.used_vouchers[v] = true
+			G.GAME.starting_voucher_count = (G.GAME.starting_voucher_count or 0) + 1
+			G.E_MANAGER:add_event(Event({
+				func = function()
+					Card.apply_to_run(nil, G.P_CENTERS[v])
+					return true
+				end
+			}))
+		end
+	end
+end
+
+-- Ban every booster that isn't part of the hnds_magic pack (Conjuring deck/sleeve).
+function HNDS.ban_non_magic_boosters()
+	for _, booster in pairs(G.P_CENTER_POOLS.Booster) do
+		if booster.kind ~= "hnds_magic" then
+			G.GAME.banned_keys[booster.key] = true
+		end
+	end
+end
+
 -- Shared Cycle / Extinction tag code
 -- Preserves all stickers/editions; %0% chance of removing stickers
 -- Ignores Eternal and Cursed Sticker
