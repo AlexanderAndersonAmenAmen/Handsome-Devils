@@ -10,13 +10,7 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = false,
 	perishable_compat = true,
-	config = {
-		extra = {
-			draw = 1,
-			draw_scaling = 1,
-			destroy = 9999,
-		}
-	},
+	config = { extra = { draw = 1, draw_scaling = 1, destroy = 9999, } },
 	unlock_condition = { type = 'career_stat', extra = 100, stat = 'c_hnds_cards_destroyed' },
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.draw, card.ability.extra.destroy } }
@@ -29,10 +23,6 @@ SMODS.Joker({
 		end
 	end,
 	calculate = function(self, card, context)
-		if context.setting_blind then
-			card.ability.extra.currently_drawn = 0 --this does literally nothing? -- Marffe: looks like it just checks how many cards are currently draw in hand to be an additive to the draw_scaling
-		end
-
 		if (context.selling_self or context.forcetrigger) and G.hand and G.hand.cards and #G.hand.cards > 0 then
 			SMODS.draw_cards(card.ability.extra.draw)
 			G.E_MANAGER:add_event(Event({
@@ -52,18 +42,11 @@ SMODS.Joker({
 					return true
 				end,
 			}))
-			return {
-				message = localize("k_hnds_boom"),
-				colour = G.C.RED,
-			}
+			return { message = localize("k_hnds_boom"), colour = G.C.RED, }
 		end
 		if (context.end_of_round and context.main_eval) or context.forcetrigger then
 			card.ability.extra.draw = card.ability.extra.draw + card.ability.extra.draw_scaling
-			return {
-				colour = G.C.RED,
-				card = card,
-				message = localize("k_hnds_boom_timer"),
-			}
+			return { colour = G.C.RED, card = card, message = localize("k_hnds_boom_timer"), }
 		end
 	end,
 	joker_display_def = function(JokerDisplay)
