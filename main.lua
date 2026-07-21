@@ -313,6 +313,7 @@ G.C.hnds_carcosa = G.C.HNDS_CARCOSA -- lowercase alias used by localization colo
 -- Sounds
 SMODS.Sound({ key = "madnesscolor", path = "madnesscolor.ogg", })
 SMODS.Sound({ key = "vintage", path = "vintage.ogg", })
+SMODS.Sound({ key = "jokestone", path = "Jokestone_sfx.ogg", })
 -- Sprites
 SMODS.Atlas({ key = "HDtags", path = "HDtags.png", px = 34, py = 34, })
 SMODS.Atlas({ key = "Jokers",      path = "Jokers.png", px = 71, py = 95 })

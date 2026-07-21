@@ -159,9 +159,9 @@ return {
 			j_hnds_balloons = {
 				name = "Globos",
 				text = {
-					"Si terminas una ronda sin",
-					"{C:blue}mano{}, {C:red}pierde{} un {C:attention}Globo{}",
-					"y crea una {C:attention}Etiqueta{}",
+					"Al derrotar una {C:attention}Ciega{} en",
+					"{C:attention}una mano{}, {C:red}revienta{} un {C:attention}Globo{}",
+					"y crea una {C:attention}Etiqueta{} al azar",
 					"{C:inactive}({C:attention}#1#{C:inactive}/#2# Globos restantes)",
 				},
 			},
@@ -458,9 +458,10 @@ return {
 				name = "Contagio",
 				text = {
 					"Las cartas {C:attention}mejoradas{} tienen",
-					"una prob. de {C:green}#1# en #2#{} de",
-					"copiar su mejora a una",
-					"carta a la {C:attention}derecha{}",
+					"una prob. de {C:green}#1# en #2#{} de copiar su",
+					"{C:attention}Mejora{} a la carta de la {C:attention}derecha{}",
+					"al anotar; las recién mejoradas",
+					"también pueden contagiar",
 				},
 			},
 		},

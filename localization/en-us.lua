@@ -161,8 +161,8 @@ return {
 			j_hnds_balloons = {
 				name = "Balloons",
 				text = {
-					"When round ends with no",
-					"{C:blue}hands{} left, {C:red}lose{} a {C:attention}Balloon{}",
+					"When {C:attention}Blind{} is defeated in",
+					"{C:attention}one hand{}, {C:red}pop{} a {C:attention}Balloon{}",
 					"and create a random {C:attention}Tag",
 					"{C:inactive}({C:attention}#1#{C:inactive}/#2# Balloons left)",
 				},
@@ -389,9 +389,9 @@ return {
 				name = "Contagion",
 				text = {
 					"{C:green}#1# in #2#{} chance for an",
-					"enhanced card to copy its",
-					"{C:attention}Enhancement{} to a card on",
-					"the {C:attention}right{} when scored",
+					"enhanced card to copy its {C:attention}Enhancement{}",
+					"to the card on the {C:attention}right{} when scored,",
+					"newly enhanced cards can spread it further",
 				},
 			},
 			j_hnds_last_laugh = {
