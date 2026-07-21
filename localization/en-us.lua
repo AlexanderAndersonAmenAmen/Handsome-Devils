@@ -4,8 +4,8 @@ return {
 			j_hnds_color_of_madness = {
 				name = "Color of Madness",
 				text = {
-					"Enhances {C:attention}first{} scored",
-					"card into a {C:attention}Wild Card{} if",
+					"Enhances {C:attention}first two{} scored",
+					"cards into a {C:attention}Wild Cards{} if",
 					"poker hand contains",
 					"{C:attention}4{} different suits",
 				},
@@ -161,8 +161,8 @@ return {
 			j_hnds_balloons = {
 				name = "Balloons",
 				text = {
-					"When {C:attention}Blind{} is defeated in",
-					"{C:attention}one hand{}, {C:red}pop{} a {C:attention}Balloon{}",
+					"If {C:attention}Blind{} is defeated in",
+					"{C:attention}one hand{}, pop a Balloon",
 					"and create a random {C:attention}Tag",
 					"{C:inactive}({C:attention}#1#{C:inactive}/#2# Balloons left)",
 				},
@@ -230,8 +230,8 @@ return {
 				text = {
 					"{C:attention}#1#{}",
 					"appears {C:attention}#2#X{} more often",
-					"When you buy it, this",
-					"Joker {C:red}self destructs{}"
+					"Set its cost to {C:money}$0{} if you",
+					"sell this card while in shop"
 				},
 			},
 			j_hnds_clown_devil = {
@@ -389,9 +389,9 @@ return {
 				name = "Contagion",
 				text = {
 					"{C:green}#1# in #2#{} chance for an",
-					"enhanced card to copy its {C:attention}Enhancement{}",
-					"to the card on the {C:attention}right{} when scored,",
-					"newly enhanced cards can spread it further",
+					"enhanced card to copy its",
+					"{C:attention}Enhancement{} to a card on",
+					"the {C:attention}right{} when scored",
 				},
 			},
 			j_hnds_last_laugh = {
@@ -425,13 +425,13 @@ return {
 					"Jokers during a run",
 				}
 			},
-			j_hnds_blackjack = {
-				name = "Blackjack",
+			j_hnds_demented = {
+				name = "Demented Joker",
 				text = {
-					"{C:chips}+#2#{} Chips if total {C:attention}rank{} of",
-					"discarded cards is {C:attention}21{}, resets",
-					"when {C:attention}Boss Blind{} is defeated",
-					"{C:inactive}(Currently {C:chips}+#1#{C:inactive} Chips)",
+					"When {C:attention}first hand{} of",
+					"round is played, randomize",
+					"{C:attention}Ranks{} and {C:attention}Suits{} of all",
+					"cards held in hand",
 				}
 			},
 			j_hnds_angry_mob = {

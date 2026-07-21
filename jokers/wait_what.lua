@@ -10,14 +10,10 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = true,
 	perishable_compat = true,
-	config = { extra = { xmult = 4 } },
+	config = { extra = { xmult = 4, tag_chance = 6 } },
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.xmult } }
+		return { vars = { card.ability.extra.xmult, card.ability.extra.tag_chance } }
 	end,
-	-- Disguise logic: only hide as vanilla Joker when the card is in the shop.
-	-- card.area is nil during card creation, so we also check the revealed flag
-	-- to keep the disguise intact until purchase. Everywhere else (collection,
-	-- joker slots, etc.) the real identity is shown.
 	generate_ui = function(self, info_queue, card, desc_nodes, specific_vars, full_UI_table)
 		local in_shop = card.area and card.area.config and card.area.config.type == 'shop'
 		local disguised = in_shop and not (card.ability and card.ability.hnds_wait_what_revealed)
@@ -32,9 +28,6 @@ SMODS.Joker({
 	set_card_type_badge = function(self, card, badges)
 		badges[#badges + 1] = create_badge(localize('k_common'), G.C.CHIPS, G.C.WHITE, 1.2)
 	end,
-	-- Sprite control: use update (fires every frame) to swap sprites based on
-	-- whether the card is currently in the shop. set_ability fires before the
-	-- card is placed in an area, so it cannot reliably detect the shop.
 	update = function(self, card, dt)
 		local dominated_by_shop = card.area and card.area.config and card.area.config.type == 'shop'
 		local revealed = card.ability and card.ability.hnds_wait_what_revealed
@@ -45,20 +38,35 @@ SMODS.Joker({
 			card:set_sprites(target_center)
 		end
 	end,
-	-- On creation / load: always show the real sprite. The update callback
-	-- will swap to the disguise once the card is placed in the shop.
 	set_ability = function(self, card, initial, delay_sprites)
 		card:set_sprites(G.P_CENTERS.j_hnds_wait_what)
 	end,
-	-- On purchase: mark as revealed and show real sprite
 	add_to_deck = function(self, card, from_debuff)
 		card.ability.hnds_wait_what_revealed = true
 		card:set_sprites(G.P_CENTERS.j_hnds_wait_what)
 	end,
-	-- X4 Mult when scoring
 	calculate = function(self, card, context)
+		-- X4 Mult when scoring
 		if context.joker_main then
 			return { xmult = card.ability.extra.xmult }
+		end
+
+		if context.end_of_round and not context.individual and not context.repetition then
+			-- Balatro probability math factoring in Oops! All Sixes multiplier modifications
+			if pseudorandom('wait_what_tag') < G.GAME.probabilities.normal / card.ability.extra.tag_chance then
+				G.E_MANAGER:add_event(Event({
+					func = function()
+						add_tag(Tag('tag_hnds_extinction_tag'))
+						play_sound('generic1')
+						return true
+					end
+				}))
+				return {
+					message = "Rare Tag!",
+					colour = G.C.FILTER,
+					card = card
+                }
+			end
 		end
 	end,
 	joker_display_def = function(JokerDisplay)
