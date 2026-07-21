@@ -16,7 +16,7 @@ SMODS.Joker({
 	eternal_compat = false,
 	calculate = function(self, card, context)
 		if
-			(context.end_of_round and context.main_eval and G.GAME.current_round.hands_left == 0)
+			(context.end_of_round and context.main_eval and G.GAME.current_round.hands_played == 1)
 			or (context.forcetrigger and card.ability.extra.balloons > 0)
 		then
 			local tag = HNDS.poll_tag("hnds_balloons")
