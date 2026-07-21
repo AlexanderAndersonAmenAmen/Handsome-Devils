@@ -17,15 +17,21 @@ SMODS.Joker {
     calculate = function(self, card, context)
         if context.after and context.scoring_hand and not context.blueprint then
             local applied = false
+            local chain_center
             for i, scoring_card in ipairs(context.scoring_hand) do
-                if scoring_card.config.center ~= G.P_CENTERS.c_base then
+                local center = scoring_card.config.center
+                if center == G.P_CENTERS.c_base then
+                    center = chain_center -- became enhanced via chain this hand; set_ability event still queued
+                end
+                chain_center = nil
+                if center then
                     local right_index = i + 1
                     if right_index <= #context.scoring_hand then
                         local right_card = context.scoring_hand[right_index]
                         if right_card.config.center == G.P_CENTERS.c_base then
                             if SMODS.pseudorandom_probability(card, 'hnds_contagion', 1, card.ability.extra.odds) then
                                 applied = true
-                                local center = scoring_card.config.center
+                                chain_center = center
                                 G.E_MANAGER:add_event(Event({
                                     trigger = 'after',
                                     delay = 0.15,
