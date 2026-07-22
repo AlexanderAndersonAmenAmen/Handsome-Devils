@@ -37,12 +37,20 @@ SMODS.Joker({
 			and not context.blueprint
 		then
 			if HNDS.get_unique_suits(context.scoring_hand) >= card.ability.extra.suits_needed then
-				return hnds_enhance_wild(card, context.scoring_hand[1])
+				for i = 1, math.min(2, #context.scoring_hand) do
+					hnds_enhance_wild(card, context.scoring_hand[i])
+				end
+				return true
 			end
 		end
 		if context.forcetrigger and (G.STATE ~= G.STATES.HAND_PLAYED and next(G.hand or {}) or next(G.play or {}) ) then
-			local target = (#G.play > 0 and G.play[1]) or (#G.hand > 0 and G.hand[1])
-			if target then return hnds_enhance_wild(card, target) end
+			local target_area = (#G.play > 0 and G.play) or (#G.hand > 0 and G.hand)
+			if target_area then
+				for i = 1, math.min(2, #target_area) do
+					hnds_enhance_wild(card, target_area[i])
+				end
+				return true
+			end
 		end
 	end,
 	attributes = { "enhancements", "suit", }

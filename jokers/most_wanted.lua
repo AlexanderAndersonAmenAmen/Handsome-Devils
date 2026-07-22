@@ -37,38 +37,61 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = false,
 	perishable_compat = true,
-	config = { extra = { target = nil, multiplier = 4 } },
+	config = { extra = { target = nil, target_edition = nil, multiplier = 4 } },
+
 	loc_vars = function(self, info_queue, card)
 		local target_name
+		local edition_name = ""
+		
+		if card.ability.extra.target_edition then
+			edition_name = localize({ type = 'name_text', key = card.ability.extra.target_edition, set = 'Edition' }) .. " "
+		end
+
 		if G.STAGE ~= G.STAGES.RUN then
 			local random_target, _ = HNDS.pick_discovered_joker_key('hnds_most_wanted_collection')
 			target_name = random_target and localize({ type = 'name_text', key = random_target, set = 'Joker' }) or localize("k_hnds_wanted")
-		else
-			target_name = card.ability.extra.target and localize({ type = 'name_text', key = card.ability.extra.target, set = 'Joker' }) or localize("k_hnds_wanted")
 		end
+
+		local full_target_string = edition_name .. (target_name or (card.ability.extra.target and localize({ type = 'name_text', key = card.ability.extra.target, set = 'Joker' })) or localize("k_hnds_wanted"))
+		
 		return {
 			vars = {
-				target_name,
+				full_target_string,
 				card.ability.extra.multiplier or 4,
 			},
 		}
 	end,
 	set_ability = function(self, card, initial, delay_sprites)
-		-- Always calculate multiplier based on collection size
 		local _, total_jokers = HNDS.get_discovered_joker_pool()
 		card.ability.extra.multiplier = HNDS.get_most_wanted_multiplier(total_jokers)
 		
-		-- Initialize target from discovered Jokers only during a run
 		if G.STAGE == G.STAGES.RUN then
 			local target, _ = HNDS.pick_discovered_joker_key('hnds_most_wanted')
 			card.ability.extra.target = target
+			
+			local ed_pool = {'e_foil', 'e_holo', 'e_polychrome'}
+			card.ability.extra.target_edition = pseudorandom_element(ed_pool, 'most_wanted_edition_init')
 		end
 	end,
 	calculate = function(self, card, context)
 		if context.buying_card and context.card and card.ability.extra.target and
 			context.card.config and context.card.config.center and context.card.config.center.key == card.ability.extra.target then
-			SMODS.destroy_cards(card)
-			return nil, true
+			
+			local bought_edition = context.card.edition and context.card.edition.key
+			if bought_edition == card.ability.extra.target_edition then
+				SMODS.destroy_cards({card})
+				return nil, true
+			end
+		end
+
+		if context.selling_self and not context.blueprint and G.STATE == G.STATES.SHOP and G.shop_jokers and G.shop_jokers.cards then
+			for _, shop_card in ipairs(G.shop_jokers.cards) do
+				if shop_card.config and shop_card.config.center and shop_card.config.center.key == card.ability.extra.target then
+					shop_card.cost = 0
+					shop_card.val = 0
+					if shop_card.hud_item then shop_card.hud_item:realign() end 
+				end
+			end
 		end
 
 		if context.modify_weights and context.pool_types and context.pool_types.Joker then
@@ -79,10 +102,32 @@ SMODS.Joker({
 			end
 		end
 
+
+		if (context.starting_shop or context.reroll_shop or context.open_booster_pack) and G.shop_jokers and G.shop_jokers.cards then
+			G.E_MANAGER:add_event(Event({
+				func = function()
+					for _, shop_card in ipairs(G.shop_jokers.cards) do
+
+						if shop_card.config and shop_card.config.center and shop_card.config.center.key == card.ability.extra.target and not shop_card.edition then
+							local ed_key = card.ability.extra.target_edition:gsub("^e_", "")
+							
+							shop_card:set_edition({[ed_key] = true}, false, false)
+							
+							shop_card:juice_up()
+						end
+					end
+					return true
+				end
+			}))
+		end
+
 		if context.starting_shop and not card.ability.extra.target then
 			local target, total_jokers = HNDS.pick_discovered_joker_key('hnds_most_wanted_fallback', card.ability.extra.target)
 			card.ability.extra.target = target
 			card.ability.extra.multiplier = HNDS.get_most_wanted_multiplier(total_jokers)
+			
+			local ed_pool = {'e_foil', 'e_holo', 'e_polychrome'}
+			card.ability.extra.target_edition = pseudorandom_element(ed_pool, 'most_wanted_edition_fallback')
 		end
 	end,
 	attributes = { "joker", "passive", }

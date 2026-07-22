@@ -4,8 +4,8 @@ return {
 			j_hnds_color_of_madness = {
 				name = "El Color de la Locura",
 				text = {
-					"Mejora la {C:attention}primera{} carta",
-					"anotada a una {C:attention}Carta Versátil{}",
+					"Mejora las {C:attention}primeras dos{} cartas",
+					"anotadas a {C:attention}Cartas Versátiles{}",
 					"si la mano jugada tiene",
 					"{C:attention}4{} palos diferentes",
 				},
@@ -385,14 +385,13 @@ return {
 					"durante una partida",
 				}
 			},
-			j_hnds_blackjack = {
-				name = "Blackjack",
+			j_hnds_demented = {
+				name = "Comodín Demente",
 				text = {
-					"Gana {C:chips}+#2#{} Fichas si las",
-					"{C:attention}categorías{} descartadas suman",
-					"{C:attention}21{}, se reinicia al derrotar",
-					"la {C:attention}Ciega Jefe{}",
-					"{C:inactive}(Actualmente {C:chips}+#1#{C:inactive} Fichas)",
+					"Al jugar la {C:attention}primera mano{}",
+					"de la ronda, cambia al azar",
+					"las {C:attention}categorías{} y {C:attention}palos{}",
+					"de todas las cartas en mano",
 				}
 			},
 			j_hnds_angry_mob = {

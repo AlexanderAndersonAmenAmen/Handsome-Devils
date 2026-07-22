@@ -159,7 +159,7 @@ local files = {
 			"jokestone",
 			"public_nuisance",
 			"walking_joke",
-			"blackjack",
+			"demented",
 			"jackpot",
 			"banana_split",
 			"head_of_medusa",
