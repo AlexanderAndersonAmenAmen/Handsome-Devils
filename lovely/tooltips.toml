@@ -19,3 +19,27 @@ payload = '''
     end
 '''
 match_indent = true
+
+# -----------------------------
+# The Devil rolled-effect tooltip
+# -----------------------------
+# Attach hover behaviour to the blind badge without modifying the surrounding
+# blind-choice UI tree. `times = 1` selects create_UIBox_blind_choice rather
+# than the later run-summary badge that uses the same draw-step snippet.
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''
+  blind_choice.animation:define_draw_steps({
+    {shader = 'dissolve', shadow_height = 0.05},
+    {shader = 'dissolve'}
+  })
+'''
+position = "after"
+payload = '''
+  if HNDS and HNDS.attach_devil_blind_tooltip then
+    HNDS.attach_devil_blind_tooltip(blind_choice.animation, blind_choice.config)
+  end
+'''
+match_indent = true
+times = 1

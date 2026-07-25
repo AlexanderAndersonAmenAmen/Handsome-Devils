@@ -457,12 +457,11 @@ return {
 			j_hnds_contagion = {
 				name = "Contagio",
 				text = {
-					"Las cartas {C:attention}mejoradas{} tienen",
-					"una prob. de {C:green}#1# en #2#{} de copiar su",
-					"{C:attention}Mejora{} a la carta de la {C:attention}derecha{}",
-					"al anotar; las recién mejoradas",
-					"también pueden contagiar",
-				},
+                    "{C:attention}Consumables{} allow",
+                    "to select {C:attention}1 extra card{}",
+                    "{C:inactive}(ex. Enhances 2 selected",
+                    "{C:inactive}cards -> 3 selected cards)",
+                },
 			},
 		},
 		Back = {
@@ -722,10 +721,11 @@ return {
 			hnds_spectralseal_seal = {
 				name = "Sello Espectral",
 				text = {
-					"Crea {C:attention}#1#{} cartas {C:spectral}Espectrales{}",
-					"al ser {C:attention}destruida{}",
-					"{C:inactive}(Debe haber espacio){}"
-				}
+                    "Creates a {C:spectral}Spectral{} card",
+                    "every {C:attention}#1#{} [{C:attention}#2#{}] unique poker",
+                    "hands this card scored in",
+                    "{C:inactive}(Must have room){}",
+                }
 			},
 			p_hnds_spectral_ultra = {
 				name = "Paquete Ultra Espectral",
@@ -1087,6 +1087,7 @@ return {
 	},
 	misc = {
 		dictionary = {
+			hnds_upgrade_blind = "Upgrade Blind",
 			k_hnds_petrified = "¡Petrificado!",
 			k_hnds_goldfish = "¡Pez Dorado!",
 			k_hnds_jester_negative = "¡Comodín Negativo!",

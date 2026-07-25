@@ -11,5 +11,18 @@ SMODS.Stake({
     prefix_config = {
         applied_stakes = { mod = false },
         above_stake = { mod = false }
-    }
+    },
+    -- Called by SMODS when this stake is applied at the start of a run.
+    -- Extends the run to Ante 10 and flags Platinum as active so other
+    -- systems (e.g. The Devil's forced-showdown-boss hook) can check for
+    -- it without needing to look up G.P_STAKES or compare stake numbers.
+    modifiers = function(self)
+        G.GAME.win_ante = 10
+        G.GAME.hnds_platinum_active = true
+        G.GAME.hnds_upgraded_blinds = G.GAME.hnds_upgraded_blinds or {}
+        G.GAME.hnds_platinum_blind_replacements =
+            G.GAME.hnds_platinum_blind_replacements or {}
+        G.GAME.hnds_blind_upgrades = G.GAME.hnds_blind_upgrades or 0
+        sendDebugMessage("HNDS: Platinum modifiers() fired -- win_ante set to " .. tostring(G.GAME.win_ante))
+    end
 })

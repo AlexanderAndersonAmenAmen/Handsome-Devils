@@ -32,6 +32,16 @@ SMODS.Joker {
         
         if card.ability.extra.active and context.before and next(context.poker_hands["Four of a Kind"]) and not context.blueprint then
 
+            if hnds_config and hnds_config.enableCustomSounds then
+                -- Equal chance for every Sarmenti tune.
+                local roll = pseudorandom('hnds_sarmenti_sfx')
+                local sound_key = roll < 0.25 and 'hnds_sarmenti_common_tune1'
+                    or roll < 0.5 and 'hnds_sarmenti_common_tune2'
+                    or roll < 0.75 and 'hnds_sarmenti_rare_tune1'
+                    or 'hnds_sarmenti_rare_tune2'
+                play_sound(sound_key, 1, 0.2109375)
+            end
+
             for _, c in ipairs(context.scoring_hand) do
                 if card.ability.extra.mode == 0 then
                     c:set_edition(poll_edition('sarmenti', 1, false, true))

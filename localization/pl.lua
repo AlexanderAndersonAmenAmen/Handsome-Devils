@@ -372,6 +372,7 @@ return {
 	},
 	misc = {
 		dictionary = {
+			hnds_upgrade_blind = "Upgrade Blind",
 			k_hnds_petrified = "Skamieniały!",
 			k_hnds_goldfish = "Złota ryba!",
 			k_hnds_jester_negative = "Negatywny!",

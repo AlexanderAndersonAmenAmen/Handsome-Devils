@@ -24,6 +24,12 @@ SMODS.Joker({
 				target:juice_up(0.3, 0.5)
 				target.ability.hnds_jester_negative_rounds = card.ability.extra.rounds
 				target:add_sticker('hnds_jester_temp_negative', true)
+				if hnds_config and hnds_config.enableCustomSounds then
+					-- 2:1 weighting: the super-rare line is half as likely as the common one.
+					local sound_key = pseudorandom('hnds_jiy_sfx') < (1 / 3)
+						and 'hnds_jiy_superrare_sfx' or 'hnds_jiy_common_sfx'
+					play_sound(sound_key, 1, 0.75)
+				end
 				return nil, true
 			end
 		end

@@ -14,7 +14,10 @@ SMODS.Joker {
         return { vars = { card.ability.extra.Xmult, card.ability.extra.Xmult_extra } }
     end,
     calculate = function(self, card, context)
-        if context.end_of_round and not context.individual and not context.repetition and not context.blueprint then
+        if context.end_of_round and context.main_eval and not context.individual and not context.repetition and not context.blueprint then
+            if hnds_config and hnds_config.enableCustomSounds then
+                play_sound('hnds_one_punchline_man', 1, 0.5625)
+            end
             local unused_hands = G.GAME.current_round.hands_left
             if unused_hands > 0 then
                 local xmult_gains = card.ability.extra.Xmult_extra * unused_hands

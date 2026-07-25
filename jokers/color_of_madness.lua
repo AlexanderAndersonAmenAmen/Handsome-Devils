@@ -3,7 +3,7 @@ local function hnds_enhance_wild(card_self, card_to_enhance)
 	G.E_MANAGER:add_event(Event({
 		func = function()
 			card_to_enhance:juice_up()
-			if hnds_config["enableCustomSounds"] then play_sound("hnds_madnesscolor", 1.25, 0.25) end
+			if hnds_config["enableCustomSounds"] then play_sound("hnds_madnesscolor", 1.25, 0.1875) end
 			return true
 		end,
 	}))

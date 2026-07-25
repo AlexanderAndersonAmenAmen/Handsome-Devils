@@ -1,7 +1,14 @@
+local function hnds_exchange_target_limit(card)
+	local base = card and card.ability and card.ability.extra and tonumber(card.ability.extra.cards) or 1
+	local bonus = HNDS and HNDS.get_contagion_bonus and HNDS.get_contagion_bonus() or 0
+	return math.max(1, base + bonus)
+end
+
 SMODS.Consumable({
 	key = "exchange",
 	set = "Spectral",
 	config = {
+		max_highlighted = 1,
 		extra = {
 			cards = 1,
 		},
@@ -12,7 +19,12 @@ SMODS.Consumable({
 			set = "Edition",
 			config = { extra = G.P_CENTERS["e_negative"].config.card_limit },
 		}
-		return { vars = { card.ability.extra.cards, G.GAME.hnds_exchange_minus or 1 } }
+		local target_limit = hnds_exchange_target_limit(card)
+		local bonus = HNDS and HNDS.get_contagion_bonus and HNDS.get_contagion_bonus() or 0
+		return {
+			key = bonus > 0 and "c_hnds_exchange_contagion" or nil,
+			vars = { target_limit, G.GAME.hnds_exchange_minus or 1 },
+		}
 	end,
 	discovered = true,
 	atlas = "Consumables",
@@ -40,7 +52,7 @@ SMODS.Consumable({
 		if G.STATE == G.STATES.SELECTING_HAND and G.GAME.current_round.hands_left <= 1 then
 			return false
 		end
-		if G.hand and #G.hand.highlighted <= card.ability.extra.cards and #G.hand.highlighted > 0 then
+		if G.hand and #G.hand.highlighted <= hnds_exchange_target_limit(card) and #G.hand.highlighted > 0 then
 			--Check that all selected cards are not editioned
 			local all_uneditioned = true
 			for i = 1, #G.hand.highlighted do
@@ -56,7 +68,7 @@ SMODS.Consumable({
 		return false
 	end,
 	force_use = function(self, card, area)
-		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, card.ability.extra.cards)
+		local cards = Cryptid and Cryptid.get_highlighted_cards({ G.hand }, {}, 1, hnds_exchange_target_limit(card))
 		G.E_MANAGER:add_event(Event({
 			trigger = "after",
 			delay = 0.4,
@@ -68,8 +80,11 @@ SMODS.Consumable({
 				return true
 			end,
 		}))
-		ease_hands_played(-card.ability.extra.hand_reduction)
-		G.GAME.round_resets.hands = G.GAME.round_resets.hands - card.ability.extra.hand_reduction
+		G.GAME.hnds_exchange_minus = G.GAME.hnds_exchange_minus or 1
+		local mod = G.GAME.hnds_exchange_minus
+		ease_hands_played(-mod)
+		G.GAME.round_resets.hands = G.GAME.round_resets.hands - mod
+		G.GAME.hnds_exchange_minus = mod + 1
 	end,
 	demicoloncompat = true,
 })

@@ -1,0 +1,89 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# Boss Blind definitions may occupy Small/Big slots through Platinum blind
+# upgrades or Excommunicado. Round progression must follow the slot being
+# played, not the Blind definition's intrinsic Boss type.
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.blind:get_type() == 'Boss' then"
+position = "at"
+match_indent = true
+payload = "if G.GAME.blind_on_deck == 'Boss' then"
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then"
+position = "at"
+match_indent = true
+payload = "if G.GAME.round_resets.ante >= G.GAME.win_ante and G.GAME.blind_on_deck == 'Boss' then"
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.round_resets.blind == G.P_BLINDS.bl_small then"
+position = "at"
+match_indent = true
+payload = "if G.GAME.blind_on_deck == 'Small' then"
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "elseif G.GAME.round_resets.blind == G.P_BLINDS.bl_big then"
+position = "at"
+match_indent = true
+payload = "elseif G.GAME.blind_on_deck == 'Big' then"
+
+# Synchronize Upgrade Blind immediately after vanilla updates the current
+# tag/Skip UI. Keeping the original tag-panel child order is essential on
+# beta-1620a because this vanilla block accesses children by fixed index.
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''
+    if _top_button then 
+        _top_button.config.colour = G.C.UI.BACKGROUND_INACTIVE
+        _top_button.config.button = nil
+        _top_button.config.hover = false
+        _top_button.children[1].config.colour = G.C.UI.TEXT_INACTIVE
+    end
+end
+'''
+position = "after"
+payload = '''
+if HNDS and HNDS.sync_platinum_blind_tag_ui then
+    HNDS.sync_platinum_blind_tag_ui(e)
+end
+'''
+match_indent = true
+
+# Once Platinum has upgraded a Small/Big Blind, vanilla's Skip button must
+# remain disabled for that slot. The key is Ante + slot, so the action resets
+# naturally on the next Ante.
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.GAME.round_resets.blind_states[e.config.id] == 'Defeated' then"
+position = "before"
+payload = "(G.GAME.hnds_upgraded_blinds or {})[tostring(G.GAME.round_resets.ante)..':'..e.config.id] or"
+match_indent = true
+
+# UI disabling is not sufficient protection against stale controller focus
+# or an already-queued click. Reject Skip Blind at the callback itself after
+# the current slot has been upgraded.
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.FUNCS.skip_blind = function(e)"
+position = "after"
+payload = '''
+if HNDS and HNDS.platinum_skip_is_locked and HNDS.platinum_skip_is_locked(G.GAME.blind_on_deck) then
+    return
+end
+'''
+match_indent = true

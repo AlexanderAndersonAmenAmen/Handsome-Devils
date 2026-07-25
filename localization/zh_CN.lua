@@ -255,6 +255,7 @@ return {
 	},
 	misc = {
 		dictionary = {
+			hnds_upgrade_blind = "Upgrade Blind",
 			k_hnds_petrified = "石化！",
 			k_hnds_goldfish = "金鱼！",
 			k_hnds_cursed_offers = "诅咒馈赠",

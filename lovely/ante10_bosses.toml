@@ -1,0 +1,37 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# ------------------------------------------------------------------
+# Wasted Wish voucher tab
+# Gameplay checks use an empty proxy while the effect is active, but the tab
+# deliberately reads the preserved voucher table and renders every owned
+# Voucher as debuffed (normal red-X/debuff presentation).
+# ------------------------------------------------------------------
+
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "if G.GAME.used_vouchers[v.key] then"
+position = "at"
+payload = '''
+local hnds_visible_vouchers = (G.GAME.hnds_wasted_wish_active and G.GAME.hnds_wasted_wish_used_vouchers) or G.GAME.used_vouchers
+if hnds_visible_vouchers[v.key] then
+'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "card.ability.order = vv.order"
+position = "after"
+payload = '''
+if G.GAME.hnds_wasted_wish_active then
+    card.debuff = true
+    card.debuffed_by_blind = true
+end
+'''
+match_indent = true
+times = 1

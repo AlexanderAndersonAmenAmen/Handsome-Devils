@@ -26,12 +26,15 @@ SMODS.Joker {
             then
                 G.E_MANAGER:add_event(Event({
                     func = function()
-                        SMODS.add_card({
+                        local created = SMODS.add_card({
                             set = "Joker",
                             attributes = { "food" },
                             edition = 'e_negative',
                             allow_duplicates = false --this shouldnt be needed but like maybe?
                         })
+                        if created and hnds_config and hnds_config.enableCustomSounds then
+                            play_sound('hnds_krusty_laugh', 1, 0.75)
+                        end
                         return true
                     end
                 }))

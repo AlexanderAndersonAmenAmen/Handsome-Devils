@@ -362,8 +362,8 @@ return {
 			j_hnds_jigsaw_joker = {
 				name = "Jigsaw Joker",
 				text = {
-					"After playing {C:attention}8{} unique",
-					"{C:attention}poker hands{}, sell this card",
+					"After playing {C:attention}8{} {C:attention}unique{}",
+					"poker hands, sell this card",
 					"to create {C:attention}#3#{} random Tags",
 					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/8){}",
 				},
@@ -388,10 +388,10 @@ return {
 			j_hnds_contagion = {
 				name = "Contagion",
 				text = {
-					"{C:green}#1# in #2#{} chance for an",
-					"enhanced card to copy its",
-					"{C:attention}Enhancement{} to a card on",
-					"the {C:attention}right{} when scored",
+					"{C:attention}Consumables{} allow to",
+					"select {C:attention}1{} extra card",
+					"{C:inactive}(ex: Enhances {C:attention}2{} {C:inactive}selected",
+					"{C:inactive}cards -> {C:attention}3{} {C:inactive}selected cards)",
 				},
 			},
 			j_hnds_last_laugh = {
@@ -625,6 +625,64 @@ return {
 			},
 		},
 		Spectral = {
+
+            c_hnds_contagion_talisman = {
+                name = "Talisman",
+                text = {
+                    "Add a {C:attention}Gold Seal{}",
+                    "to {C:attention}#1#{} selected",
+                    "cards in your hand",
+                },
+            },
+            c_hnds_contagion_deja_vu = {
+                name = "Deja Vu",
+                text = {
+                    "Add a {C:red}Red Seal{}",
+                    "to {C:attention}#1#{} selected",
+                    "cards in your hand",
+                },
+            },
+            c_hnds_contagion_trance = {
+                name = "Trance",
+                text = {
+                    "Add a {C:blue}Blue Seal{}",
+                    "to {C:attention}#1#{} selected",
+                    "cards in your hand",
+                },
+            },
+            c_hnds_contagion_medium = {
+                name = "Medium",
+                text = {
+                    "Add a {C:purple}Purple Seal{}",
+                    "to {C:attention}#1#{} selected",
+                    "cards in your hand",
+                },
+            },
+            c_hnds_contagion_aura = {
+                name = "Aura",
+                text = {
+                    "Add {C:dark_edition}Foil{}, {C:dark_edition}Holographic{},",
+                    "or {C:dark_edition}Polychrome{} effect to",
+                    "{C:attention}#1#{} selected cards in hand",
+                },
+            },
+            c_hnds_contagion_cryptid = {
+                name = "Cryptid",
+                text = {
+                    "Create {C:attention}#1#{} copies of",
+                    "each of {C:attention}#2#{} selected",
+                    "cards in your hand",
+                },
+            },
+            c_hnds_exchange_contagion = {
+                name = "Exchange",
+                text = {
+                    "Add {C:dark_edition}Negative{}",
+                    "to {C:attention}#1#{} selected",
+                    "cards in your hand,",
+					"{C:blue}-#2#{} hand each round",
+                },
+            },
 			c_hnds_abyss = {
 				name = "Abyss",
 				text = {
@@ -669,7 +727,8 @@ return {
 			c_hnds_dream = {
 				name = "Dream",
 				text = {
-					"Creates {C:attention}10{} random",
+					"Creates",
+					"{C:attention}10{} random",
 					"{E:1,C:legendary}Joker Tags{}",
 				},
 			},
@@ -692,8 +751,7 @@ return {
 				text = {
 					"Gives each card in",
 					"your hand a random",
-					"{C:attention}Enhancement{} and {C:attention}Seal",
-					"{s:0.9,C:inactive}(Mult and Bonus excluded)"
+					"{C:attention}Enhancement{} and {C:attention}Seal"
 				}
 			}
 		},
@@ -726,10 +784,52 @@ return {
 			hnds_spectralseal_seal = {
 				name = "Spectral Seal",
 				text = {
-					"Creates {C:attention}#1# {C:spectral}Spectral{} cards",
-					"when {C:attention}destroyed",
+					"Creates a {C:spectral}Spectral{} card",
+					"every {C:attention}#1#{} {C:inactive}[#2#]{} {C:attention}unique{} poker",
+					"hands this card scored in",
 					"{C:inactive}(Must have room){}"
 				}
+			},
+			hnds_spectralseal_progress_empty = {
+				name = "Scored Poker Hands",
+				text = {
+					"Currently: {C:attention}#1#{}",
+					"{C:inactive}(#2#/#3# unique hands){}",
+				},
+			},
+			hnds_spectralseal_progress_1 = {
+				name = "Scored Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:inactive}(#2#/#3# unique hands){}",
+				},
+			},
+			hnds_spectralseal_progress_2 = {
+				name = "Scored Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:inactive}(#3#/#4# unique hands){}",
+				},
+			},
+			hnds_spectralseal_progress_3 = {
+				name = "Scored Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:inactive}(#4#/#5# unique hands){}",
+				},
+			},
+			hnds_spectralseal_progress_4 = {
+				name = "Scored Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:inactive}(#5#/#6# unique hands){}",
+				},
 			},
 			p_hnds_spectral_ultra = {
 				name = "Ultra Spectral Pack",
@@ -1068,8 +1168,8 @@ return {
 			stake_hnds_platinum = {
 				name = "Platinum Stake",
 				text = {
-					"Next {C:attention}Blind{} becomes {C:mult}X2{} larger when you",
-					"exceed required score by {C:mult}X2{} or more",
+					"Defeat Ante {C:attention}10 Boss{} to win",
+					"{C:attention}Blinds{} can be upgraded",
 					"{s:0.8}Applies all previous Stakes",
 				}
 			},
@@ -1077,7 +1177,7 @@ return {
 				name = "Blood Stake",
 				text = {
 					"Shop can have {C:red}Cursed{} Jokers",
-					"{C:inactive,s:0.8}(Extra {C:green,s:0.8}power{} {C:inactive,s:0.8}but at what {C:red,s:0.8}cost{}{C:inactive,s:0.8}?)",
+					"Leaving one there upgrades next {C:attention}Blind",
 					"{s:0.8}Applies all previous Stakes",
 				},
 				unlock = {
@@ -1085,10 +1185,48 @@ return {
 					'deck on Platinum Stake',
 				}
 			}
-		}
+		},
+		Blind = {
+			bl_hnds_blind_devil = {
+				name = "The Devil",
+				text = {
+					"Summons #1#,",
+					"#2#, #3#",
+				},
+			},
+			bl_hnds_forbidden_fruit = {
+				name = "Forbidden Fruit",
+				text = {
+					"Debuff 6 cards in deck",
+					"per Tag used this run",
+				},
+			},
+			bl_hnds_perilous_pact = {
+				name = "Perilous Pact",
+				text = {
+					"Caps each hand at",
+					"50% of required score",
+				},
+			},
+			bl_hnds_sinful_soul = {
+				name = "Sinful Soul",
+				text = {
+					"+20% Blind size per $1",
+					"of Jokers' sell value",
+				},
+			},
+			bl_hnds_wasted_wish = {
+				name = "Wasted Wish",
+				text = {
+					"Vouchers are",
+					"disabled this Ante",
+				},
+			},
+		},
 	},
 	misc = {
 		dictionary = {
+			hnds_upgrade_blind = "Upgrade Blind",
 			k_hnds_petrified = "Petrified!",
 			k_hnds_goldfish = "Goldfish!",
 			k_hnds_jester_negative = "Joker Negatived!",
