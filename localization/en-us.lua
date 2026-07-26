@@ -625,7 +625,6 @@ return {
 			},
 		},
 		Spectral = {
-
             c_hnds_contagion_talisman = {
                 name = "Talisman",
                 text = {

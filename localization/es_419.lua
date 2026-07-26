@@ -622,6 +622,58 @@ return {
 			},
 		},
 		Spectral = {
+			c_hnds_contagion_talisman = {
+				name = "Talismán",
+				text = {
+                    "Otorga un {C:attention}sello de oro{}",
+                    "a {C:attention}#1#{} cartas seleccionadas",
+				},
+			},
+			c_hnds_contagion_deja_vu = {
+				name = "Déjà vu",
+				text = {
+                    "Otorga un {C:red}sello rojo{}",
+                    "a {C:attention}#1#{} cartas seleccionadas",
+				},
+			},
+			c_hnds_contagion_trance = {
+				name = "Trance",
+				text = {
+                    "Otorga un {C:blue}sello azul{}",
+                    "a {C:attention}#1#{} cartas seleccionadas",
+				},
+			},
+			c_hnds_contagion_medium = {
+				name = "Médium",
+				text = {
+                    "Otorga un {C:purple}sello morado{}",
+                    "a {C:attention}#1#{} cartas seleccionadas",
+				},
+			},
+			c_hnds_contagion_aura = {
+				name = "Aura",
+				text = {
+                    "Otorga edición {C:dark_edition}laminada{}, {C:dark_edition}holográfica{}",
+                    "o {C:dark_edition}polícroma{} a",
+                    "{C:attention}#1#{} cartas seleccionadas de tu mano",
+				},
+			},
+			c_hnds_contagion_cryptid = {
+				name = "Críptido",
+				text = {
+                    "Crea {C:attention}#1#{} copias de",
+                    "{C:attention}#2#{} cartas seleccionadas",
+                    "en tu mano",
+				},
+			},
+			c_hnds_exchange_contagion = {
+				name = "Intercambio",
+				text = {
+					"Otorga edición {C:dark_edition}Negativa{}",
+					"a {C:attention}#1#{} cartas seleccionadas,",
+					"y pierdes {C:blue}#2#{} mano",
+				},
+			},
 			c_hnds_abyss = {
 				name = "Abismo",
 				text = {
