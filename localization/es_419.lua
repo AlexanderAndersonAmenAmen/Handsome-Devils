@@ -1159,8 +1159,8 @@ return {
 				name = "Pozo de Platino",
 				text = {
 					"Debes alcanzar la Apuesta {C:attention}10{} para ganar.",
-					"Puedes mejorar las {C:attention}Ciegas{} duplicando la",
-					"puntuación requerida para obtener recompensas adiconales",
+					"Puedes mejorar las {C:attention}Ciegas{} a {C:attention,E:1}Ciegas Jefe{}",
+					"para obtener una etiqueta de omisión",
 					"{s:0.8}Aplica todos los pozos anteriores{}",
 				}
 			},
@@ -1168,7 +1168,8 @@ return {
 				name = "Pozo de Sangre",
 				text = {
 					"La Tienda puede tener Comodines {C:red}Malditos{}",
-					"Ignorarlos mejora la siguiente {C:attention}Ciega{}",
+					"Ignorarlos convierte la siguiente {C:attention}Ciega{}",
+					"en una {C:attention,E:1}Ciegas Jefe{}",
 					"{s:0.8}Aplica todos los pozos anteriores{}",
 				},
 				unlock = {
