@@ -15,5 +15,10 @@ SMODS.Stake {
     },
     modifiers = function()
         G.GAME.modifiers.enable_curses = true
+        G.GAME.modifiers.hnds_blood_stake = true
+
+        local cursed_pack = G.P_CENTERS
+            and G.P_CENTERS.p_hnds_cursed_pack
+        if cursed_pack then cursed_pack.weight = 1.6 end
     end,
 }

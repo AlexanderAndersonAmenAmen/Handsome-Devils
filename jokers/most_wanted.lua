@@ -74,22 +74,34 @@ SMODS.Joker({
 		end
 	end,
 	calculate = function(self, card, context)
-		if context.buying_card and context.card and card.ability.extra.target and
-			context.card.config and context.card.config.center and context.card.config.center.key == card.ability.extra.target then
-			
-			local bought_edition = context.card.edition and context.card.edition.key
-			if bought_edition == card.ability.extra.target_edition then
-				SMODS.destroy_cards({card})
-				return nil, true
-			end
-		end
-
 		if context.selling_self and not context.blueprint and G.STATE == G.STATES.SHOP and G.shop_jokers and G.shop_jokers.cards then
 			for _, shop_card in ipairs(G.shop_jokers.cards) do
 				if shop_card.config and shop_card.config.center and shop_card.config.center.key == card.ability.extra.target then
 					shop_card.cost = 0
 					shop_card.val = 0
-					if shop_card.hud_item then shop_card.hud_item:realign() end 
+					if shop_card.hud_item then shop_card.hud_item:realign() end
+				end
+			end
+		end
+
+		-- 1620a shop-card context: react at the moment the target is actually
+		-- inserted into the shop. The starting/reroll block below remains as a
+		-- compatibility fallback for unusual shop-generation paths.
+		if context.modify_shop_card and context.card and card.ability.extra.target then
+			local shop_card = context.card
+			if shop_card.config and shop_card.config.center
+				and shop_card.config.center.key == card.ability.extra.target
+			then
+				if not shop_card.hnds_most_wanted_announced then
+					shop_card.hnds_most_wanted_announced = true
+					if hnds_config and hnds_config.enableCustomSounds then
+						play_sound('hnds_wp_buy_inshop', 1, 0.75)
+					end
+				end
+				if not shop_card.edition and card.ability.extra.target_edition then
+					local ed_key = card.ability.extra.target_edition:gsub("^e_", "")
+					shop_card:set_edition({ [ed_key] = true }, false, false)
+					shop_card:juice_up()
 				end
 			end
 		end
@@ -103,17 +115,24 @@ SMODS.Joker({
 		end
 
 
-		if (context.starting_shop or context.reroll_shop or context.open_booster_pack) and G.shop_jokers and G.shop_jokers.cards then
+		if (context.starting_shop or context.reroll_shop) and G.shop_jokers and G.shop_jokers.cards then
 			G.E_MANAGER:add_event(Event({
 				func = function()
 					for _, shop_card in ipairs(G.shop_jokers.cards) do
 
-						if shop_card.config and shop_card.config.center and shop_card.config.center.key == card.ability.extra.target and not shop_card.edition then
-							local ed_key = card.ability.extra.target_edition:gsub("^e_", "")
-							
-							shop_card:set_edition({[ed_key] = true}, false, false)
-							
-							shop_card:juice_up()
+						if shop_card.config and shop_card.config.center and shop_card.config.center.key == card.ability.extra.target then
+							if not shop_card.hnds_most_wanted_announced then
+								shop_card.hnds_most_wanted_announced = true
+								if hnds_config and hnds_config.enableCustomSounds then
+									play_sound('hnds_wp_buy_inshop', 1, 0.75)
+								end
+							end
+
+							if not shop_card.edition and card.ability.extra.target_edition then
+								local ed_key = card.ability.extra.target_edition:gsub("^e_", "")
+								shop_card:set_edition({[ed_key] = true}, false, false)
+								shop_card:juice_up()
+							end
 						end
 					end
 					return true

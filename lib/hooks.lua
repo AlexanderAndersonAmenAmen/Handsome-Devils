@@ -19,6 +19,716 @@ Sections:
   end_round dispatcher (calls per-subsystem functions)
   Blind.set_blind dispatcher (calls per-subsystem functions)
 ]]
+
+
+
+
+-------------------------------------------------------------------
+-- Handsome Devils hooks
+-------------------------------------------------------------------
+
+HNDS = HNDS or {}
+
+
+
+-------------------------------------------------------------------
+-- Devil system
+--
+-- main.lua already loads lib/devil_bosses.lua before blinds/blind_devil.lua.
+-- Do not load either file again here; double registration corrupts state and
+-- makes debugging the blind much harder.
+-------------------------------------------------------------------
+
+-------------------------------------------------------------------
+-- ANTE 10 SHOWDOWN BOSS POOL
+-------------------------------------------------------------------
+
+local get_new_boss_ref = get_new_boss
+
+HNDS.ANTE_10_BOSS_POOL = HNDS.ANTE_10_BOSS_POOL or {
+    "bl_hnds_blind_devil",
+    "bl_hnds_forbidden_fruit",
+    "bl_hnds_perilous_pact",
+    "bl_hnds_sinful_soul",
+    "bl_hnds_wasted_wish",
+}
+
+local function get_ante_10_boss()
+    local pool = {}
+    for _, key in ipairs(HNDS.ANTE_10_BOSS_POOL) do
+        if G.P_BLINDS and G.P_BLINDS[key] then
+            pool[#pool + 1] = key
+        end
+    end
+
+    if #pool == 0 then return get_new_boss_ref() end
+
+    local chosen = pseudorandom_element(pool, pseudoseed("hnds_ante_10_boss"))
+        or pool[1]
+
+    if HNDS.set_wasted_wish_active then
+        HNDS.set_wasted_wish_active(chosen == "bl_hnds_wasted_wish")
+    end
+
+    if chosen == "bl_hnds_blind_devil" and HNDS.prepare_devil_encounter then
+        HNDS.prepare_devil_encounter()
+    end
+
+    return chosen
+end
+
+function get_new_boss()
+    if G.GAME
+        and not G.GAME.hnds_bypass_ante_10_force
+        and G.GAME.round_resets
+        and G.GAME.round_resets.ante == 10
+        and G.GAME.win_ante == 10
+    then
+        return get_ante_10_boss()
+    end
+
+    return get_new_boss_ref()
+end
+
+HNDS.get_new_boss_unforced = function()
+    if not (G and G.GAME) then return get_new_boss_ref() end
+
+    local previous = G.GAME.hnds_bypass_ante_10_force
+    G.GAME.hnds_bypass_ante_10_force = true
+    local ok, boss = pcall(get_new_boss)
+    G.GAME.hnds_bypass_ante_10_force = previous
+    if not ok then error(boss) end
+    return boss
+end
+
+-------------------------------------------------------------------
+-- ANTE 10 GLOBAL BOSS SUPPORT
+-------------------------------------------------------------------
+
+-- Perilous Pact calls this from a narrow Lovely patch at the final hand-score
+-- addition. Keeping the cap here makes it compatible with ordinary numbers
+-- and with Big-number mods that overload comparison/arithmetic operators.
+function HNDS.cap_perilous_pact_score(score)
+    if not (G and G.GAME and G.GAME.blind and not G.GAME.blind.disabled) then
+        return score
+    end
+
+    local blind_center = G.GAME.blind.config and G.GAME.blind.config.blind
+    local blind_key = blind_center and blind_center.key
+    local is_perilous = G.GAME.hnds_perilous_pact_active
+        or blind_key == "bl_hnds_perilous_pact"
+        or blind_key == "perilous_pact"
+    if not is_perilous then return score end
+
+    local cap = G.GAME.blind.chips * 0.50
+    local ok, exceeds = pcall(function()
+        local lhs = type(to_big) == "function" and to_big(score) or score
+        local rhs = type(to_big) == "function" and to_big(cap) or cap
+        return lhs > rhs
+    end)
+    if ok and exceeds then return cap end
+    return score
+end
+
+local function hnds_copy_table_shallow(source)
+    local copy = {}
+    for key, value in pairs(source or {}) do copy[key] = value end
+    return copy
+end
+
+local function hnds_wasted_wish_fake_voucher(center, key)
+    local config = center and center.config or {}
+    local ability = type(copy_table) == "function" and copy_table(config)
+        or hnds_copy_table_shallow(config)
+    return {
+        ability = ability,
+        config = { center = center, center_key = key },
+    }
+end
+
+local function hnds_wasted_wish_unredeem_custom_vouchers(vouchers)
+    local undone = {}
+    for key, owned in pairs(vouchers or {}) do
+        local center = owned and G.P_CENTERS and G.P_CENTERS[key]
+        local slot_voucher = key == "v_crystal_ball"
+            or key == "v_antimatter"
+        if not slot_voucher
+            and center and type(center.unredeem) == "function"
+        then
+            local fake = hnds_wasted_wish_fake_voucher(center, key)
+            local ok = pcall(center.unredeem, center, fake)
+            if ok then undone[key] = true end
+        end
+    end
+    return undone
+end
+
+local function hnds_wasted_wish_redeem_custom_vouchers(vouchers, undone)
+    for key, was_undone in pairs(undone or {}) do
+        local center = was_undone and vouchers and vouchers[key]
+            and G.P_CENTERS and G.P_CENTERS[key]
+        if center and type(center.redeem) == "function" then
+            local fake = hnds_wasted_wish_fake_voucher(center, key)
+            pcall(center.redeem, center, fake)
+        end
+    end
+end
+
+local function hnds_wasted_wish_has(vouchers, key)
+    return vouchers and vouchers[key] and true or false
+end
+
+local function hnds_wasted_wish_extra(key, fallback)
+    local center = G and G.P_CENTERS and G.P_CENTERS[key]
+    local extra = center and center.config and center.config.extra
+    if type(extra) == "number" then return extra end
+    if type(extra) == "table" then
+        return tonumber(extra.hands or extra.discards or extra.slots
+            or extra.size or extra.deduction or extra.shop_size) or fallback
+    end
+    return fallback
+end
+
+local function hnds_wasted_wish_build_adjustments(vouchers)
+    local adjustments = {
+        hands = 0,
+        discards = 0,
+        hand_size = 0,
+        consumable_slots = 0,
+        joker_slots = 0,
+        shop_size = 0,
+        reroll_cost = 0,
+    }
+
+    for _, key in ipairs({ "v_grabber", "v_nacho_tong" }) do
+        if hnds_wasted_wish_has(vouchers, key) then
+            adjustments.hands = adjustments.hands
+                - hnds_wasted_wish_extra(key, 1)
+        end
+    end
+    if hnds_wasted_wish_has(vouchers, "v_hieroglyph") then
+        adjustments.hands = adjustments.hands
+            + hnds_wasted_wish_extra("v_hieroglyph", 1)
+    end
+
+    for _, key in ipairs({ "v_wasteful", "v_recyclomancy" }) do
+        if hnds_wasted_wish_has(vouchers, key) then
+            adjustments.discards = adjustments.discards
+                - hnds_wasted_wish_extra(key, 1)
+        end
+    end
+    if hnds_wasted_wish_has(vouchers, "v_petroglyph") then
+        adjustments.discards = adjustments.discards
+            + hnds_wasted_wish_extra("v_petroglyph", 1)
+    end
+
+    for _, key in ipairs({ "v_paint_brush", "v_palette" }) do
+        if hnds_wasted_wish_has(vouchers, key) then
+            adjustments.hand_size = adjustments.hand_size
+                - hnds_wasted_wish_extra(key, 1)
+        end
+    end
+
+    if hnds_wasted_wish_has(vouchers, "v_crystal_ball") then
+        adjustments.consumable_slots = adjustments.consumable_slots - 1
+    end
+    if hnds_wasted_wish_has(vouchers, "v_antimatter") then
+        adjustments.joker_slots = adjustments.joker_slots - 1
+    end
+
+    for _, key in ipairs({ "v_overstock_norm", "v_overstock_plus" }) do
+        if hnds_wasted_wish_has(vouchers, key) then
+            adjustments.shop_size = adjustments.shop_size
+                - hnds_wasted_wish_extra(key, 1)
+        end
+    end
+
+    for _, key in ipairs({ "v_reroll_surplus", "v_reroll_glut" }) do
+        if hnds_wasted_wish_has(vouchers, key) then
+            adjustments.reroll_cost = adjustments.reroll_cost
+                + hnds_wasted_wish_extra(key, 2)
+        end
+    end
+
+    return adjustments
+end
+
+local function hnds_wasted_wish_snapshot_overrides(vouchers)
+    local snapshot = {}
+    local function save(field)
+        snapshot[field] = G.GAME[field]
+    end
+
+    if hnds_wasted_wish_has(vouchers, "v_clearance_sale")
+        or hnds_wasted_wish_has(vouchers, "v_liquidation")
+    then
+        save("discount_percent")
+        G.GAME.discount_percent = 0
+        for _, card in pairs(G.I and G.I.CARD or {}) do
+            if card.set_cost then card:set_cost() end
+        end
+    end
+
+    if hnds_wasted_wish_has(vouchers, "v_hone")
+        or hnds_wasted_wish_has(vouchers, "v_glow_up")
+    then
+        save("edition_rate")
+        G.GAME.edition_rate = 1
+    end
+
+    if hnds_wasted_wish_has(vouchers, "v_tarot_merchant")
+        or hnds_wasted_wish_has(vouchers, "v_tarot_tycoon")
+    then
+        save("tarot_rate")
+        G.GAME.tarot_rate = 4
+    end
+
+    if hnds_wasted_wish_has(vouchers, "v_planet_merchant")
+        or hnds_wasted_wish_has(vouchers, "v_planet_tycoon")
+    then
+        save("planet_rate")
+        G.GAME.planet_rate = 4
+    end
+
+    if hnds_wasted_wish_has(vouchers, "v_magic_trick")
+        or hnds_wasted_wish_has(vouchers, "v_illusion")
+    then
+        save("playing_card_rate")
+        G.GAME.playing_card_rate = 0
+    end
+
+    if hnds_wasted_wish_has(vouchers, "v_seed_money")
+        or hnds_wasted_wish_has(vouchers, "v_money_tree")
+    then
+        save("interest_cap")
+        G.GAME.interest_cap = 25
+    end
+
+    return snapshot
+end
+
+local function hnds_wasted_wish_restore_overrides(snapshot)
+    for field, value in pairs(snapshot or {}) do
+        G.GAME[field] = value
+    end
+    if snapshot and snapshot.discount_percent ~= nil then
+        for _, card in pairs(G.I and G.I.CARD or {}) do
+            if card.set_cost then card:set_cost() end
+        end
+    end
+end
+
+local function hnds_wasted_wish_apply_adjustments(adjustments, direction)
+    adjustments = adjustments or {}
+    direction = direction or 1
+
+    local hands = direction * (adjustments.hands or 0)
+    local discards = direction * (adjustments.discards or 0)
+    local hand_size = direction * (adjustments.hand_size or 0)
+    local shop_size = direction * (adjustments.shop_size or 0)
+    local reroll_cost = direction * (adjustments.reroll_cost or 0)
+
+    if G.GAME.round_resets then
+        G.GAME.round_resets.hands = math.max(1,
+            (G.GAME.round_resets.hands or 0) + hands)
+        G.GAME.round_resets.discards = math.max(0,
+            (G.GAME.round_resets.discards or 0) + discards)
+        G.GAME.round_resets.reroll_cost = math.max(0,
+            (G.GAME.round_resets.reroll_cost or 0) + reroll_cost)
+    end
+
+    if G.hand and hand_size ~= 0 then G.hand:change_size(hand_size) end
+    if shop_size ~= 0 and type(change_shop_size) == "function" then
+        change_shop_size(shop_size)
+    end
+    if G.GAME.current_round and G.GAME.current_round.reroll_cost ~= nil then
+        G.GAME.current_round.reroll_cost = math.max(0,
+            G.GAME.current_round.reroll_cost + reroll_cost)
+    end
+end
+
+-- Crystal Ball and Antimatter change CardArea limits directly, so hiding
+-- G.GAME.used_vouchers is not enough after those CardAreas already exist.
+-- Remove only their own bonus, never derive a new limit from nil/zero, and
+-- remember the exact bonus to add back when Wasted Wish stops being active.
+local function hnds_wasted_wish_disable_slot_bonuses(adjustments)
+    if not (G and G.GAME) then return end
+    adjustments = adjustments or {}
+
+    local state = G.GAME.hnds_wasted_wish_slot_state or {}
+    G.GAME.hnds_wasted_wish_slot_state = state
+
+    local consumable_bonus = math.max(0,
+        -(tonumber(adjustments.consumable_slots) or 0))
+    local joker_bonus = math.max(0,
+        -(tonumber(adjustments.joker_slots) or 0))
+
+    state.consumable_bonus = state.consumable_bonus or consumable_bonus
+    state.joker_bonus = state.joker_bonus or joker_bonus
+
+    if consumable_bonus > 0 and state.consumable_processed == nil then
+        local area = G.consumeables
+        local limit = area and area.config
+            and tonumber(area.config.card_limit)
+        if limit and limit > consumable_bonus then
+            area.config.card_limit = math.max(1, limit - consumable_bonus)
+            state.consumable_processed = true
+        else
+            -- If the CardArea is not ready yet (or already has a base-sized
+            -- limit), the empty voucher proxy will make it initialize without
+            -- Crystal Ball's bonus. Do not subtract again later.
+            state.consumable_processed = false
+        end
+    end
+
+    if joker_bonus > 0 and state.joker_processed == nil then
+        local area = G.jokers
+        local limit = area and area.config
+            and tonumber(area.config.card_limit)
+        if limit and limit > joker_bonus then
+            area.config.card_limit = math.max(1, limit - joker_bonus)
+            state.joker_processed = true
+        else
+            state.joker_processed = false
+        end
+    end
+end
+
+local function hnds_wasted_wish_restore_slot_bonuses()
+    if not (G and G.GAME) then return end
+    local state = G.GAME.hnds_wasted_wish_slot_state or {}
+
+    local consumable_bonus = tonumber(state.consumable_bonus) or 0
+    if consumable_bonus > 0 and G.consumeables and G.consumeables.config then
+        local limit = tonumber(G.consumeables.config.card_limit)
+        if limit then
+            G.consumeables.config.card_limit = math.max(1,
+                limit + consumable_bonus)
+        end
+    end
+
+    local joker_bonus = tonumber(state.joker_bonus) or 0
+    if joker_bonus > 0 and G.jokers and G.jokers.config then
+        local limit = tonumber(G.jokers.config.card_limit)
+        if limit then
+            G.jokers.config.card_limit = math.max(1,
+                limit + joker_bonus)
+        end
+    end
+
+    G.GAME.hnds_wasted_wish_slot_state = nil
+end
+
+local function hnds_install_wasted_wish_voucher_proxy()
+    if not (G and G.GAME and G.GAME.hnds_wasted_wish_active) then return end
+    local backup = G.GAME.hnds_wasted_wish_used_vouchers or {}
+    G.GAME.hnds_wasted_wish_used_vouchers = backup
+
+    local current = G.GAME.used_vouchers
+    if type(current) == "table" then
+        for key, value in pairs(current) do
+            if value ~= nil then backup[key] = value end
+        end
+    end
+
+    local proxy = {}
+    setmetatable(proxy, {
+        __newindex = function(_, key, value)
+            backup[key] = value
+        end,
+    })
+    G.GAME.used_vouchers = proxy
+end
+
+function HNDS.set_wasted_wish_active(active)
+    if not (G and G.GAME) then return end
+    active = active and true or false
+
+    if active then
+        if not G.GAME.hnds_wasted_wish_active then
+            local vouchers = hnds_copy_table_shallow(G.GAME.used_vouchers)
+            G.GAME.hnds_wasted_wish_used_vouchers = vouchers
+            G.GAME.hnds_wasted_wish_adjustments =
+                hnds_wasted_wish_build_adjustments(vouchers)
+            G.GAME.hnds_wasted_wish_overrides =
+                hnds_wasted_wish_snapshot_overrides(vouchers)
+            G.GAME.hnds_wasted_wish_unredeemed =
+                hnds_wasted_wish_unredeem_custom_vouchers(vouchers)
+            hnds_wasted_wish_apply_adjustments(
+                G.GAME.hnds_wasted_wish_adjustments, 1)
+            hnds_wasted_wish_disable_slot_bonuses(
+                G.GAME.hnds_wasted_wish_adjustments)
+        end
+        G.GAME.hnds_wasted_wish_active = true
+        G.GAME.hnds_wasted_wish_ante =
+            G.GAME.round_resets and G.GAME.round_resets.ante or nil
+        hnds_install_wasted_wish_voucher_proxy()
+    elseif G.GAME.hnds_wasted_wish_active
+        or G.GAME.hnds_wasted_wish_used_vouchers
+    then
+        local restored = G.GAME.hnds_wasted_wish_used_vouchers or {}
+        for key, value in pairs(G.GAME.used_vouchers or {}) do
+            restored[key] = value
+        end
+        G.GAME.used_vouchers = restored
+
+        hnds_wasted_wish_apply_adjustments(
+            G.GAME.hnds_wasted_wish_adjustments, -1)
+        hnds_wasted_wish_restore_slot_bonuses()
+        hnds_wasted_wish_restore_overrides(
+            G.GAME.hnds_wasted_wish_overrides)
+        hnds_wasted_wish_redeem_custom_vouchers(
+            restored,
+            G.GAME.hnds_wasted_wish_unredeemed)
+
+        G.GAME.hnds_wasted_wish_used_vouchers = nil
+        G.GAME.hnds_wasted_wish_adjustments = nil
+        G.GAME.hnds_wasted_wish_overrides = nil
+        G.GAME.hnds_wasted_wish_unredeemed = nil
+        G.GAME.hnds_wasted_wish_slot_state = nil
+        G.GAME.hnds_wasted_wish_active = nil
+        G.GAME.hnds_wasted_wish_ante = nil
+    end
+end
+
+-- Vouchers remain purchasable while Wasted Wish is active. After redemption,
+-- rebuild the disabled-voucher snapshot so the newly bought Voucher is owned
+-- but its effect stays suppressed until Wasted Wish ends or is rerolled away.
+if Card and Card.redeem and not Card._hnds_wasted_wish_redeem then
+    Card._hnds_wasted_wish_redeem = true
+    local hnds_wasted_wish_redeem_ref = Card.redeem
+
+    function Card:redeem(...)
+        local refresh_after = G and G.GAME
+            and G.GAME.hnds_wasted_wish_active
+            and self.ability and self.ability.set == "Voucher"
+
+        local result = hnds_wasted_wish_redeem_ref(self, ...)
+
+        if refresh_after and G and G.E_MANAGER then
+            G.E_MANAGER:add_event(Event({
+                trigger = "after",
+                delay = 0.05,
+                func = function()
+                    if G.GAME and G.GAME.hnds_wasted_wish_active then
+                        HNDS.set_wasted_wish_active(false)
+                        HNDS.set_wasted_wish_active(true)
+                    end
+                    return true
+                end,
+            }))
+        end
+
+        return result
+    end
+end
+
+local function hnds_update_ante_10_runtime()
+    if not (G and G.GAME) then return end
+    local now = G.TIMERS and G.TIMERS.REAL or os.clock()
+    if now < (G.GAME.hnds_ante_10_next_runtime_update or 0) then return end
+    G.GAME.hnds_ante_10_next_runtime_update = now + 0.10
+
+    local active_blind_key = G.GAME.blind and G.GAME.blind.config
+        and G.GAME.blind.config.blind and G.GAME.blind.config.blind.key
+
+    if G.GAME.hnds_perilous_pact_active
+        and active_blind_key ~= "bl_hnds_perilous_pact"
+    then
+        G.GAME.hnds_perilous_pact_active = nil
+    end
+
+    if G.GAME.hnds_sinful_soul_active
+        and active_blind_key ~= "bl_hnds_sinful_soul"
+        and HNDS.clear_sinful_soul
+    then
+        HNDS.clear_sinful_soul()
+    end
+
+    if G.GAME.hnds_wasted_wish_active then
+        local ante = G.GAME.round_resets and G.GAME.round_resets.ante
+        if ante ~= G.GAME.hnds_wasted_wish_ante then
+            HNDS.set_wasted_wish_active(false)
+        else
+            -- Save files do not preserve metatables; reinstall the proxy after
+            -- loading so Voucher checks stay disabled for the rest of the Ante.
+            local mt = type(G.GAME.used_vouchers) == "table"
+                and getmetatable(G.GAME.used_vouchers)
+            if not (mt and mt.__newindex) then
+                hnds_install_wasted_wish_voucher_proxy()
+            end
+
+            -- CardAreas may be created shortly after boss selection. Apply the
+            -- slot removal once they exist, without ever turning a missing or
+            -- zero-valued limit into zero slots.
+            hnds_wasted_wish_disable_slot_bonuses(
+                G.GAME.hnds_wasted_wish_adjustments)
+        end
+    end
+end
+
+
+-------------------------------------------------------------------
+-- BLOOD STAKE: CURSED JOKER LEFT IN SHOP
+-------------------------------------------------------------------
+
+local function hnds_blood_stake_active()
+    return G and G.GAME and G.GAME.modifiers
+        and G.GAME.modifiers.hnds_blood_stake == true
+end
+
+local function hnds_table_has_cursed_sticker(stickers)
+    if type(stickers) ~= "table" then return false end
+    for key, value in pairs(stickers) do
+        if key == "hnds_cursed" or value == "hnds_cursed" then
+            return true
+        end
+    end
+    return false
+end
+
+local function hnds_shop_has_cursed_joker()
+    if not (G and G.shop_jokers and G.shop_jokers.cards) then return false end
+
+    for _, card in ipairs(G.shop_jokers.cards) do
+        local center = card and card.config and card.config.center
+        local ability = card and card.ability
+        local is_joker = card and (
+            (ability and ability.set == "Joker")
+            or (center and center.set == "Joker")
+        )
+        local cursed = is_joker and (
+            (ability and ability.hnds_cursed == true)
+            or (ability and ability.hnds_curse ~= nil)
+            or (ability and ability.hnds_curse_offer ~= nil)
+            or (ability and ability.hnds_curse_price ~= nil)
+            or hnds_table_has_cursed_sticker(card.stickers)
+            or hnds_table_has_cursed_sticker(ability and ability.stickers)
+        )
+
+        if cursed then return true end
+    end
+
+    return false
+end
+
+local function hnds_next_small_or_big_blind()
+    if not (G and G.GAME and G.GAME.round_resets) then return nil end
+
+    local resets = G.GAME.round_resets
+    local states = resets.blind_states or {}
+    local choices = resets.blind_choices or {}
+    local on_deck = G.GAME.blind_on_deck
+
+    if (on_deck == "Small" or on_deck == "Big")
+        and states[on_deck] ~= "Defeated"
+        and states[on_deck] ~= "Skipped"
+        and choices[on_deck]
+    then
+        return on_deck
+    end
+
+    for _, choice in ipairs({ "Small", "Big" }) do
+        if states[choice] == "Select" and choices[choice] then
+            return choice
+        end
+    end
+
+    for _, choice in ipairs({ "Small", "Big" }) do
+        local state = states[choice]
+        if choices[choice]
+            and state ~= "Defeated"
+            and state ~= "Skipped"
+        then
+            return choice
+        end
+    end
+
+    return nil
+end
+
+-- Called at the beginning of toggle_shop, while the shop cards still exist.
+-- The actual Blind replacement is deferred until the next Blind Select screen
+-- is built. At that point vanilla has finalized blind_on_deck, blind_states and
+-- (after a Boss shop) the new Ante's Small/Big choices.
+HNDS.handle_blood_cursed_shop_exit = function()
+    if not (G and G.GAME and G.shop) then return false end
+    if G.STATES and G.STATES.SHOP and G.STATE ~= G.STATES.SHOP then return false end
+    if not hnds_blood_stake_active() then return false end
+
+    -- Both the runtime wrapper and the Lovely fallback can fire for the same
+    -- click. The run-level pending flag blocks that duplicate immediately,
+    -- while the shop-local flag is cleared on the next event-manager tick so
+    -- the following shop (including the shop before Big Blind) can queue too.
+    if G.GAME.hnds_blood_shop_upgrade_pending then return false end
+    if G.shop.hnds_blood_cursed_upgrade_queued then return false end
+    if not hnds_shop_has_cursed_joker() then return false end
+
+    local shop_ref = G.shop
+    shop_ref.hnds_blood_cursed_upgrade_queued = true
+    if G.E_MANAGER and Event then
+        G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = function()
+                if shop_ref then
+                    shop_ref.hnds_blood_cursed_upgrade_queued = nil
+                end
+                return true
+            end,
+        }))
+    end
+
+    G.GAME.hnds_blood_shop_upgrade_pending = true
+    G.GAME.hnds_blood_shop_upgrade_target = hnds_next_small_or_big_blind()
+    G.GAME.hnds_blood_shop_upgrade_source_ante =
+        G.GAME.round_resets and G.GAME.round_resets.ante or nil
+    return true
+end
+
+-- Runtime wrapper is the primary hook. The Lovely patch remains as a fallback
+-- for load orders where another mod replaces toggle_shop after this file loads.
+if G and G.FUNCS and type(G.FUNCS.toggle_shop) == "function"
+    and not _G._hnds_blood_toggle_shop_wrapped
+then
+    _G._hnds_blood_toggle_shop_wrapped = true
+    local hnds_toggle_shop_ref = G.FUNCS.toggle_shop
+
+    G.FUNCS.toggle_shop = function(e)
+        if HNDS and HNDS.handle_blood_cursed_shop_exit then
+            HNDS.handle_blood_cursed_shop_exit()
+        end
+        return hnds_toggle_shop_ref(e)
+    end
+end
+
+
+-------------------------------------------------------------------
+-- TAG POP COUNTER (Forbidden Fruit)
+-------------------------------------------------------------------
+
+-- Count a Tag exactly once when it actually triggers. Creation, holding and
+-- copying do not count by themselves; a copied Tag counts when it later pops.
+if Tag and type(Tag.apply_to_run) == "function" and not HNDS._tag_pop_hooked then
+    HNDS._tag_pop_hooked = true
+    local tag_apply_to_run_ref = Tag.apply_to_run
+
+    function Tag:apply_to_run(context)
+        local was_triggered = self.triggered == true
+        local result = tag_apply_to_run_ref(self, context)
+
+        if not was_triggered
+            and self.triggered == true
+            and not self.hnds_pop_counted
+            and G and G.GAME
+        then
+            self.hnds_pop_counted = true
+            G.GAME.hnds_tags_popped = (G.GAME.hnds_tags_popped or 0) + 1
+        end
+
+        return result
+    end
+end
+
 -------------------------------------------------------------------
 -- BADGE COLOR
 -------------------------------------------------------------------
@@ -126,7 +836,7 @@ end
 
 -- Cursed Sticker exclusivity functions.
 -- hnds_card_has_cursed: quick check for the cursed sticker on a Joker.
--- hnds_strip_other_stickers: remove every sticker except hnds_cursed and rental from args cursed Joker. prevents stickers from mods that are implemented from any way different to add.sticker.
+-- hnds_strip_other_stickers: remove every sticker except hnds_cursed from a cursed Joker, including Rental.
 local function hnds_card_has_cursed(card)
 	if not card then return false end
 	return (card.ability and card.ability.hnds_cursed)
@@ -137,13 +847,20 @@ end
 local function hnds_strip_other_stickers(card)
 	if not hnds_card_has_cursed(card) then return end
 	if not card.ability then return end
-	card.ability.perishable = nil
-	card.ability.eternal = nil
-	-- Collect all sticker keys, mostly exist bc Bunco creates stickers with card.ability
+	-- Collect before clearing fields so remove_sticker can clean visual/state data.
 	local to_remove = {}
+	for _, k in ipairs({ 'perishable', 'eternal', 'rental' }) do
+		if card.ability[k]
+			or (card.stickers and card.stickers[k])
+			or (card.ability.stickers and card.ability.stickers[k])
+		then
+			to_remove[k] = true
+		end
+	end
+	-- Collect all sticker keys, mostly exist bc Bunco creates stickers with card.ability
 	if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
 		for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-			if k ~= 'hnds_cursed' and k ~= 'rental' and card.ability[k] then
+			if k ~= 'hnds_cursed' and card.ability[k] then
 				to_remove[k] = true
 			end
 		end
@@ -151,12 +868,12 @@ local function hnds_strip_other_stickers(card)
 	-- Also checks card.stickers table
 	if card.stickers and type(card.stickers) == 'table' then
 		for k, _ in pairs(card.stickers) do
-			if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove[k] = true end
+			if k ~= 'hnds_cursed' then to_remove[k] = true end
 		end
 	end
 	if card.ability.stickers and type(card.ability.stickers) == 'table' then
 		for k, _ in pairs(card.ability.stickers) do
-			if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove[k] = true end
+			if k ~= 'hnds_cursed' then to_remove[k] = true end
 		end
 	end
 	-- Remove other stickers
@@ -171,6 +888,10 @@ local function hnds_strip_other_stickers(card)
 		if card.ability.stickers then card.ability.stickers[k] = nil end
 	end
 	-- Force update on the Joker
+	-- Built-in sticker flags must be nil even when a mod bypassed add_sticker.
+	card.ability.perishable = nil
+	card.ability.eternal = nil
+	card.ability.rental = nil
 	if any_removed and card.set_sticker_display then
 		pcall(card.set_sticker_display, card)
 	end
@@ -181,7 +902,7 @@ if Card and Card.add_sticker and not _G._hnds_wrapped_add_sticker_cursed then
 	_G._hnds_wrapped_add_sticker_cursed = true
 	local add_sticker_ref = Card.add_sticker
 	function Card:add_sticker(key, ...)
-		if key ~= 'hnds_cursed' and key ~= 'rental' and hnds_card_has_cursed(self) then return end
+		if key ~= 'hnds_cursed' and hnds_card_has_cursed(self) then return end
 		local ret = add_sticker_ref(self, key, ...)
 		if key == 'hnds_cursed' then
 			hnds_strip_other_stickers(self)
@@ -190,101 +911,302 @@ if Card and Card.add_sticker and not _G._hnds_wrapped_add_sticker_cursed then
 	end
 end
 
+HNDS.strip_other_stickers = hnds_strip_other_stickers
+
+-------------------------------------------------------------------
+-- CONTAGION CONSUMABLE SELECTION + RUNTIME STICKER SAFETY NET
+-------------------------------------------------------------------
+
+local function hnds_contagion_bonus()
+    local bonus = 0
+    if G and G.jokers and G.jokers.cards then
+        for _, joker in ipairs(G.jokers.cards) do
+            if joker and not joker.debuff and joker.config and joker.config.center
+                and joker.config.center.key == 'j_hnds_contagion'
+            then
+                bonus = bonus + 1
+            end
+        end
+    end
+    return bonus
+end
+
+-- Public helper for custom consumables (for example Exchange) that implement
+-- their own selection limits instead of using vanilla max_highlighted fields.
+HNDS.get_contagion_bonus = hnds_contagion_bonus
+
+local function hnds_sync_contagion_container(container, bonus, forced_base)
+    if type(container) ~= 'table' then return false end
+
+    -- Aura is a vanilla exception: it has no max_highlighted field and its
+    -- one-card rule is hard-coded. While Contagion is active, temporarily give
+    -- it ordinary selection fields so the hand UI can highlight extra cards.
+    -- Remove those fields again when Contagion leaves play so vanilla Aura's
+    -- editionless-card validation remains authoritative.
+    if forced_base then
+        if bonus > 0 then
+            container.max_highlighted = forced_base + bonus
+            container.mod_num = forced_base + bonus
+            container.hnds_contagion_bonus = bonus
+            container.hnds_contagion_forced_targeting = true
+            return true
+        end
+        if container.hnds_contagion_forced_targeting then
+            container.max_highlighted = nil
+            container.mod_num = nil
+            container.hnds_contagion_bonus = nil
+            container.hnds_contagion_forced_targeting = nil
+        end
+        return false
+    end
+
+    local previous_bonus = tonumber(container.hnds_contagion_bonus) or 0
+
+    -- Only card-selecting consumables are eligible. Some consumables use a
+    -- field named mod_num for unrelated quantities, so changing mod_num without
+    -- a max_highlighted field would leak Contagion into non-targeting effects.
+    if type(container.max_highlighted) ~= 'number' then
+        if previous_bonus ~= 0 and type(container.mod_num) == 'number' then
+            container.mod_num = math.max(0, container.mod_num - previous_bonus)
+        end
+        container.hnds_contagion_bonus = nil
+        return false
+    end
+
+    -- Steamodded 1620a and many vanilla-style consumables keep their targeting
+    -- values in ability.consumeable. Cryptid and a number of custom Spectral
+    -- cards keep the same values directly on card.ability instead. Treat both
+    -- layouts identically and preserve changes made by other mods by removing
+    -- only the bonus that Contagion applied on the previous update.
+    local base_max = math.max(0, container.max_highlighted - previous_bonus)
+    container.max_highlighted = base_max + bonus
+
+    if type(container.mod_num) == 'number' then
+        local base_mod = math.max(0, container.mod_num - previous_bonus)
+        container.mod_num = base_mod + bonus
+    end
+
+    container.hnds_contagion_bonus = bonus
+    return true
+end
+
+local function hnds_sync_contagion_selection(card)
+    if not (card and card.ability) then return end
+
+    local center_key = card.config and card.config.center and card.config.center.key
+    local is_death = center_key == 'c_death' or card.ability.name == 'Death'
+    local bonus = is_death and 0 or hnds_contagion_bonus()
+    local is_aura = center_key == 'c_aura' or card.ability.name == 'Aura'
+
+    -- Historical Steamodded spelling.
+    if is_aura then
+        card.ability.consumeable = card.ability.consumeable or {}
+        hnds_sync_contagion_container(card.ability.consumeable, bonus, 1)
+    else
+        hnds_sync_contagion_container(card.ability.consumeable, bonus)
+    end
+
+    -- Compatibility with mods that use the corrected spelling.
+    if card.ability.consumable ~= card.ability.consumeable then
+        if is_aura then
+            card.ability.consumable = card.ability.consumable or {}
+            hnds_sync_contagion_container(card.ability.consumable, bonus, 1)
+        else
+            hnds_sync_contagion_container(card.ability.consumable, bonus)
+        end
+    end
+
+    -- Cryptid Spectrals and modern SMODS custom consumables commonly place
+    -- max_highlighted/mod_num directly on card.ability.
+    hnds_sync_contagion_container(card.ability, bonus)
+end
+
+if Card and Card.update and not Card._hnds_wrapped_update_runtime then
+    Card._hnds_wrapped_update_runtime = true
+    local card_update_ref = Card.update
+    function Card:update(dt)
+        local ret = card_update_ref(self, dt)
+        if hnds_card_has_cursed(self) then
+            hnds_strip_other_stickers(self)
+        end
+        hnds_sync_contagion_selection(self)
+        hnds_update_ante_10_runtime()
+        return ret
+    end
+end
+
+
+-- Vanilla's six single-target Spectral effects still read only
+-- G.hand.highlighted[1] even when Contagion raises their selection limit. Keep
+-- vanilla's first-target handling intact, then apply the same effect to every
+-- additional selected card. Death is deliberately absent from this list.
+local hnds_contagion_seal_spectrals = {
+    c_talisman = 'Gold',
+    c_deja_vu = 'Red',
+    c_trance = 'Blue',
+    c_medium = 'Purple',
+}
+
+local function hnds_contagion_center_key(card)
+    return card and card.config and card.config.center and card.config.center.key
+end
+
+local function hnds_copy_highlighted_cards()
+    local selected = {}
+    if G and G.hand and G.hand.highlighted then
+        for i = 1, #G.hand.highlighted do
+            selected[i] = G.hand.highlighted[i]
+        end
+    end
+    return selected
+end
+
+local function hnds_contagion_copy_count(card)
+    local extra = card and card.ability and card.ability.extra
+    if type(extra) == 'number' then return math.max(0, math.floor(extra)) end
+    if type(extra) == 'table' and type(extra.cards) == 'number' then
+        return math.max(0, math.floor(extra.cards))
+    end
+    return 2
+end
+
+if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
+    Card._hnds_wrapped_contagion_use = true
+    local use_consumeable_contagion_ref = Card.use_consumeable
+
+    function Card:use_consumeable(area, copier)
+        local center_key = hnds_contagion_center_key(self)
+        local bonus = hnds_contagion_bonus()
+        local supported = hnds_contagion_seal_spectrals[center_key]
+            or center_key == 'c_aura'
+            or center_key == 'c_cryptid'
+        local selected = (bonus > 0 and supported) and hnds_copy_highlighted_cards() or nil
+
+        local ret = use_consumeable_contagion_ref(self, area, copier)
+
+        if not selected or #selected <= 1 then return ret end
+
+        local seal = hnds_contagion_seal_spectrals[center_key]
+        if seal then
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                delay = 0.1,
+                func = function()
+                    for i = 2, #selected do
+                        local target = selected[i]
+                        if target then target:set_seal(seal, nil, true) end
+                    end
+                    return true
+                end,
+            }))
+        elseif center_key == 'c_aura' then
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                delay = 0.4,
+                func = function()
+                    for i = 2, #selected do
+                        local target = selected[i]
+                        if target and not target.edition then
+                            target:set_edition(poll_edition('hnds_contagion_aura_' .. tostring(i), nil, true, true), true)
+                        end
+                    end
+                    return true
+                end,
+            }))
+        elseif center_key == 'c_cryptid' then
+            local copies_per_card = hnds_contagion_copy_count(self)
+            G.E_MANAGER:add_event(Event({
+                func = function()
+                    local first_materialize = nil
+                    local new_cards = {}
+                    for target_index = 2, #selected do
+                        local target = selected[target_index]
+                        if target then
+                            for _ = 1, copies_per_card do
+                                G.playing_card = (G.playing_card and G.playing_card + 1) or 1
+                                local copied = copy_card(target, nil, nil, G.playing_card)
+                                copied:add_to_deck()
+                                G.deck.config.card_limit = G.deck.config.card_limit + 1
+                                table.insert(G.playing_cards, copied)
+                                G.hand:emplace(copied)
+                                copied:start_materialize(nil, first_materialize)
+                                first_materialize = true
+                                new_cards[#new_cards + 1] = copied
+                            end
+                        end
+                    end
+                    if #new_cards > 0 then playing_card_joker_effects(new_cards) end
+                    return true
+                end,
+            }))
+        end
+
+        return ret
+    end
+end
+
+-- Aura's vanilla special-case accepts exactly one editionless card before the
+-- generic max_highlighted check. With Contagion, validate every selected Aura
+-- target instead, preventing editioned cards from slipping through.
+if Card and Card.can_use_consumeable and not Card._hnds_wrapped_contagion_can_use then
+    Card._hnds_wrapped_contagion_can_use = true
+    local can_use_consumeable_contagion_ref = Card.can_use_consumeable
+
+    function Card:can_use_consumeable(any_state, skip_check)
+        local vanilla_result = can_use_consumeable_contagion_ref(self, any_state, skip_check)
+        if hnds_contagion_center_key(self) == 'c_aura' and hnds_contagion_bonus() > 0
+            and G and G.hand and G.hand.highlighted and #G.hand.highlighted > 0
+        then
+            if not skip_check and ((G.play and #G.play.cards > 0)
+                or (G.CONTROLLER and G.CONTROLLER.locked)
+                or (G.GAME and G.GAME.STOP_USE and G.GAME.STOP_USE > 0))
+            then
+                return false
+            end
+            local valid_state = any_state or G.STATE == G.STATES.SELECTING_HAND
+                or G.STATE == G.STATES.TAROT_PACK
+                or G.STATE == G.STATES.SPECTRAL_PACK
+                or G.STATE == G.STATES.PLANET_PACK
+            if not valid_state then return false end
+
+            local ability = self.ability and (self.ability.consumeable or self.ability.consumable or self.ability)
+            local max_highlighted = ability and tonumber(ability.max_highlighted) or 1
+            local count = #G.hand.highlighted
+            if count > max_highlighted then return false end
+            for i = 1, count do
+                if not G.hand.highlighted[i] or G.hand.highlighted[i].edition then return false end
+            end
+            return true
+        end
+        return vanilla_result
+    end
+end
+
+-- Clear per-card Spectral Seal progress when the seal is removed or replaced.
+if Card and Card.set_seal and not Card._hnds_wrapped_spectral_progress then
+    Card._hnds_wrapped_spectral_progress = true
+    local set_seal_spectral_ref = Card.set_seal
+    function Card:set_seal(seal, silent)
+        local old_seal = self.seal
+        local ret = set_seal_spectral_ref(self, seal, silent)
+        if old_seal == 'hnds_spectralseal' and self.seal ~= 'hnds_spectralseal' and self.ability then
+            self.ability.hnds_spectral_hands = nil
+            self.ability.hnds_spectral_last_token = nil
+        end
+        return ret
+    end
+end
+
+
+
 -------------------------------------------------------------------
 -- PLATINUM STAKE
 -------------------------------------------------------------------
 
-HNDS_is_platinum_stake_active = function()
-	local stake_key = 'stake_hnds_platinum'
-	if not (G and G.GAME and G.GAME.applied_stakes and G.P_STAKES) then return false end
-	local stake = G.P_STAKES[stake_key]
-	for _, applied in ipairs(G.GAME.applied_stakes) do
-		if applied == stake_key then
-			return true
-		end
-		if stake and stake.order and applied == stake.order then
-			return true
-		end
-	end
-	return false
-end
-
--- Platinum Stake end_of_round: double next blind if player scored >2x
-local function hnds_end_round_platinum_stake()
-	local blind_chips = G.GAME and G.GAME.blind and G.GAME.blind.chips
-	local chips = G.GAME and G.GAME.chips
-	local won_round = chips and blind_chips and (chips >= blind_chips)
-	if HNDS_is_platinum_stake_active()
-		and won_round and blind_chips > 0 and chips > blind_chips * 2 then
-		G.GAME.modifiers = G.GAME.modifiers or {}
-		G.GAME.modifiers.hnds_next_blind_mult = (G.GAME.modifiers.hnds_next_blind_mult or 1) * 2
-	end
-end
-
--- Platinum Stake set_blind: apply queued blind multiplier
-local function hnds_set_blind_platinum_stake(blind_instance)
-	local mult = nil
-	if G.GAME.modifiers and G.GAME.modifiers.hnds_next_blind_mult and G.GAME.modifiers.hnds_next_blind_mult > 1 then
-		mult = G.GAME.modifiers.hnds_next_blind_mult
-		G.GAME.modifiers.hnds_next_blind_mult = nil
-	end
-	if mult and blind_instance.chips then
-		blind_instance.chips = blind_instance.chips * mult
-		if number_format then blind_instance.chip_text = number_format(blind_instance.chips) end
-		if G.FUNCS and G.hand_text_area and G.hand_text_area.blind_chips then
-			G.FUNCS.blind_chip_UI_scale(G.hand_text_area.blind_chips)
-		end
-		if G.HUD and G.HUD.recalculate then G.HUD:recalculate() end
-	end
-end
-
--- Platinum Stake UI: display modified blind amounts in blind choice screen
-if not _G._hnds_wrapped_blind_choice then
-	_G._hnds_wrapped_blind_choice = true
-	local create_UIBox_blind_choice_ref = create_UIBox_blind_choice
-	function create_UIBox_blind_choice(blind_type, run_info)
-		local t = create_UIBox_blind_choice_ref(blind_type, run_info)
-		local on_deck = (G and G.GAME and G.GAME.blind_on_deck) or nil
-		if run_info or not on_deck or blind_type ~= on_deck then
-			return t
-		end
-		if G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_next_blind_mult then
-			local mult = G.GAME.modifiers.hnds_next_blind_mult
-			if mult and mult > 1 then
-				local blind_key = G.GAME.round_resets and G.GAME.round_resets.blind_choices and
-				G.GAME.round_resets.blind_choices[blind_type]
-				local blind_cfg = nil
-				if type(blind_key) == 'string' then
-					blind_cfg = G.P_BLINDS and G.P_BLINDS[blind_key]
-				elseif type(blind_key) == 'table' then
-					blind_cfg = blind_key
-				end
-				if blind_cfg and blind_cfg.mult and get_blind_amount and number_format and score_number_scale then
-					local ante = (G.GAME.round_resets and G.GAME.round_resets.blind_ante) or
-					(G.GAME.round_resets and G.GAME.round_resets.ante)
-					local base_amt = get_blind_amount(ante) * blind_cfg.mult *
-					(G.GAME.starting_params and G.GAME.starting_params.ante_scaling or 1)
-					local from_text = number_format(base_amt)
-					local to_amt = base_amt * mult
-					local to_text = number_format(to_amt)
-					local function patch_nodes(nodes)
-						if _G.type(nodes) ~= 'table' then return end
-						for _, n in ipairs(nodes) do
-							if n and n.config and n.config.text and n.config.text == from_text then
-								n.config.text = to_text
-								n.config.scale = score_number_scale(0.9, to_amt)
-							elseif n and n.nodes then
-								patch_nodes(n.nodes)
-							end
-						end
-					end
-					patch_nodes(t.nodes)
-				end
-			end
-		end
-		return t
-	end
-end
+-- win_ante = 10 and the hnds_platinum_active flag are set directly by
+-- Platinum Stake's own `modifiers()` hook (see stakes/platinum.lua) --
+-- that's the officially supported place for a stake to touch game state
+-- at the start of a run, so nothing needs to happen here.
 
 -------------------------------------------------------------------
 -- CARD DESTRUCTION UNLOCKS (Energized, Last Laugh)
@@ -369,6 +1291,7 @@ if Card and Card.shatter and not Card._hnds_wrapped_shatter_stat then
 		return ret
 	end
 end
+
 
 -------------------------------------------------------------------
 -- BLACK SEAL & VOUCHER CARD DESTRUCTION / SCORING
@@ -456,27 +1379,24 @@ function Card.set_cost(self)
 end
 
 -------------------------------------------------------------------
--- SHOP CARD CREATION (Blood Stake curses)
+-- JOKER CREATION (Blood Stake curses)
 -------------------------------------------------------------------
 
--- SMODS.create_card: Blood Stake curse application.
+-- Blood Stake curse generation is handled by the Cursed Sticker's central
+-- should_apply callback in lib/curses.lua. These wrappers remain only as an
+-- exclusivity safety net after other generation code applies its stickers.
+local function hnds_finalize_generated_curse(card)
+	if hnds_card_has_cursed(card) then hnds_strip_other_stickers(card) end
+end
+
+HNDS.finalize_generated_curse = hnds_finalize_generated_curse
+
 if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 	SMODS._hnds_wrapped_create_card_shop = true
 	local smods_create_card_ref = SMODS.create_card
 	function SMODS.create_card(args)
 		local created_card = smods_create_card_ref(args)
-		if created_card and created_card.config and created_card.config.center and created_card.config.center.set == 'Joker' then
-			-- Blood Stake: 12% chance to curse shop jokers
-			if args and args.area == G.shop_jokers
-				and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses
-				and (not created_card.ability or not (created_card.ability.hnds_curse_offer or created_card.ability.hnds_curse_price))
-				and apply_curse and type(apply_curse) == 'function' then
-				G.GAME.modifiers.hnds_shop_curse_roll = (G.GAME.modifiers.hnds_shop_curse_roll or 0) + 1
-				if pseudorandom('hnds_curse_shop' .. G.GAME.modifiers.hnds_shop_curse_roll) < 0.12 then
-					apply_curse(created_card)
-				end
-			end
-		end
+		hnds_finalize_generated_curse(created_card)
 		return created_card
 	end
 end
@@ -508,6 +1428,9 @@ if not _G._hnds_wrapped_create_card then
 			HNDS.try_devils_round_curse(card)
 		end
 
+		-- Cursed Sticker is exclusive even if a later generation hook applied
+		-- another sticker after the central curse roll.
+		hnds_finalize_generated_curse(card)
 		return card
 	end
 end
@@ -525,19 +1448,30 @@ if not Card._hnds_wrapped_add_to_deck then
 		local ret = add_to_deck_ref(self, from_debuff)
 
 		if not from_debuff then
-			-- Feature: DNA Tag - create copies when hnds_copies_to_create is set
+			-- Feature: DNA Tag - create copies when hnds_copies_to_create is set.
+			-- Reserve the purchased Joker's own slot when it has not been emplaced
+			-- yet, then verify capacity again when the queued copy is created.
+			-- This prevents DNA from ever overflowing the Joker limit (for example
+			-- creating a sixth Joker in a 5-slot area).
 			if self.ability and self.ability.hnds_copies_to_create then
+				G.GAME.joker_buffer = G.GAME.joker_buffer or 0
+				local pending_original = self.area == G.jokers and 0 or 1
 				for _ = 1, self.ability.hnds_copies_to_create do
-					if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
+					local occupied = #G.jokers.cards + G.GAME.joker_buffer + pending_original
+					if occupied < G.jokers.config.card_limit then
 						G.GAME.joker_buffer = G.GAME.joker_buffer + 1
 						local c = self
 						G.E_MANAGER:add_event(Event {
 							func = function()
-								local copy = copy_card(c)
-								copy.ability.hnds_copies_to_create = nil
-								copy:add_to_deck()
-								G.jokers:emplace(copy)
-								G.GAME.joker_buffer = 0
+								G.GAME.joker_buffer = math.max(0, (G.GAME.joker_buffer or 1) - 1)
+								if G.jokers and G.jokers.cards and G.jokers.config
+									and #G.jokers.cards < G.jokers.config.card_limit
+								then
+									local copy = copy_card(c)
+									copy.ability.hnds_copies_to_create = nil
+									copy:add_to_deck()
+									G.jokers:emplace(copy)
+								end
 								return true
 							end
 						})
@@ -551,9 +1485,12 @@ if not Card._hnds_wrapped_add_to_deck then
 				HNDS.try_devils_round_curse(self)
 			end
 
+			if hnds_card_has_cursed(self) then hnds_strip_other_stickers(self) end
+
+
 			-- Play sound when cursed jokers are added (general, not just Devil's Round)
 			if self.ability and (self.ability.hnds_curse_offer or self.ability.hnds_curse_price) then
-				play_sound("hnds_curse_used")
+				play_sound("hnds_curse_used", 1, 0.75)
 			end
 		end
 
@@ -579,19 +1516,39 @@ function find_joker(name, non_debuff)
 	return jokers
 end
 
+
+
 -------------------------------------------------------------------
 -- CRYSTAL DECK
 -------------------------------------------------------------------
 
 local get_new_boss_ref = get_new_boss
+
+local function hnds_crystal_forces_showdown(ante)
+    if not (G and G.GAME and G.GAME.modifiers) then return false end
+    local modifiers = G.GAME.modifiers
+    if modifiers.crystal_sleeve_active then
+        return ante == 2 or ante == 4 or ante == 6
+    end
+    return (modifiers.hnds_crystal_showdown or modifiers.hnds_double_showdown) and ante == 4
+end
+
 function get_new_boss()
-	local win_ante = G.GAME.win_ante
-	if G.GAME.modifiers.hnds_double_showdown and G.GAME.round_resets.ante and G.GAME.round_resets.ante < G.GAME.win_ante then
-		G.GAME.win_ante = math.floor(G.GAME.win_ante / 2)
-	end
-	local boss = get_new_boss_ref()
-	G.GAME.win_ante = win_ante
-	return boss
+    if not (G and G.GAME and G.GAME.round_resets) then return get_new_boss_ref() end
+
+    local win_ante = G.GAME.win_ante
+    local ante = G.GAME.round_resets.ante
+    if not G.GAME.hnds_bypass_ante_10_force and hnds_crystal_forces_showdown(ante) and ante < win_ante then
+        -- Vanilla chooses a Showdown Blind whenever the current Ante equals
+        -- win_ante. Temporarily mirror that condition, then restore the true
+        -- winning Ante even if another boss-selection hook errors.
+        G.GAME.win_ante = ante
+    end
+
+    local ok, boss = pcall(get_new_boss_ref)
+    G.GAME.win_ante = win_ante
+    if not ok then error(boss) end
+    return boss
 end
 
 -------------------------------------------------------------------
@@ -931,29 +1888,6 @@ function HNDS.update_excom()
 		G.GAME.round_resets.blind_choices.Small = "bl_small"
 		G.GAME.round_resets.blind_choices.Big = "bl_big"
 	end
-end
-
-local end_round_ref = end_round
-function end_round(...)
-	-- Platinum Stake: double next blind if player scored >2x the required chips
-	hnds_end_round_platinum_stake()
-
-	local ret = end_round_ref(...)
-
-	return ret
-end
-
--------------------------------------------------------------------
--- Blind.set_blind DISPATCHER
--------------------------------------------------------------------
-
-local Blind_set_blind_ref = Blind.set_blind
-function Blind:set_blind(blind, reset, silent)
-	local ret = Blind_set_blind_ref(self, blind, reset, silent)
-	if not (G.GAME and G.GAME.facing_blind) then return ret end
-	-- Platinum Stake: apply queued blind chip multiplier from previous round
-	hnds_set_blind_platinum_stake(self)
-	return ret
 end
 
 -------------------------------------------------------------------

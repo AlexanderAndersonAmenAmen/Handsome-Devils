@@ -25,7 +25,7 @@ SMODS.Joker({
 				G.E_MANAGER:add_event(Event({
 					func = function()
 						add_tag(Tag(tag_name))
-						play_sound("hnds_madnesscolor", 1.25, 0.25)
+						play_sound("hnds_madnesscolor", 1.25, 0.1875)
 						return true
 					end,
 				}))

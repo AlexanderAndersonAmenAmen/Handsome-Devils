@@ -354,26 +354,34 @@ G.CURSE_PRICES = {
     }
 }
 
--- Shared helper: strip every sticker except hnds_cursed/rental from all of a
+-- Shared helper: strip every sticker except hnds_cursed from all of a
 -- card's data structures. Used by apply_curse and the sticker safety-net.
 local function hnds_strip_foreign_stickers(card)
     if not card then return false end
     local to_remove = {}
+    for _, k in ipairs({ 'perishable', 'eternal', 'rental' }) do
+        if (card.ability and card.ability[k])
+            or (card.stickers and card.stickers[k])
+            or (card.ability and card.ability.stickers and card.ability.stickers[k])
+        then
+            to_remove[k] = true
+        end
+    end
     if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
         for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-            if k ~= 'hnds_cursed' and k ~= 'rental' and card.ability and card.ability[k] then
+            if k ~= 'hnds_cursed' and card.ability and card.ability[k] then
                 to_remove[k] = true
             end
         end
     end
     if card.stickers and type(card.stickers) == 'table' then
         for k, _ in pairs(card.stickers) do
-            if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove[k] = true end
+            if k ~= 'hnds_cursed' then to_remove[k] = true end
         end
     end
     if card.ability and card.ability.stickers and type(card.ability.stickers) == 'table' then
         for k, _ in pairs(card.ability.stickers) do
-            if k ~= 'hnds_cursed' and k ~= 'rental' then to_remove[k] = true end
+            if k ~= 'hnds_cursed' then to_remove[k] = true end
         end
     end
     local any_removed = false
@@ -383,6 +391,11 @@ local function hnds_strip_foreign_stickers(card)
         if card.stickers then card.stickers[k] = nil end
         if card.ability then card.ability[k] = nil end
         if card.ability and card.ability.stickers then card.ability.stickers[k] = nil end
+    end
+    if card.ability then
+        card.ability.perishable = nil
+        card.ability.eternal = nil
+        card.ability.rental = nil
     end
     if any_removed and card.set_sticker_display then
         pcall(card.set_sticker_display, card)
@@ -414,9 +427,28 @@ SMODS.Sticker {
     atlas = 'Stickers',
     pos = { x = 0, y = 0 },
     badge_colour = G.C.RED,
-    should_apply = false,
-    rate = 0,
+    rate = 0.12,
+    needs_enable_flag = false,
     sets = { Joker = true },
+    -- Use Steamodded's central sticker roll so shop Jokers, Buffoon Packs,
+    -- and Joker-creation effects all follow the same Blood Stake rule.
+    should_apply = function(self, card, center, area, bypass_roll)
+        if not (G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses) then return false end
+        if not (center and center.set == 'Joker') then return false end
+        if center.key == 'j_hnds_art' then return false end
+        if bypass_roll ~= nil then return bypass_roll end
+        local source = (area == G.pack_cards) and 'pack' or 'generated'
+        return pseudorandom('hnds_blood_curse_' .. source .. '_' .. tostring(G.GAME.round_resets.ante)) > (1 - self.rate)
+    end,
+    apply = function(self, card, val)
+        card.ability = card.ability or {}
+        card.ability[self.key] = val or nil
+        if val and HNDS and HNDS.assign_curse_data
+            and not (card.ability.hnds_curse_offer and card.ability.hnds_curse_price)
+        then
+            HNDS.assign_curse_data(card)
+        end
+    end,
     -- Dynamic tooltip using loc_vars with global state
     -- Store current card data in globals for loc_vars to access
     loc_vars = function(self, info_queue, card)
@@ -427,13 +459,9 @@ SMODS.Sticker {
 
     calculate = function(self, card, context)
         if card and card.ability and (card.ability.hnds_curse_offer or card.ability.hnds_curse_price) then
-            -- One-time safety-net strip (covers stickers that slipped past apply_curse).
-            if not card.ability.hnds_curse_stripped then
-                card.ability.hnds_curse_stripped = true
-                card.ability.perishable = nil
-                card.ability.eternal = nil
-                hnds_strip_foreign_stickers(card)
-            end
+            -- Continuous safety net: generation paths such as Buffoon Packs may
+            -- apply their stickers after the curse was assigned.
+            hnds_strip_foreign_stickers(card)
             return trigger_curse(card, context)
         end
     end,
@@ -540,7 +568,7 @@ function set_enhancement(card, key)
     end
 end
 
-function apply_curse(card)
+local function hnds_assign_curse_data(card, attach_sticker)
     -- Assign a random offer + price to a card, then attach the cursed sticker.
     -- This is used when generating cursed pack cards.
     -- Guard: only apply to Jokers
@@ -554,11 +582,8 @@ function apply_curse(card)
 
     hnds_ensure_extra(card)
 
-    card.ability.perishable = nil
-    card.ability.eternal = nil
-
-    -- Strip any foreign stickers before applying the curse. SMODS stores sticker
-    -- flags in card.ability[key], so the helper iterates the registered list.
+    -- Strip every existing sticker before applying the curse. The helper also
+    -- clears direct built-in flags used by vanilla generation paths.
     hnds_strip_foreign_stickers(card)
 
     local offer_index
@@ -600,7 +625,11 @@ function apply_curse(card)
         if offer_entry and price_entry then
             card.ability.hnds_curse_offer = offer_entry.id
             card.ability.hnds_curse_price = price_entry.id
-            card:add_sticker('hnds_cursed', true)
+            if attach_sticker and not (card.ability and card.ability.hnds_cursed) then
+                card:add_sticker('hnds_cursed', true)
+            else
+                card.ability.hnds_cursed = true
+            end
 
             -- add_sticker may call set_ability internally, which can wipe extra
             -- and re-apply foreign stickers via should_apply, so re-run both.
@@ -611,6 +640,16 @@ function apply_curse(card)
             break
         end
     end
+end
+
+
+HNDS = HNDS or {}
+function HNDS.assign_curse_data(card)
+    return hnds_assign_curse_data(card, false)
+end
+
+function apply_curse(card)
+    return hnds_assign_curse_data(card, true)
 end
 
 -- Cursed Pack Definition
@@ -634,6 +673,9 @@ SMODS.Booster{
         return c
     end,
     in_pool = function (self, args)
+        local blood_active = G and G.GAME and G.GAME.modifiers
+            and G.GAME.modifiers.hnds_blood_stake == true
+        self.weight = blood_active and 1.6 or 0.8
         return hnds_config.enableCursedPackSpawning
     end
 }

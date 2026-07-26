@@ -295,11 +295,22 @@ local files = {
 		},
 		directory = "challenges/"
 	},
+	blinds = {
+		list = {
+			"blind_wasted_wish",
+			"blind_forbidden_fruit",
+			"blind_sinful_soul",
+			"blind_devil",
+			"blind_perilous_pact",
+		},
+		directory = "blinds/"
+	},
 	}
 
 if hnds_config.enableStoneOcean then
 	table.insert(files.poker_hands.list, "stone_ocean")
 end
+
 
 ----------------------------
 -- Atlases, colours, and sounds
@@ -314,6 +325,15 @@ G.C.hnds_carcosa = G.C.HNDS_CARCOSA -- lowercase alias used by localization colo
 SMODS.Sound({ key = "madnesscolor", path = "madnesscolor.ogg", })
 SMODS.Sound({ key = "vintage", path = "vintage.ogg", })
 SMODS.Sound({ key = "jokestone", path = "Jokestone_sfx.ogg", })
+SMODS.Sound({ key = "jiy_common_sfx", path = "JIY_common_sfx.ogg", })
+SMODS.Sound({ key = "jiy_superrare_sfx", path = "JIY_superrare_sfx.ogg", })
+SMODS.Sound({ key = "krusty_laugh", path = "krusty-the-clown-laughing-faded-in-0-5-out-1_a7FQtVJx.ogg", })
+SMODS.Sound({ key = "sarmenti_common_tune1", path = "Sarmenti_common_tune1.ogg", })
+SMODS.Sound({ key = "sarmenti_common_tune2", path = "Sarmenti_common_tune2.ogg", })
+SMODS.Sound({ key = "sarmenti_rare_tune1", path = "Sarmenti_rare_tune1.ogg", })
+SMODS.Sound({ key = "sarmenti_rare_tune2", path = "Sarmenti_rare_tune2.ogg", })
+SMODS.Sound({ key = "one_punchline_man", path = "voicy-one-punch-man_Eznpw2Sl-faded-in-0-5-out-1.ogg", })
+SMODS.Sound({ key = "wp_buy_inshop", path = "WP_buy_inshop.ogg", })
 -- Sprites
 SMODS.Atlas({ key = "HDtags", path = "HDtags.png", px = 34, py = 34, })
 SMODS.Atlas({ key = "Jokers",      path = "Jokers.png", px = 71, py = 95 })
@@ -323,6 +343,17 @@ SMODS.Atlas({ key = "Extras",      path = "EHD.png",     px = 71, py = 95 })
 SMODS.Atlas({ key = "Stakes", path = "HDstakes.png", px = 29, py = 29 })
 SMODS.Atlas({ key = "Stickers", path = "HDstickers.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "hnds_sleeves", path = "HDS.png", px = 73, py = 95 })
+-- Inside main.lua
+SMODS.Atlas {
+    key = 'ante_10_atlas',
+    path = 'Ante10Blinds.png',
+    px = 34,         -- Width of ONE individual frame square (NOT 714!)
+    py = 34,         -- Height of ONE individual frame square (NOT 170!)
+    frames = 21,     -- Essential: Tells the engine there are 21 columns
+    fps = 10,        -- Essential: Controls how fast the frames increment
+    -- Crucial flag for blind animations:
+    atlas_table = 'ANIMATION_ATLAS' 
+}
 
 ----------------------------
 -- Object types and utility functions
@@ -359,6 +390,9 @@ local _init_game_object = Game.init_game_object
 function Game:init_game_object()
 	local ret = _init_game_object(self)
 	ret.hnds_booster_choice_mod = 0
+	-- Forbidden Fruit tracks Tags that actually trigger ("pop"), not Tags
+	-- merely created or held. Existing saves safely fall back to zero.
+	ret.hnds_tags_popped = 0
 	return ret
 end
 
@@ -366,12 +400,16 @@ end
 -- Load content and library files
 ----------------------------
 
+-- Load Devil boss definitions before Devil blind
+assert(SMODS.load_file("lib/devil_bosses.lua"))()
+
 for _, set in pairs(files) do
 	for _, name in ipairs(set.list) do
 		assert(SMODS.load_file(set.directory .. name .. ".lua"))()
 	end
 end
 assert(SMODS.load_file("lib/hooks.lua"))()
+assert(SMODS.load_file("lib/platinum_blind_upgrades.lua"))()
 assert(SMODS.load_file("lib/blind_souls.lua"))()
 assert(SMODS.load_file("lib/utils.lua"))()
 

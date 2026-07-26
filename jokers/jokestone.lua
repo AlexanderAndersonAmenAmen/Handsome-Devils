@@ -17,7 +17,7 @@ local jokestone_draw = function(self, card, context)
 						cards_to_draw[i].ability.hnds_drawing = true
 					end
 				end
-				if hnds_config["enableCustomSounds"] then play_sound("hnds_jokestone", 1, 0.6) end
+				if hnds_config["enableCustomSounds"] then play_sound("hnds_jokestone", 1, 0.45) end
 				card_eval_status_text(context and context.blueprint_card or card, "extra", nil, nil, nil, {
 					message = localize("k_hnds_goldfish"),
 					colour = G.C.PURPLE,
