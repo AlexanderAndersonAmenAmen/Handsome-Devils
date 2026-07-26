@@ -9,7 +9,7 @@
 	"priority": 0,
 	"badge_colour": "",
 	"badge_text_colour": "",
-	"version": "1.5.Cursed",
+	"version": "2.1",
 	"icon_path": "hd_icon.png",
   	"icon_width": 32,
 	"dependencies": [
