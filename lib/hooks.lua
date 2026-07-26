@@ -1197,6 +1197,85 @@ if Card and Card.set_seal and not Card._hnds_wrapped_spectral_progress then
     end
 end
 
+-------------------------------------------------------------------
+-- CONTAGION TOOLTIP SWAP
+-- By default Spectrals have fixed numbers and no plurar so we have to make
+-- that ourselves to keep the linguistic clarity
+-------------------------------------------------------------------
+
+local hnds_contagion_loc_targets = {
+    c_talisman = 'Gold',
+    c_deja_vu = 'Red',
+    c_trance = 'Blue',
+    c_medium = 'Purple',
+    c_aura = 'Aura',
+    c_cryptid = 'Cryptid',
+}
+
+local function hnds_add_contagion_spectral_info(info_queue, kind)
+    if not info_queue then return end
+    if kind == 'Gold' then
+        info_queue[#info_queue + 1] = { key = 'gold_seal', set = 'Other' }
+    elseif kind == 'Red' then
+        info_queue[#info_queue + 1] = { key = 'red_seal', set = 'Other' }
+    elseif kind == 'Blue' then
+        info_queue[#info_queue + 1] = { key = 'blue_seal', set = 'Other' }
+    elseif kind == 'Purple' then
+        info_queue[#info_queue + 1] = { key = 'purple_seal', set = 'Other' }
+    elseif kind == 'Aura' then
+        info_queue[#info_queue + 1] = G.P_CENTERS.e_foil
+        info_queue[#info_queue + 1] = G.P_CENTERS.e_holo
+        info_queue[#info_queue + 1] = G.P_CENTERS.e_polychrome
+    end
+end
+
+local function hnds_contagion_proxy_loc_vars(self, info_queue, card)
+    local orig_key = self.key
+    local kind = hnds_contagion_loc_targets[orig_key]
+    hnds_add_contagion_spectral_info(info_queue, kind)
+    local bonus = hnds_contagion_bonus()
+    if orig_key == 'c_cryptid' then
+        local copies = (card and card.ability and tonumber(card.ability.extra))
+            or (self.config and tonumber(self.config.extra))
+            or 2
+        return {
+            key = 'c_hnds_contagion_cryptid',
+            vars = { copies, 1 + bonus },
+        }
+    end
+    return {
+        key = 'c_hnds_contagion_' .. orig_key:sub(3),
+        vars = { 1 + bonus },
+    }
+end
+
+-- Build a one-shot SMODS.Center-backed center that mirrors a vanilla Spectral
+-- but routes description rendering through our contagion loc_vars.
+local function hnds_contagion_make_proxy(orig_center)
+    return setmetatable({
+        key = orig_center.key,
+        set = orig_center.set or 'Spectral',
+        config = orig_center.config or {},
+        loc_vars = hnds_contagion_proxy_loc_vars,
+    }, { __index = SMODS.Center })
+end
+
+if not _G._hnds_contagion_generate_card_ui_wrapped then
+    _G._hnds_contagion_generate_card_ui_wrapped = true
+    local generate_card_ui_ref = generate_card_ui
+
+    function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
+        if _c and _c.set == 'Spectral' and _c.key
+            and not _c.generate_ui
+            and hnds_contagion_bonus() > 0
+            and hnds_contagion_loc_targets[_c.key]
+        then
+            _c = hnds_contagion_make_proxy(_c)
+        end
+        return generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
+    end
+end
+
 
 
 -------------------------------------------------------------------

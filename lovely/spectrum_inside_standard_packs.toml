@@ -28,3 +28,27 @@ if self.draw_hand ~= true and self.kind == "Standard" then
     end
 end
 '''
+
+# -----------------------------
+# Stop vanilla from clobbering the soul key chosen by SMODS for Spectral-class
+# legendaries when generating Standard Pack cards. Vanilla forces forced_key =
+# 'c_base' whenever _type == 'Base' (the ~40% of Standard slots that are plain
+# playing cards), which would overwrite the c_hnds_spectrum key SMODS already
+# rolled for soul_set = "Base". Guarding with `and not forced_key` lets the
+# legendary survive; vanilla still defaults normal Base slots to c_base.
+# -----------------------------
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''
+if _type == 'Base' then 
+    forced_key = 'c_base'
+end
+'''
+position = 'at'
+match_indent = true
+payload = '''
+if _type == 'Base' and not forced_key then
+    forced_key = 'c_base'
+end
+'''
