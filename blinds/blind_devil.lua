@@ -292,8 +292,15 @@ local function devil_get_names()
 
     for i = 1, 3 do
         local key = bosses[i]
-        local boss = key and HNDS.DEVIL_BOSSES and HNDS.DEVIL_BOSSES[key]
-        names[i] = boss and (boss.loc_name or key) or "???"
+        local vk = key and devil_vanilla_blind_keys[key]
+        if vk and G.localization and G.localization.descriptions
+            and G.localization.descriptions.Blind
+            and G.localization.descriptions.Blind[vk]
+        then
+            names[i] = G.localization.descriptions.Blind[vk].name
+        else
+            names[i] = "???"
+        end
     end
 
     return names
@@ -333,10 +340,16 @@ SMODS.Blind {
         local rolled = HNDS.roll_devil_bosses("collection", 0)
 
         for i = 1, 3 do
-            local boss = rolled[i]
-                and HNDS.DEVIL_BOSSES
-                and HNDS.DEVIL_BOSSES[rolled[i]]
-            names[i] = boss and boss.loc_name or "???"
+            local key = rolled[i]
+            local vk = key and devil_vanilla_blind_keys[key]
+            if vk and G.localization and G.localization.descriptions
+                and G.localization.descriptions.Blind
+                and G.localization.descriptions.Blind[vk]
+            then
+                names[i] = G.localization.descriptions.Blind[vk].name
+            else
+                names[i] = "???"
+            end
         end
 
         return {
