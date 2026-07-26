@@ -182,45 +182,32 @@ HNDS.attach_devil_blind_tooltip = function(sprite, blind_config)
     end
 end
 
-local devil_collection_names = {
-    "The House",
-    "The Wall",
-    "The Wheel",
-    "The Club",
-    "The Fish",
-    "The Psychic",
-    "The Goad",
-    "The Window",
-    "The Manacle",
-    "The Eye",
-    "The Mouth",
-    "The Plant",
-    "The Serpent",
-    "The Pillar",
-    "The Needle",
-    "The Head",
-    "The Mark",
-    "The Flint",
-    "The Water",
+local devil_name_keys = {
+    "hnds_devil_name_default",
+    "hnds_devil_name_legion",
+    "hnds_devil_name_old_nick",
+    "hnds_devil_name_deceiver",
+    "hnds_devil_name_tempter",
+    "hnds_devil_name_adversary",
+    "hnds_devil_name_prince_of_darkness",
+    "hnds_devil_name_belial",
+    "hnds_devil_name_apollyon",
+    "hnds_devil_name_lucifer",
+    "hnds_devil_name_abaddon",
+    "hnds_devil_name_leviathan",
 }
 
-local devil_names = {
-    "The Devil",
-    "Legion",
-    "Old Nick",
-    "The Deceiver",
-    "The Tempter",
-    "The Adversary",
-    "Prince of Darkness",
-    "Belial",
-    "Apollyon",
-    "Lucifer",
-    "Abaddon",
-    "Leviathan",
-}
+local function devil_localized_name(key)
+    return (G.localization
+        and G.localization.misc
+        and G.localization.misc.dictionary
+        and G.localization.misc.dictionary[key])
+        or "The Devil"
+end
 
-local function apply_devil_name(name)
-    if not name then return end
+local function apply_devil_name(key)
+    if not key then return end
+    local name = devil_localized_name(key)
 
     -- loc_vars runs before Steamodded renders a Blind's name. Updating the
     -- localization entry here makes the blind-select name use the nickname.
@@ -228,17 +215,17 @@ local function apply_devil_name(name)
         and G.localization.descriptions
         and G.localization.descriptions.Blind
     then
-        for _, key in ipairs(DEVIL_KEYS) do
-            if G.localization.descriptions.Blind[key] then
-                G.localization.descriptions.Blind[key].name = name
+        for _, k in ipairs(DEVIL_KEYS) do
+            if G.localization.descriptions.Blind[k] then
+                G.localization.descriptions.Blind[k].name = name
             end
         end
     end
 
     if G.P_BLINDS then
-        for _, key in ipairs(DEVIL_KEYS) do
-            if G.P_BLINDS[key] then
-                G.P_BLINDS[key].name = name
+        for _, k in ipairs(DEVIL_KEYS) do
+            if G.P_BLINDS[k] then
+                G.P_BLINDS[k].name = name
             end
         end
     end
@@ -259,16 +246,16 @@ local function ensure_devil_name()
         return "The Devil"
     end
 
-    if not G.GAME.hnds_devil_name then
+    if not G.GAME.hnds_devil_name_key then
         local ante = G.GAME.round_resets and G.GAME.round_resets.ante or 0
-        G.GAME.hnds_devil_name = pseudorandom_element(
-            devil_names,
+        G.GAME.hnds_devil_name_key = pseudorandom_element(
+            devil_name_keys,
             pseudoseed("hnds_devil_name_" .. tostring(ante))
-        ) or "The Devil"
+        ) or "hnds_devil_name_default"
     end
 
-    apply_devil_name(G.GAME.hnds_devil_name)
-    return G.GAME.hnds_devil_name
+    apply_devil_name(G.GAME.hnds_devil_name_key)
+    return devil_localized_name(G.GAME.hnds_devil_name_key)
 end
 
 local function ensure_devil_roll()
@@ -421,10 +408,10 @@ SMODS.Blind {
 
         G.GAME.hnds_devil_bosses = nil
         G.GAME.hnds_devil_active = nil
-        G.GAME.hnds_devil_name = nil
+        G.GAME.hnds_devil_name_key = nil
 
         -- Restore the default localization after the encounter. The next
         -- selection will apply its newly rolled nickname before rendering.
-        apply_devil_name("The Devil")
+        apply_devil_name("hnds_devil_name_default")
     end,
 }
