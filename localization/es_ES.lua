@@ -228,9 +228,9 @@ return {
 				name = "Se Busca",
 				text = {
 					"{C:attention}#1#{}",
-					"aparece {C:attention}#2#X{} veces más",
-					"seguido al obtenerlo, este",
-					"Comodín se {C:red}autodestruye{}"
+					"aparece {C:attention}#2#X{} veces más.",
+					"Vende este Comodín para hacer que",
+					"El Comodín Mencionado sea {C:green}gratis{}"
 				}
 			},
 			j_hnds_clown_devil = {
