@@ -388,9 +388,8 @@ return {
 			j_hnds_demented = {
 				name = "Comodín Demente",
 				text = {
-					"Al jugar la {C:attention}primera mano{}",
-					"de la ronda, cambia al azar",
-					"las {C:attention}categorías{} y {C:attention}palos{}",
+					"La primera {C:attention}mano{} de la ronda,",
+					"cambia al azar las {C:attention}categorías{} y {C:attention}palos{}",
 					"de todas las cartas en mano",
 				}
 			},
@@ -456,11 +455,11 @@ return {
 			j_hnds_contagion = {
 				name = "Contagio",
 				text = {
-                    "{C:attention}Consumables{} allow",
-                    "to select {C:attention}1 extra card{}",
-                    "{C:inactive}(ex. Enhances 2 selected",
-                    "{C:inactive}cards -> 3 selected cards)",
-                },
+					"Los {C:attention}Consumibles{} permiten",
+					"seleccionar {C:attention}1{} carta extra",
+					"{C:inactive,s:0.8}(ej: Mejora {C:attention,s:0.8}2{} {C:inactive,s:0.8}cartas",
+					"{C:inactive,s:0.8}seleccionadas -> {C:attention,s:0.8}3{} {C:inactive,s:0.8}cartas)",
+				},
 			},
 		},
 		Back = {
@@ -720,11 +719,52 @@ return {
 			hnds_spectralseal_seal = {
 				name = "Sello Espectral",
 				text = {
-                    "Creates a {C:spectral}Spectral{} card",
-                    "every {C:attention}#1#{} [{C:attention}#2#{}] unique poker",
-                    "hands this card scored in",
-                    "{C:inactive}(Must have room){}",
-                }
+					"Crea una carta {C:spectral}Espectral{}",
+					"cada {C:attention}#1#{} {C:inactive}[#2#]{} manos de",
+					"póker {C:attention}únicas{} que esta carta jugó",
+					"{C:inactive}(Debe haber espacio){}",
+				}
+			},
+			hnds_spectralseal_progress_empty = {
+				name = "Manos de Póker Anotadas",
+				text = {
+					"Actualmente: {C:attention}#1#{}",
+					"{C:inactive}(#2#/#3# manos únicas){}",
+				},
+			},
+			hnds_spectralseal_progress_1 = {
+				name = "Manos de Póker Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:inactive}(#2#/#3# manos únicas){}",
+				},
+			},
+			hnds_spectralseal_progress_2 = {
+				name = "Manos de Póker Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:inactive}(#3#/#4# manos únicas){}",
+				},
+			},
+			hnds_spectralseal_progress_3 = {
+				name = "Manos de Póker Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:inactive}(#4#/#5# manos únicas){}",
+				},
+			},
+			hnds_spectralseal_progress_4 = {
+				name = "Manos de Póker Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:inactive}(#5#/#6# manos únicas){}",
+				},
 			},
 			p_hnds_spectral_ultra = {
 				name = "Paquete Ultra Espectral",
@@ -1066,27 +1106,67 @@ return {
 			stake_hnds_platinum = {
 				name = "Pozo de Platino",
 				text = {
-					"Si la {C:attention}Ciega{} es derrotada con el {C:attention}doble{} de fichas",
-					"requeridas, la siguiente {C:attention}Ciega{} es {C:mult}X2{} veces más grande",
-                    "{s:0.8}Aplica todos los pozos anteriores{}",
+					"Debes alcanzar la Apuesta {C:attention}10{} para ganar.",
+					"Puedes mejorar las {C:attention}Ciegas{} duplicando la",
+					"puntuación requerida para obtener recompensas adiconales",
+					"{s:0.8}Aplica todos los pozos anteriores{}",
 				}
 			},
 			stake_hnds_blood_stake = {
 				name = "Pozo de Sangre",
 				text = {
-					"La tienda puede tener Comodines {C:red}Malditos{}",
+					"La Tienda puede tener Comodines {C:red}Malditos{}",
+					"Ignorarlos mejora la siguiente {C:attention}Ciega{}",
 					"{s:0.8}Aplica todos los pozos anteriores{}",
 				},
 				unlock = {
-                    'Gana con esta',
-                    'baraja en el Pozo de Platino',
-                }
+					"Gana con esta",
+					"baraja en el Pozo de Platino",
+				}
 			}
+		},
+		Blind = {
+			bl_hnds_blind_devil = {
+				name = "El Diablo",
+				text = {
+					"Invoca a:",
+					"#1#, #2#, #3#",
+				},
+			},
+			bl_hnds_forbidden_fruit = {
+				name = "Fruta Prohibida",
+				text = {
+					"Debilita 6 cartas por cada",
+					"Etiqueta usada en esta partida",
+				},
+			},
+			bl_hnds_perilous_pact = {
+				name = "Pacto Aletargante",
+				text = {
+					"Limita cada mano al",
+					"50% de la puntuación requerida",
+				},
+			},
+			bl_hnds_sinful_soul = {
+				name = "Alma Pecadora",
+				text = {
+					"+20% tamaño de Ciega por cada",
+					"{C:money}$1{} de valor de venta",
+					"de tus Comodines",
+				},
+			},
+			bl_hnds_wasted_wish = {
+				name = "Deseo Desperdiciado",
+				text = {
+					"Los Vales están",
+					"deshabilitados esta Apuesta",
+				},
+			},
 		}
 	},
 	misc = {
 		dictionary = {
-			hnds_upgrade_blind = "Upgrade Blind",
+			hnds_upgrade_blind = "Mejorar Ciega",
 			k_hnds_petrified = "¡Petrificado!",
 			k_hnds_goldfish = "¡Pez Dorado!",
 			k_hnds_jester_negative = "¡Comodín Negativo!",
@@ -1110,6 +1190,8 @@ return {
 			k_hnds_occultist = "¡Estudio!",
 			k_hnds_splashed = "¡Salpicado!",
 			hnds_plus_q = "+1 ???", --this is for the cryptid digital hallucinations creation message with magic packs
+			k_hnds_plus_tag = "+Etiqueta",
+			k_hnds_wanted = "[Nombre del comodín]",
 			k_hnds_magic_pack = "Paquete Mágico",
 			k_hnds_cursed_pack = "Paquete Maldito",
 			hnds_cursed_pack = "Paquete Maldito",
