@@ -7,7 +7,7 @@ if hnds_config.enableStoneOcean then
 		config = { hand_type = "hnds_stone_ocean", softlock = true },
 		pos = { x = 4, y = 1 },
 		order = 6,
-		cost = 4,
+		cost = 3,
 		atlas = "Consumables",
 		unlocked = true,
 		discovered = false,

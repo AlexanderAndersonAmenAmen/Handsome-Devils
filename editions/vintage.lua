@@ -12,7 +12,7 @@ SMODS.Edition({
 	config = {},
 	in_shop = true,
 	weight = 7,
-	extra_cost = 5,
+	extra_cost = 4,
 	sound = { sound = "hnds_vintage", per = 1.2, vol = 0.225 },
 	apply_to_float = true,
 	loc_vars = function(self, info_queue, card)
