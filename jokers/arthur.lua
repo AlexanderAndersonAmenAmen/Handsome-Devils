@@ -31,7 +31,7 @@ SMODS.Joker {
             card.ability.extra.re = card.ability.extra.re - 1
         end
 
-        if context.destroy_card and context.destroy_card:is_suit(G.GAME.hnds_arthur_suit) then
+        if context.destroy_card and context.cardarea == G.play and context.destroy_card:is_suit(G.GAME.hnds_arthur_suit) then
             return { remove = true }
         end
     end,

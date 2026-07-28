@@ -349,7 +349,7 @@ return {
 					"Ganas {C:attention}+#2#{} {C:green}renovación{} de",
 					"la tienda al anotar {V:1}#3#{}",
 					"y se {C:red}destruyen{} después",
-					"{s:0.8}El palo cambia cada ronda",
+					"{s:0.8}El palo cambia cada mano",
 					"{C:inactive,s:0.8}(Actualmente {C:attention,s:0.8}#1#{C:green,s:0.8} Renovaciones{C:inactive,s:0.8})"
 				}
 			},
