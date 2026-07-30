@@ -117,13 +117,22 @@ local function create_devil_effect_box(hook_key)
     }
 end
 
-HNDS.create_devil_blind_tooltip = function()
+HNDS.create_devil_blind_tooltip = function(ante)
     local nodes = {}
     local rolled = G and G.GAME and G.GAME.hnds_devil_bosses or {}
 
+    -- Preserve The Devil's three original tooltips as three independent boxes.
     for i = 1, 3 do
         local box = create_devil_effect_box(rolled[i])
         if box then nodes[#nodes + 1] = box end
+    end
+
+    -- Platinum upgrades add more independent Blind boxes after the original
+    -- three; they never collapse The Devil into its normal one-line list.
+    if HNDS.create_platinum_upgrade_effect_boxes then
+        for _, box in ipairs(HNDS.create_platinum_upgrade_effect_boxes(ante)) do
+            nodes[#nodes + 1] = box
+        end
     end
 
     if #nodes == 0 then return nil end
@@ -167,8 +176,10 @@ HNDS.attach_devil_blind_tooltip = function(sprite, blind_config)
 
             _self.config.h_popup = popup
             _self.config.h_popup_config = {
-                align = "cl",
-                offset = { x = -0.1, y = 0 },
+                -- Keep the three effect boxes inside the game window by always
+                -- opening them outside the badge's right edge.
+                align = "cr",
+                offset = { x = 0.1, y = 0 },
                 parent = _self,
             }
             Node.hover(_self)
@@ -307,7 +318,7 @@ SMODS.Blind {
     pos = { x = 0, y = 0 },
 
     boss_colour = HEX("FD5F55"),
-    discovered = true,
+    discovered = false,
     unlocked = true,
 
     -- The Fish and The Serpent use the drawing_cards context.
@@ -379,6 +390,34 @@ SMODS.Blind {
                     end
                 end
             end
+        end
+
+        -- The Blind-select badge is wired by Lovely, but the fight HUD uses the
+        -- active Blind object (and sometimes its AnimatedSprite) as the hover
+        -- target. Attach the same popup to both, then repeat after vanilla's
+        -- delayed badge reveal so the hook survives the HUD refresh.
+        local function attach_live_devil_tooltip()
+            local active_blind = G and G.GAME and G.GAME.blind
+            if not active_blind then return end
+            local active_config = active_blind.config and active_blind.config.blind or self
+            HNDS.attach_devil_blind_tooltip(active_blind, active_config)
+            if active_blind.children and active_blind.children.animatedSprite then
+                HNDS.attach_devil_blind_tooltip(active_blind.children.animatedSprite, active_config)
+            end
+        end
+
+        attach_live_devil_tooltip()
+        if G.E_MANAGER and Event then
+            G.E_MANAGER:add_event(Event({
+                trigger = "after",
+                delay = 0.2,
+                blockable = false,
+                blocking = false,
+                func = function()
+                    attach_live_devil_tooltip()
+                    return true
+                end,
+            }))
         end
     end,
 

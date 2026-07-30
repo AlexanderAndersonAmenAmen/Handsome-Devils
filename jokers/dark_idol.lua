@@ -15,8 +15,15 @@ SMODS.Joker{
     atlas = "Jokers",
     pos = { x = 1, y = 2 },
     cost = 6,
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    discovered = false,
+    unlock_condition = { type = "hnds_joker_unlock", key = "dark_idol" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("dark_idol")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("dark_idol", args)
+    end,
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = false, -- By default, all Scaling Jokers cant be perishable

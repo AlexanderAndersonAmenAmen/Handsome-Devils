@@ -1,7 +1,13 @@
 SMODS.Joker {
     key = "pennywise",
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    unlock_condition = { type = "", extra = "", hidden = true },
+    locked_loc_vars = function(self, info_queue, card)
+        -- Force Steamodded's locked-Joker path to initialise specific_vars and
+        -- use the same hidden Legendary message as vanilla Soul Jokers.
+        return { key = "joker_locked_legendary", set = "Other", vars = {} }
+    end,
+    discovered = false,
     blueprint_compat = true,
     demicoloncompat = true,
     rarity = 4,
@@ -10,6 +16,7 @@ SMODS.Joker {
     pos = { x = 5, y = 2 },
     soul_pos = { x = 0, y = 3 },
     info_queue = function(self, info_queue, card)
+        if not self.unlocked then return end
         if G.GAME.blind then
             info_queue[#info_queue + 1] = HNDS.get_blind_soul(G.GAME.blind)
         end

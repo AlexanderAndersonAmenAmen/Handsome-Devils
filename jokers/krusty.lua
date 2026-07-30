@@ -1,7 +1,13 @@
 SMODS.Joker {
     key = "krusty",
-    unlocked = true, -- set this and discovered to false when releasing!
-    discovered = true,
+    unlocked = false,
+    unlock_condition = { type = "", extra = "", hidden = true },
+    locked_loc_vars = function(self, info_queue, card)
+        -- Force Steamodded's locked-Joker path to initialise specific_vars and
+        -- use the same hidden Legendary message as vanilla Soul Jokers.
+        return { key = "joker_locked_legendary", set = "Other", vars = {} }
+    end,
+    discovered = false,
     blueprint_compat = true,
     demicoloncompat = true,
     rarity = 4,

@@ -4,6 +4,7 @@ SMODS.Seal {
     atlas = "Extras",
     badge_colour = G.C.SECONDARY_SET.Spectral,
     config = { extra = { hands = 4 } },
+    unlocked = true,
 
     loc_vars = function(self, info_queue, card)
         local tracked = card and card.ability and card.ability.hnds_spectral_hands

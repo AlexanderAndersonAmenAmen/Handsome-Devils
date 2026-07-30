@@ -3,7 +3,7 @@ SMODS.Consumable({
 	set = "Spectral",
 	name = "Abyss",
 	key = "abyss",
-	discovered = true,
+	discovered = false,
 	order = 1,
 	cost = 4,
 	atlas = "Consumables",

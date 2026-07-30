@@ -40,6 +40,9 @@ payload = '''
   if HNDS and HNDS.attach_devil_blind_tooltip then
     HNDS.attach_devil_blind_tooltip(blind_choice.animation, blind_choice.config)
   end
+  if HNDS and HNDS.attach_platinum_boss_tooltip then
+    HNDS.attach_platinum_boss_tooltip(blind_choice.animation, blind_choice.config)
+  end
 '''
 match_indent = true
 times = 1

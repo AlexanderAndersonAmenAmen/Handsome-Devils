@@ -14,8 +14,15 @@ SMODS.Joker ({
 	atlas = "Jokers",
     blueprint_compat = true,
     eternal_compat = true,
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    discovered = false,
+    unlock_condition = { type = "hnds_joker_unlock", key = "supersuit" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("supersuit")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("supersuit", args)
+    end,
     loc_vars = function(self, info_queue, card)
         local current_suit = G.GAME.current_round.supersuit_card and G.GAME.current_round.supersuit_card.suit or "Spades"
         return {vars = {localize(current_suit, 'suits_singular'), colours = {G.C.SUITS[current_suit]}}}

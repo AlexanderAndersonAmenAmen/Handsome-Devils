@@ -20,8 +20,15 @@ SMODS.Joker({
 	pos = { x = 4, y = 2 },
 	rarity = 2,
 	cost = 4,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	discovered = false,
+	unlock_condition = { type = "hnds_joker_unlock", key = "color_of_madness" },
+	locked_loc_vars = function(self)
+	    return HNDS.joker_locked_loc_vars("color_of_madness")
+	end,
+	check_for_unlock = function(self, args)
+	    return HNDS.joker_unlock_condition_met("color_of_madness", args)
+	end,
 	blueprint_compat = false,
 	demicoloncompat = true,
 	eternal_compat = true,

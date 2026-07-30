@@ -4,5 +4,5 @@ SMODS.Voucher {
     pos = { x = 4, y = 0 },
     cost = 10,
     unlocked = true,
-    discovered = true,
+    discovered = false,
 }

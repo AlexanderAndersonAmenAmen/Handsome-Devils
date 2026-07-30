@@ -2,7 +2,7 @@ SMODS.Tag {
     key = "cursed_tag",
     atlas = "HDtags",
     pos = { x = 3, y = 0 },
-    discovered = true,
+    discovered = false,
     loc_vars = function(self, info_queue, tag)
         info_queue[#info_queue + 1] = G.P_CENTERS.p_hnds_cursed_pack
     end,

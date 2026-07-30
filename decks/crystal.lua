@@ -2,7 +2,10 @@ SMODS.Back {
     key = "crystal",
     atlas = "Extras",
     pos = { x = 1, y = 0 },
-    unlocked = true,
+    unlocked = false,
+    check_for_unlock = function(self, args)
+        return HNDS.unlock_condition_met("crystal", args)
+    end,
     apply = function(self, back)
         G.GAME.modifiers.hnds_double_showdown = true -- legacy/save compatibility
         G.GAME.modifiers.hnds_crystal_showdown = true

@@ -8,7 +8,7 @@ SMODS.Voucher({
 	end,
 	cost = 10,
 	unlocked = true,
-	discovered = true,
+	discovered = false,
 	redeem = function(self, voucher)
 		G.GAME.uncommon_mod = (G.GAME.uncommon_mod or 1) * voucher.ability.extra.rate_mod
 	end,

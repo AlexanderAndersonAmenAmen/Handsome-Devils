@@ -1288,89 +1288,61 @@ end
 -- at the start of a run, so nothing needs to happen here.
 
 -------------------------------------------------------------------
--- CARD DESTRUCTION UNLOCKS (Energized, Last Laugh)
+-- CARD DESTRUCTION UNLOCKS
 -------------------------------------------------------------------
 
-if SMODS and SMODS.destroy_cards and not SMODS._hnds_wrapped_destroy_cards_stat then
-	SMODS._hnds_wrapped_destroy_cards_stat = true
-	local destroy_cards_stat_ref = SMODS.destroy_cards
-	-- ponytail: only count playing-card destructions (Default/Enhanced sets).
-	-- Consumable/Spectral/Tarot source cards going through start_dissolve are
-	-- filtered out by the helper below; here we just have to handle both
-	-- "single Card" and "list of Cards" argument shapes correctly.
-	local function hnds_count_playing_cards(cards)
-		if not cards then return 0 end
-		local count = 0
-		local function tally(c)
-			if c.ability then
-				local set = c.ability.set
-				if set == 'Default' or set == 'Enhanced' or set == 'Joker' then
-					count = count + 1
-				end
-			end
-		end
-		if type(cards) == 'table' and cards.config then
-			tally(cards)
-		elseif type(cards) == 'table' then
-			for _, c in ipairs(cards) do tally(c) end
-		end
-		return count
-	end
-	function SMODS.destroy_cards(cards, ...)
-		local ret = destroy_cards_stat_ref(cards, ...)
-		if inc_career_stat then
-			local count = hnds_count_playing_cards(cards)
-			if count > 0 then
-				inc_career_stat('c_hnds_cards_destroyed', count)
-				if check_for_unlock then
-					check_for_unlock({ type = 'career_stat', statname = 'c_hnds_cards_destroyed' })
-				end
-			end
-		end
-		return ret
-	end
+-- Count only cards that Steamodded has accepted into its real destruction
+-- queue. start_dissolve is also used for transformations and presentation,
+-- so wrapping it directly caused enhanced cards and other animations to count.
+local function hnds_card_list(cards)
+    if type(cards) ~= "table" then return {} end
+    if cards[1] ~= nil then return cards end
+    -- A single Card is also a table, but does not have an array entry.
+    if cards.base or cards.playing_card or cards.config then return { cards } end
+    return {}
 end
 
--- Catch-all: vanilla destroy paths (Death, Hanged Man, The Hermit, Black Seal,
--- etc.) and Glass shatters all funnel through Card:start_dissolve or
--- Card:shatter. The SMODS.destroy_cards wrapper above also reaches these for
--- non-Glass cards; the hnds_destroy_counted flag prevents double counting.
-local function hnds_maybe_count_destroyed(self)
-	if not (inc_career_stat and self.ability) then return end
-	-- ponytail: count playing cards (Default/Enhanced) AND destroyed Jokers.
-	-- The Hermit grants money and never calls start_dissolve, so it is naturally
-	-- excluded. Consumable/Spectral/Tarot/Planet/Voucher/Booster sources that
-	-- dissolve themselves on use are excluded by the set check.
-	local set = self.ability.set
-	if set ~= 'Default' and set ~= 'Enhanced' and set ~= 'Joker' then return end
-	if self.hnds_destroy_counted then return end
-	self.hnds_destroy_counted = true
-	inc_career_stat('c_hnds_cards_destroyed', 1)
-	if check_for_unlock then
-		check_for_unlock({ type = 'career_stat', statname = 'c_hnds_cards_destroyed' })
-	end
+local function hnds_count_confirmed_destroyed(cards)
+    local counted = 0
+    for _, card in ipairs(hnds_card_list(cards)) do
+        if card and (card.getting_sliced or card.destroyed or card.shattered)
+            and HNDS and HNDS.count_destroyed_playing_card
+            and HNDS.count_destroyed_playing_card(card)
+        then
+            counted = counted + 1
+        end
+    end
+    return counted
 end
 
-if Card and not Card._hnds_wrapped_start_dissolve_stat then
-	Card._hnds_wrapped_start_dissolve_stat = true
-	local start_dissolve_ref = Card.start_dissolve
-	function Card:start_dissolve(dissolve_colours, silent, dissolve_time_fac, no_juice)
-		local ret = start_dissolve_ref(self, dissolve_colours, silent, dissolve_time_fac, no_juice)
-		hnds_maybe_count_destroyed(self)
-		return ret
-	end
-end
+if SMODS and SMODS.destroy_cards and not SMODS._hnds_wrapped_destroy_cards_stat_v3 then
+    SMODS._hnds_wrapped_destroy_cards_stat_v3 = true
+    local destroy_cards_stat_ref = SMODS.destroy_cards
+    function SMODS.destroy_cards(cards, ...)
+        local candidates = hnds_card_list(cards)
+        local queued = destroy_cards_stat_ref(cards, ...)
 
-if Card and Card.shatter and not Card._hnds_wrapped_shatter_stat then
-	Card._hnds_wrapped_shatter_stat = true
-	local shatter_ref = Card.shatter
-	function Card:shatter()
-		local ret = shatter_ref(self)
-		hnds_maybe_count_destroyed(self)
-		return ret
-	end
-end
+        -- Newer Steamodded builds return the accepted queue. The beta used by
+        -- this mod may return nil, but it still marks accepted cards
+        -- getting_sliced/destroyed/shattered synchronously. Support both.
+        local confirmed = type(queued) == "table" and queued or candidates
+        local counted = hnds_count_confirmed_destroyed(confirmed)
 
+        -- Some destruction helpers set their flags in the next event. Recheck
+        -- once without ever counting unconfirmed input cards.
+        if counted == 0 and G and G.E_MANAGER and Event and #candidates > 0 then
+            G.E_MANAGER:add_event(Event({
+                trigger = "immediate",
+                blockable = false,
+                func = function()
+                    hnds_count_confirmed_destroyed(candidates)
+                    return true
+                end,
+            }))
+        end
+        return queued
+    end
+end
 
 -------------------------------------------------------------------
 -- BLACK SEAL & VOUCHER CARD DESTRUCTION / SCORING
@@ -1416,6 +1388,9 @@ end
 local score_card_ref = SMODS.score_card
 function SMODS.score_card(card, context)
 	if (not G.scorehand) and HNDS.should_hand_destroy(card) and context.cardarea == G.hand then
+		if card:get_seal() == "hnds_black" and HNDS.record_held_effects then
+			HNDS.record_held_effects(1, "hnds_black_seal")
+		end
 		G.scorehand = true
 		context.cardarea = G.play
 		SMODS.score_card(card, context)

@@ -8,7 +8,7 @@ SMODS.Voucher({
 	end,
 	cost = 10,
 	unlocked = true,
-	discovered = true,
+	discovered = false,
 	redeem = function(self, voucher)
 		G.GAME.modifiers.booster_size_mod = (G.GAME.modifiers.booster_size_mod or 0) + voucher.ability.extra.size_mod
 	end,

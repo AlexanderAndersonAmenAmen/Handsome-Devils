@@ -11,26 +11,17 @@ SMODS.Joker({
 	eternal_compat = true,
 	perishable_compat = true,
 	config = { extra = { draw_per_use = 2, } },
-	unlock_condition = { type = 'hnds_consumable_in_blind', extra = 4 },
+	unlock_condition = { type = "hnds_joker_unlock", key = "pot_of_greed" },
+	locked_loc_vars = function(self)
+		return HNDS.joker_locked_loc_vars("pot_of_greed")
+	end,
+	check_for_unlock = function(self, args)
+		return HNDS.joker_unlock_condition_met("pot_of_greed", args)
+	end,
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.draw_per_use } }
 	end,
-	check_for_unlock = function(self, args)
-		if args.type == 'hnds_consumable_in_blind' then
-			local count = (args.count or 0)
-			return count >= self.unlock_condition.extra
-		end
-	end,
 	calculate = function(self, card, context)
-		if context.setting_blind then
-			G.GAME.current_round = G.GAME.current_round or {}
-			G.GAME.current_round.hnds_consumables_used_in_blind = 0
-		end
-		if context.using_consumeable and G.GAME.blind and G.GAME.blind.in_blind then
-			G.GAME.current_round = G.GAME.current_round or {}
-			G.GAME.current_round.hnds_consumables_used_in_blind = (G.GAME.current_round.hnds_consumables_used_in_blind or 0) + 1
-			check_for_unlock({ type = 'hnds_consumable_in_blind', count = G.GAME.current_round.hnds_consumables_used_in_blind })
-		end
 		if (context.using_consumeable or context.forcetrigger) and G.hand and G.hand.cards and #G.hand.cards > 0 then
 			G.E_MANAGER:add_event(Event({
 				func = function()

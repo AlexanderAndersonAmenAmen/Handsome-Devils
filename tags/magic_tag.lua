@@ -3,7 +3,7 @@ SMODS.Tag {
     atlas = "HDtags",
     min_ante = 2,
     pos = { x = 2, y = 0 },
-    discovered = true,
+    discovered = false,
     loc_vars = function(self, info_queue, tag)
         info_queue[#info_queue + 1] = G.P_CENTERS.p_hnds_magic_1
     end,

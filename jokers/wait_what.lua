@@ -4,8 +4,15 @@ SMODS.Joker({
 	pos = { x = 4, y = 4 },
 	rarity = 1,
 	cost = 2,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	discovered = false,
+	unlock_condition = { type = "hnds_joker_unlock", key = "wait_what", hidden = true },
+	locked_loc_vars = function(self)
+		return { vars = {} }
+	end,
+	check_for_unlock = function(self, args)
+		return HNDS.joker_unlock_condition_met("wait_what", args)
+	end,
 	blueprint_compat = true,
 	demicoloncompat = true,
 	eternal_compat = true,
@@ -17,12 +24,19 @@ SMODS.Joker({
 	generate_ui = function(self, info_queue, card, desc_nodes, specific_vars, full_UI_table)
 		local in_shop = card.area and card.area.config and card.area.config.type == 'shop'
 		local disguised = in_shop and not (card.ability and card.ability.hnds_wait_what_revealed)
+		local hidden_collection = not self.discovered and not in_shop
+
+		self.no_main_mod_badge = disguised or hidden_collection
+		full_UI_table.name = localize { type = 'name', key = self.key, set = 'Joker' }
+
+		if hidden_collection then
+			localize { type = 'unlocks', key = self.key, set = 'Joker', nodes = desc_nodes, vars = {} }
+			return
+		end
+
 		local key = disguised and 'j_joker' or self.key
 		local vars = disguised and { G.P_CENTERS.j_joker.config.mult } or self:loc_vars(info_queue, card).vars
-
-		self.no_main_mod_badge = disguised
-
-		full_UI_table.name = localize { type = 'name', key = key, set = 'Joker' }
+		if disguised then full_UI_table.name = localize { type = 'name', key = key, set = 'Joker' } end
 		localize { type = 'descriptions', key = key, set = 'Joker', nodes = desc_nodes, vars = vars }
 	end,
 	set_card_type_badge = function(self, card, badges)

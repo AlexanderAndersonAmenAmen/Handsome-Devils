@@ -3,7 +3,7 @@ SMODS.Tag {
     atlas = "HDtags",
     min_ante = 2,
     pos = { x = 5, y = 0 },
-    discovered = true,
+    discovered = false,
     apply = function(self, tag, context)
         if context.type == 'store_joker_modify' and context.card.ability.set == "Joker" then
             local lock = tag.ID

@@ -5,6 +5,15 @@ SMODS.Joker({
     blueprint_compat = false,
     atlas = "Jokers",
     pos = { x = 6, y = 3 },
+    unlocked = false,
+    discovered = false,
+    unlock_condition = { type = "hnds_joker_unlock", key = "demented" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("demented")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("demented", args)
+    end,
     calculate = function(self, card, context)
         if (context.before or context.forcetrigger) and G.GAME.current_round and G.GAME.current_round.hands_played == 0 and G.hand and #G.hand.cards > 0 then
             

@@ -7,8 +7,15 @@ SMODS.Voucher({
 		return { vars = { card.ability.extra.boosters } }
 	end,
 	cost = 10,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	locked_loc_vars = function(self)
+		local current = HNDS.unlock_progress("wholesale")
+		return { vars = { current } }
+	end,
+	check_for_unlock = function(self, args)
+		return HNDS.unlock_condition_met("wholesale", args)
+	end,
+	discovered = false,
 	requires = { "v_hnds_stuffed" },
 	redeem = function(self, voucher)
 		SMODS.change_booster_limit(voucher.ability.extra.boosters)

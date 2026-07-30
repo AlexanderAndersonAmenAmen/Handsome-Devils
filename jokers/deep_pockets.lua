@@ -13,8 +13,15 @@ SMODS.Joker({
 	atlas = "Jokers",
 	pos = { x = 1, y = 0 },
 	cost = 6,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	discovered = false,
+	unlock_condition = { type = "hnds_joker_unlock", key = "deep_pockets" },
+	locked_loc_vars = function(self)
+	    return HNDS.joker_locked_loc_vars("deep_pockets")
+	end,
+	check_for_unlock = function(self, args)
+	    return HNDS.joker_unlock_condition_met("deep_pockets", args)
+	end,
 	blueprint_compat = true,
 	demicoloncompat = true,
 	eternal_compat = true,

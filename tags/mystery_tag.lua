@@ -2,7 +2,7 @@ SMODS.Tag {
     key = "mystery_tag",
     atlas = "HDtags",
     pos = { x = 0, y = 0 },
-    discovered = true,
+    discovered = false,
     apply = function(self, tag, context)
         if context.type == 'immediate' then
             local lock = tag.ID

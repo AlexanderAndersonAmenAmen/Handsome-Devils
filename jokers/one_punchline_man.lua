@@ -4,8 +4,15 @@ SMODS.Joker {
     pos = { x = 9, y = 4 },
     rarity = 3,
     cost = 10,
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    discovered = false,
+    unlock_condition = { type = "hnds_joker_unlock", key = "one_punchline_man" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("one_punchline_man")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("one_punchline_man", args)
+    end,
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = false, -- By default, all Scaling Jokers cant be perishable

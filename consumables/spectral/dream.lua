@@ -10,6 +10,7 @@ SMODS.Consumable({
 		info_queue[#info_queue+1] = { set = "Other", key = "hnds_joker_tag_example" }
 		return { vars = { card.ability.extra.max_tags } }
 	end,
+	discovered = false,
 	hidden = true,
 	soul_set = "Joker",
 	atlas = "Consumables",

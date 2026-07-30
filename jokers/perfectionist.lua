@@ -8,8 +8,15 @@ SMODS.Joker({
     pos = { x = 4, y = 1 },
     cost = 5,
     rarity = 2,
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    discovered = false,
+    unlock_condition = { type = "hnds_joker_unlock", key = "perfectionist" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("perfectionist")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("perfectionist", args)
+    end,
     blueprint_compat = false,
     calculate = function(self, card, context)
         if context.setting_ability and context.old and context.old ~= "c_base" and context.new ~= "c_base" and not context.unchanged and not G._ortalab_bottle_rolling then

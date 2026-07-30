@@ -1,0 +1,32 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# Blind-select score preview for upgraded Small/Big slots and the strengthened
+# real Boss Blind.
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "local blind_amt = get_blind_amount(G.GAME.round_resets.blind_ante)*blind_choice.config.mult*G.GAME.starting_params.ante_scaling"
+position = "after"
+match_indent = true
+payload = '''
+if HNDS and HNDS.adjust_platinum_blind_preview_amount then
+    blind_amt = HNDS.adjust_platinum_blind_preview_amount(type, blind_amt, blind_choice.config)
+end
+'''
+
+# Display Name+ for the real Boss when one or more Small/Big upgrades have
+# contributed effects to it this Ante.
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "local loc_name = localize{type = 'name_text', key = blind_choice.config.key, set = 'Blind'}"
+position = "after"
+match_indent = true
+payload = '''
+if HNDS and HNDS.platinum_blind_display_name then
+    loc_name = HNDS.platinum_blind_display_name(type, loc_name)
+end
+'''

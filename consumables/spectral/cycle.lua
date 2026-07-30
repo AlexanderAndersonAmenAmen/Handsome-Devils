@@ -1,7 +1,7 @@
 SMODS.Consumable({
 	key = "cycle",
 	set = "Spectral",
-	discovered = true,
+	discovered = false,
 	order = 1,
 	cost = 4,
 	atlas = "Consumables",

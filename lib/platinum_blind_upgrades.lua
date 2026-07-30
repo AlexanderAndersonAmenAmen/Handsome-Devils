@@ -72,15 +72,31 @@ local function blind_is_current(blind_choice)
         return false
     end
 
-    -- beta-1620a advances the selectable slot by changing its state to
-    -- 'Select'. blind_on_deck can lag behind during the Skip animation,
-    -- which previously left the next slot's buttons permanently disabled.
-    local state = blind_state(blind_choice)
-    if state == 'Select' then return true end
+    local states = G.GAME.round_resets
+        and G.GAME.round_resets.blind_states or {}
+    local state = states[blind_choice]
 
-    -- Defensive fallback for unusual/modded blind-select screens which do
-    -- not populate blind_states until after the UI has been constructed.
-    return state == nil and G.GAME.blind_on_deck == blind_choice
+    -- Normal vanilla path.
+    if G.GAME.blind_on_deck == blind_choice
+        or state == 'Select'
+        or state == 'Current'
+    then
+        return true
+    end
+
+    -- Boss definitions placed in Small/Big slots can leave blind_on_deck and
+    -- blind_states one step behind after the fight. The completed slots are the
+    -- reliable progression source: once Small is finished and Big is not, Big
+    -- is the current playable slot even if it still says `Upcoming`.
+    if blind_choice == 'Big'
+        and (states.Small == 'Defeated' or states.Small == 'Skipped')
+        and states.Big ~= 'Defeated'
+        and states.Big ~= 'Skipped'
+    then
+        return true
+    end
+
+    return false
 end
 
 local function blind_was_upgraded(blind_choice)
@@ -201,6 +217,7 @@ local function set_runtime_button(button, active, callback)
     button.config.button = active and callback or nil
     button.config.hover = active
     button.config.colour = active and G.C.RED or G.C.UI.BACKGROUND_INACTIVE
+    if active then button.disable_button = nil end
 
     -- UIElement:set_values only enables collision/click states when a
     -- button exists during construction. Future Blind actions are built
@@ -210,6 +227,32 @@ local function set_runtime_button(button, active, callback)
         if button.states.collide then button.states.collide.can = active end
         if button.states.click then button.states.click.can = active end
         if button.states.hover then button.states.hover.can = active end
+    end
+
+    local label = button.children and button.children[1]
+    if label and label.config then
+        label.config.colour = active and G.C.UI.TEXT_LIGHT or G.C.UI.TEXT_INACTIVE
+    end
+end
+
+-- Upgrade rows are constructed before a future Blind becomes current. On
+-- beta-1620a, assigning config.button only later can leave the UIElement's
+-- internal click handler unbound even though it looks and animates like a
+-- button. Keep the callback permanently bound and toggle only collision,
+-- click eligibility, and visuals. The handler still validates the slot.
+local function set_upgrade_runtime_button(button, active)
+    if not (button and button.config) then return end
+
+    button.config.button = 'hnds_upgrade_blind'
+    button.config.hnds_upgrade_ready = active == true
+    button.config.hover = true
+    button.config.colour = active and G.C.RED or G.C.UI.BACKGROUND_INACTIVE
+    button.disable_button = nil
+
+    if button.states then
+        if button.states.collide then button.states.collide.can = active end
+        if button.states.click then button.states.click.can = active end
+        if button.states.hover then button.states.hover.can = true end
     end
 
     local label = button.children and button.children[1]
@@ -253,6 +296,33 @@ local function get_runtime_element(e, blind_choice, id)
     return nil
 end
 
+-- UIBox.parent can briefly be nil after returning from an upgraded Blind and
+-- while the remaining Blind choices are being reattached. The UIBox alignment
+-- major still points at the owning UIElement, so use it as the authoritative
+-- fallback instead of silently aborting the next upgrade callback.
+local function find_ui_object_parent(root, object)
+    if not (root and object) then return nil end
+    local node = root.UIRoot or root
+    if node.config and node.config.object == object then return node end
+    for _, child in pairs(node.children or {}) do
+        local found = find_ui_object_parent(child, object)
+        if found then return found end
+    end
+    return nil
+end
+
+local function blind_option_parent(blind_option)
+    if not blind_option then return nil end
+    local parent = blind_option.parent
+        or (blind_option.config and blind_option.config.major)
+    if parent and parent ~= blind_option then return parent end
+
+    -- After a Blind is played, vanilla can rebuild/reparent the remaining
+    -- selection objects without repopulating UIBox.parent. Locate the wrapper
+    -- UIElement by object identity so the Big Blind upgrade does not abort.
+    return find_ui_object_parent(G and G.blind_select, blind_option)
+end
+
 -- Called by a Lovely injection immediately after vanilla updates the
 -- selected Blind's tag/skip UI. This touches only our Upgrade row unless
 -- the current slot was already upgraded, in which case Skip is also
@@ -283,11 +353,7 @@ HNDS.sync_platinum_blind_tag_ui = function(e)
     local upgraded = blind_was_upgraded(blind_choice)
     local current = blind_is_current(blind_choice)
 
-    set_runtime_button(
-        upgrade_button,
-        current and not upgraded,
-        'hnds_upgrade_blind'
-    )
+    set_upgrade_runtime_button(upgrade_button, current and not upgraded)
 
     local skip_button = get_runtime_element(
         e,
@@ -315,8 +381,21 @@ G.FUNCS.hnds_update_upgrade_blind_button = function(e)
     if not (e and e.config) then return end
 
     local blind_choice = e.config.hnds_blind_choice
-    set_runtime_button(e, blind_choice and can_upgrade(blind_choice), 'hnds_upgrade_blind')
-    if G.FUNCS.hover_tag_proxy then G.FUNCS.hover_tag_proxy(e) end
+    local active = blind_choice and can_upgrade(blind_choice) or false
+    -- Cache the last live eligibility result. On beta-1620a the button click can
+    -- be dispatched in the same frame that the Big panel is reparented, after
+    -- blind_states briefly stops reporting Select. The visible/clickable button
+    -- is authoritative for that one transition frame.
+    set_upgrade_runtime_button(e, active)
+
+    -- Unlike Skip, Upgrade owns a live Blind Raiser tooltip instead of
+    -- proxying hover to the Tag reward. Keep hover collision enabled even while
+    -- the future slot is inactive so its preview can still be inspected.
+    e.config.hover = true
+    if e.states and e.states.hover then e.states.hover.can = true end
+    e.config.tooltip = HNDS.platinum_upgrade_button_tooltip
+        and HNDS.platinum_upgrade_button_tooltip(blind_choice)
+        or nil
 end
 
 -------------------------------------------------------------------
@@ -351,6 +430,21 @@ end
 -- Blind tag UI
 -------------------------------------------------------------------
 
+-- Keep the complete skip/upgrade group centered through the UI tree itself.
+-- Manual x offsets are intentionally avoided: the lower panel must be a Row
+-- child so its height stacks beneath the "or" row instead of overlapping it.
+-- Rebuilt Blind options can be removed while the UI tree is still completing
+-- its current movement pass. Vanilla CardArea:remove clears `cards` first, so
+-- a one-frame orphan would otherwise crash inside align_cards/ipairs.
+if CardArea and CardArea.align_cards and not HNDS._platinum_cardarea_guard then
+    HNDS._platinum_cardarea_guard = true
+    local hnds_cardarea_align_cards_ref = CardArea.align_cards
+    function CardArea:align_cards(...)
+        if self.cards == nil then return end
+        return hnds_cardarea_align_cards_ref(self, ...)
+    end
+end
+
 local create_UIBox_blind_tag_ref = create_UIBox_blind_tag
 
 function create_UIBox_blind_tag(blind_choice, run_info)
@@ -384,7 +478,7 @@ function create_UIBox_blind_tag(blind_choice, run_info)
         config = {
             id = 'tag_container',
             ref_table = reward_tag,
-            align = 'tm',
+            align = 'cm',
         },
         nodes = {
             {
@@ -403,7 +497,7 @@ function create_UIBox_blind_tag(blind_choice, run_info)
                 },
             },
             {
-                n = G.UIT.C,
+                n = G.UIT.R,
                 config = {
                     id = 'tag_' .. blind_choice,
                     align = 'cm',
@@ -466,13 +560,18 @@ function create_UIBox_blind_tag(blind_choice, run_info)
                             padding = 0.07,
                             r = 0.1,
                             shadow = true,
-                            hover = upgrade_active,
-                            one_press = true,
-                            button = upgrade_active and 'hnds_upgrade_blind' or nil,
+                            hover = true,
+                            -- Keep the callback bound even while this is a future slot.
+                            -- Collision/click state is toggled by the live func below.
+                            one_press = false,
+                            button = 'hnds_upgrade_blind',
                             func = 'hnds_update_upgrade_blind_button',
                             insta_func = true,
                             ref_table = reward_tag,
                             hnds_blind_choice = blind_choice,
+                            tooltip = HNDS.platinum_upgrade_button_tooltip
+                                and HNDS.platinum_upgrade_button_tooltip(blind_choice)
+                                or nil,
                         },
                         nodes = {
                             {
@@ -502,7 +601,7 @@ local function hnds_rebuild_upgraded_blind_option(blind_choice, boss)
 
     local current_option = G.blind_select_opts
         and G.blind_select_opts[blind_choice:lower()]
-    local current_parent = current_option and current_option.parent
+    local current_parent = blind_option_parent(current_option)
     if not (current_option and current_parent) then return end
 
     current_option:remove()
@@ -604,8 +703,14 @@ HNDS.upgrade_next_blind_from_blood = function(requested_blind_choice)
     local reward_tag = Tag(reward_tag_key, nil, blind_choice)
     if not (reward_tag and reward_tag.key) then return nil end
 
-    local boss_picker = HNDS.get_new_boss_unforced or get_new_boss
-    local boss = boss_picker()
+    local boss
+    if HNDS.choose_platinum_upgrade_boss then
+        boss = HNDS.choose_platinum_upgrade_boss(blind_choice)
+    else
+        boss = (HNDS.get_new_boss_unforced or get_new_boss)()
+    end
+    -- Never fall back to an unrestricted roll after the compatibility/no-dupe
+    -- selector returns nil; aborting is safer than creating a duplicate Boss.
     if not (boss and G.P_BLINDS and G.P_BLINDS[boss]) then return nil end
 
     -- Record the tags that already existed, then add the displayed reward.
@@ -614,7 +719,9 @@ HNDS.upgrade_next_blind_from_blood = function(requested_blind_choice)
     for _, tag in ipairs(G.GAME.tags or {}) do
         preexisting_tags[tag] = true
     end
-    add_tag(reward_tag)
+    if reward_tag and reward_tag.key then
+        add_tag(reward_tag)
+    end
 
     local granted_tags = {}
     for _, tag in ipairs(G.GAME.tags or {}) do
@@ -624,18 +731,24 @@ HNDS.upgrade_next_blind_from_blood = function(requested_blind_choice)
     end
 
     local current_upgrade_key = upgrade_key(blind_choice)
+    local upgrade_index = (G.GAME.hnds_blind_upgrades or 0) + 1
     replacement_records()[current_upgrade_key] = {
         ante = current_ante(),
         blind_choice = blind_choice,
         original = choices[blind_choice],
         boss = boss,
+        upgrade_index = upgrade_index,
     }
 
     upgraded_blinds()[current_upgrade_key] = true
-    G.GAME.hnds_blind_upgrades = (G.GAME.hnds_blind_upgrades or 0) + 1
+    G.GAME.hnds_blind_upgrades = upgrade_index
     choices[blind_choice] = boss
+    if HNDS.record_platinum_boss_effect then
+        HNDS.record_platinum_boss_effect(boss, current_ante())
+    end
 
     hnds_rebuild_upgraded_blind_option(blind_choice, boss)
+    if HNDS.rebuild_platinum_boss_option then HNDS.rebuild_platinum_boss_option() end
 
     if SMODS and SMODS.calculate_context then
         SMODS.calculate_context({
@@ -713,38 +826,89 @@ G.FUNCS.hnds_upgrade_blind = function(e)
     if not (e and e.config and G and G.GAME) then return end
 
     local blind_choice = e.config.hnds_blind_choice
-    if not blind_choice or not can_upgrade(blind_choice) then return end
+    if not blind_choice and type(e.config.id) == 'string' then
+        blind_choice = e.config.id:match('hnds_upgrade_blind_button_(Small)')
+            or e.config.id:match('hnds_upgrade_blind_button_(Big)')
+    end
+    if not blind_choice then
+        local states = G.GAME.round_resets and G.GAME.round_resets.blind_states or {}
+        if states.Small == 'Select' then blind_choice = 'Small'
+        elseif states.Big == 'Select' then blind_choice = 'Big'
+        elseif G.GAME.blind_on_deck == 'Small' or G.GAME.blind_on_deck == 'Big' then
+            blind_choice = G.GAME.blind_on_deck
+        end
+    end
+
+    -- `one_press` may clear config.button before this callback executes, so
+    -- never use the button's post-click config as proof that the action was
+    -- enabled. The callback is attached only to the slot's own Upgrade row;
+    -- validate against the real gameplay slot instead.
+    local slot_is_current = blind_is_current(blind_choice)
+        or (G.GAME.blind_on_deck == blind_choice)
+        or (e.config.hnds_upgrade_ready == true)
+    if not platinum_active()
+        or not blind_choice
+        or (blind_choice ~= 'Small' and blind_choice ~= 'Big')
+        or blind_is_finished(blind_choice)
+        or blind_was_upgraded(blind_choice)
+        or not slot_is_current
+    then
+        return
+    end
 
     local reward_tag = e.config.ref_table
-    local blind_option = G.blind_select_opts and G.blind_select_opts[blind_choice:lower()]
-    local parent = blind_option and blind_option.parent
+    if not (reward_tag and reward_tag.key) then
+        local tag_key = G.GAME.round_resets
+            and G.GAME.round_resets.blind_tags
+            and G.GAME.round_resets.blind_tags[blind_choice]
+        if tag_key then reward_tag = Tag(tag_key, nil, blind_choice) end
+    end
 
-    if not (reward_tag and reward_tag.key) then return end
-    if not (blind_option and parent) then return end
+    local blind_option = G.blind_select_opts and G.blind_select_opts[blind_choice:lower()]
+    -- The option wrapper and reward Tag are presentation/reward details only.
+    -- Never discard the actual Blind upgrade because either object became stale
+    -- while returning from the upgraded Small Blind.
 
     -- Temporarily bypass only Handsome Devils' Ante 10 Devil override.
     -- The real Ante 10 Boss remains The Devil, while upgraded Small/Big
     -- slots use the ordinary non-showdown Boss pool.
-    local boss_picker = HNDS.get_new_boss_unforced or get_new_boss
-    local boss = boss_picker()
+    local boss
+    if HNDS.choose_platinum_upgrade_boss then
+        boss = HNDS.choose_platinum_upgrade_boss(blind_choice)
+    else
+        boss = (HNDS.get_new_boss_unforced or get_new_boss)()
+    end
+    -- Do not bypass the compatibility/no-duplicates selector with a generic
+    -- fallback roll. If no legal Boss exists, leave the Blind unchanged.
     if not (boss and G.P_BLINDS and G.P_BLINDS[boss]) then return end
 
     local current_upgrade_key = upgrade_key(blind_choice)
+    local upgrade_index = (G.GAME.hnds_blind_upgrades or 0) + 1
     replacement_records()[current_upgrade_key] = {
         ante = current_ante(),
         blind_choice = blind_choice,
         original = G.GAME.round_resets.blind_choices[blind_choice],
         boss = boss,
+        upgrade_index = upgrade_index,
     }
+
+    -- Commit the replacement before the animation. Previously the choice was
+    -- changed only inside the delayed UI rebuild; if the Big Blind UIBox was
+    -- reparented after playing the upgraded Small Blind, that event returned
+    -- early and left a recorded upgrade that appeared to do nothing.
+    G.GAME.round_resets.blind_choices[blind_choice] = boss
 
     stop_use()
 
     upgraded_blinds()[current_upgrade_key] = true
-    G.GAME.hnds_blind_upgrades = (G.GAME.hnds_blind_upgrades or 0) + 1
+    G.GAME.hnds_blind_upgrades = upgrade_index
+    if HNDS.record_platinum_boss_effect then
+        HNDS.record_platinum_boss_effect(boss, current_ante())
+    end
 
     -- Disable both actions before any animation/event begins. The skip
     -- callback also has a handler-level Lovely guard for stale inputs.
-    set_runtime_button(e, false, 'hnds_upgrade_blind')
+    set_upgrade_runtime_button(e, false)
     local skip_button = get_runtime_element(
         e,
         blind_choice,
@@ -788,50 +952,51 @@ G.FUNCS.hnds_upgrade_blind = function(e)
         func = function()
             local current_option = G.blind_select_opts
                 and G.blind_select_opts[blind_choice:lower()]
-            local current_parent = current_option and current_option.parent
+            local current_parent = blind_option_parent(current_option)
 
-            if not (current_option and current_parent) then
-                save_run()
-                return true
-            end
-
-            G.GAME.round_resets.blind_choices[blind_choice] = boss
-
-            current_option:remove()
-            G.blind_select_opts[blind_choice:lower()] = UIBox({
-                T = { current_parent.T.x, 0, 0, 0 },
-                definition = {
-                    n = G.UIT.ROOT,
-                    config = { align = 'cm', colour = G.C.CLEAR },
-                    nodes = {
-                        UIBox_dyn_container(
-                            { create_UIBox_blind_choice(blind_choice) },
-                            false,
-                            get_blind_main_colour(boss),
-                            mix_colours(G.C.BLACK, get_blind_main_colour(boss), 0.8)
-                        ),
+            if current_option and current_parent then
+                current_option:remove()
+                G.blind_select_opts[blind_choice:lower()] = UIBox({
+                    T = { current_parent.T.x, 0, 0, 0 },
+                    definition = {
+                        n = G.UIT.ROOT,
+                        config = { align = 'cm', colour = G.C.CLEAR },
+                        nodes = {
+                            UIBox_dyn_container(
+                                { create_UIBox_blind_choice(blind_choice) },
+                                false,
+                                get_blind_main_colour(boss),
+                                mix_colours(G.C.BLACK, get_blind_main_colour(boss), 0.8)
+                            ),
+                        },
                     },
-                },
-                config = {
-                    align = 'bmi',
-                    offset = { x = 0, y = G.ROOM.T.y + 9 },
-                    major = current_parent,
-                    xy_bond = 'Weak',
-                },
-            })
+                    config = {
+                        align = 'bmi',
+                        offset = { x = 0, y = G.ROOM.T.y + 9 },
+                        major = current_parent,
+                        xy_bond = 'Weak',
+                    },
+                })
 
-            local new_option = G.blind_select_opts[blind_choice:lower()]
-            current_parent.config.object = new_option
-            current_parent.config.object:recalculate()
-            new_option.parent = current_parent
-            new_option.alignment.offset.y = 0
+                local new_option = G.blind_select_opts[blind_choice:lower()]
+                current_parent.config.object = new_option
+                current_parent.config.object:recalculate()
+                new_option.parent = current_parent
+                new_option.alignment.offset.y = 0
 
-            -- The rebuilt UI starts inactive by construction. Sync once
-            -- more so both Skip and Upgrade stay locked for this slot.
-            HNDS.sync_platinum_blind_tag_ui({
-                config = { id = blind_choice },
-                UIBox = new_option,
-            })
+                -- The rebuilt UI starts inactive by construction. Sync once
+                -- more so both Skip and Upgrade stay locked for this slot.
+                HNDS.sync_platinum_blind_tag_ui({
+                    config = { id = blind_choice },
+                    UIBox = new_option,
+                })
+            else
+                -- The gameplay state is already committed. Best-effort rebuild
+                -- the option through the shared helper rather than discarding
+                -- the remaining tag/context work for this upgrade.
+                hnds_rebuild_upgraded_blind_option(blind_choice, boss)
+            end
+            if HNDS.rebuild_platinum_boss_option then HNDS.rebuild_platinum_boss_option() end
 
             if SMODS and SMODS.calculate_context then
                 SMODS.calculate_context({

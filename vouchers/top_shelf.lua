@@ -7,8 +7,15 @@ SMODS.Voucher({
 		return { vars = { card.ability.extra.rate_mod } }
 	end,
 	cost = 10,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	locked_loc_vars = function(self)
+		local current = HNDS.unlock_progress("top_shelf")
+		return { vars = { current } }
+	end,
+	check_for_unlock = function(self, args)
+		return HNDS.unlock_condition_met("top_shelf", args)
+	end,
+	discovered = false,
 	requires = { "v_hnds_premium" },
 	redeem = function(self, voucher)
 		G.GAME.rare_mod = (G.GAME.rare_mod or 1) * voucher.ability.extra.rate_mod

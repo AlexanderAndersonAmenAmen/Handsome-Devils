@@ -68,7 +68,7 @@ SMODS.Blind {
     pos = { x = 0, y = 3 },
 
     boss_colour = HEX("B26CBB"),
-    discovered = true,
+    discovered = false,
     unlocked = true,
 
     in_pool = function(self)

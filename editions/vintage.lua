@@ -7,7 +7,7 @@ SMODS.Edition({
 	disable_shadow = false,
 	disable_base_shader = true,
 	shader = "vintage",
-	discovered = true,
+	discovered = false,
 	unlocked = true,
 	config = {},
 	in_shop = true,

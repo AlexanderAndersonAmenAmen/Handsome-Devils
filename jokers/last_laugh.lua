@@ -6,21 +6,20 @@ SMODS.Joker({
 	cost = 8,
 	unlocked = false,
 	discovered = false,
+	unlock_condition = { type = "hnds_joker_unlock", key = "last_laugh" },
+	locked_loc_vars = function(self)
+	    return HNDS.joker_locked_loc_vars("last_laugh")
+	end,
+	check_for_unlock = function(self, args)
+	    return HNDS.joker_unlock_condition_met("last_laugh", args)
+	end,
 	blueprint_compat = false,
 	demicoloncompat = true,
 	eternal_compat = false,
 	perishable_compat = true,
 	config = { extra = { draw = 1, draw_scaling = 1, destroy = 9999, } },
-	unlock_condition = { type = 'career_stat', extra = 100, stat = 'c_hnds_cards_destroyed' },
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.draw, card.ability.extra.destroy } }
-	end,
-	check_for_unlock = function(self, args)
-		if args.type == 'career_stat' and args.statname == self.unlock_condition.stat then
-			local stats = (G.PROFILES and G.SETTINGS and G.PROFILES[G.SETTINGS.profile] and G.PROFILES[G.SETTINGS.profile].career_stats) or {}
-			local destroyed = stats[self.unlock_condition.stat] or 0
-			return destroyed >= self.unlock_condition.extra
-		end
 	end,
 	calculate = function(self, card, context)
 		if (context.selling_self or context.forcetrigger) and G.hand and G.hand.cards and #G.hand.cards > 0 then

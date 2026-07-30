@@ -26,7 +26,7 @@ SMODS.Consumable({
 			vars = { target_limit, G.GAME.hnds_exchange_minus or 1 },
 		}
 	end,
-	discovered = true,
+	discovered = false,
 	atlas = "Consumables",
 	pos = { x = 2, y = 0 },
 	cost = 4,

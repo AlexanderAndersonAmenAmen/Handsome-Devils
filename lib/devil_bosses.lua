@@ -220,6 +220,13 @@ local function invalid_combo(result, candidate)
 
 end
 
+-- Public compatibility helpers used by Platinum Blind upgrades. Keeping the
+-- validator here guarantees both systems use the same debuffer/flipper limits
+-- and forbidden-pair rules.
+HNDS.devil_combo_invalid = invalid_combo
+HNDS.DEVIL_CARD_DEBUFFERS = card_debuffers
+HNDS.DEVIL_CARD_FLIPPERS = card_flippers
+
 
 -------------------------------------------------------------------
 -- THE HOUSE
@@ -1142,6 +1149,28 @@ HNDS.DEVIL_BOSSES.bl_hook_the_water = {
 
 
 
+
+
+-------------------------------------------------------------------
+-- THE TOOTH
+-------------------------------------------------------------------
+
+-- Kept out of The Devil's own roll pool, but exposed as a stackable Platinum
+-- Boss effect. The selected cards are still in G.hand.highlighted when the
+-- press_play context fires.
+HNDS.DEVIL_BOSSES.bl_hook_the_tooth = {
+    loc_name = "The Tooth",
+
+    calculate = function(self, blind, context)
+        if context.press_play then
+            local count = G.hand and G.hand.highlighted and #G.hand.highlighted or 0
+            if count > 0 then
+                blind.triggered = true
+                ease_dollars(-count)
+            end
+        end
+    end,
+}
 
 
 -------------------------------------------------------------------

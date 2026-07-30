@@ -2,7 +2,7 @@ SMODS.Tag {
     key = "vintage_tag",
     atlas = "HDtags",
     pos = { x = 1, y = 0 },
-    discovered = true,
+    discovered = false,
     loc_vars = function(self, info_queue, tag)
         info_queue[#info_queue + 1] = G.P_CENTERS.e_hnds_vintage
     end,

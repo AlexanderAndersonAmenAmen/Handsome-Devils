@@ -23,8 +23,15 @@ SMODS.Joker({
 	atlas = "Jokers",
 	pos = { x = 2, y = 0 },
 	cost = 8,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	discovered = false,
+	unlock_condition = { type = "hnds_joker_unlock", key = "digital_circus" },
+	locked_loc_vars = function(self)
+	    return HNDS.joker_locked_loc_vars("digital_circus")
+	end,
+	check_for_unlock = function(self, args)
+	    return HNDS.joker_unlock_condition_met("digital_circus", args)
+	end,
 	blueprint_compat = false,
 	demicoloncompat = true,
 	eternal_compat = false,

@@ -7,8 +7,15 @@ SMODS.Joker({
 	pos = { x = 3, y = 4 },
 	rarity = 3,
 	cost = 8,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	discovered = false,
+	unlock_condition = { type = "hnds_joker_unlock", key = "excommunicado" },
+	locked_loc_vars = function(self)
+	    return HNDS.joker_locked_loc_vars("excommunicado")
+	end,
+	check_for_unlock = function(self, args)
+	    return HNDS.joker_unlock_condition_met("excommunicado", args)
+	end,
 	blueprint_compat = true,
 	demicoloncompat = true,
 	eternal_compat = true,

@@ -4,8 +4,15 @@ SMODS.Joker({
 	pos = { x = 0, y = 2 },
 	rarity = 2,
 	cost = 5,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	discovered = false,
+	unlock_condition = { type = "hnds_joker_unlock", key = "banana_split" },
+	locked_loc_vars = function(self)
+	    return HNDS.joker_locked_loc_vars("banana_split")
+	end,
+	check_for_unlock = function(self, args)
+	    return HNDS.joker_unlock_condition_met("banana_split", args)
+	end,
 	blueprint_compat = false,
 	demicoloncompat = true,
 	eternal_compat = false,

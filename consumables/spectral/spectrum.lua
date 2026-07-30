@@ -4,7 +4,7 @@ SMODS.Consumable {
     atlas = "Consumables",
     pos = { x = 0, y = 1 },
     soul_pos = { x = 0, y = 2 },
-    discovered = true,
+    discovered = false,
     cost = 4,
     hidden = true,
     soul_set = "Base",

@@ -31,8 +31,15 @@ SMODS.Joker({
 	pos = { x = 0, y = 4 },
 	rarity = 1,
 	cost = 3,
-	unlocked = true,
-	discovered = true,
+	unlocked = false,
+	discovered = false,
+	unlock_condition = { type = "hnds_joker_unlock", key = "most_wanted" },
+	locked_loc_vars = function(self)
+		return HNDS.joker_locked_loc_vars("most_wanted")
+	end,
+	check_for_unlock = function(self, args)
+		return HNDS.joker_unlock_condition_met("most_wanted", args)
+	end,
 	blueprint_compat = true,
 	demicoloncompat = true,
 	eternal_compat = false,

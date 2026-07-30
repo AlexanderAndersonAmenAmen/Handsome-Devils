@@ -36,8 +36,15 @@ SMODS.Joker {
     atlas = "Jokers",
     pos = { x = 4, y = 0 },
     cost = 7,
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    discovered = false,
+    unlock_condition = { type = "hnds_joker_unlock", key = "fregoli" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("fregoli")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("fregoli", args)
+    end,
     blueprint_compat = true,
     calculate = function(self, card, context)
         for _, c in ipairs(G.jokers.cards) do

@@ -1,7 +1,13 @@
 SMODS.Joker {
     key = "sarmenti",
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    unlock_condition = { type = "", extra = "", hidden = true },
+    locked_loc_vars = function(self, info_queue, card)
+        -- Force Steamodded's locked-Joker path to initialise specific_vars and
+        -- use the same hidden Legendary message as vanilla Soul Jokers.
+        return { key = "joker_locked_legendary", set = "Other", vars = {} }
+    end,
+    discovered = false,
     blueprint_compat = false,
     rarity = 4,
     cost = 20,
@@ -11,7 +17,8 @@ SMODS.Joker {
     config = { extra = { mode = 0, active = true } }, -- mode 0 = editions, mode 1 = enhancements, mode 3 = seals
     loc_vars = function (self, info_queue, card)
 
-        local mod = card.ability.extra.mode or 0
+        local extra = card and card.ability and card.ability.extra or self.config.extra or {}
+        local mod = extra.mode or 0
 
         local modeString, modeCol
 
@@ -23,7 +30,7 @@ SMODS.Joker {
             modeCol = G.C.ORANGE
         else --seals
             modeString = localize("b_seals")
-            modeCol = G.C.HNDS_SEAL_EDITION
+            modeCol = G.C.HNDS_SEAL_EDITION or G.C.PURPLE
         end
 
         return { vars = { modeString, colours = {modeCol} } }

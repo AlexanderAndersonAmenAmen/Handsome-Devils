@@ -5,6 +5,15 @@ SMODS.Joker({
     blueprint_compat = true,
     atlas = "Jokers",
     pos = { x = 8, y = 3 },
+    unlocked = false,
+    discovered = false,
+    unlock_condition = { type = "hnds_joker_unlock", key = "angry_mob" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("angry_mob")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("angry_mob", args)
+    end,
     config = { extra = { xmult = 2, } },
     loc_vars = function(self, info_queue, card)
         return { vars = {card.ability.extra.xmult} }

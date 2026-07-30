@@ -100,6 +100,12 @@ end
 
 -- Mod-level calculate: handles global context events that aren't tied to a specific card.
 SMODS.current_mod.calculate = function(self, context)
+	local boss_stack_result = HNDS.calculate_platinum_boss_stack
+		and HNDS.calculate_platinum_boss_stack(context)
+		or nil
+
+	if HNDS.track_unlock_context then HNDS.track_unlock_context(context) end
+
 	-- Track stone cards scored this ante (used by Stone Ocean hand)
 	if context.individual and SMODS.has_enhancement(context.other_card, "m_stone") then
 		G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
@@ -135,8 +141,12 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.drawing_cards and (G.GAME.hnds_obsidian_draws or 0) > 0 then
 		local d = G.GAME.hnds_obsidian_draws or 0
 		G.GAME.hnds_obsidian_draws = 0
-		return { cards_to_draw = context.amount + d } -- for some reason `modify` also sets the amount instead of modifying so i have to do this
+		local base_draw = boss_stack_result and boss_stack_result.cards_to_draw
+			or context.amount
+		return { cards_to_draw = base_draw + d } -- for some reason `modify` also sets the amount instead of modifying so i have to do this
 	end
+
+	return boss_stack_result
 end
 
 SMODS.current_mod.optional_features = {
@@ -155,44 +165,52 @@ local files = {
 			--You can rearrange the joker order in the collection by changing the order here
 			"balloons",
 			"coffee_break",
-			"pot_of_greed",
-			"jokestone",
-			"public_nuisance",
-			"walking_joke",
-			"demented",
-			"jackpot",
-			"banana_split",
-			"head_of_medusa",
-			"color_of_madness",
-			"deep_pockets",
-			"seismic_activity",
-			"jokes_aside",
-			"creepy",
-			"dark_humor",
-			"dark_idol",
-			"supersuit",
-			"perfectionist",
-			"bizzare_joker",
 			"most_wanted",
-			"clown_devil",
-			"jester_in_yellow",
-			"excommunicado",
-			"wait_what",
-			"fregoli",
-			"handsome",
-			"ms_fortune",
-			"last_laugh",
-			"occultist",
-			"stone_mask",
 			"jigsaw_joker",
+			"pot_of_greed",
+
 			"dynamic_duos",
-			"meme",
-			"angry_mob",
+			"wait_what",
+			"dark_humor",
+			"clown_devil",
+			"public_nuisance",
+
+			"banana_split",
+			"supersuit",
+			"jokes_aside",
+			"jackpot",
+		    "angry_mob",
+	
+		    "seismic_activity",
+	        "creepy",
+			"occultist",
+			"ms_fortune",
+			"head_of_medusa",
+
+		    "deep_pockets",
+			"color_of_madness",
+			"dark_idol",
+			"perfectionist",
+			"handsome",
+			
+			"walking_joke",
 			"digital_circus",
-			"energized",
+			"excommunicado",
+			"meme",
 			"one_punchline_man",
+
+			"stone_mask",
+			"energized",
+			"last_laugh",
+			"bizzare_joker",
+			"jokestone",
+
+			"jester_in_yellow",
+			"demented",
 			"imposter",
 			"contagion",
+			"fregoli",
+
 			"pennywise",
 			"art",
 			"krusty",
@@ -254,10 +272,10 @@ local files = {
 	},
 	decks = {
 		list = {
-			"premiumdeck",
 			"crystal",
-			"conjuring",
 			"cursed",
+			"premiumdeck",
+			"conjuring",
 			"circus",
 			"ol_reliable",
 		},
@@ -393,6 +411,8 @@ function Game:init_game_object()
 	-- Forbidden Fruit tracks Tags that actually trigger ("pop"), not Tags
 	-- merely created or held. Existing saves safely fall back to zero.
 	ret.hnds_tags_popped = 0
+	-- Wholesale unlock progress is deliberately per-run.
+	ret.hnds_boosters_bought_run = 0
 	return ret
 end
 
@@ -400,8 +420,9 @@ end
 -- Load content and library files
 ----------------------------
 
--- Load Devil boss definitions before Devil blind
+-- Load shared systems needed by content declarations.
 assert(SMODS.load_file("lib/devil_bosses.lua"))()
+assert(SMODS.load_file("lib/unlocks.lua"))()
 
 for _, set in pairs(files) do
 	for _, name in ipairs(set.list) do
@@ -410,6 +431,7 @@ for _, set in pairs(files) do
 end
 assert(SMODS.load_file("lib/hooks.lua"))()
 assert(SMODS.load_file("lib/platinum_blind_upgrades.lua"))()
+assert(SMODS.load_file("lib/platinum_boss_stacking.lua"))()
 assert(SMODS.load_file("lib/blind_souls.lua"))()
 assert(SMODS.load_file("lib/utils.lua"))()
 
@@ -424,3 +446,5 @@ if CardSleeves then
 end
 assert(SMODS.load_file("lib/curses.lua"))()
 assert(SMODS.load_file("lib/challenge_rules.lua"))()
+
+if HNDS.apply_unlock_state_migration then HNDS.apply_unlock_state_migration() end

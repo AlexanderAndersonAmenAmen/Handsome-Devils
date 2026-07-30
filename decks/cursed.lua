@@ -2,7 +2,10 @@ SMODS.Back {
     key = "cursed",
     atlas = "Extras",
     pos = { x = 0, y = 1 },
-    unlocked = true,
+    unlocked = false,
+    check_for_unlock = function(self, args)
+        return HNDS.unlock_condition_met("cursed", args)
+    end,
     calculate = function(self, back, context)
         if context.end_of_round and context.main_eval and context.beat_boss and G.GAME.round_resets.ante == 1 and not G.GAME.hnds_cursed_pack_opened then
             G.GAME.hnds_cursed_pack_opened = true
