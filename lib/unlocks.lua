@@ -737,7 +737,16 @@ function HNDS.track_unlock_context(context)
 
     if context.end_of_round and context.main_eval and not context.individual and not context.repetition then
         local serial = state.round_serial
-        local is_boss = context.beat_boss or (G.GAME.blind and G.GAME.blind.boss)
+        -- A Boss definition can occupy the Small/Big slot after a Platinum
+        -- upgrade. Only the real Boss slot counts as a defeated Boss Blind for
+        -- career progress and Boss-win streak unlocks.
+        local active_blind = G.GAME.blind
+        local upgraded_slot = active_blind and active_blind.hnds_platinum_replacement_slot
+        local live_slot = normalize_blind_slot(G.GAME.blind_on_deck)
+        local is_boss = not upgraded_slot and live_slot == "Boss"
+        if not upgraded_slot and not live_slot then
+            is_boss = context.beat_boss or (active_blind and active_blind.boss)
+        end
         if is_boss and state.boss_counted_serial ~= serial then
             state.boss_counted_serial = serial
             increment_career_stat(STAT_BOSSES_DEFEATED, 1)

@@ -227,6 +227,82 @@ HNDS.devil_combo_invalid = invalid_combo
 HNDS.DEVIL_CARD_DEBUFFERS = card_debuffers
 HNDS.DEVIL_CARD_FLIPPERS = card_flippers
 
+-------------------------------------------------------------------
+-- THE HOOK
+-------------------------------------------------------------------
+
+-- Not part of The Devil's own roll pool, but available as a Platinum
+-- replacement/stack component. Mirrors vanilla's two random discards when a
+-- hand is played.
+HNDS.DEVIL_BOSSES.bl_hook_the_hook = {
+    loc_name = "The Hook",
+
+    calculate = function(self, blind, context)
+        if not context.press_play then return end
+        G.E_MANAGER:add_event(Event({ func = function()
+            local available = {}
+            for _, card in ipairs((G.hand and G.hand.cards) or {}) do
+                available[#available + 1] = card
+            end
+            local selected = false
+            for _ = 1, math.min(2, #available) do
+                local card, index = pseudorandom_element(available, pseudoseed("hnds_platinum_hook"))
+                if not card then break end
+                G.hand:add_to_highlighted(card, true)
+                table.remove(available, index)
+                selected = true
+                play_sound("card1", 1)
+            end
+            if selected then G.FUNCS.discard_cards_from_highlighted(nil, true) end
+            return true
+        end }))
+        blind.triggered = true
+        delay(0.7)
+    end,
+}
+
+
+-------------------------------------------------------------------
+-- THE OX
+-------------------------------------------------------------------
+
+HNDS.DEVIL_BOSSES.bl_hook_the_ox = {
+    loc_name = "The Ox",
+
+    calculate = function(self, blind, context)
+        if context.debuff_hand
+            and context.scoring_name == G.GAME.current_round.most_played_poker_hand
+        then
+            blind.triggered = true
+            if not context.check then
+                ease_dollars(-G.GAME.dollars, true)
+                blind:wiggle()
+            end
+        end
+    end,
+}
+
+
+-------------------------------------------------------------------
+-- THE ARM
+-------------------------------------------------------------------
+
+HNDS.DEVIL_BOSSES.bl_hook_the_arm = {
+    loc_name = "The Arm",
+
+    calculate = function(self, blind, context)
+        local hand = context.debuff_hand and context.scoring_name
+        if hand and G.GAME.hands[hand] and G.GAME.hands[hand].level > 1 then
+            blind.triggered = true
+            if not context.check then
+                level_up_hand(blind.children.animatedSprite, hand, nil, -1)
+                blind:wiggle()
+            end
+        end
+    end,
+}
+
+
 
 -------------------------------------------------------------------
 -- THE HOUSE
@@ -551,41 +627,22 @@ HNDS.DEVIL_BOSSES.bl_hook_the_manacle = {
 
 
     set_blind = function(self)
-
-
-        G.hand:change_size(-1)
-
-
+        -- Component tables are singletons, so keep the adjustment idempotent.
+        -- This prevents Chicot/Luchador cleanup and round-end cleanup from
+        -- restoring the same -1 hand-size penalty twice.
+        if not self.handsize_penalty_applied then
+            G.hand:change_size(-1)
+            self.handsize_penalty_applied = true
+        end
     end,
 
-
-
     calculate = function(self, blind, context)
-
-
-
-        if context.blind_disabled then
-
-
+        if (context.blind_disabled or context.blind_defeated)
+            and self.handsize_penalty_applied
+        then
             G.hand:change_size(1)
-
-
-
+            self.handsize_penalty_applied = false
         end
-
-
-
-
-        if context.blind_defeated then
-
-
-            G.hand:change_size(1)
-
-
-
-        end
-
-
     end
 
 

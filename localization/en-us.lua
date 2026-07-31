@@ -674,7 +674,6 @@ return {
 					"of a random {C:attention}Joker",
 					"After defeating each",
 					"{C:attention}Blind{}, ability changes",
-					"{C:inactive}(Currently: {V:1}#1#{C:inactive})"
 				},
 				unlock = {
 					"Discover every",

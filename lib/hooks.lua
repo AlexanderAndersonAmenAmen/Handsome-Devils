@@ -1599,7 +1599,14 @@ function get_new_boss()
         G.GAME.win_ante = ante
     end
 
-    local ok, boss = pcall(get_new_boss_ref)
+    local function select_boss()
+        if HNDS and HNDS.call_with_platinum_reroll_bans then
+            return HNDS.call_with_platinum_reroll_bans(get_new_boss_ref)
+        end
+        return get_new_boss_ref()
+    end
+
+    local ok, boss = pcall(select_boss)
     G.GAME.win_ante = win_ante
     if not ok then error(boss) end
     return boss

@@ -377,19 +377,26 @@ SMODS.Blind {
                 if boss.debuff then
                     G.GAME.blind.debuff = G.GAME.blind.debuff or {}
 
-                    if boss.debuff.suit then
-                        G.GAME.blind.debuff.suit = boss.debuff.suit
-                    end
-
-                    if boss.debuff.is_face then
-                        G.GAME.blind.debuff.is_face = true
-                    end
-
+                    -- Card-specific suit/type checks are handled independently by
+                    -- the shared Blind:debuff_card wrapper. Keep only hand-level
+                    -- restrictions on the live Blind object.
                     if boss.debuff.h_size_ge then
                         G.GAME.blind.debuff.h_size_ge = boss.debuff.h_size_ge
                     end
+                    if boss.debuff.h_size_le then
+                        G.GAME.blind.debuff.h_size_le = boss.debuff.h_size_le
+                    end
+                    if boss.debuff.hand then
+                        G.GAME.blind.debuff.hand = boss.debuff.hand
+                    end
                 end
             end
+        end
+
+        -- The deck was evaluated before The Devil's component stack became
+        -- active. Apply its card debuffer immediately at encounter start.
+        for _, card in ipairs(G.playing_cards or {}) do
+            G.GAME.blind:debuff_card(card)
         end
 
         -- The Blind-select badge is wired by Lovely, but the fight HUD uses the
@@ -422,6 +429,10 @@ SMODS.Blind {
     end,
 
     calculate = function(self, blind, context)
+        -- Blind:debuff_card owns component card debuffs consistently across
+        -- Steamodded versions; do not also return a mod-level debuff result.
+        if context.debuff_card then return end
+
         -- Cleanup contexts are sent after a Blind has been marked disabled.
         -- Let the component effects see those contexts before returning.
         local cleanup_context = context.blind_disabled or context.blind_defeated

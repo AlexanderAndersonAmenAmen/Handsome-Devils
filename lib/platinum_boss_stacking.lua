@@ -5,9 +5,12 @@
 HNDS = HNDS or {}
 
 local VANILLA_TO_HOOK = {
+    bl_hook = "bl_hook_the_hook",
+    bl_ox = "bl_hook_the_ox",
     bl_house = "bl_hook_the_house",
     bl_wall = "bl_hook_the_wall",
     bl_wheel = "bl_hook_the_wheel",
+    bl_arm = "bl_hook_the_arm",
     bl_club = "bl_hook_the_club",
     bl_fish = "bl_hook_the_fish",
     bl_psychic = "bl_hook_the_psychic",
@@ -174,10 +177,10 @@ local function blind_is_in_pool(blind)
     return ok and result ~= false
 end
 
-local function candidate_is_ante_eligible(blind)
+local function candidate_is_ante_eligible(blind, ante)
     local boss = blind and blind.boss
     if not boss then return false end
-    local ante = current_ante()
+    ante = tonumber(ante) or current_ante()
     if boss.min and ante < boss.min then return false end
     if boss.max and ante > boss.max then return false end
     return true
@@ -235,21 +238,16 @@ function HNDS.platinum_boss_candidate_is_compatible(blind_key, ante, blind_choic
     local blind = blind_key and G.P_BLINDS and G.P_BLINDS[blind_key]
     if not (hook_key and blind and blind.boss) then return false end
     if blind.boss.showdown then return false end
-    -- The Wall and The Needle are never valid Small/Big Blind upgrade results.
+    -- These are the only Boss Blinds globally excluded from Small/Big upgrades.
     if blind_key == 'bl_wall' or blind_key == 'bl_needle' then return false end
-    -- The Pillar is excessively punishing as the very first upgraded Blind and
-    -- is explicitly excluded only from Ante 1 Small Blind upgrades.
-    if tonumber(ante) == 1 and blind_choice == 'Small' and blind_key == 'bl_pillar' then
-        return false
-    end
     if G.GAME.banned_keys and G.GAME.banned_keys[blind_key] then return false end
     if blind_key == boss_choice() then return false end
     if upgraded_replacement_bosses_for_ante(ante)[blind_key] then return false end
-    if not relaxed_pool
-        and (not candidate_is_ante_eligible(blind) or not blind_is_in_pool(blind))
-    then
-        return false
-    end
+    -- Ante restrictions are never relaxed. The fallback may ignore only a
+    -- transient in_pool result so it cannot roll, for example, The Ox before
+    -- its minimum Ante.
+    if not candidate_is_ante_eligible(blind, ante) then return false end
+    if not relaxed_pool and not blind_is_in_pool(blind) then return false end
 
     for _, existing in ipairs(HNDS.platinum_boss_effects_for_ante(ante)) do
         if existing == blind_key then return false end
@@ -268,6 +266,77 @@ function HNDS.platinum_boss_candidate_is_compatible(blind_key, ante, blind_choic
     return true
 end
 
+-- Boss Reroll vouchers/tags must obey the exact same stack-combination
+-- rules as the Small/Big upgrade picker. Unlike an upgrade candidate, the
+-- rerolled Boss replaces the current real Boss, so only the already-upgraded
+-- Small/Big components are included in the compatibility test.
+function HNDS.platinum_reroll_boss_candidate_is_compatible(blind_key, ante)
+    if not (G and G.GAME and G.P_BLINDS) then return true end
+    ante = tonumber(ante) or current_ante()
+
+    local upgraded = upgraded_replacement_bosses_for_ante(ante)
+    if not next(upgraded) then return true end
+    if upgraded[blind_key] then return false end
+
+    local candidate_hook = VANILLA_TO_HOOK[blind_key]
+    -- Unknown/modded Bosses do not expose a Handsome Devils component hook, so
+    -- there is no safe generic effect classification to apply to them.
+    if not candidate_hook then return true end
+
+    local existing_hooks = {}
+    local seen_hooks = {}
+    for upgraded_key in pairs(upgraded) do
+        local hook_key = VANILLA_TO_HOOK[upgraded_key]
+        if hook_key and not seen_hooks[hook_key] then
+            seen_hooks[hook_key] = true
+            existing_hooks[#existing_hooks + 1] = hook_key
+        end
+    end
+
+    if seen_hooks[candidate_hook] then return false end
+    if HNDS.devil_combo_invalid and HNDS.devil_combo_invalid(existing_hooks, candidate_hook) then
+        return false
+    end
+    return true
+end
+
+-- Temporarily extend banned_keys while vanilla/Steamodded chooses a rerolled
+-- real Boss. This preserves the original picker, its seeded randomness,
+-- min/max Ante rules, in_pool callbacks and boss-use weighting; it merely
+-- removes candidates that would duplicate or invalidate the current stack.
+function HNDS.call_with_platinum_reroll_bans(selector)
+    if type(selector) ~= "function" then return nil end
+    if not platinum_active() or not (G and G.GAME and G.P_BLINDS) then
+        return selector()
+    end
+
+    local ante = current_ante()
+    local upgraded = upgraded_replacement_bosses_for_ante(ante)
+    if not next(upgraded) then return selector() end
+
+    local had_banned_table = type(G.GAME.banned_keys) == "table"
+    local banned = had_banned_table and G.GAME.banned_keys or {}
+    G.GAME.banned_keys = banned
+    local temporarily_banned = {}
+
+    for key, blind in pairs(G.P_BLINDS) do
+        if blind and blind.boss
+            and VANILLA_TO_HOOK[key]
+            and not banned[key]
+            and not HNDS.platinum_reroll_boss_candidate_is_compatible(key, ante)
+        then
+            banned[key] = true
+            temporarily_banned[#temporarily_banned + 1] = key
+        end
+    end
+
+    local ok, result = pcall(selector)
+    for _, key in ipairs(temporarily_banned) do banned[key] = nil end
+    if not had_banned_table and next(banned) == nil then G.GAME.banned_keys = nil end
+    if not ok then error(result) end
+    return result
+end
+
 function HNDS.choose_platinum_upgrade_boss(blind_choice)
     if not (G and G.GAME and G.P_BLINDS) then return nil end
     prepare_devil_components_for_upgrade()
@@ -283,11 +352,9 @@ function HNDS.choose_platinum_upgrade_boss(blind_choice)
         end
     end
 
-    -- Some vanilla in_pool/min-Ante predicates are evaluated against the real
-    -- Boss slot and can leave the second Ante 1 upgrade with no candidates even
-    -- though several non-showdown Bosses are valid as replacement components.
-    -- Retry only the pool/Ante eligibility layer; duplicate and combination
-    -- restrictions remain fully enforced.
+    -- Some in_pool predicates are evaluated against the real Boss slot and can
+    -- transiently empty the replacement pool. Retry only that predicate; the
+    -- Boss's min/max Ante limits remain mandatory in the relaxed pass.
     if #candidates == 0 then
         for blind_key in pairs(VANILLA_TO_HOOK) do
             if HNDS.platinum_boss_candidate_is_compatible(blind_key, ante, blind_choice, true) then
@@ -739,14 +806,25 @@ function HNDS.start_platinum_boss_stack(blind)
             if component.set_blind then component:set_blind() end
             if component.debuff then
                 blind.debuff = blind.debuff or {}
-                if component.debuff.suit then blind.debuff.suit = component.debuff.suit end
-                if component.debuff.is_face then blind.debuff.is_face = true end
+                -- Hand-validation fields belong on the live Blind. Card-specific
+                -- debuffs are evaluated independently in Blind:debuff_card below;
+                -- copying a single suit/type here overwrote or misidentified the
+                -- natural Boss's debuff data.
                 if component.debuff.h_size_ge then blind.debuff.h_size_ge = component.debuff.h_size_ge end
+                if component.debuff.h_size_le then blind.debuff.h_size_le = component.debuff.h_size_le end
+                if component.debuff.hand then blind.debuff.hand = component.debuff.hand end
             end
             -- The original setting_blind context fired before this wrapper could
             -- activate Boss+. Replay it once for components such as The Needle.
             if component.calculate then component:calculate(blind, { setting_blind = true }) end
         end
+    end
+
+    -- Blind:set_blind evaluated the deck before Boss+ was active. Re-run card
+    -- debuff evaluation now so The Club/Goad/Window/Head, Plant and Pillar are
+    -- visible immediately rather than only after a later draw or hand.
+    for _, card in ipairs(G.playing_cards or {}) do
+        blind:debuff_card(card)
     end
 
     blind.loc_name = append_plus_to_name(blind.loc_name)
@@ -782,8 +860,17 @@ end
 
 function HNDS.calculate_platinum_boss_stack(context)
     if not (G and G.GAME and G.GAME.hnds_platinum_boss_stack_active and context) then return nil end
+    -- Steamodded versions differ in how mod-level {debuff = true} results are
+    -- consumed. Blind:debuff_card below is the single authoritative path.
+    if context.debuff_card then return nil end
     local blind = G.GAME.blind
     if not blind then return nil end
+
+    -- Luchador and Chicot mark the live Blind disabled. Once that happens no
+    -- delegated Boss+ effect may continue firing. Cleanup contexts are still
+    -- allowed through for compatibility with Steamodded's normal lifecycle.
+    local cleanup_context = context.blind_disabled or context.blind_defeated
+    if blind.disabled and not cleanup_context then return nil end
 
     local first_result = nil
     for _, hook_key in ipairs(active_effect_hooks()) do
@@ -796,19 +883,93 @@ function HNDS.calculate_platinum_boss_stack(context)
     return first_result
 end
 
-function HNDS.stop_platinum_boss_stack()
-    if not (G and G.GAME and G.GAME.hnds_platinum_boss_stack_active) then return end
-    for _, hook_key in ipairs(active_effect_hooks()) do
-        local component = HNDS.DEVIL_BOSSES and HNDS.DEVIL_BOSSES[hook_key]
-        if component and component.disable then component:disable() end
+local function component_debuffs_card(component, blind, card)
+    if not (component and blind and card) then return false end
+    if G and G.jokers and card.area == G.jokers then return false end
+
+    -- Declarative fallbacks cover components that use only a vanilla-style
+    -- debuff table. The calculate call covers Plant/Pillar and all suit Bosses.
+    local debuff = component.debuff
+    if debuff then
+        if debuff.suit and card.is_suit and card:is_suit(debuff.suit, true) then return true end
+        if debuff.is_face and card.is_face and card:is_face(true) then return true end
+        if debuff.value and card.base and card.base.value == debuff.value then return true end
+        if debuff.nominal and card.base and card.base.nominal == debuff.nominal then return true end
     end
+
+    if component.calculate then
+        local result = component:calculate(blind, {
+            debuff_card = card,
+            debuff_source = blind,
+        })
+        return result == true or (type(result) == "table" and result.debuff == true)
+    end
+    return false
+end
+
+local function active_stacked_components_debuff_card(blind, card)
+    if not (G and G.GAME and blind and card) or blind.disabled then return false end
+
+    -- Effects added by Blind Raiser upgrades.
+    if G.GAME.hnds_platinum_boss_stack_active then
+        for _, hook_key in ipairs(active_effect_hooks()) do
+            local component = HNDS.DEVIL_BOSSES and HNDS.DEVIL_BOSSES[hook_key]
+            if component_debuffs_card(component, blind, card) then return true end
+        end
+    end
+
+    -- The Devil is itself a component stack. Include its rolled effects so a
+    -- Devil+ fight uses the same reliable card-debuff path for both sources.
+    if G.GAME.hnds_devil_active then
+        for _, hook_key in ipairs(G.GAME.hnds_devil_bosses or {}) do
+            local component = HNDS.DEVIL_BOSSES and HNDS.DEVIL_BOSSES[hook_key]
+            if component_debuffs_card(component, blind, card) then return true end
+        end
+    end
+
+    return false
+end
+
+local Blind_debuff_card_ref = Blind.debuff_card
+function Blind:debuff_card(card, from_blind)
+    -- Let the natural Boss and every other mod resolve first. A stacked card
+    -- debuffer then ORs its own result on top; it never replaces the natural
+    -- Boss's suit/type and cannot accidentally clear another debuff source.
+    local result = Blind_debuff_card_ref(self, card, from_blind)
+    if active_stacked_components_debuff_card(self, card) then
+        card:set_debuff(true)
+    end
+    return result
+end
+
+function HNDS.stop_platinum_boss_stack(cleanup_context)
+    if not (G and G.GAME and G.GAME.hnds_platinum_boss_stack_active) then return end
+
+    local blind = G.GAME.blind
+    local hooks = active_effect_hooks()
+    local context = type(cleanup_context) == "table"
+        and cleanup_context
+        or { blind_disabled = true }
+
+    -- Disable delegation before invoking cleanup. Blind:disable() itself emits
+    -- a blind_disabled context on some Steamodded versions; clearing this first
+    -- prevents the same component cleanup from running twice.
+    G.GAME.hnds_platinum_boss_stack_active = nil
+
+    for _, hook_key in ipairs(hooks) do
+        local component = HNDS.DEVIL_BOSSES and HNDS.DEVIL_BOSSES[hook_key]
+        if component then
+            if component.calculate then component:calculate(blind, context) end
+            if component.disable then component:disable() end
+        end
+    end
+
     local draw_key = G.GAME.hnds_platinum_boss_draw_key
     if draw_key and SMODS and SMODS.Blinds and SMODS.Blinds.modifies_draw then
         SMODS.Blinds.modifies_draw[draw_key] = G.GAME.hnds_platinum_boss_draw_original
     end
     G.GAME.hnds_platinum_boss_draw_key = nil
     G.GAME.hnds_platinum_boss_draw_original = nil
-    G.GAME.hnds_platinum_boss_stack_active = nil
     G.GAME.hnds_platinum_boss_stack_ante = nil
 end
 
@@ -848,8 +1009,18 @@ end
 local Blind_set_blind_ref = Blind.set_blind
 function Blind:set_blind(blind, reset, silent)
     local result = Blind_set_blind_ref(self, blind, reset, silent)
+    -- Persist the physical slot on the live Blind. This remains reliable during
+    -- end-of-round transitions where blind_on_deck may already be advancing.
+    self.hnds_platinum_replacement_slot = nil
+    self.hnds_platinum_replacement_ante = nil
     if platinum_active() and G and G.GAME then
         local slot = G.GAME.blind_on_deck
+        if (slot == "Small" or slot == "Big")
+            and type(replacement_record(slot, current_ante())) == "table"
+        then
+            self.hnds_platinum_replacement_slot = slot
+            self.hnds_platinum_replacement_ante = current_ante()
+        end
         HNDS.sync_live_platinum_blind_score(self)
         if slot == "Boss" then HNDS.start_platinum_boss_stack(self) end
         if G.HUD_blind and G.HUD_blind.recalculate then
@@ -861,8 +1032,21 @@ end
 
 local Blind_disable_ref = Blind.disable
 function Blind:disable(...)
-    local stacked = G and G.GAME and G.GAME.hnds_platinum_boss_stack_active
-    local result = Blind_disable_ref(self, ...)
-    if stacked then HNDS.stop_platinum_boss_stack() end
-    return result
+    -- Luchador/Chicot must disable the complete Boss+, not only the natural
+    -- Blind. Tear down delegated effects first, then let vanilla disable and
+    -- clean up the natural Boss effect.
+    if G and G.GAME and G.GAME.hnds_platinum_boss_stack_active then
+        HNDS.stop_platinum_boss_stack({ blind_disabled = true })
+    end
+    return Blind_disable_ref(self, ...)
+end
+
+local Blind_defeat_ref = Blind.defeat
+function Blind:defeat(...)
+    -- Normal victory uses the same explicit cleanup path. This is especially
+    -- important for The Manacle if the stack was disabled earlier by Chicot.
+    if G and G.GAME and G.GAME.hnds_platinum_boss_stack_active then
+        HNDS.stop_platinum_boss_stack({ blind_defeated = true })
+    end
+    return Blind_defeat_ref(self, ...)
 end
