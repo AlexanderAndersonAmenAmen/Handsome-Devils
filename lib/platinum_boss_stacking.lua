@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
--- PLATINUM STAKE: BOSS STACKING + SCORE PREVIEWS
+-- GLOBAL BLIND RAISER: BOSS STACKING + SCORE PREVIEWS
 -------------------------------------------------------------------
 
 HNDS = HNDS or {}
@@ -38,8 +38,8 @@ end
 HNDS.PLATINUM_STACKABLE_BLINDS = VANILLA_TO_HOOK
 HNDS.PLATINUM_HOOK_TO_BLIND = HOOK_TO_VANILLA
 
-local function platinum_active()
-    return G and G.GAME and G.GAME.hnds_platinum_active
+local function blind_raiser_active()
+    return G and G.GAME ~= nil
 end
 
 local function current_ante()
@@ -306,7 +306,7 @@ end
 -- removes candidates that would duplicate or invalidate the current stack.
 function HNDS.call_with_platinum_reroll_bans(selector)
     if type(selector) ~= "function" then return nil end
-    if not platinum_active() or not (G and G.GAME and G.P_BLINDS) then
+    if not blind_raiser_active() or not (G and G.GAME and G.P_BLINDS) then
         return selector()
     end
 
@@ -426,12 +426,318 @@ function HNDS.platinum_run_upgrade_count()
     return G and G.GAME and math.max(0, tonumber(G.GAME.hnds_blind_upgrades) or 0) or 0
 end
 
+function HNDS.platinum_next_upgrade_exponent()
+    if not (G and G.GAME) then return HNDS.platinum_run_upgrade_count() + 1 end
+    local minimum = HNDS.platinum_run_upgrade_count() + 1
+    local stored = math.floor(tonumber(G.GAME.hnds_blind_raiser_next_exponent) or minimum)
+    stored = math.max(1, minimum, stored)
+    G.GAME.hnds_blind_raiser_next_exponent = stored
+    return stored
+end
+
+function HNDS.set_platinum_next_upgrade_exponent(step)
+    if not (G and G.GAME) then return end
+    local minimum = HNDS.platinum_run_upgrade_count() + 1
+    G.GAME.hnds_blind_raiser_next_exponent = math.max(
+        1, minimum, math.floor(tonumber(step) or minimum)
+    )
+end
+
+
+-- Record-hand catch-up for the global Blind Raiser. The next upgrade exponent
+-- is independent from the number of upgrades actually bought: clearing score
+-- thresholds never grants a Tag reward or adds a stacked Boss effect.
+--
+-- Catch-up is atomic in groups of three. Starting at 2^1, a hand must reach
+-- the 2^3 threshold to advance the next upgrade to 2^4. If it also reaches
+-- 2^6, another complete group is cleared and the next upgrade becomes 2^7,
+-- repeating for every full three-step group the run's highest hand can clear.
+local function normalized_blind_raiser_score(value)
+    if value == nil then return nil end
+
+    if type(value) == "table"
+        and value.coefficient ~= nil
+        and value.exponent ~= nil
+        and value.e_count ~= nil
+    then
+        return {
+            coefficient = tonumber(value.coefficient) or 0,
+            exponent = tonumber(value.exponent) or 0,
+            e_count = tonumber(value.e_count) or 0,
+        }
+    end
+
+    local raw = tostring(value):lower():gsub(",", ""):gsub("%s+", "")
+    if raw == "" then return nil end
+
+    -- Talisman-style values can contain leading e's. Preserve that magnitude
+    -- tier, then normalize the remaining value into scientific notation so
+    -- plain 10000 and 1e4 compare identically.
+    local e_count = 0
+    while raw:sub(1, 1) == "e" do
+        e_count = e_count + 1
+        raw = raw:sub(2)
+    end
+
+    local coefficient_text, explicit_exponent = raw:match("^([%+%-]?[%d%.]+)e([%+%-]?%d+)$")
+    if not coefficient_text then
+        coefficient_text = raw
+        explicit_exponent = 0
+    else
+        explicit_exponent = tonumber(explicit_exponent) or 0
+    end
+
+    local sign = 1
+    if coefficient_text:sub(1, 1) == "-" then
+        sign = -1
+        coefficient_text = coefficient_text:sub(2)
+    elseif coefficient_text:sub(1, 1) == "+" then
+        coefficient_text = coefficient_text:sub(2)
+    end
+
+    local integer, fraction = coefficient_text:match("^(%d*)%.?(%d*)$")
+    if integer == nil then return nil end
+    integer, fraction = integer or "", fraction or ""
+
+    local nonzero_integer = integer:match("^0*(%d.*)$")
+    local significant, exponent
+    if nonzero_integer and nonzero_integer:find("[1-9]") then
+        nonzero_integer = nonzero_integer:gsub("^0+", "")
+        significant = nonzero_integer .. fraction
+        exponent = #nonzero_integer - 1 + explicit_exponent
+    else
+        local first_nonzero = fraction:find("[1-9]")
+        if not first_nonzero then
+            return { coefficient = 0, exponent = 0, e_count = 0 }
+        end
+        significant = fraction:sub(first_nonzero)
+        exponent = explicit_exponent - first_nonzero
+    end
+
+    local head = significant:sub(1, 1)
+    local tail = significant:sub(2, 15)
+    local coefficient = tonumber(head .. (tail ~= "" and ("." .. tail) or "")) or 0
+    return {
+        coefficient = sign * coefficient,
+        exponent = exponent,
+        e_count = e_count,
+    }
+end
+
+local function normalized_score_compare(left, right)
+    if not (left and right) then return nil end
+    local lc, rc = tonumber(left.coefficient) or 0, tonumber(right.coefficient) or 0
+    if lc == rc and lc == 0 then return 0 end
+    if lc < 0 and rc >= 0 then return -1 end
+    if lc >= 0 and rc < 0 then return 1 end
+
+    local sign = lc < 0 and -1 or 1
+    local le, re = tonumber(left.e_count) or 0, tonumber(right.e_count) or 0
+    if le ~= re then return (le > re and 1 or -1) * sign end
+
+    local lx, rx = tonumber(left.exponent) or 0, tonumber(right.exponent) or 0
+    if lx ~= rx then return (lx > rx and 1 or -1) * sign end
+
+    local la, ra = math.abs(lc), math.abs(rc)
+    if la == ra then return 0 end
+    return (la > ra and 1 or -1) * sign
+end
+
+local function normalized_score_at_least(left, right)
+    local comparison = normalized_score_compare(left, right)
+    return comparison ~= nil and comparison >= 0
+end
+
+local function blind_raiser_exponent_threshold(base_score, step)
+    -- Prefer the active Big-number implementation when available.
+    if type(to_big) == "function" then
+        local ok, threshold = pcall(function()
+            return to_big(base_score) * (to_big(2) ^ step)
+        end)
+        if ok then
+            local normalized = normalized_blind_raiser_score(threshold)
+            if normalized then return normalized end
+        end
+    end
+
+    -- Avoid ordinary-number overflow by constructing the scientific value from
+    -- logarithms instead of evaluating 2^step directly.
+    local base = normalized_blind_raiser_score(base_score)
+    if not base or base.coefficient <= 0 or base.e_count ~= 0 then return nil end
+    local log10_value = math.log10(math.abs(base.coefficient))
+        + base.exponent + (step * math.log10(2))
+    local exponent = math.floor(log10_value)
+    return {
+        coefficient = 10 ^ (log10_value - exponent),
+        exponent = exponent,
+        e_count = 0,
+    }
+end
+
+local function stored_blind_raiser_highest_hand()
+    if not (G and G.GAME) then return nil end
+    return normalized_blind_raiser_score(G.GAME.hnds_blind_raiser_highest_hand_score)
+end
+
+function HNDS.on_blind_raiser_hand_scored(hand_score)
+    if not blind_raiser_active() or hand_score == nil or not (G and G.GAME) then return end
+
+    local normalized_score = normalized_blind_raiser_score(hand_score)
+    if not normalized_score or normalized_score.coefficient <= 0 then return end
+
+    local previous = stored_blind_raiser_highest_hand()
+        or { coefficient = 0, exponent = 0, e_count = 0 }
+    local highest = previous
+    if (normalized_score_compare(normalized_score, previous) or -1) > 0 then
+        highest = normalized_score
+        -- Store a plain serializable table rather than a Big-number userdata.
+        G.GAME.hnds_blind_raiser_highest_hand_score = normalized_score
+    end
+
+    -- A hand scored during Ante N is compared with the natural Small Blind of
+    -- Ante N+1, before any Blind Raiser multiplier is applied.
+    local next_ante = math.max(1, current_ante() + 1)
+    local base_score = regular_score_for_slot("Small", next_ante)
+    if not base_score then return end
+
+    local step = HNDS.platinum_next_upgrade_exponent()
+    local original_step = step
+
+    local function full_groups_pass(group_count)
+        if group_count < 1 then return true end
+        local final_step = step + (group_count * 3) - 1
+        local threshold = blind_raiser_exponent_threshold(base_score, final_step)
+        return threshold ~= nil and normalized_score_at_least(highest, threshold)
+    end
+
+    local passed_groups = 0
+    if full_groups_pass(1) then
+        -- Find the first failing group exponentially, then binary-search the
+        -- exact number of complete groups. This stays fast for enormous hands.
+        local lower, upper = 1, 2
+        local max_safe_groups = 1073741824 -- 2^30 complete groups
+
+        while upper < max_safe_groups and full_groups_pass(upper) do
+            lower = upper
+            upper = upper * 2
+        end
+
+        if upper >= max_safe_groups and full_groups_pass(max_safe_groups) then
+            passed_groups = max_safe_groups
+        else
+            local lo = lower + 1
+            local hi = math.min(upper - 1, max_safe_groups)
+            passed_groups = lower
+            while lo <= hi do
+                local mid = math.floor((lo + hi) / 2)
+                if full_groups_pass(mid) then
+                    passed_groups = mid
+                    lo = mid + 1
+                else
+                    hi = mid - 1
+                end
+            end
+        end
+    end
+
+    if passed_groups > 0 then step = step + (passed_groups * 3) end
+    if step > original_step then HNDS.set_platinum_next_upgrade_exponent(step) end
+end
+
+-- Hook both completed-hand score signals. The operation is idempotent: the
+-- first call advances through every full group the highest hand can clear, and
+-- the duplicate signal immediately encounters the same first failing group.
+local function install_blind_raiser_hand_score_hooks()
+    local installed = false
+
+    if type(check_and_set_high_score) == "function"
+        and check_and_set_high_score ~= HNDS._blind_raiser_high_score_hook
+    then
+        local previous_high_score = check_and_set_high_score
+        local wrapper
+        wrapper = function(score_type, amount, ...)
+            local result = previous_high_score(score_type, amount, ...)
+            if score_type == "hand" and HNDS.on_blind_raiser_hand_scored then
+                HNDS.on_blind_raiser_hand_scored(amount)
+            end
+            return result
+        end
+        HNDS._blind_raiser_high_score_hook = wrapper
+        check_and_set_high_score = wrapper
+        installed = true
+    elseif check_and_set_high_score == HNDS._blind_raiser_high_score_hook then
+        installed = true
+    end
+
+    if type(check_for_unlock) == "function"
+        and check_for_unlock ~= HNDS._blind_raiser_chip_score_hook
+    then
+        local previous_check_for_unlock = check_for_unlock
+        local wrapper
+        wrapper = function(args, ...)
+            local result = previous_check_for_unlock(args, ...)
+            if type(args) == "table" and args.type == "chip_score"
+                and args.chips ~= nil and HNDS.on_blind_raiser_hand_scored
+            then
+                HNDS.on_blind_raiser_hand_scored(args.chips)
+            end
+            return result
+        end
+        HNDS._blind_raiser_chip_score_hook = wrapper
+        check_for_unlock = wrapper
+        installed = true
+    elseif check_for_unlock == HNDS._blind_raiser_chip_score_hook then
+        installed = true
+    end
+
+    return installed
+end
+
+HNDS.install_blind_raiser_hand_score_hooks = install_blind_raiser_hand_score_hooks
+install_blind_raiser_hand_score_hooks()
+
+if Game and type(Game.start_run) == "function"
+    and not HNDS._blind_raiser_start_run_score_hook_installed
+then
+    HNDS._blind_raiser_start_run_score_hook_installed = true
+    local game_start_run_ref = Game.start_run
+    function Game:start_run(...)
+        install_blind_raiser_hand_score_hooks()
+        local result = game_start_run_ref(self, ...)
+        install_blind_raiser_hand_score_hooks()
+        return result
+    end
+end
+
+local function score_from_replacement_record(blind_choice, record)
+    if type(record) ~= "table" then return nil end
+    local base = tonumber(record.base_score)
+        or regular_score_for_slot(blind_choice, record.ante or current_ante())
+    if not base then return nil end
+    record.base_score = base
+    local exponent = math.max(1, math.floor(tonumber(record.upgrade_index) or 1))
+    record.upgrade_index = exponent
+    record.score_multiplier = 2 ^ exponent
+    record.score_chips = base * record.score_multiplier
+    return record.score_chips
+end
+
 function HNDS.platinum_next_upgrade_score(blind_choice)
     local base = regular_score_for_slot(blind_choice, current_ante())
     if not base then return nil end
-    -- Every upgraded Small/Big Blind is exactly twice that slot's normal
-    -- requirement. The run-wide upgrade count affects only the real Boss.
-    return base * 2
+    return base * (2 ^ HNDS.platinum_next_upgrade_exponent())
+end
+
+local function latest_upgrade_exponent_for_ante(ante)
+    local latest = 0
+    local records = G.GAME.hnds_platinum_blind_replacements or {}
+    for _, blind_choice in ipairs({ "Small", "Big" }) do
+        local record = records[tostring(ante) .. ":" .. blind_choice]
+        if type(record) == "table" then
+            latest = math.max(latest, math.floor(tonumber(record.upgrade_index) or 1))
+        end
+    end
+    return latest
 end
 
 function HNDS.platinum_boss_score_for_ante(ante, extra_upgrades)
@@ -441,10 +747,19 @@ function HNDS.platinum_boss_score_for_ante(ante, extra_upgrades)
     local boss = boss_key and G.P_BLINDS[boss_key]
     local mult = boss and tonumber(boss.mult)
     if not mult then return nil end
-    local count = HNDS.platinum_boss_upgrade_count_for_ante(ante)
-        + math.max(0, tonumber(extra_upgrades) or 0)
+
+    local exponent = latest_upgrade_exponent_for_ante(ante)
+    if math.max(0, tonumber(extra_upgrades) or 0) > 0 then
+        -- Tooltip preview: the next upgrade uses the current exponent step, and
+        -- the real Boss immediately adopts that same (previous-after-commit)
+        -- exponent. Keep the existing tooltip labels/layout unchanged.
+        exponent = HNDS.platinum_next_upgrade_exponent()
+            + math.max(0, tonumber(extra_upgrades) or 0) - 1
+    end
+
     local scaling = G.GAME.starting_params and G.GAME.starting_params.ante_scaling or 1
-    return get_blind_amount(ante) * (mult + count) * scaling
+    local natural_score = get_blind_amount(ante) * mult * scaling
+    return exponent > 0 and natural_score * (2 ^ exponent) or natural_score
 end
 
 local function dictionary_text(key, vars, fallback)
@@ -484,13 +799,13 @@ function HNDS.platinum_upgrade_button_tooltip(blind_choice)
 end
 
 function HNDS.adjust_platinum_blind_preview_amount(blind_choice, vanilla_amount, blind_config)
-    if not platinum_active() then return vanilla_amount end
+    if not blind_raiser_active() then return vanilla_amount end
 
     if blind_choice == "Small" or blind_choice == "Big" then
         local record = replacement_record(blind_choice, current_ante())
         if type(record) == "table" then
-            local base = regular_score_for_slot(blind_choice, record.ante or current_ante())
-            if base then return base * 2 end
+            local score = score_from_replacement_record(blind_choice, record)
+            if score then return score end
         end
     elseif blind_choice == "Boss" then
         local score = HNDS.platinum_boss_score_for_ante(current_ante(), 0)
@@ -557,7 +872,7 @@ function localize(args, misc_cat, misc_loc, silent)
     if type(args) == "table"
         and args.type == "name_text"
         and args.set == "Blind"
-        and platinum_active()
+        and blind_raiser_active()
         and args.key == boss_choice()
         and HNDS.platinum_boss_upgrade_count_for_ante(current_ante()) > 0
     then
@@ -768,7 +1083,7 @@ local function active_effect_hooks()
 end
 
 local function boss_stack_active(blind)
-    return platinum_active()
+    return blind_raiser_active()
         and G and G.GAME
         and (G.GAME.blind_on_deck == "Boss" or (blind and blind.boss))
         and HNDS.platinum_boss_upgrade_count_for_ante(current_ante()) > 0
@@ -976,7 +1291,7 @@ end
 local Blind_set_text_ref = Blind.set_text
 function Blind:set_text(...)
     local result = Blind_set_text_ref(self, ...)
-    if platinum_active()
+    if blind_raiser_active()
         and G and G.GAME and G.GAME.blind_on_deck == "Boss"
         and HNDS.platinum_boss_upgrade_count_for_ante(current_ante()) > 0
     then
@@ -986,15 +1301,14 @@ function Blind:set_text(...)
 end
 
 function HNDS.sync_live_platinum_blind_score(blind)
-    if not (platinum_active() and G and G.GAME and blind) then return false end
+    if not (blind_raiser_active() and G and G.GAME and blind) then return false end
     local slot = G.GAME.blind_on_deck
     local score = nil
 
     if slot == "Small" or slot == "Big" then
         local record = replacement_record(slot, current_ante())
         if type(record) == "table" then
-            local base = regular_score_for_slot(slot, record.ante or current_ante())
-            if base then score = base * 2 end
+            score = score_from_replacement_record(slot, record)
         end
     elseif slot == "Boss" then
         score = HNDS.platinum_boss_score_for_ante(current_ante(), 0)
@@ -1013,7 +1327,7 @@ function Blind:set_blind(blind, reset, silent)
     -- end-of-round transitions where blind_on_deck may already be advancing.
     self.hnds_platinum_replacement_slot = nil
     self.hnds_platinum_replacement_ante = nil
-    if platinum_active() and G and G.GAME then
+    if blind_raiser_active() and G and G.GAME then
         local slot = G.GAME.blind_on_deck
         if (slot == "Small" or slot == "Big")
             and type(replacement_record(slot, current_ante())) == "table"

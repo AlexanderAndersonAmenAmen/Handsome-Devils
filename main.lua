@@ -137,13 +137,22 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.card_added then
 		G.GAME.hnds_dna_tag_copy = context.card.sort_id
 	end
-	-- Obsidian card: draw extra cards
-	if context.drawing_cards and (G.GAME.hnds_obsidian_draws or 0) > 0 then
-		local d = G.GAME.hnds_obsidian_draws or 0
-		G.GAME.hnds_obsidian_draws = 0
-		local base_draw = boss_stack_result and boss_stack_result.cards_to_draw
-			or context.amount
-		return { cards_to_draw = base_draw + d } -- for some reason `modify` also sets the amount instead of modifying so i have to do this
+	-- Exchange: guarantee every marked, non-debuffed card is present in the
+	-- opening hand. The helper guards against duplicate first_hand_drawn events.
+	if context.first_hand_drawn and HNDS.draw_exchange_cards then
+		HNDS.draw_exchange_cards()
+	end
+
+	-- Obsidian: each hand starts a fresh candidate set. Commit it during the
+	-- post-scoring context, while the winning cards are still in the play area,
+	-- so progress text is attached to each Obsidian card instead of the deck.
+	if context.before and HNDS.reset_obsidian_hand_marks then
+		HNDS.reset_obsidian_hand_marks()
+	end
+	if context.after and SMODS.last_hand_oneshot
+		and HNDS.complete_obsidian_final_hand
+	then
+		HNDS.complete_obsidian_final_hand()
 	end
 
 	return boss_stack_result
@@ -299,7 +308,8 @@ local files = {
 	stakes = {
 		list = {
 			"platinum",
-			"blood"
+			"blood",
+			"nightmare"
 		},
 		directory = "stakes/"
 	},

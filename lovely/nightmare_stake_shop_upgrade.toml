@@ -9,8 +9,8 @@ target = "functions/button_callbacks.lua"
 pattern = "G.FUNCS.toggle_shop = function(e)"
 position = "after"
 payload = '''
-    if HNDS and HNDS.handle_blood_cursed_shop_exit then
-        HNDS.handle_blood_cursed_shop_exit()
+    if HNDS and HNDS.handle_nightmare_cursed_shop_exit then
+        HNDS.handle_nightmare_cursed_shop_exit()
     end
 '''
 match_indent = true

@@ -270,9 +270,6 @@ function reset_dark_idol()
 	end
 end
 
--- Circus Deck: pool of jokers that can be randomly assigned each ante.
--- One is picked at random (excluding the previous ante's pick) and placed
--- in an offscreen CardArea so it appears in find_joker() results.
 HNDS.circus_joker_pool = {
 	'j_hack',
 	'j_juggler',
@@ -284,7 +281,7 @@ HNDS.circus_joker_pool = {
 	'j_oops',
 	'j_vagabond',
 	'j_astronomer',
-	'j_sixth_sense',
+	'j_seance',
 	'j_hanging_chad',
 	'j_dusk',
 	'j_hnds_supersuit',
@@ -299,10 +296,15 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
 		G.GAME.art_queue = 0
-		G.GAME.hnds_exchange_minus = 1
+		G.GAME.hnds_exchange_hand_penalty = 0
 	end
-	--Not run start only, obsidian draws shouldnt persist to the next round
-	G.GAME.hnds_obsidian_draws = 0
+
+	-- Exchange's forced opening draw is once per round. current_round is reused
+	-- by some game versions, so clear the guard explicitly instead of relying on
+	-- the table being replaced.
+	if G.GAME.current_round then
+		G.GAME.current_round.hnds_exchange_cards_drawn = nil
+	end
 
 	-- Re-roll per-round joker state (suit/card changes every round)
 	reset_supersuit_card()

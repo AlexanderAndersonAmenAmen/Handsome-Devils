@@ -1,7 +1,7 @@
 SMODS.Stake({
     key = "platinum",
     atlas = "Stakes",
-    pos = {x = 1, y = 0},
+    pos = {x = 0, y = 0},
     sticker_atlas = "Stickers",
     sticker_pos = {x = 1, y = 0},
     applied_stakes = {"stake_gold"},
@@ -19,10 +19,6 @@ SMODS.Stake({
     modifiers = function(self)
         G.GAME.win_ante = 10
         G.GAME.hnds_platinum_active = true
-        G.GAME.hnds_upgraded_blinds = G.GAME.hnds_upgraded_blinds or {}
-        G.GAME.hnds_platinum_blind_replacements =
-            G.GAME.hnds_platinum_blind_replacements or {}
-        G.GAME.hnds_blind_upgrades = G.GAME.hnds_blind_upgrades or 0
         sendDebugMessage("HNDS: Platinum modifiers() fired -- win_ante set to " .. tostring(G.GAME.win_ante))
     end
 })

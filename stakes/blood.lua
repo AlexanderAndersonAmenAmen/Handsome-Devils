@@ -1,13 +1,13 @@
 SMODS.Stake {
     key = 'blood_stake',
     atlas = "Stakes",
-    pos = { x = 0, y = 0 },
+    pos = { x = 1, y = 0 },
     sticker_atlas = "Stickers",
     sticker_pos = {x = 2, y = 0},
     applied_stakes = {"stake_hnds_platinum"},
     above_stake = "stake_hnds_platinum",
     colour = HEX("cc6c6c"),
-    shiny = true,
+    shiny = false,
     requires = { "stake_hnds_platinum" },
     prefix_config = {
         applied_stakes = { mod = false },

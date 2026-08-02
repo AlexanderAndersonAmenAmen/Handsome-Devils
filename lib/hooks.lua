@@ -77,12 +77,27 @@ local function get_ante_10_boss()
     return chosen
 end
 
+local function hnds_crystal_replaces_ante_8_showdown()
+    if not (G and G.GAME and G.GAME.round_resets) then return false end
+    local modifiers = G.GAME.modifiers or {}
+    local selected_back = G.GAME.selected_back and G.GAME.selected_back.effect
+        and G.GAME.selected_back.effect.center
+    local crystal_deck = modifiers.hnds_crystal_ante_8_replacement == true
+        or (selected_back and selected_back.key == "b_hnds_crystal")
+    -- Crystal only replaces the normal Ante 8 showdown. Platinum and higher
+    -- move the run's showdown/win Ante to 10, so Ante 8 must remain an ordinary
+    -- Boss Blind on those stakes.
+    return crystal_deck
+        and G.GAME.round_resets.ante == 8
+        and G.GAME.win_ante == 8
+end
+
 function get_new_boss()
     if G.GAME
         and not G.GAME.hnds_bypass_ante_10_force
         and G.GAME.round_resets
-        and G.GAME.round_resets.ante == 10
-        and G.GAME.win_ante == 10
+        and (hnds_crystal_replaces_ante_8_showdown()
+            or (G.GAME.round_resets.ante == 10 and G.GAME.win_ante == 10))
     then
         return get_ante_10_boss()
     end
@@ -569,12 +584,12 @@ end
 
 
 -------------------------------------------------------------------
--- BLOOD STAKE: CURSED JOKER LEFT IN SHOP
+-- NIGHTMARE STAKE: CURSED JOKER LEFT IN SHOP
 -------------------------------------------------------------------
 
-local function hnds_blood_stake_active()
+local function hnds_nightmare_stake_active()
     return G and G.GAME and G.GAME.modifiers
-        and G.GAME.modifiers.hnds_blood_stake == true
+        and G.GAME.modifiers.hnds_nightmare_stake == true
 end
 
 local function hnds_table_has_cursed_sticker(stickers)
@@ -651,36 +666,36 @@ end
 -- The actual Blind replacement is deferred until the next Blind Select screen
 -- is built. At that point vanilla has finalized blind_on_deck, blind_states and
 -- (after a Boss shop) the new Ante's Small/Big choices.
-HNDS.handle_blood_cursed_shop_exit = function()
+HNDS.handle_nightmare_cursed_shop_exit = function()
     if not (G and G.GAME and G.shop) then return false end
     if G.STATES and G.STATES.SHOP and G.STATE ~= G.STATES.SHOP then return false end
-    if not hnds_blood_stake_active() then return false end
+    if not hnds_nightmare_stake_active() then return false end
 
     -- Both the runtime wrapper and the Lovely fallback can fire for the same
     -- click. The run-level pending flag blocks that duplicate immediately,
     -- while the shop-local flag is cleared on the next event-manager tick so
     -- the following shop (including the shop before Big Blind) can queue too.
-    if G.GAME.hnds_blood_shop_upgrade_pending then return false end
-    if G.shop.hnds_blood_cursed_upgrade_queued then return false end
+    if G.GAME.hnds_nightmare_shop_upgrade_pending then return false end
+    if G.shop.hnds_nightmare_cursed_upgrade_queued then return false end
     if not hnds_shop_has_cursed_joker() then return false end
 
     local shop_ref = G.shop
-    shop_ref.hnds_blood_cursed_upgrade_queued = true
+    shop_ref.hnds_nightmare_cursed_upgrade_queued = true
     if G.E_MANAGER and Event then
         G.E_MANAGER:add_event(Event({
             trigger = 'immediate',
             func = function()
                 if shop_ref then
-                    shop_ref.hnds_blood_cursed_upgrade_queued = nil
+                    shop_ref.hnds_nightmare_cursed_upgrade_queued = nil
                 end
                 return true
             end,
         }))
     end
 
-    G.GAME.hnds_blood_shop_upgrade_pending = true
-    G.GAME.hnds_blood_shop_upgrade_target = hnds_next_small_or_big_blind()
-    G.GAME.hnds_blood_shop_upgrade_source_ante =
+    G.GAME.hnds_nightmare_shop_upgrade_pending = true
+    G.GAME.hnds_nightmare_shop_upgrade_target = hnds_next_small_or_big_blind()
+    G.GAME.hnds_nightmare_shop_upgrade_source_ante =
         G.GAME.round_resets and G.GAME.round_resets.ante or nil
     return true
 end
@@ -688,14 +703,14 @@ end
 -- Runtime wrapper is the primary hook. The Lovely patch remains as a fallback
 -- for load orders where another mod replaces toggle_shop after this file loads.
 if G and G.FUNCS and type(G.FUNCS.toggle_shop) == "function"
-    and not _G._hnds_blood_toggle_shop_wrapped
+    and not _G._hnds_nightmare_toggle_shop_wrapped
 then
-    _G._hnds_blood_toggle_shop_wrapped = true
+    _G._hnds_nightmare_toggle_shop_wrapped = true
     local hnds_toggle_shop_ref = G.FUNCS.toggle_shop
 
     G.FUNCS.toggle_shop = function(e)
-        if HNDS and HNDS.handle_blood_cursed_shop_exit then
-            HNDS.handle_blood_cursed_shop_exit()
+        if HNDS and HNDS.handle_nightmare_cursed_shop_exit then
+            HNDS.handle_nightmare_cursed_shop_exit()
         end
         return hnds_toggle_shop_ref(e)
     end

@@ -1,8 +1,8 @@
 -------------------------------------------------------------------
--- PLATINUM STAKE: BLIND UPGRADES
+-- GLOBAL BLIND RAISER: BLIND UPGRADES
 --
 -- Adds an "Upgrade Blind" alternative below the vanilla Skip Blind
--- button while Platinum Stake (or a stake that applies it) is active.
+-- button during every run, regardless of stake.
 -- Upgrading grants the displayed skip tag, then replaces the selected
 -- Small/Big Blind with a random non-showdown Boss Blind without
 -- skipping the slot.
@@ -27,13 +27,18 @@
 
 HNDS = HNDS or {}
 
-local function platinum_active()
-    return G and G.GAME and G.GAME.hnds_platinum_active
+local function blind_raiser_active()
+    if not (G and G.GAME) then return false end
+    G.GAME.hnds_upgraded_blinds = G.GAME.hnds_upgraded_blinds or {}
+    G.GAME.hnds_platinum_blind_replacements =
+        G.GAME.hnds_platinum_blind_replacements or {}
+    G.GAME.hnds_blind_upgrades = G.GAME.hnds_blind_upgrades or 0
+    return true
 end
 
-local function blood_active()
+local function nightmare_active()
     return G and G.GAME and G.GAME.modifiers
-        and G.GAME.modifiers.hnds_blood_stake == true
+        and G.GAME.modifiers.hnds_nightmare_stake == true
 end
 
 local function upgraded_blinds()
@@ -68,7 +73,7 @@ local function blind_is_finished(blind_choice)
 end
 
 local function blind_is_current(blind_choice)
-    if not platinum_active() or blind_is_finished(blind_choice) then
+    if not blind_raiser_active() or blind_is_finished(blind_choice) then
         return false
     end
 
@@ -132,7 +137,7 @@ end
 -- Run this before create_UIBox_blind_select builds the next Ante's badges,
 -- effects and score requirements.
 HNDS.restore_stale_platinum_blind_slots = function()
-    if not platinum_active() then return end
+    if not blind_raiser_active() then return end
     if not (G.GAME.round_resets and G.GAME.round_resets.blind_choices) then return end
 
     local ante = current_ante()
@@ -206,7 +211,7 @@ HNDS.restore_stale_platinum_blind_slots = function()
 end
 
 HNDS.platinum_skip_is_locked = function(blind_choice)
-    return platinum_active()
+    return blind_raiser_active()
         and blind_choice ~= nil
         and blind_was_upgraded(blind_choice)
 end
@@ -328,15 +333,15 @@ end
 -- the current slot was already upgraded, in which case Skip is also
 -- forcibly disabled.
 HNDS.sync_platinum_blind_tag_ui = function(e)
-    if not (platinum_active() and e and e.config) then return end
+    if not (blind_raiser_active() and e and e.config) then return end
 
     -- Final fallback: if another mod replaced create_UIBox_blind_select after
     -- our wrapper, consume the queued shop effect when vanilla activates the
     -- current Blind panel. A guard prevents recursion while the panel rebuilds.
-    if HNDS.apply_pending_blood_shop_upgrade
+    if HNDS.apply_pending_nightmare_shop_upgrade
         and G and G.GAME
-        and not G.GAME.hnds_blood_shop_upgrade_applying
-        and HNDS.apply_pending_blood_shop_upgrade()
+        and not G.GAME.hnds_nightmare_shop_upgrade_applying
+        and HNDS.apply_pending_nightmare_shop_upgrade()
     then
         return
     end
@@ -407,19 +412,19 @@ if type(create_UIBox_blind_select) == 'function' then
     function create_UIBox_blind_select(...)
         HNDS.restore_stale_platinum_blind_slots()
 
-        -- Apply the Blood Stake shop effect only after vanilla has prepared the
+        -- Apply the Nightmare Stake shop effect only after vanilla has prepared the
         -- upcoming Blind slot. Doing this before constructing the UI makes the
         -- upgraded Boss badge, score and debuff text correct on the first frame.
-        if HNDS.apply_pending_blood_shop_upgrade then
-            HNDS.apply_pending_blood_shop_upgrade()
+        if HNDS.apply_pending_nightmare_shop_upgrade then
+            HNDS.apply_pending_nightmare_shop_upgrade()
         end
 
         local result = create_UIBox_blind_select_ref(...)
 
         -- Compatibility fallback for unusual load orders that finalize
         -- blind_on_deck during UI construction rather than before it.
-        if HNDS.apply_pending_blood_shop_upgrade then
-            HNDS.apply_pending_blood_shop_upgrade()
+        if HNDS.apply_pending_nightmare_shop_upgrade then
+            HNDS.apply_pending_nightmare_shop_upgrade()
         end
 
         return result
@@ -448,7 +453,7 @@ end
 local create_UIBox_blind_tag_ref = create_UIBox_blind_tag
 
 function create_UIBox_blind_tag(blind_choice, run_info)
-    if run_info or not platinum_active() then
+    if run_info or not blind_raiser_active() then
         return create_UIBox_blind_tag_ref(blind_choice, run_info)
     end
 
@@ -591,7 +596,7 @@ function create_UIBox_blind_tag(blind_choice, run_info)
 end
 
 -------------------------------------------------------------------
--- Blood Stake automatic upgrade
+-- Nightmare Stake automatic upgrade
 -------------------------------------------------------------------
 
 local function hnds_rebuild_upgraded_blind_option(blind_choice, boss)
@@ -641,10 +646,10 @@ end
 
 -- Returns true after upgrading, "not_upgradable" when the actual next Blind is
 -- the Boss, and nil while vanilla is still transitioning out of the shop.
-HNDS.upgrade_next_blind_from_blood = function(requested_blind_choice)
+HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
     if not (G and G.GAME and G.GAME.round_resets) then return nil end
 
-    if not platinum_active() and not blood_active() then
+    if not blind_raiser_active() then
         return "not_upgradable"
     end
 
@@ -693,7 +698,7 @@ HNDS.upgrade_next_blind_from_blood = function(requested_blind_choice)
     local choices = G.GAME.round_resets.blind_choices
     if not choices or not choices[blind_choice] then return nil end
 
-    -- Automatic Blood Stake upgrades grant exactly the same Skip Tag reward
+    -- Automatic Nightmare Stake upgrades grant exactly the same Skip Tag reward
     -- as pressing Upgrade Blind manually. Build the reward before mutating the
     -- slot so an unusually early call can retry instead of upgrading tagless.
     local blind_tags = G.GAME.round_resets.blind_tags or {}
@@ -731,7 +736,9 @@ HNDS.upgrade_next_blind_from_blood = function(requested_blind_choice)
     end
 
     local current_upgrade_key = upgrade_key(blind_choice)
-    local upgrade_index = (G.GAME.hnds_blind_upgrades or 0) + 1
+    local actual_upgrade_count = (G.GAME.hnds_blind_upgrades or 0) + 1
+    local upgrade_index = HNDS.platinum_next_upgrade_exponent
+        and HNDS.platinum_next_upgrade_exponent() or actual_upgrade_count
     replacement_records()[current_upgrade_key] = {
         ante = current_ante(),
         blind_choice = blind_choice,
@@ -741,7 +748,10 @@ HNDS.upgrade_next_blind_from_blood = function(requested_blind_choice)
     }
 
     upgraded_blinds()[current_upgrade_key] = true
-    G.GAME.hnds_blind_upgrades = upgrade_index
+    G.GAME.hnds_blind_upgrades = actual_upgrade_count
+    if HNDS.set_platinum_next_upgrade_exponent then
+        HNDS.set_platinum_next_upgrade_exponent(upgrade_index + 1)
+    end
     choices[blind_choice] = boss
     if HNDS.record_platinum_boss_effect then
         HNDS.record_platinum_boss_effect(boss, current_ante())
@@ -753,7 +763,7 @@ HNDS.upgrade_next_blind_from_blood = function(requested_blind_choice)
     if SMODS and SMODS.calculate_context then
         SMODS.calculate_context({
             hnds_upgrade_blind = true,
-            hnds_blood_stake_upgrade = true,
+            hnds_nightmare_stake_upgrade = true,
             blind_type = blind_choice,
             blind_key = boss,
         })
@@ -776,43 +786,43 @@ end
 
 -- Consume the queued Cursed-shop effect when an eligible Small/Big Blind is
 -- about to be shown. The pending flag is intentionally cleared when the next
--- slot is a Boss: Blood Stake upgrades only the immediately upcoming
+-- slot is a Boss: Nightmare Stake upgrades only the immediately upcoming
 -- Small/Big Blind and never skips across a Boss encounter.
-HNDS.apply_pending_blood_shop_upgrade = function()
-    if not (G and G.GAME and G.GAME.hnds_blood_shop_upgrade_pending) then
+HNDS.apply_pending_nightmare_shop_upgrade = function()
+    if not (G and G.GAME and G.GAME.hnds_nightmare_shop_upgrade_pending) then
         return false
     end
 
-    if not blood_active() then
-        G.GAME.hnds_blood_shop_upgrade_pending = nil
-        G.GAME.hnds_blood_shop_upgrade_target = nil
-        G.GAME.hnds_blood_shop_upgrade_source_ante = nil
+    if not nightmare_active() then
+        G.GAME.hnds_nightmare_shop_upgrade_pending = nil
+        G.GAME.hnds_nightmare_shop_upgrade_target = nil
+        G.GAME.hnds_nightmare_shop_upgrade_source_ante = nil
         return false
     end
 
-    if G.GAME.hnds_blood_shop_upgrade_applying then return false end
-    G.GAME.hnds_blood_shop_upgrade_applying = true
+    if G.GAME.hnds_nightmare_shop_upgrade_applying then return false end
+    G.GAME.hnds_nightmare_shop_upgrade_applying = true
 
-    local requested_blind_choice = G.GAME.hnds_blood_shop_upgrade_target
+    local requested_blind_choice = G.GAME.hnds_nightmare_shop_upgrade_target
     local ok, status = pcall(
-        HNDS.upgrade_next_blind_from_blood,
+        HNDS.upgrade_next_blind_from_nightmare,
         requested_blind_choice
     )
-    G.GAME.hnds_blood_shop_upgrade_applying = nil
+    G.GAME.hnds_nightmare_shop_upgrade_applying = nil
     if not ok then error(status) end
 
     if status == true then
-        G.GAME.hnds_blood_shop_upgrade_pending = nil
-        G.GAME.hnds_blood_shop_upgrade_target = nil
-        G.GAME.hnds_blood_shop_upgrade_source_ante = nil
+        G.GAME.hnds_nightmare_shop_upgrade_pending = nil
+        G.GAME.hnds_nightmare_shop_upgrade_target = nil
+        G.GAME.hnds_nightmare_shop_upgrade_source_ante = nil
         play_sound("hnds_curse_used", 1, 0.75)
         return true
     end
 
     if status == "not_upgradable" then
-        G.GAME.hnds_blood_shop_upgrade_pending = nil
-        G.GAME.hnds_blood_shop_upgrade_target = nil
-        G.GAME.hnds_blood_shop_upgrade_source_ante = nil
+        G.GAME.hnds_nightmare_shop_upgrade_pending = nil
+        G.GAME.hnds_nightmare_shop_upgrade_target = nil
+        G.GAME.hnds_nightmare_shop_upgrade_source_ante = nil
     end
 
     return false
@@ -846,7 +856,7 @@ G.FUNCS.hnds_upgrade_blind = function(e)
     local slot_is_current = blind_is_current(blind_choice)
         or (G.GAME.blind_on_deck == blind_choice)
         or (e.config.hnds_upgrade_ready == true)
-    if not platinum_active()
+    if not blind_raiser_active()
         or not blind_choice
         or (blind_choice ~= 'Small' and blind_choice ~= 'Big')
         or blind_is_finished(blind_choice)
@@ -883,7 +893,9 @@ G.FUNCS.hnds_upgrade_blind = function(e)
     if not (boss and G.P_BLINDS and G.P_BLINDS[boss]) then return end
 
     local current_upgrade_key = upgrade_key(blind_choice)
-    local upgrade_index = (G.GAME.hnds_blind_upgrades or 0) + 1
+    local actual_upgrade_count = (G.GAME.hnds_blind_upgrades or 0) + 1
+    local upgrade_index = HNDS.platinum_next_upgrade_exponent
+        and HNDS.platinum_next_upgrade_exponent() or actual_upgrade_count
     replacement_records()[current_upgrade_key] = {
         ante = current_ante(),
         blind_choice = blind_choice,
@@ -901,7 +913,10 @@ G.FUNCS.hnds_upgrade_blind = function(e)
     stop_use()
 
     upgraded_blinds()[current_upgrade_key] = true
-    G.GAME.hnds_blind_upgrades = upgrade_index
+    G.GAME.hnds_blind_upgrades = actual_upgrade_count
+    if HNDS.set_platinum_next_upgrade_exponent then
+        HNDS.set_platinum_next_upgrade_exponent(upgrade_index + 1)
+    end
     if HNDS.record_platinum_boss_effect then
         HNDS.record_platinum_boss_effect(boss, current_ante())
     end
