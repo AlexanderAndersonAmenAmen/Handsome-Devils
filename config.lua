@@ -5,6 +5,7 @@ local configDefinition = {
 	["enableMagicPackSpawning"] = false,
 	["enableCursedPackSpawning"] = false,
 	["enableCustomSounds"] = true,
+	["enableVanillaTweaks"] = true,
 }
 
 return configDefinition

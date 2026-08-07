@@ -48,15 +48,19 @@ SMODS.Joker({
 
 	loc_vars = function(self, info_queue, card)
 		local target_name
+		local displayed_edition = card.ability.extra.target_edition
 		local edition_name = ""
-		
-		if card.ability.extra.target_edition then
-			edition_name = localize({ type = 'name_text', key = card.ability.extra.target_edition, set = 'Edition' }) .. " "
-		end
 
 		if G.STAGE ~= G.STAGES.RUN then
 			local random_target, _ = HNDS.pick_discovered_joker_key('hnds_most_wanted_collection')
 			target_name = random_target and localize({ type = 'name_text', key = random_target, set = 'Joker' }) or localize("k_hnds_wanted")
+
+			local ed_pool = {'e_foil', 'e_holo', 'e_polychrome'}
+			displayed_edition = pseudorandom_element(ed_pool, pseudoseed('hnds_most_wanted_collection_edition'))
+		end
+
+		if displayed_edition then
+			edition_name = localize({ type = 'name_text', key = displayed_edition, set = 'Edition' }) .. " "
 		end
 
 		local full_target_string = edition_name .. (target_name or (card.ability.extra.target and localize({ type = 'name_text', key = card.ability.extra.target, set = 'Joker' })) or localize("k_hnds_wanted"))

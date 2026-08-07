@@ -13,6 +13,7 @@ SMODS.Consumable({
 	discovered = false,
 	hidden = true,
 	soul_set = "Joker",
+	soul_rate = 0.003,
 	atlas = "Consumables",
 	pos = { x = 1, y = 1 },
 	soul_pos = { x = 1, y = 2 },

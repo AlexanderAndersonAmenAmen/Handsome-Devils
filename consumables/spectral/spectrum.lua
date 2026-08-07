@@ -8,7 +8,7 @@ SMODS.Consumable {
     cost = 4,
     hidden = true,
     soul_set = "Base",
-    soul_rate = 0.04,
+    soul_rate = 0.003,
     use = function(self, card, area, copier)
         local enh_options = get_current_pool("Enhanced")
         for i, k in pairs(enh_options) do

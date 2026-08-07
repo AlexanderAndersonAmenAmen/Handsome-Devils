@@ -84,7 +84,7 @@ for pack_index, pack_pos in ipairs(magic_pack_positions) do
                 soulable = true,
                 key_append = "hnds_magic_card",
                 seal = pool == "Playing Card" and SMODS.poll_seal({ key = "magic_seal" }),
-                edition = pool == "Playing Card" and SMODS.poll_edition({ key = "magic_edition" })
+                edition = pool == "Playing Card" and HNDS.poll_non_vintage_edition({ key = "magic_edition" })
             }
         end,
         cry_digital_hallucinations = magic_diha_compat,

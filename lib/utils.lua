@@ -299,11 +299,23 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 		G.GAME.hnds_exchange_hand_penalty = 0
 	end
 
-	-- Exchange's forced opening draw is once per round. current_round is reused
-	-- by some game versions, so clear the guard explicitly instead of relying on
+	-- Save migration from the former Exchange implementation: retire its Bound
+	-- marker and preserve the paid-for card benefit as Negative when that card
+	-- does not already have a newer Edition.
+	for _, card in ipairs((G and G.playing_cards) or {}) do
+		if card and card.ability and card.ability.hnds_exchange_draw then
+			card.ability.hnds_exchange_draw = nil
+			if not card.edition and card.set_edition then
+				card:set_edition("e_negative", true, true)
+			end
+		end
+	end
+
+	-- Bound's forced opening draw is once per round. current_round is reused by
+	-- some game versions, so clear the guard explicitly instead of relying on
 	-- the table being replaced.
 	if G.GAME.current_round then
-		G.GAME.current_round.hnds_exchange_cards_drawn = nil
+		G.GAME.current_round.hnds_bound_cards_drawn = nil
 	end
 
 	-- Re-roll per-round joker state (suit/card changes every round)

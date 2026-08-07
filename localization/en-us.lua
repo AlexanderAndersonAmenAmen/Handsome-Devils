@@ -1,6 +1,130 @@
-return {
+local localization = {
 	descriptions = {
 		Joker = {
+
+			j_matador = {
+				name = "Matador",
+				text = {
+                    'Gain {C:money}$#1#{} per hand',
+                    'played vs {C:attention}Boss Blind{}',
+				},
+			},
+			j_superposition = {
+				name = "Superposition",
+				text = {
+                    'Create a {C:tarot}Fool{} card',
+                    'if poker hand contains',
+                    'an {C:attention}Ace{} and a {C:attention}Straight{}',
+                    '{C:inactive}(Must have room)',
+				},
+			},
+			j_splash = {
+                name = 'Splash',
+                text = {
+					'Played cards',
+				    '{C:attention}always{} score'
+				},
+			},
+			j_flower_pot = {
+				name = "Flower Pot",
+				text = {
+                    'Gives {X:mult,C:white}X{} Mult equal to the',
+                    'number of {C:attention}unique suits{}',
+                    'in played poker hand',
+                    '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)',
+				},
+			},
+			j_hnds_flower_pot_none = {
+				name = "Flower Pot",
+				text = {
+                    'Gives {X:mult,C:white}X{} Mult equal to the',
+                    'number of {C:attention}unique suits{}',
+                    'in played poker hand',
+					"{C:inactive}(Currently none)",
+				},
+			},
+			j_mail = {
+				name = "Mail-In Rebate",
+				text = {
+                    'Earn {C:money}$#1#{} for each',
+                    'discarded {C:attention}#2#{}, rank',
+                    'changes every round',
+				},
+			},
+			j_stone = {
+				name = "Stone Joker",
+				text = {
+					"Gives {C:chips}+#1#{} Chips for",
+					"each {C:attention}Stone Card{}",
+					"in your full deck",
+					"{C:inactive}(Currently {C:chips}+#2#{C:inactive} Chips)",
+				},
+			},
+			j_greedy_joker = {
+				name = "Greedy Joker",
+				text = {
+					"Played cards with",
+					"{C:diamonds}Diamond{} suit give",
+					"{C:mult}+#1#{} Mult when scored",
+				},
+			},
+			j_lusty_joker = {
+				name = "Lusty Joker",
+				text = {
+					"Played cards with",
+					"{C:hearts}Heart{} suit give",
+					"{C:mult}+#1#{} Mult when scored",
+				},
+			},
+			j_wrathful_joker = {
+				name = "Wrathful Joker",
+				text = {
+					"Played cards with",
+					"{C:spades}Spade{} suit give",
+					"{C:mult}+#1#{} Mult when scored",
+				},
+			},
+			j_gluttenous_joker = {
+				name = "Gluttonous Joker",
+				text = {
+					"Played cards with",
+					"{C:clubs}Club{} suit give",
+					"{C:mult}+#1#{} Mult when scored",
+				},
+			},
+			j_throwback = {
+				name = "Throwback",
+				text = {
+					"{X:mult,C:white}X#1#{} Mult for each",
+					"{C:attention}Blind{} skipped this run",
+					"{C:inactive}(Currently {X:mult,C:white}X#2#{C:inactive} Mult)",
+				},
+			},
+			j_seeing_double = {
+				name = "Seeing Double",
+				text = {
+					"Retrigger all {C:attention}7s{}",
+					"Retrigger them an",
+					"additional time if",
+					"their suit is {C:clubs}Clubs{}",
+				},
+			},
+			j_ring_master = {
+				name = "Showman",
+				text = {
+                    '{C:attention}Joker{}, {C:tarot}Tarot{}, {C:planet}Planet{}',
+                    'and {C:spectral}Spectral{} cards may',
+                    'appear multiple times',
+				},
+			},
+			j_hiker = {
+				name = "Hiker",
+				text = {
+					'Every played {C:attention}card{}',
+                    'permanently gains',
+                    '{C:chips}+#1#{} Chips when scoring',
+				},
+			},
 			j_hnds_color_of_madness = {
 				name = "Color of Madness",
 				text = {
@@ -33,8 +157,8 @@ return {
 				name = "Supersuit",
 				text = {
 					"Retrigger all",
-					"cards with {V:1}#1#{} suit,",
-					"{s:0.8}suit changes at end of round",
+					"cards with {V:1}#1#{} suit",
+					"{s:0.8}Suit changes every round",
 				},
 				unlock = {
 					"Score {C:attention}4{} Flushes",
@@ -60,7 +184,7 @@ return {
 			j_hnds_perfectionist = {
 				name = "Perfectionist",
 				text = {
-					"When you Enhance",
+					"When you enhance",
 					"an Enhanced card,",
 					"it permanently gains",
 					"{C:mult}+#1#{} Mult and {C:chips}+#2#{} Chips",
@@ -132,7 +256,7 @@ return {
 			j_hnds_coffee_break = {
 				name = "Coffee Break",
 				text = {
-					"After {C:attention}2{} rounds, sell",
+					"After {C:attention}2 Blinds{}, sell",
 					"this card to earn {C:money}$#3#{}",
 					"Payout decreases by {C:money}$1{}",
 					"for every card played",
@@ -213,8 +337,8 @@ return {
 				name = "Meme",
 				text = {
 					"This Joker gains",
-					"{X:mult,C:white}X0.05{} Mult per unique",
-					"{C:attention}suit{} in scored hand",
+					"{X:mult,C:white}X0.05{} Mult per {C:attention}unique",
+					"suit in scored hand",
 					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
 				},
 				unlock = {
@@ -228,7 +352,7 @@ return {
 				text = {
 					"If {C:attention}Blind{} is defeated in",
 					"{C:attention}one hand{}, pop a Balloon",
-					"and create a random {C:attention}Tag",
+					"to create a random {C:attention}Tag",
 					"{C:inactive}({C:attention}#1#{C:inactive}/#2# Balloons left)",
 				},
 				unlock = {
@@ -242,7 +366,7 @@ return {
 				text = {
 					"Gains {X:mult,C:white}X#2#{} Mult",
 					"for every Joker",
-					"{C:attention}sold{} during a round",
+					"{C:attention}sold{} while in {C:attention}Blind",
 					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
 				},
 				unlock = {
@@ -271,7 +395,7 @@ return {
 				text = {
 					"When hand is played, {C:red}destroy",
 					"a random {C:attention}held in hand{} card",
-					"and gain its {C:mult}Mult{} and {C:chips}Chips",
+					"to gain its {C:mult}Mult{} and {C:chips}Chips",
 					"{C:inactive}(Currently{} {C:mult}+#2#{} {C:inactive}Mult,{} {C:chips}+#1#{} {C:inactive}Chips)",
 				},
 				unlock = {
@@ -283,10 +407,10 @@ return {
 			j_hnds_krusty = {
 				name = "Clown Krusty",
 				text = {
-					"Adds {C:dark_edition}Negative{}",
-					"edition to {C:attention}Food Jokers",
-					"{C:green}#1# in #2#{} chance to create",
-					"one at end of round",
+					"Sell this card to create {C:attention}#1#",
+					"{C:attention}#2#{} {C:inactive}(Max of #3#)",
+					"Upgrades for every",
+					"{C:money}$#4#{} {C:inactive}[#5#]{} spent",
 				}
 			},
 			j_hnds_energized = {
@@ -305,10 +429,9 @@ return {
 			j_hnds_pennywise = {
 				name = "Pennywise",
 				text = {
-					"If {C:attention}Boss Blind{} is defeated in",
-					"{C:attention}one hand{}, gain its {C:legendary}Soul{} in a",
-					"form of a {C:dark_edition}Negative{} Joker",
-					"Retrigger your {C:legendary}Souls{}"
+					"If {C:attention}Boss Blind{} is defeated",
+					"in {C:attention}one hand{}, gain its {C:legendary}Soul{}",
+					"as a {C:dark_edition}Negative{} Joker"
 				}
 			},
 			j_hnds_most_wanted = {
@@ -316,8 +439,8 @@ return {
 				text = {
 					"{C:attention}#1#{}",
 					"appears {C:attention}#2#X{} more often",
-					"Set its cost to {C:money}$0{} if you",
-					"sell this card while in shop"
+					"It becomes free when",
+					"you sell this card"
 				},
 				unlock = {
 					"Have {C:attention}5 Rare{}",
@@ -331,8 +454,7 @@ return {
 					"When {C:attention}Blind{} is selected,",
 					"eats all held {C:attention}consumables{}",
 					"Create a random {C:attention}Tag{} for",
-					"every {C:attention}#2#{} cards eaten",
-					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/#2#)"
+					"every {C:attention}2{} {C:inactive}[#1#]{} cards eaten",
 				},
 				unlock = {
 					"Create a total",
@@ -393,7 +515,7 @@ return {
 				name = "Art the Clown",
 				text = {
 					"Sell this card to add",
-					"a copy of it to the next",
+					"Art the Clown to the next",
 					"{C:attention}Booster Pack{} you open and",
 					"create a random {C:attention}Tag"
 				}
@@ -402,7 +524,8 @@ return {
 				name = "Public Nuisance",
 				text = {
 					"Keep playing {C:blue}Hands{} after",
-					"{C:attention}Blind{} score was met",
+					"{C:attention}Blind{} score was met and",
+					"gain {C:money}$#1#{} for each played"
 				},
 				unlock = {
 					"Use all {C:blue}hands{}",
@@ -413,9 +536,10 @@ return {
 			j_hnds_bizzare_joker = {
 				name = "Bizarre Joker",
 				text = {
-					"Gains {X:mult,C:white}XMult{}, {C:mult}+Mult{}, {C:chips}+Chips{} or",
-					"{C:money}Sell Value{} based on the suit chosen",
-					"that changes every round",
+					"Gains {X:mult,C:white}XMult{}, {C:mult}+Mult{}, {C:chips}+Chips{}",
+					"or {C:attention}sell value{} based on",
+					"the suit chosen that",
+					"changes every round"
 				},
 				unlock = {
 					"Have all cards",
@@ -459,16 +583,6 @@ return {
 					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
 				},
 			},
-			j_hnds_arthur = {
-				name = "Arthur",
-				text = {
-					"{C:attention}+#2#{} free {C:green}Reroll{} for every",
-					"scoring {V:1}#3#{} card played",
-					"Destroys scored {V:1}#3#",
-					"{s:0.8}Suit changes every hand",
-					"{C:inactive}(Currently {C:attention}#1#{C:green} Rerolls{C:inactive})"
-				}
-			},
 			j_hnds_one_punchline_man = {
 				name = "One Punchline Man",
 				text = {
@@ -487,7 +601,7 @@ return {
 				text = {
 					"After playing {C:attention}8{} {C:attention}unique{}",
 					"poker hands, sell this card",
-					"to create {C:attention}#3#{} random Tags",
+					"to create {C:attention}#3#{} random {C:attention}Tags",
 					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/8){}",
 				},
 				unlock = {
@@ -499,9 +613,9 @@ return {
 			j_hnds_dynamic_duos = {
 				name = "Dynamic Duos",
 				text = {
-					"If played hand is a {C:attention}Two Pair{}",
-					"of {C:attention}odd{} and {C:attention}even rank{} cards,",
-					"retrigger them",
+					"If played hand is a",
+					"{C:attention}Two Pair{} of {C:attention}odd{} and {C:attention}even{}",
+					"rank cards, retrigger them",
 					"{C:inactive}(ex: 6, 6, 9, 9)"
 				},
 				unlock = {
@@ -513,9 +627,9 @@ return {
 			j_hnds_imposter = {
 				name = "Imposter",
 				text = {
-					"Scored {C:attention}face cards{} count",
-					"as any {C:attention}rank{} for all",
-					"Joker effects",
+					"Scored {C:attention}face cards{}",
+					"count as any rank",
+					"for Joker effects",
 				},
 				unlock = {
 					"Win {C:attention}3{} rounds",
@@ -591,9 +705,9 @@ return {
 			j_hnds_angry_mob = {
 				name = "Angry Mob",
 				text = {
-					"{X:mult,C:white}X#1#{} Mult,",
-					"{C:attention}shops{} no longer",
-					"offer {C:attention}Jokers"
+					"{X:mult,C:white}X#1#{} Mult",
+					"Jokers don't",
+					"appear in shop"
 				},
 				unlock = {
 					"Don't buy Jokers",
@@ -604,12 +718,20 @@ return {
 			j_hnds_sarmenti = {
 				name = "Sarmenti",
 				text = {
-					"{C:attention}Once{} per round, give",
-					"scored cards random",
-					"{V:1}#1#{} if played hand",
-					"contains a {C:attention}Four of a Kind{}",
-					"{s:0.8}Effect changes every round",
+					"Randomize {C:dark_edition}Editions{} of",
+					"Jokers to the right if",
+					"played hand contains",
+					"a {C:attention}Four of a Kind{}",
 				}
+			},
+			j_hnds_arthur = {
+				name = "Arthur",
+				text = {
+					"Destroy scored {V:1}#3#{}",
+					"cards and gain {C:attention}#2#{} {C:inactive}[#1#]{} free",
+					"{C:green}Reroll{} for each destroyed",
+					"{s:0.8}Suit changes every hand"
+				},
 			},
 			j_hnds_creepy = {
 				name = "Creepy Joker",
@@ -814,7 +936,27 @@ return {
 				}
 			},
 		},
+		Tarot = {
+			c_hnds_contagion_death = {
+				name = "Death",
+				text = {
+					"Select {C:attention}3{} cards,",
+					"convert them all",
+					"into copies of the",
+					"{C:attention}rightmost card{}",
+				},
+			},
+		},
 		Spectral = {
+
+			c_black_hole = {
+				name = "Black Hole",
+				text = {
+					"Double the",
+					"level of all",
+					"{C:legendary,E:1}poker hands{}",
+				},
+			},
             c_hnds_contagion_talisman = {
                 name = "Talisman",
                 text = {
@@ -866,10 +1008,9 @@ return {
             c_hnds_exchange_contagion = {
                 name = "Exchange",
                 text = {
-                    "Add {C:dark_edition}Negative{}",
-                    "to {C:attention}#1#{} selected",
-                    "cards in your hand,",
-					"{C:blue}-#2#{} hand each round",
+                    "Add {C:dark_edition}Negative{} effect to",
+                    "{C:attention}#1#{} selected cards in hand,",
+                    "{C:blue}-1{} hand each round",
                 },
             },
 			c_hnds_abyss = {
@@ -892,17 +1033,17 @@ return {
 				name = "Petrify",
 				text = {
 					"Enhances all {C:attention}face{} cards",
-					"in hand into {C:attention}Stone Cards{},",
-					"gain {C:money}$#1#{} for each petrified",
+					"in hand to {C:attention}Stone Cards{},",
+					"gain {C:money}$#1#{} for each",
+					"petrified card"
 				},
 			},
 			c_hnds_exchange = {
 				name = "Exchange",
 				text = {
-					"Add {C:dark_edition}Negative{}",
-					"to {C:attention}#1#{} selected",
-					"card in your hand,",
-					"{C:blue}-#2#{} hand each round",
+					"Add {C:dark_edition}Negative{} effect to",
+					"{C:attention}1{} selected card in hand,",
+					"{C:blue}-1{} hand each round",
 				},
 			},
 			c_hnds_possess = {
@@ -924,15 +1065,17 @@ return {
 			c_hnds_collision = {
 				name = "Collision",
 				text = {
-					"Enhances {C:attention}#1#{} selected cards",
-					"to {C:dark_edition}#2#s",
+					"Enhances {C:attention}#1#{}",
+					"selected cards to",
+					"{C:dark_edition}#2#s",
 				},
 			},
 			c_hnds_gateway = {
 				name = "Gateway",
 				text = {
-					"Enhances {C:attention}#1#{} selected cards",
-					"to {C:dark_edition}#2#s",
+					"Enhances {C:attention}#1#{}",
+					"selected cards to",
+					"{C:dark_edition}#2#s",
 				},
 			},
 			c_hnds_spectrum = {
@@ -940,7 +1083,7 @@ return {
 				text = {
 					"Gives each card in",
 					"your hand a random",
-					"{C:attention}Enhancement{} and {C:attention}Seal"
+					"{E:1,C:legendary}Enhancement{} and {E:1,C:legendary}Seal"
 				}
 			}
 		},
@@ -948,13 +1091,46 @@ return {
 			e_hnds_vintage = {
 				name = "Vintage",
 				text = {
-					"Earn additional {C:money}$1",
-					"per {C:money}$1{} of {C:attention}interest",
-					"at end of round",
+					"{C:money}+$2{} {C:attention}sell value{}",
+					"every round",
+				},
+			},
+			e_hnds_vintage_playing_card = {
+				name = "Vintage",
+				text = {
+					"Earn {C:money}$3{} when this",
+					"card is played",
+					"and scores",
+				},
+			},
+			e_negative_playing_card = {
+				name = "Negative",
+				text = {
+					"{C:attention}+1{} hand size",
 				},
 			},
 		},
 		Other = {
+			hnds_exchange_draw = {
+				name = "Bound",
+				text = {
+					"Always drawn at the",
+					"start of each round",
+				},
+			},
+			hnds_bound = {
+				name = "Bound",
+				text = {
+					"Always drawn at the",
+					"start of each round",
+				},
+			},
+			hnds_negative_playing_card = {
+				name = "Negative",
+				text = {
+					"{C:attention}+1{} hand size",
+				},
+			},
 			hnds_jester_temp_negative = {
 				name = "Chosen by Carcosa",
 				text = {
@@ -1041,7 +1217,11 @@ return {
 			},
 			hnds_soul = {
 				name = "Soul",
-				text = { "Created by {C:legendary,E:1}Pennywise" }
+				text = {
+					"No {C:attention}sell value",
+					"Remove this when",
+				    "you lose {C:legendary,E:1}Pennywise",
+			 }
 			},
 			p_hnds_magic = {
 				name = "Magic Pack",
@@ -1127,8 +1307,8 @@ return {
 			},
 			offer_copy_random_planet = {
 				text = {
-					"Creates a {C:planet}Planet{}",
-					"card each round",
+					"Creates {C:attention}2{} {C:planet}Planet{}",
+					"cards each round",
 				},
 			},
 			offer_random_enhancement = {
@@ -1218,6 +1398,40 @@ return {
 			},
 		},
 		Voucher = {
+			v_magic_trick = {
+				name = "Magic Trick",
+				text = {
+					"{C:attention}Playing cards{} can be",
+					"purchased from the",
+					"shop and may have",
+					"an {C:attention}Enhancement{}",
+				},
+			},
+			v_illusion = {
+				name = "Illusion",
+				text = {
+					"{C:attention}Playing cards{} in",
+					"shop may have an",
+					"{C:dark_edition}Edition{} and/or {C:attention}Seal{}",
+				},
+			},
+			v_planet_merchant = {
+				name = "Planet Merchant",
+				text = {
+					"When you buy a",
+					"{C:planet}Planet{} card, create",
+					"an extra copy of it",
+					"{C:inactive}(Must have room)",
+				},
+			},
+			v_planet_tycoon = {
+				name = "Planet Tycoon",
+				text = {
+					"When you buy a",
+					"{C:planet}Planet{} card, create",
+					"a {C:dark_edition}Negative{} copy of it",
+				},
+			},
 			v_hnds_tag_hunter = {
 				name = "Tag Hunter",
 				text = {
@@ -1240,15 +1454,15 @@ return {
 			v_hnds_premium = {
 				name = "Premium",
 				text = {
-					"{C:uncommon}Uncommon{} jokers appear",
-					"{C:attention}#1#X{} as often",
+					"{C:uncommon}Uncommon Jokers",
+					"appear {C:attention}#1#X{} as often",
 				},
 			},
 			v_hnds_top_shelf = {
 				name = "Top Shelf",
 				text = {
-					"{C:rare}Rare{} jokers appear",
-					"{C:attention}#1#X{} as often",
+					"{C:rare}Rare Jokers{}",
+					"appear {C:attention}#1#X{} as often",
 				},
 				unlock = {
 					"Buy a total of {C:attention}50{}",
@@ -1259,15 +1473,15 @@ return {
 			v_hnds_stuffed = {
 				name = "Stuffed",
 				text = {
-					"{C:attention}+1{} card option available",
-					"in {C:attention}Booster Packs{}",
+					"{C:attention}+1{} extra card in",
+					"all {C:attention}Booster Packs{}",
 				},
 			},
 			v_hnds_wholesale = {
 				name = "Wholesale",
 				text = {
 					"{C:attention}+1{} Booster Pack slot",
-					"available in the shop",
+					"available in shop",
 				},
 				unlock = {
 					"Buy at least {C:attention}40{}",
@@ -1278,14 +1492,16 @@ return {
 			v_hnds_soaked = {
 				name = "Soaked and Wet",
 				text = {
-					"Leftmost card {C:attention}held in hand",
+					"{C:attention}Leftmost{} card",
+					"held in hand",
 					"counts in scoring"
 				}
 			},
 			v_hnds_beyond = {
 				name = "Go Beyond",
 				text = {
-					"Rightmost card {C:attention}held in hand",
+					"{C:attention}Rightmost{} card",
+					"held in hand",
 					"counts in scoring"
 				},
 				unlock = {
@@ -1307,24 +1523,67 @@ return {
 			},
 		},
 		Enhanced = {
+
+			m_wild = {
+				name = "Wild Card",
+				text = {
+					"Can't be flipped",
+					"or debuffed",
+					"Can be used",
+					"as any suit",
+				},
+			},
 			m_hnds_aberrant = {
 				name = "Aberrant Card",
 				text = {
-					"Gains {C:mult}+#1#{} Mult",
-					"when held in hand",
-					"{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult)"
+					"Can be fused with {C:attention}2{}",
+					"other Enhancements",
+					"{C:red}3rd destroys card{}",
+					"{C:inactive}#1#{}",
+				},
+			},
+			m_hnds_aberrant_collection = {
+				name = "Aberrant Card",
+				text = {
+					"Can be fused with {C:attention}2{}",
+					"other Enhancements",
+					"{C:red}3rd destroys card{}",
 				},
 			},
 			m_hnds_obsidian = {
 				name = "Obsidian Card",
 				text = {
-					"Draw {C:attention}2{} extra cards",
-					"after this is {C:attention}played{}",
-					"or {C:attention}discarded{}"
+					"Permanently becomes",
+					"{C:dark_edition}Bound{} if scored in {C:attention}#1#{}",
+					"final hands of round",
+					"{C:inactive}(Currently {C:attention}#2#{}{C:inactive}/2)",
+				},
+			},
+			m_hnds_obsidian_complete = {
+				name = "Obsidian Card",
+				text = {
+					"Permanently {C:dark_edition}Bound{}",
 				},
 			},
 		},
 		Tag = {
+
+			tag_juggle = {
+				name = "Juggle Tag",
+				text = {
+					"{C:attention}+#1#{} hand size,",
+					"reduces by {C:red}1{}",
+					"every round",
+				},
+			},
+			tag_investment = {
+				name = "Investment Tag",
+				text = {
+					"After defeating",
+					"the {C:attention}Boss Blind{} of",
+					"the Ante, gain {C:money}$#1#{}",
+				},
+			},
 			tag_hnds_vintage_tag = {
 				name = "Vintage Tag",
 				text = {
@@ -1349,10 +1608,10 @@ return {
 			tag_hnds_dna_tag = {
 				name = "DNA Tag",
 				text = {
-					"Next shop Joker is free",
-					"and gets {C:attention}duplicated{}",
-					"when you buy it",
-					"{C:inactive}(Must have room){}",
+					"Next shop Joker",
+					"is free and creates",
+					"a {C:attention}copy{} when bought",
+					"{C:inactive}(Must have room){}"
 				},
 			},
 			tag_hnds_cursed_tag = {
@@ -1376,7 +1635,6 @@ return {
 				name = "Platinum Stake",
 				text = {
 					"Defeat Ante {C:attention}10 Boss{} to win",
-					"{C:attention}Blinds{} can be upgraded",
 					"{s:0.8}Applies all previous Stakes",
 				}
 			},
@@ -1384,12 +1642,24 @@ return {
 				name = "Blood Stake",
 				text = {
 					"Shop can have {C:red}Cursed{} Jokers",
-					"Leaving one there upgrades next {C:attention}Blind",
+					"{C:inactive,s:0.8}(Extra {C:green,s:0.8}power{} {C:inactive,s:0.8}for a {C:red,s:0.8}price{}{C:inactive,s:0.8})",
 					"{s:0.8}Applies all previous Stakes",
 				},
 				unlock = {
 					'Win with this',
 					'deck on Platinum Stake',
+				}
+			},
+			stake_hnds_nightmare = {
+				name = "Nightmare Stake",
+				text = {
+					"Leaving {C:red}Cursed{} Joker in",
+					"shop upgrades next {C:attention}Blind",
+					"{s:0.8}Applies all previous Stakes",
+				},
+				unlock = {
+					'Win with this',
+					'deck on Blood Stake',
 				}
 			}
 		},
@@ -1415,6 +1685,13 @@ return {
 					"50% of required score",
 				},
 			},
+			bl_hnds_perilous_pact_active = {
+				name = "Perilous Pact",
+				text = {
+					"Caps each hand at",
+					"{C:attention}#1#%{} of required score",
+				},
+			},
 			bl_hnds_sinful_soul = {
 				name = "Sinful Soul",
 				text = {
@@ -1433,6 +1710,8 @@ return {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_krusty_voucher_tag = "Voucher Tag",
+			k_hnds_krusty_voucher_tags = "Voucher Tags",
 			hnds_upgrade_blind = "Upgrade Blind",
 			hnds_blind_raiser_tooltip_title = "Score if upgraded",
 			hnds_blind_raiser_tooltip_current_blind = "Current Blind: #1#",
@@ -1442,6 +1721,7 @@ return {
 			k_hnds_jester_negative = "Joker Negatived!",
 			k_hnds_jester_fade = "Faded...",
 			k_hnds_clown_eat = "Consumed!",
+			k_hnds_ritual_complete = "Ritual complete",
 			k_hnds_cursed_offers = "Cursed Offers",
 			k_hnds_cursed_prices = "Cursed Prices",
 			k_hnds_boom_timer = "!!!",
@@ -1467,6 +1747,8 @@ return {
 			k_hnds_sarmenti_active = "active",
 			k_hnds_sarmenti_inactive = "inactive",
 			k_hnds_sarmenti_enhanced = "Enhanced!",
+			k_hnds_free_reroll = "+1 Free Reroll",
+			k_hnds_arthurs_suit = " ",
 			k_hnds_enhancements = "Enhancements",
 			k_hnds_creepy_1 = "It was the Plant...",
 			k_hnds_creepy_2 = "...it dragged us",
@@ -1497,9 +1779,12 @@ return {
 			hnds_config_UltraSpec = "Enable Ultra Spectral packs spawning",
 			hnds_config_MagicPack = "Enable Magic packs spawning",
 			hnds_config_CursedPack = "Enable Cursed packs spawning",
-			hnds_config_CustomSounds = "Enable custom joker sounds"
+			hnds_config_CustomSounds = "Enable custom joker sounds",
+			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
 		},
 		labels = {
+			hnds_exchange_draw = "Bound",
+			hnds_bound = "Bound",
 			hnds_vintage = "Vintage",
 			hnds_black_seal = "Black Seal",
 			hnds_spectralseal_seal = "Spectral Seal",
@@ -1531,3 +1816,26 @@ return {
 		},
 	},
 }
+
+-- Vanilla balance text must follow the restart-required config toggle. When
+-- disabled, omit these entries so Balatro's original localization remains.
+local vanilla_tweaks_config = hnds_config
+	or (SMODS and SMODS.Mods and SMODS.Mods.HandsomeDevils and SMODS.Mods.HandsomeDevils.config)
+	or (SMODS and SMODS.current_mod and SMODS.current_mod.config)
+if vanilla_tweaks_config and vanilla_tweaks_config.enableVanillaTweaks == false then
+	local joker_keys = {
+		"j_matador", "j_superposition", "j_splash", "j_flower_pot",
+		"j_mail", "j_stone", "j_greedy_joker", "j_lusty_joker",
+		"j_wrathful_joker", "j_gluttenous_joker", "j_throwback",
+		"j_seeing_double", "j_ring_master", "j_hiker",
+	}
+	for _, key in ipairs(joker_keys) do
+		localization.descriptions.Joker[key] = nil
+	end
+	localization.descriptions.Spectral.c_black_hole = nil
+	localization.descriptions.Enhanced.m_wild = nil
+	localization.descriptions.Tag.tag_juggle = nil
+	localization.descriptions.Tag.tag_boss = nil
+end
+
+return localization

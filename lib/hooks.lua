@@ -135,7 +135,8 @@ function HNDS.cap_perilous_pact_score(score)
         or blind_key == "perilous_pact"
     if not is_perilous then return score end
 
-    local cap = G.GAME.blind.chips * 0.50
+    local fraction = tonumber(G.GAME.hnds_perilous_pact_cap) or 0.50
+    local cap = G.GAME.blind.chips * fraction
     local ok, exceeds = pcall(function()
         local lhs = type(to_big) == "function" and to_big(score) or score
         local rhs = type(to_big) == "function" and to_big(cap) or cap
@@ -723,13 +724,36 @@ end
 
 -- Count a Tag exactly once when it actually triggers. Creation, holding and
 -- copying do not count by themselves; a copied Tag counts when it later pops.
+local function hnds_tag_key(tag)
+    if not tag then return nil end
+    return tag.key
+        or (tag.config and tag.config.key)
+        or (tag.config and tag.config.center and tag.config.center.key)
+end
+
+local function hnds_is_investment_tag(tag)
+    local key = hnds_tag_key(tag)
+    return key == 'tag_investment'
+        or key == 'investment'
+        or (tag and tag.name == 'Investment Tag')
+end
+
 if Tag and type(Tag.apply_to_run) == "function" and not HNDS._tag_pop_hooked then
     HNDS._tag_pop_hooked = true
     local tag_apply_to_run_ref = Tag.apply_to_run
 
     function Tag:apply_to_run(context)
         local was_triggered = self.triggered == true
-        local result = tag_apply_to_run_ref(self, context)
+        local result
+
+        if hnds_is_investment_tag(self) then
+            -- Investment is handled directly by the real physical Boss-slot
+            -- defeat hook in vanilla_investment_tag.lua. Suppress vanilla's
+            -- broad last_blind.boss check to avoid upgraded Small/Big payouts.
+            result = false
+        else
+            result = tag_apply_to_run_ref(self, context)
+        end
 
         if not was_triggered
             and self.triggered == true
@@ -932,7 +956,14 @@ HNDS.strip_other_stickers = hnds_strip_other_stickers
 -- CONTAGION CONSUMABLE SELECTION + RUNTIME STICKER SAFETY NET
 -------------------------------------------------------------------
 
+local hnds_contagion_cache_time = nil
+local hnds_contagion_cache_bonus = 0
 local function hnds_contagion_bonus()
+    local now = G and G.TIMERS and (G.TIMERS.REAL or G.TIMERS.TOTAL)
+    if now ~= nil and now == hnds_contagion_cache_time then
+        return hnds_contagion_cache_bonus
+    end
+
     local bonus = 0
     if G and G.jokers and G.jokers.cards then
         for _, joker in ipairs(G.jokers.cards) do
@@ -943,6 +974,8 @@ local function hnds_contagion_bonus()
             end
         end
     end
+    hnds_contagion_cache_time = now
+    hnds_contagion_cache_bonus = bonus
     return bonus
 end
 
@@ -1010,7 +1043,10 @@ local function hnds_sync_contagion_selection(card)
 
     local center_key = card.config and card.config.center and card.config.center.key
     local is_death = center_key == 'c_death' or card.ability.name == 'Death'
-    local bonus = is_death and 0 or hnds_contagion_bonus()
+    local bonus = hnds_contagion_bonus()
+    -- Death is a special Contagion synergy: it always expands from 2 targets
+    -- to exactly 3, even if several Contagions are present.
+    if is_death then bonus = bonus > 0 and 1 or 0 end
     local is_aura = center_key == 'c_aura' or card.ability.name == 'Aura'
 
     -- Historical Steamodded spelling.
@@ -1036,6 +1072,17 @@ local function hnds_sync_contagion_selection(card)
     hnds_sync_contagion_container(card.ability, bonus)
 end
 
+local function hnds_card_needs_contagion_sync(card)
+    if not (card and card.ability) then return false end
+    local center = card.config and card.config.center
+    local set = center and center.set or card.ability.set
+    return set == 'Tarot' or set == 'Spectral'
+        or card.ability.consumeable ~= nil
+        or card.ability.consumable ~= nil
+        or card.ability.max_highlighted ~= nil
+        or card.ability.hnds_contagion_bonus ~= nil
+end
+
 if Card and Card.update and not Card._hnds_wrapped_update_runtime then
     Card._hnds_wrapped_update_runtime = true
     local card_update_ref = Card.update
@@ -1044,8 +1091,30 @@ if Card and Card.update and not Card._hnds_wrapped_update_runtime then
         if hnds_card_has_cursed(self) then
             hnds_strip_other_stickers(self)
         end
-        hnds_sync_contagion_selection(self)
+        -- Previously every Card scanned the complete Joker area every frame.
+        -- Restrict synchronization to actual consumables/targeting cards.
+        if hnds_card_needs_contagion_sync(self) then
+            hnds_sync_contagion_selection(self)
+        end
+        return ret
+    end
+end
+
+-- Ante-10 maintenance is global work and must run once per frame, not once for
+-- every Card object. The old placement caused progressively worse frame times
+-- as deck/shop/collection card counts grew.
+if Game and Game.update and not Game._hnds_wrapped_update_runtime then
+    Game._hnds_wrapped_update_runtime = true
+    local game_update_runtime_ref = Game.update
+    function Game:update(dt)
+        local ret = game_update_runtime_ref(self, dt)
         hnds_update_ante_10_runtime()
+        if HNDS and HNDS.cleanup_removed_reroll_tag_rework then
+            HNDS.cleanup_removed_reroll_tag_rework()
+        end
+        if HNDS and HNDS.install_investment_blind_hooks then
+            HNDS.install_investment_blind_hooks()
+        end
         return ret
     end
 end
@@ -1076,6 +1145,19 @@ local function hnds_copy_highlighted_cards()
     return selected
 end
 
+local function hnds_rightmost_selected_card(selected)
+    local rightmost, rightmost_index = nil, -1
+    if not (G and G.hand and G.hand.cards) then return selected and selected[#selected] end
+    local selected_lookup = {}
+    for _, card in ipairs(selected or {}) do selected_lookup[card] = true end
+    for index, card in ipairs(G.hand.cards) do
+        if selected_lookup[card] and index > rightmost_index then
+            rightmost, rightmost_index = card, index
+        end
+    end
+    return rightmost or (selected and selected[#selected])
+end
+
 local function hnds_contagion_copy_count(card)
     local extra = card and card.ability and card.ability.extra
     if type(extra) == 'number' then return math.max(0, math.floor(extra)) end
@@ -1095,7 +1177,9 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
         local supported = hnds_contagion_seal_spectrals[center_key]
             or center_key == 'c_aura'
             or center_key == 'c_cryptid'
+            or center_key == 'c_death'
         local selected = (bonus > 0 and supported) and hnds_copy_highlighted_cards() or nil
+        local death_source = center_key == 'c_death' and selected and hnds_rightmost_selected_card(selected) or nil
 
         local ret = use_consumeable_contagion_ref(self, area, copier)
 
@@ -1122,7 +1206,20 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
                     for i = 2, #selected do
                         local target = selected[i]
                         if target and not target.edition then
-                            target:set_edition(poll_edition('hnds_contagion_aura_' .. tostring(i), nil, true, true), true)
+                            target:set_edition(HNDS.poll_non_vintage_edition('hnds_contagion_aura_' .. tostring(i), nil, true, true), true)
+                        end
+                    end
+                    return true
+                end,
+            }))
+        elseif center_key == 'c_death' and death_source and #selected == 3 then
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                delay = 0.15,
+                func = function()
+                    for _, target in ipairs(selected) do
+                        if target and target ~= death_source then
+                            copy_card(death_source, target)
                         end
                     end
                     return true
@@ -1193,6 +1290,19 @@ if Card and Card.can_use_consumeable and not Card._hnds_wrapped_contagion_can_us
             end
             return true
         end
+        if hnds_contagion_center_key(self) == 'c_death' and hnds_contagion_bonus() > 0 then
+            if not skip_check and ((G.play and #G.play.cards > 0)
+                or (G.CONTROLLER and G.CONTROLLER.locked)
+                or (G.GAME and G.GAME.STOP_USE and G.GAME.STOP_USE > 0))
+            then
+                return false
+            end
+            local valid_state = any_state or G.STATE == G.STATES.SELECTING_HAND
+                or G.STATE == G.STATES.TAROT_PACK
+                or G.STATE == G.STATES.SPECTRAL_PACK
+            return valid_state and G.hand and G.hand.highlighted
+                and #G.hand.highlighted == 3
+        end
         return vanilla_result
     end
 end
@@ -1225,6 +1335,7 @@ local hnds_contagion_loc_targets = {
     c_medium = 'Purple',
     c_aura = 'Aura',
     c_cryptid = 'Cryptid',
+    c_death = 'Death',
 }
 
 local function hnds_add_contagion_spectral_info(info_queue, kind)
@@ -1280,7 +1391,7 @@ if not _G._hnds_contagion_generate_card_ui_wrapped then
     local generate_card_ui_ref = generate_card_ui
 
     function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
-        if _c and _c.set == 'Spectral' and _c.key
+        if _c and (_c.set == 'Spectral' or _c.key == 'c_death') and _c.key
             and not _c.generate_ui
             and hnds_contagion_bonus() > 0
             and hnds_contagion_loc_targets[_c.key]
@@ -1464,33 +1575,39 @@ if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 	SMODS._hnds_wrapped_create_card_shop = true
 	local smods_create_card_ref = SMODS.create_card
 	function SMODS.create_card(args)
+		HNDS = HNDS or {}
+		local previous_type = HNDS._creating_smods_card_type
+		HNDS._creating_smods_card_type = type(args) == 'table' and args.type or nil
 		local created_card = smods_create_card_ref(args)
+		HNDS._creating_smods_card_type = previous_type
 		hnds_finalize_generated_curse(created_card)
 		return created_card
 	end
 end
 
 -------------------------------------------------------------------
--- CREATE_CARD WRAPPER (Krusty + Devil's Round)
+-- CREATE_CARD WRAPPER (Devil's Round)
 -------------------------------------------------------------------
 
--- Consolidated hook: Krusty negative edition + Devil's Round curse application.
--- Each feature is a separate concern; both run independently.
+-- Apply Devil's Round curses to centrally generated cards.
 if not _G._hnds_wrapped_create_card then
 	_G._hnds_wrapped_create_card = true
 	local create_card_ref = create_card
 	function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+		-- Sticker.should_apply only receives the destination area. Preserve the
+		-- creation append/source while the underlying generator performs its
+		-- central sticker roll so Cursed can reject non-pack generation effects.
+		local previous_source = HNDS and HNDS._creating_card_source
+		HNDS = HNDS or {}
+		HNDS._creating_card_source = {
+			type = _type,
+			area = area,
+			forced_key = forced_key,
+			key_append = key_append,
+		}
 		local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+		HNDS._creating_card_source = previous_source
 
-		-- Feature: Krusty gives negative edition to Food cards when created
-		if card and next(SMODS.find_card("j_hnds_krusty")) and card.config then
-			for _, t in ipairs(G.P_CENTER_POOLS.Food) do
-				if t.key == card.config.center.key then
-					card:set_edition("e_negative")
-					break
-				end
-			end
-		end
 
 		-- Feature: Devil's Round challenge - curse jokers on creation
 		if HNDS and HNDS.try_devils_round_curse then

@@ -109,12 +109,16 @@ end
 -- `blind` should be an instance of `Blind`
 -- for modded, get_hnds_soul(self, seed) can be added to support this. seed should in some way be used for the internal rng
 HNDS.get_blind_soul = function (blind, seed)
-	local blind_obj = blind.config.blind
+	local blind_obj = blind and blind.config and blind.config.blind
+	if type(blind_obj) ~= "table" then return { key = "j_joker" } end
     local k = blind_obj.key
+    seed = seed or ("hnds_pennywise_preview_" .. tostring(k or "unknown"))
     if type(blind_obj.get_hnds_soul) == "function" then
-        return blind_obj:get_hnds_soul(seed)
+        local ok, custom_soul = pcall(blind_obj.get_hnds_soul, blind_obj, seed)
+        if ok and type(custom_soul) == "table" then return custom_soul end
+    end
     -- GIANT FUCKING ELSEIF CHAIN
-    elseif k == "bl_hook" then return { key = "j_drunkard", }
+    if k == "bl_hook" then return { key = "j_drunkard", }
     elseif k == "bl_ox" then return { key = "j_matador" }
     elseif k == "bl_house" then return { key = pseudorandom_element({ "j_burnt", "j_family" }, seed) }
     elseif k == "bl_wall" then return { key = pseudorandom_element({ "j_stone", "j_marble", "j_castle", "j_ancient", "j_bloodstone" }, seed) }
@@ -173,7 +177,7 @@ HNDS.get_blind_soul = function (blind, seed)
     elseif k == "bl_needle" then return { key = pseudorandom_element({"j_sixth_sense","j_dna"}, seed)}
     elseif k == "bl_head" then
         return {
-            attributes = {"diamonds"}
+            attributes = {"hearts"}
         }
     elseif k == "bl_tooth" then return { key = "j_hnds_coffee_break" }
     elseif k == "bl_flint" then
@@ -204,7 +208,7 @@ HNDS.get_blind_soul = function (blind, seed)
                 end
             }
         end
-    elseif k == "bl_final_leaf" then return { key = pseudorandom_element({ "j_four_fingers", "j_8_ball", "j_sixth_sense", "j_fortune_teller" }, seed)}
+    elseif k == "bl_final_vessel" then return { key = pseudorandom_element({ "j_four_fingers", "j_8_ball", "j_sixth_sense", "j_fortune_teller" }, seed)}
     elseif k == "bl_final_heart" then
         if pseudorandom(seed)<0.75 then
             return { key = "j_bloodstone" }
@@ -218,5 +222,6 @@ HNDS.get_blind_soul = function (blind, seed)
             return { key = "j_sixth_sense" }
         end
     end
-	return nil
+	-- Safe fallback for bosses from mods that do not define get_hnds_soul.
+	return { key = "j_joker" }
 end

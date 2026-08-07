@@ -98,8 +98,8 @@ SMODS.Seal {
 
         if card.ability.hnds_spectral_last_token ~= hand_token then
             card.ability.hnds_spectral_last_token = hand_token
-            -- Once the four-hand set is complete, keep it stable while waiting
-            -- for a consumable slot instead of accumulating extra tooltip rows.
+            -- A hand counts once per progress cycle. Retriggers remain blocked
+            -- until a completed cycle resets both the set and its hand token.
             if unique_hands < self.config.extra.hands
                 and not card.ability.hnds_spectral_hands[context.scoring_name]
             then
@@ -109,17 +109,22 @@ SMODS.Seal {
         end
 
         if unique_hands < self.config.extra.hands then return end
+
+        -- Completing the four-hand set always consumes that progress, even if
+        -- there is no room to create the Spectral card. Clearing the hand token
+        -- as well is intentional: if this card is retriggered later in the same
+        -- scoring hand, the freshly-reset set may count that hand as 1/4.
+        card.ability.hnds_spectral_hands = {}
+        card.ability.hnds_spectral_last_token = nil
+
         if not (G.consumeables and G.consumeables.cards and G.consumeables.config and G.GAME) then return end
 
         local buffer = G.GAME.consumeable_buffer or 0
         if #G.consumeables.cards + buffer >= G.consumeables.config.card_limit then
-            -- Keep the completed set. It will create the card the next time this
-            -- sealed card scores while a consumable slot is available.
             return
         end
 
         G.GAME.consumeable_buffer = buffer + 1
-        card.ability.hnds_spectral_hands = {}
 
         G.E_MANAGER:add_event(Event({
             func = function()

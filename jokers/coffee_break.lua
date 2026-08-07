@@ -71,7 +71,7 @@ SMODS.Joker({
 			return dissolve_and_pop()
 		end
 
-		if context.end_of_round and context.main_eval then
+		if (context.end_of_round and context.main_eval) or context.skip_blind then
 			advance_round()
 			return {
 				message = card.ability.extra.active and localize("k_active_ex")

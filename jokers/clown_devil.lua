@@ -17,9 +17,11 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = true,
 	perishable_compat = true,
-	config = { extra = { eaten = 0, per_tag = 3 } },
+	config = { extra = { eaten = 0, per_tag = 2 } },
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.eaten, card.ability.extra.per_tag } }
+		local extra = card.ability.extra
+		local remaining = extra.per_tag - (extra.eaten % extra.per_tag)
+		return { vars = { remaining, extra.per_tag } }
 	end,
 	calculate = function(self, card, context)
 		-- On blind select: consume held consumables and convert into tags
@@ -41,7 +43,7 @@ SMODS.Joker({
 					}))
 				end
 				card.ability.extra.eaten = card.ability.extra.eaten + eaten
-				-- Every 3 eaten consumables -> random tag
+				-- Every 2 eaten consumables -> random tag
 				while card.ability.extra.eaten >= card.ability.extra.per_tag do
 					card.ability.extra.eaten = card.ability.extra.eaten - card.ability.extra.per_tag
 					add_tag(HNDS.poll_tag('hnds_clown_devil'))
@@ -53,15 +55,13 @@ SMODS.Joker({
 	joker_display_def = function(JokerDisplay)
         return {
             text = {
-                { text = "(" },
-                { ref_table = "card.joker_display_values", ref_value = "eaten" },
-                { text = "/" },
-                { ref_table = "card.joker_display_values", ref_value = "per_tag" },
-                { text = ")" }
+                { text = "[" },
+                { ref_table = "card.joker_display_values", ref_value = "remaining" },
+                { text = "]" }
             },
             calc_function = function(card)
-                card.joker_display_values.eaten = card.ability.extra.eaten
-                card.joker_display_values.per_tag = card.ability.extra.per_tag
+                local extra = card.ability.extra
+                card.joker_display_values.remaining = extra.per_tag - (extra.eaten % extra.per_tag)
             end
         }
     end,

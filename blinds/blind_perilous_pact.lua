@@ -1,17 +1,59 @@
 -------------------------------------------------------------------
 -- PERILOUS PACT
 -- Ante 10 Showdown Boss Blind
--- Caps the final score of every played hand at 50% of this Blind's
--- required score. The score hook follows The Can's implementation:
--- it modifies SMODS.calculate_round_score through a standard
--- modify_hand_chips calculation context.
+-- Caps each played hand according to the number of hands available
+-- at the start of the Boss round.
 -------------------------------------------------------------------
 
 HNDS = HNDS or {}
 
+local function reset_hands()
+    local reset = G and G.GAME and G.GAME.round_resets
+        and tonumber(G.GAME.round_resets.hands)
+    return math.max(1, math.floor(reset or 1))
+end
+
+local function starting_hands()
+    local current = G and G.GAME and G.GAME.current_round
+        and tonumber(G.GAME.current_round.hands_left)
+    if current and current > 0 then return math.floor(current) end
+    return reset_hands()
+end
+
+local function on_blind_select_screen()
+    return G and G.STATES and G.STATE == G.STATES.BLIND_SELECT
+end
+
+local function cap_fraction(hands)
+    hands = math.max(1, math.floor(tonumber(hands) or 1))
+    if hands <= 1 then return 1.00 end
+    if hands <= 3 then return 0.50 end
+    if hands == 4 then return 0.40 end
+    if hands == 5 then return 0.30 end
+    return 0.25
+end
+
+local function active_perilous_pact()
+    if not (G and G.GAME and G.GAME.blind and not G.GAME.blind.disabled) then return false end
+    local center = G.GAME.blind.config and G.GAME.blind.config.blind
+    local key = center and center.key
+    return G.GAME.hnds_perilous_pact_active
+        or key == "bl_hnds_perilous_pact"
+        or key == "perilous_pact"
+end
+
 local function set_active(active)
     if not (G and G.GAME) then return end
-    G.GAME.hnds_perilous_pact_active = active and true or nil
+    if active then
+        local hands = starting_hands()
+        G.GAME.hnds_perilous_pact_active = true
+        G.GAME.hnds_perilous_pact_starting_hands = hands
+        G.GAME.hnds_perilous_pact_cap = cap_fraction(hands)
+    else
+        G.GAME.hnds_perilous_pact_active = nil
+        G.GAME.hnds_perilous_pact_starting_hands = nil
+        G.GAME.hnds_perilous_pact_cap = nil
+    end
 end
 
 SMODS.Blind {
@@ -26,6 +68,26 @@ SMODS.Blind {
     boss_colour = HEX("89764b"),
     discovered = false,
     unlocked = true,
+
+    loc_vars = function(self)
+        local selecting = on_blind_select_screen()
+        if active_perilous_pact() or selecting then
+            local fraction
+            if selecting and not active_perilous_pact() then
+                -- hands_left may still contain the previous round's value while
+                -- choosing a Blind, so preview from the next round's reset.
+                fraction = cap_fraction(reset_hands())
+            else
+                fraction = G.GAME.hnds_perilous_pact_cap
+                    or cap_fraction(G.GAME.hnds_perilous_pact_starting_hands or starting_hands())
+            end
+            return {
+                key = "bl_hnds_perilous_pact_active",
+                vars = { math.floor(fraction * 100 + 0.5) },
+            }
+        end
+        return { vars = {} }
+    end,
 
     in_pool = function(self)
         return G and G.GAME
@@ -72,9 +134,8 @@ SMODS.Blind {
     end,
 }
 
--- Steamodded's current scoring pipeline no longer adds hand_chips * mult
--- directly in state_events.lua. It routes the final hand score through this
--- function, so this is the reliable place to apply the per-hand cap.
+-- Steamodded's current scoring pipeline routes the final hand score through
+-- this function, so this is the reliable place to apply the per-hand cap.
 if SMODS and type(SMODS.calculate_round_score) == "function"
     and not HNDS._perilous_pact_score_hooked
 then
@@ -91,8 +152,6 @@ then
         }
         SMODS.calculate_context(context)
 
-        -- The direct fallback also covers unusual calculation-context chains
-        -- that return without forwarding the modified field.
         return HNDS.cap_perilous_pact_score(context.hand_chips)
     end
 end

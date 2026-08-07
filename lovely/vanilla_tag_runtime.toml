@@ -1,0 +1,16 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 10000
+
+# Investment payout is handled directly from the physical Boss-slot defeat hook.
+# Disable vanilla's broad last_blind.boss branch so upgraded Small/Big Boss
+# replacements can never trigger it or pay twice.
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "if self.name == 'Investment Tag' and G.GAME.last_blind and G.GAME.last_blind.boss then"
+position = "at"
+payload = "if false and self.name == 'Investment Tag' then"
+match_indent = true
+times = 1

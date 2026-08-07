@@ -31,25 +31,43 @@ G.CURSE_OFFERS = {
             end
         end
     },
-    -- 2. Create a copy of a random planet card
+    -- 2. Create 2 random Planet cards
     [2] = {
         id = 'offer_copy_random_planet',
         func = function(card, context)
             if context.end_of_round and context.main_eval and not context.repetition and not context.blueprint then
-                if G and G.E_MANAGER and Event and SMODS and SMODS.add_card then
+                if G and G.E_MANAGER and G.GAME and Event and SMODS and SMODS.add_card then
                     G.E_MANAGER:add_event(Event({
                         trigger = 'after',
                         delay = 0.1,
                         func = function()
-                            if G.consumeables and G.consumeables.cards and G.consumeables.config and #G.consumeables.cards >= G.consumeables.config.card_limit then
+                            if not (G.consumeables and G.consumeables.cards and G.consumeables.config) then
+                                return true
+                            end
+
+                            local buffer = tonumber(G.GAME.consumeable_buffer) or 0
+                            local room = (tonumber(G.consumeables.config.card_limit) or 0)
+                                - #G.consumeables.cards - buffer
+                            local to_create = math.min(2, math.max(0, room))
+                            if to_create == 0 then
                                 card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
                                 return true
                             end
+
+                            G.GAME.consumeable_buffer = buffer + to_create
                             G.E_MANAGER:add_event(Event({
                                 trigger = 'after',
                                 delay = 0.3,
                                 func = function()
-                                    SMODS.add_card({set = 'Planet', area = G.consumeables, key_append = 'hnds_curse_planet'})
+                                    for i = 1, to_create do
+                                        SMODS.add_card({
+                                            set = 'Planet',
+                                            area = G.consumeables,
+                                            key_append = 'hnds_curse_planet_' .. i,
+                                        })
+                                    end
+                                    G.GAME.consumeable_buffer = math.max(0,
+                                        (tonumber(G.GAME.consumeable_buffer) or to_create) - to_create)
                                     return true
                                 end
                             }))
@@ -430,15 +448,34 @@ SMODS.Sticker {
     rate = 0.12,
     needs_enable_flag = false,
     sets = { Joker = true },
-    -- Use Steamodded's central sticker roll so shop Jokers, Buffoon Packs,
-    -- and Joker-creation effects all follow the same Blood Stake rule.
+    -- Natural Cursed rolls are intentionally limited to purchasable Joker
+    -- sources: the shop, Buffoon packs, Cursed packs, and Magic packs.
     should_apply = function(self, card, center, area, bypass_roll)
         if not (G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses) then return false end
         if not (center and center.set == 'Joker') then return false end
         if center.key == 'j_hnds_art' then return false end
+
+        local source_name
+        if area == G.shop_jokers then
+            source_name = 'shop'
+        elseif area == G.pack_cards then
+            local source = HNDS and HNDS._creating_card_source or {}
+            local append = tostring(source.key_append or ''):lower()
+            if append == 'cur' or append:find('cursed', 1, true) then
+                source_name = 'cursed_pack'
+            elseif append == 'hnds_magic_card' or append:find('magic', 1, true) then
+                source_name = 'magic_pack'
+            elseif append == 'buf' or append:find('buffoon', 1, true)
+                or append:match('^buf')
+            then
+                source_name = 'buffoon_pack'
+            end
+        end
+        if not source_name then return false end
         if bypass_roll ~= nil then return bypass_roll end
-        local source = (area == G.pack_cards) and 'pack' or 'generated'
-        return pseudorandom('hnds_blood_curse_' .. source .. '_' .. tostring(G.GAME.round_resets.ante)) > (1 - self.rate)
+
+        return pseudorandom('hnds_blood_curse_' .. source_name .. '_'
+            .. tostring(G.GAME.round_resets.ante)) > (1 - self.rate)
     end,
     apply = function(self, card, val)
         card.ability = card.ability or {}
@@ -498,7 +535,7 @@ if not _G.HNDS_curse_collections then
     end
 
     create_UIBox_your_collection_hnds_curse_offers = function()
-        return SMODS.card_collection_UIBox(HNDS.CURSE_OFFERS_COLLECTION, {5,5}, {
+        return SMODS.card_collection_UIBox(HNDS.CURSE_OFFERS_COLLECTION, {4,4}, {
             snap_back = true,
             hide_single_page = true,
             collapse_single_page = true,
@@ -518,7 +555,7 @@ if not _G.HNDS_curse_collections then
     end
 
     create_UIBox_your_collection_hnds_curse_prices = function()
-        return SMODS.card_collection_UIBox(HNDS.CURSE_PRICES_COLLECTION, {5,5}, {
+        return SMODS.card_collection_UIBox(HNDS.CURSE_PRICES_COLLECTION, {4,4}, {
             snap_back = true,
             hide_single_page = true,
             collapse_single_page = true,

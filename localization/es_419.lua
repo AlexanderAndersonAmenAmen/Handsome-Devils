@@ -196,11 +196,10 @@ return {
 			j_hnds_krusty = {
 				name = "Krusty el Payaso",
 				text = {
-					"Otorga edición {C:dark_edition}Negativa{}",
-					"a los comodines de {C:attention}Comida{}",
-					"prob. de {C:green}#1# en #2#{} crear",
-					"comodín de comida al",
-					"final de la ronda",
+					"Vende esta carta para crear {C:attention}#1#",
+					"{C:attention}#2#{} {C:inactive}(Máximo #3#)",
+					"Mejora por cada",
+					"{C:money}$#4#{} {C:inactive}[#5#]{} gastados",
 				}
 			},
 			j_hnds_energized = {
@@ -346,11 +345,11 @@ return {
 			j_hnds_arthur = {
 				name = "Arthur",
 				text = {
-					"Ganas {C:attention}+#2#{} {C:green}renovación{} de",
-					"la tienda al anotar {V:1}#3#{}",
-					"y se {C:red}destruyen{} después",
-					"{s:0.8}El palo cambia cada ronda",
-					"{C:inactive,s:0.8}(Actualmente {C:attention,s:0.8}#1#{C:green,s:0.8} Renovaciones{C:inactive,s:0.8})"
+					"Destruye cartas {V:1}#3#{} anotadas",
+					"y gana {C:attention}#2#{} {C:green}Renovación{} gratis",
+					"por cada carta destruida",
+					"{s:0.8}El palo cambia cada mano",
+					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive} Renovaciones gratis)",
 				}
 			},
 			j_hnds_last_laugh = {
@@ -404,10 +403,10 @@ return {
 			j_hnds_sarmenti = {
 				name = "Sarmenti",
 				text = {
-					"{C:attention}1 vez{} por ronda,",
-					"otorga {V:1}#1#{} a las",
-					"si la mano es {C:attention}Póker{}",
-					"{s:0.8}El efecto cambia cada ronda",
+					"Cambia al azar las {C:dark_edition}Ediciones{}",
+					"de los comodines a la derecha si",
+					"la mano jugada contiene",
+					"un {C:attention}Póquer{}",
 				}
 			},
 			j_hnds_creepy = {
@@ -894,7 +893,7 @@ return {
 			},
 			offer_copy_random_planet = {
 				text = {
-					"Crea una carta de",
+					"Crea {C:attention}2{} cartas de",
 					"{C:planet}Planeta{} al final",
 					"de la {C:attention}ronda{}",
 				},
@@ -1094,9 +1093,18 @@ return {
 			m_hnds_aberrant = {
 				name = "Carta Aberrante",
 				text = {
-					"Gana {C:mult}+#1#{} Multi",
-					"al estar en mano.",
-					"{C:inactive}(Actualmente {C:mult}+#2#{C:inactive} Multi)"
+					"Puede fusionarse con {C:attention}2{}",
+					"Mejoras adicionales",
+					"La {C:red}3.ª destruye la carta{}",
+					"{C:inactive}#1#{}",
+				},
+			},
+			m_hnds_aberrant_collection = {
+				name = "Carta Aberrante",
+				text = {
+					"Puede fusionarse con {C:attention}2{}",
+					"Mejoras adicionales",
+					"La {C:red}3.ª destruye la carta{}",
 				},
 			},
 			m_hnds_obsidian = {
@@ -1219,6 +1227,8 @@ return {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_krusty_voucher_tag = "Etiqueta de Vale",
+			k_hnds_krusty_voucher_tags = "Etiquetas de Vale",
 			hnds_upgrade_blind = "Mejorar Ciega",
 			k_hnds_petrified = "¡Petrificado!",
 			k_hnds_goldfish = "¡Pez Dorado!",
@@ -1251,6 +1261,7 @@ return {
 			k_hnds_sarmenti_active = "Activo",
 			k_hnds_sarmenti_inactive = "Inactivo",
 			k_hnds_sarmenti_enhanced = "¡Mejorado!",
+			k_hnds_free_reroll = "+1 Renovación gratis",
 			k_hnds_enhancements = "Mejoras",
 			k_hnds_creepy_1 = "Fue la Planta...",
 			k_hnds_creepy_2 = "...nos arrastró",
@@ -1280,7 +1291,8 @@ return {
 			hnds_config_UltraSpec = "Habilitar paquetes Ultra Espectrales",
 			hnds_config_MagicPack = "Habilitar paquetes Mágicos",
 			hnds_config_CursedPack = "Habilitar Paquetes Malditos",
-			hnds_config_CustomSounds = "Habilitar sonidos personalizados"
+			hnds_config_CustomSounds = "Habilitar sonidos personalizados",
+			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
 		},
 		labels = {
 			hnds_vintage = "Vintage",

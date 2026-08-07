@@ -15,7 +15,7 @@ SMODS.Joker {
             name = localize { key = copied.config.center.key, type = "name_text", set = copied.ability.set } or
             localize("k_none")
             compat = copied.config.center.blueprint_compat and copied ~= card
-            local colour = compat and G.C.GREEN or G.C.RED
+            local colour = compat and G.C.GREEN or G.C.MULT
             local comp_txt = compat and localize("k_compatible") or localize("k_incompatible")
             main_end = {
                 {
@@ -25,7 +25,7 @@ SMODS.Joker {
                         {
                             n = G.UIT.C,
                             config = { align = "m", colour = colour, r = 0.05, padding = 0.05 },
-                            nodes = { { n = G.UIT.T, config = { text = " " .. name .. " | " .. comp_txt .. " ", colour = G.C.UI.TEXT_LIGHT, scale = 0.3, shadow = true } } }
+                            nodes = { { n = G.UIT.T, config = { text = " " .. name .. " | " .. comp_txt .. " ", colour = G.C.UI.TEXT_LIGHT, scale = 0.3, shadow = false } } }
                         }
                     }
                 }

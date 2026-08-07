@@ -1,70 +1,102 @@
+local ARTHUR_SUITS = { "Spades", "Hearts", "Clubs", "Diamonds" }
+
+local function arthur_suit(card)
+    local extra = card and card.ability and card.ability.extra
+    if type(extra) ~= "table" then return "Spades" end
+    extra.suit = extra.suit or "Spades"
+    return extra.suit
+end
+
+local function change_arthur_suit(card)
+    local current = arthur_suit(card)
+    local choices = {}
+    for _, suit in ipairs(ARTHUR_SUITS) do
+        if suit ~= current then choices[#choices + 1] = suit end
+    end
+    local seed = "hnds_arthur_suit_" .. tostring(card and card.sort_id or 0)
+    card.ability.extra.suit = pseudorandom_element(choices, pseudoseed(seed)) or "Spades"
+end
+
+local function add_free_rerolls(amount)
+    if not (G and G.GAME and G.GAME.current_round) then return end
+    local current_round = G.GAME.current_round
+    current_round.free_rerolls = math.max(0, (tonumber(current_round.free_rerolls) or 0) + amount)
+    if calculate_reroll_cost then calculate_reroll_cost(true) end
+end
+
 SMODS.Joker {
     key = "arthur",
     unlocked = false,
     unlock_condition = { type = "", extra = "", hidden = true },
     locked_loc_vars = function(self, info_queue, card)
-        -- Force Steamodded's locked-Joker path to initialise specific_vars and
-        -- use the same hidden Legendary message as vanilla Soul Jokers.
         return { key = "joker_locked_legendary", set = "Other", vars = {} }
     end,
     discovered = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
+    demicoloncompat = true,
     rarity = 4,
     cost = 20,
     atlas = "Jokers",
     pos = { x = 9, y = 2 },
     soul_pos = { x = 4, y = 3 },
-    config = { extra = { re = 0, rep = 1 } },
-    loc_vars = function (self, info_queue, card)
-        local suit = G.GAME.hnds_arthur_suit or "Spades"
-        local total_free_rerolls = (G.GAME and G.GAME.current_round and G.GAME.current_round.free_rerolls) or card.ability.extra.re
-        return { vars = { total_free_rerolls, card.ability.extra.rep, localize(suit, "suits_plural"), colours ={ G.C.SUITS[suit]} } }
+    config = { extra = { rerolls = 1, suit = "Spades" } },
+
+    loc_vars = function(self, info_queue, card)
+        local extra = card and card.ability and card.ability.extra or self.config.extra
+        local suit = (extra and extra.suit) or "Spades"
+        local free_rerolls = G and G.GAME and G.GAME.current_round
+            and (tonumber(G.GAME.current_round.free_rerolls) or 0)
+            or 0
+        local suit_colour = G and G.C and G.C.SUITS and (G.C.SUITS[suit] or G.C.SUITS[suit:upper()])
+            or (G and G.C and G.C.ORANGE)
+        return {
+            vars = {
+                free_rerolls,
+                (extra and extra.rerolls) or 1,
+                localize(suit, "suits_singular"),
+                colours = { suit_colour },
+            },
+        }
     end,
-    calculate = function (self, card, context)
-        if context.after and not context.blueprint and not context.retrigger_joker then
-            return{ message = "Changed!", }
-        end
-        if context.individual and context.cardarea == G.play and context.other_card:is_suit(G.GAME.hnds_arthur_suit) and not context.blueprint then
-            
-            card.ability.extra.re = card.ability.extra.re + card.ability.extra.rep
-            G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + card.ability.extra.rep
-            calculate_reroll_cost(true)
-            return{ message = localize("k_upgrade_ex"), colour = G.C.GREEN, }
-            
+
+    calculate = function(self, card, context)
+        local extra = card.ability.extra
+
+        if context.destroying_card
+            and context.destroying_card:is_suit(arthur_suit(card))
+            and not SMODS.is_eternal(context.destroying_card, card)
+        then
+            add_free_rerolls(tonumber(extra.rerolls) or 1)
+            return {
+                remove = true,
+                message = localize("k_hnds_free_reroll"),
+                colour = G.C.GREEN,
+            }
         end
 
-        if context.reroll_shop and card.ability.extra.re > 0 and not context.blueprint and not context.retrigger_joker then
-            card.ability.extra.re = card.ability.extra.re - 1
+        if context.after and not context.blueprint then
+            change_arthur_suit(card)
+            return {
+                message = localize("k_hnds_arthurs_suit"),
+                colour = G.C.SUITS[arthur_suit(card)] or G.C.ORANGE,
+            }
         end
+    end,
 
-        if context.destroy_card and context.destroy_card:is_suit(G.GAME.hnds_arthur_suit) then
-            return { remove = true }
-        end
-    end,
-    remove_from_deck = function (self, card, from_debuff)
-        G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls - card.ability.extra.re
-        calculate_reroll_cost(true)
-    end,
-    add_to_deck = function (self, card, from_debuff) --this is for if he gets undebuffed
-        G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + card.ability.extra.re
-        calculate_reroll_cost(true)
-    end,
     joker_display_def = function(JokerDisplay)
         return {
             reminder_text = {
                 { text = "(" },
-                { ref_table = "card.joker_display_values", ref_value = "suit", colour = G.C.ORANGE },
-                { text = ") " },
-                { text = "(" },
-                { ref_table = "card.joker_display_values", ref_value = "rerolls" },
-                { text = ")" }
+                { ref_table = "card.joker_display_values", ref_value = "suit", ref_colour = "suit_colour" },
+                { text = ")" },
             },
             calc_function = function(card)
-                local suit = G.GAME.hnds_arthur_suit or "Spades"
-                card.joker_display_values.suit = localize(suit, 'suits_plural')
-                card.joker_display_values.rerolls = card.ability.extra.re
-            end
+                local suit = arthur_suit(card)
+                card.joker_display_values.suit = localize(suit, "suits_plural")
+                card.joker_display_values.suit_colour = G.C.SUITS[suit] or G.C.ORANGE
+            end,
         }
     end,
-    attributes = { "suit", "reroll", "destroy_card" }
+
+    attributes = { "destroy_card", "suit", "economy" },
 }

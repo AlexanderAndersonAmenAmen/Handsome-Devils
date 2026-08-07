@@ -42,7 +42,7 @@ SMODS.Joker({
 				return { message = localize("k_no_room_ex") }
 			end
 			local r = math.min(3, card.ability.extra.current_rarity)
-			SMODS.add_card({ set = "Joker", area = G.jokers, rarity = RARITY[r].key, edition = poll_edition("digital_circus", 1, false, true) })
+			SMODS.add_card({ set = "Joker", area = G.jokers, rarity = RARITY[r].key, edition = HNDS.poll_non_vintage_edition("digital_circus", 1, false, true) })
 			return nil, true
 		end
 

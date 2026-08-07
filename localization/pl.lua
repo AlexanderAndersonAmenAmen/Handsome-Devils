@@ -276,13 +276,20 @@ return {
 		},
 		Enhanced = {
 			m_hnds_aberrant = {
-				name = "Karta antymaterii",
+				name = "Karta aberracyjna",
 				text = {
-					"Nie można zmienić ulepszenia",
-					"{C:green}#1# na #2#{} szans by być {C:red}zniszczonym{}",
-					"po zagraniu. Nałóż efekt następnego",
-					"ulepszenia na wszystkie poprzednie",
-					"(obecnie {C:attention}#3#{}, #4# warstw)",
+					"Można połączyć z {C:attention}2{}",
+					"innymi ulepszeniami",
+					"{C:red}Trzecie niszczy kartę{}",
+					"{C:inactive}#1#{}",
+				},
+			},
+			m_hnds_aberrant_collection = {
+				name = "Karta aberracyjna",
+				text = {
+					"Można połączyć z {C:attention}2{}",
+					"innymi ulepszeniami",
+					"{C:red}Trzecie niszczy kartę{}",
 				},
 			},
 			m_hnds_obsidian = {
@@ -372,6 +379,9 @@ return {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_krusty_voucher_tag = "Voucher Tag",
+			k_hnds_krusty_voucher_tags = "Voucher Tags",
+			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
 			k_hnds_petrified = "Skamieniały!",
 			k_hnds_goldfish = "Złota ryba!",
 			k_hnds_jester_negative = "Negatywny!",
@@ -391,6 +401,7 @@ return {
 			k_hnds_occultist = "Ucz się!",
 			k_hnds_cursed_pack = "Przeklęta paczka",
 			hnds_cursed_pack = "Przeklęta paczka",
+			k_hnds_free_reroll = "+1 darmowe przerzucenie",
 		},
 		labels = {
 			hnds_black_seal = "Czarna Pieczęć",

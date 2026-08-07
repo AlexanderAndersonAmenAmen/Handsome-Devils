@@ -255,6 +255,9 @@ return {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_krusty_voucher_tag = "Voucher Tag",
+			k_hnds_krusty_voucher_tags = "Voucher Tags",
+			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
 			k_hnds_petrified = "石化！",
 			k_hnds_goldfish = "金鱼！",
 			k_hnds_cursed_offers = "诅咒馈赠",

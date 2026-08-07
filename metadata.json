@@ -1,18 +1,23 @@
 {
-	"id": "HandsomeDevils",
-	"name": "Handsome Devils",
-	"display_name": "Handsome Devils",
-	"author": ["Kars", "sup3p", "Eris H. Nova", "Marffe"],
-	"description": "Vanilla-inspired mod that aims to enhance gameplay experience by adding new content such as Jokers, spectral cards, vouchers, seals (and more to come!) >>>SPECIAL THANKS: trif, Gappie, eremel_, BepisFever, baliame, Victin and other folks from the official Balatro Discord!",
-	"prefix": "hnds",
-	"main_file": "main.lua",
-	"priority": 0,
-	"badge_colour": "",
-	"badge_text_colour": "",
-	"version": "2.1",
-	"icon_path": "hd_icon.png",
-  	"icon_width": 32,
-	"dependencies": [
-		"Steamodded (>=1.0.0~BETA-1620a)"
-	]
+  "id": "HandsomeDevils",
+  "name": "Handsome Devils",
+  "display_name": "Handsome Devils",
+  "author": [
+    "Kars",
+    "sup3p",
+    "Eris H. Nova",
+    "Marffe"
+  ],
+  "description": "Vanilla-inspired mod that aims to enhance gameplay experience by adding new content such as Jokers, spectral cards, vouchers, seals (and more to come!) >>>SPECIAL THANKS: trif, Gappie, eremel_, BepisFever, baliame, Victin and other folks from the official Balatro Discord!",
+  "prefix": "hnds",
+  "main_file": "main.lua",
+  "priority": 0,
+  "badge_colour": "",
+  "badge_text_colour": "",
+  "version": "2.5",
+  "icon_path": "hd_icon.png",
+  "icon_width": 32,
+  "dependencies": [
+    "Steamodded (>=1.0.0~BETA-1620a)"
+  ]
 }
