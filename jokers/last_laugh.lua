@@ -19,7 +19,9 @@ SMODS.Joker({
 	perishable_compat = true,
 	config = { extra = { draw = 1, draw_scaling = 1, destroy = 9999, } },
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.draw, card.ability.extra.destroy } }
+		local extra = card and card.ability and card.ability.extra or self.config.extra
+		local draw = tonumber(extra.draw) or 1
+		return { vars = { draw, tonumber(extra.destroy) or 9999, draw == 1 and "card" or "cards" } }
 	end,
 	calculate = function(self, card, context)
 		if (context.selling_self or context.forcetrigger) and G.hand and G.hand.cards and #G.hand.cards > 0 then

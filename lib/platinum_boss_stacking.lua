@@ -306,7 +306,9 @@ end
 -- removes candidates that would duplicate or invalidate the current stack.
 function HNDS.call_with_platinum_reroll_bans(selector)
     if type(selector) ~= "function" then return nil end
-    if not blind_raiser_active() or not (G and G.GAME and G.P_BLINDS) then
+    if not blind_raiser_active() or not (G and G.GAME and G.P_BLINDS)
+        or G.GAME.hnds_bypass_platinum_reroll_bans
+    then
         return selector()
     end
 
@@ -334,6 +336,20 @@ function HNDS.call_with_platinum_reroll_bans(selector)
     for _, key in ipairs(temporarily_banned) do banned[key] = nil end
     if not had_banned_table and next(banned) == nil then G.GAME.banned_keys = nil end
     if not ok then error(result) end
+
+    -- The compatibility mask can legitimately empty the vanilla Boss pool on
+    -- some Antes/mod combinations. Returning nil here corrupts
+    -- round_resets.blind_choices.Boss and crashes create_UIBox_blind_choice.
+    -- Prefer a normal unmasked Boss roll over an invalid Blind Select state.
+    if not (type(result) == "string" and G.P_BLINDS[result]) then
+        local previous = G.GAME.hnds_bypass_platinum_reroll_bans
+        G.GAME.hnds_bypass_platinum_reroll_bans = true
+        local fallback_ok, fallback = pcall(selector)
+        G.GAME.hnds_bypass_platinum_reroll_bans = previous
+        if not fallback_ok then error(fallback) end
+        return fallback
+    end
+
     return result
 end
 

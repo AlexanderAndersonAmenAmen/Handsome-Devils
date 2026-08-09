@@ -359,6 +359,10 @@ SMODS.Blind {
         ensure_devil_roll()
         ensure_devil_name()
         G.GAME.hnds_devil_active = true
+        G.GAME.hnds_devil_soul_bosses = {}
+        for i, key in ipairs(G.GAME.hnds_devil_bosses or {}) do
+            G.GAME.hnds_devil_soul_bosses[i] = key
+        end
 
         -- Play once when the encounter is actually selected. Collection/preview
         -- rendering never calls set_blind.

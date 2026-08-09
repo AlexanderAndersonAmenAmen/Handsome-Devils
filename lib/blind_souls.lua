@@ -117,6 +117,27 @@ HNDS.get_blind_soul = function (blind, seed)
         local ok, custom_soul = pcall(blind_obj.get_hnds_soul, blind_obj, seed)
         if ok and type(custom_soul) == "table" then return custom_soul end
     end
+    -- Handsome Devils custom Boss souls.
+    if k == "bl_hnds_wasted_wish" or k == "wasted_wish" then
+        return { key = "j_hnds_krusty" }
+    elseif k == "bl_hnds_forbidden_fruit" or k == "forbidden_fruit" then
+        return { key = "j_hnds_art" }
+    elseif k == "bl_hnds_perilous_pact" or k == "perilous_pact" then
+        return { key = "j_mr_bones" }
+    elseif k == "bl_hnds_sinful_soul" or k == "sinful_soul" then
+        local legendary = {}
+        for key, center in pairs((G and G.P_CENTERS) or {}) do
+            if type(key) == "string" and key:match("^j_")
+                and key ~= "j_hnds_pennywise"
+                and center and center.set == "Joker" and center.rarity == 4
+            then
+                legendary[#legendary + 1] = key
+            end
+        end
+        table.sort(legendary)
+        return { key = pseudorandom_element(legendary, pseudoseed(tostring(seed) .. "_sinful_legendary")) or "j_caino" }
+    end
+
     -- GIANT FUCKING ELSEIF CHAIN
     if k == "bl_hook" then return { key = "j_drunkard", }
     elseif k == "bl_ox" then return { key = "j_matador" }
@@ -225,3 +246,50 @@ HNDS.get_blind_soul = function (blind, seed)
 	-- Safe fallback for bosses from mods that do not define get_hnds_soul.
 	return { key = "j_joker" }
 end
+
+-- Pennywise normally creates one Soul. The Devil is a container for three
+-- rolled vanilla Bosses, so it creates one Soul for each stored component.
+local hnds_devil_soul_key_map = {
+    bl_hook_the_house = "bl_house",
+    bl_hook_the_wall = "bl_wall",
+    bl_hook_the_wheel = "bl_wheel",
+    bl_hook_the_club = "bl_club",
+    bl_hook_the_fish = "bl_fish",
+    bl_hook_the_psychic = "bl_psychic",
+    bl_hook_the_goad = "bl_goad",
+    bl_hook_the_window = "bl_window",
+    bl_hook_the_manacle = "bl_manacle",
+    bl_hook_the_eye = "bl_eye",
+    bl_hook_the_mouth = "bl_mouth",
+    bl_hook_the_plant = "bl_plant",
+    bl_hook_the_serpent = "bl_serpent",
+    bl_hook_the_pillar = "bl_pillar",
+    bl_hook_the_needle = "bl_needle",
+    bl_hook_the_head = "bl_head",
+    bl_hook_the_mark = "bl_mark",
+    bl_hook_the_flint = "bl_flint",
+    bl_hook_the_water = "bl_water",
+}
+
+function HNDS.get_blind_souls(blind, seed)
+    local blind_obj = blind and blind.config and blind.config.blind
+    local key = blind_obj and blind_obj.key
+    seed = seed or ("hnds_pennywise_multi_" .. tostring(key or "unknown"))
+
+    if key == "bl_hnds_blind_devil" or key == "blind_devil" then
+        local out = {}
+        local rolled = G and G.GAME and (G.GAME.hnds_devil_bosses or G.GAME.hnds_devil_soul_bosses) or {}
+        for i = 1, 3 do
+            local vanilla_key = hnds_devil_soul_key_map[rolled[i]]
+            if vanilla_key then
+                local fake_blind = { config = { blind = { key = vanilla_key } } }
+                out[#out + 1] = HNDS.get_blind_soul(fake_blind, seed .. "_devil_" .. tostring(i))
+            end
+        end
+        return out
+    end
+
+    local one = HNDS.get_blind_soul(blind, seed)
+    return one and { one } or {}
+end
+

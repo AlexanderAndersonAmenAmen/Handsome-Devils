@@ -431,13 +431,13 @@ take_vanilla_ownership(SMODS.Enhancement, 'wild', {
 
 take_vanilla_ownership(SMODS.Joker, 'matador', {
     blueprint_compat = true,
-    config = { extra = 5 },
+    config = { extra = 8 },
     loc_vars = function(self, info_queue, card)
-        return { vars = { extra_value(card, 'dollars', 5) } }
+        return { vars = { extra_value(card, 'dollars', 8) } }
     end,
     calculate = function(self, card, context)
         if context.before and boss_blind_active() then
-            return add_dollars(extra_value(card, 'dollars', 5))
+            return add_dollars(extra_value(card, 'dollars', 8))
         end
     end,
 })
@@ -570,7 +570,18 @@ if Card and Card.generate_UIBox_ability_table and not HNDS._suit_joker_tooltip_f
     local hnds_generate_UIBox_ability_table = Card.generate_UIBox_ability_table
     function Card:generate_UIBox_ability_table(...)
         normalize_suit_joker_extra(self)
-        return hnds_generate_UIBox_ability_table(self, ...)
+        local full_UI_table = hnds_generate_UIBox_ability_table(self, ...)
+
+        -- Most Wanted must never create a secondary info/Edition tooltip.
+        -- In beta-1620a collection previews can retain an empty info node even
+        -- when the Joker itself no longer enqueues Edition info. Clear the
+        -- generated auxiliary list at the final Card tooltip boundary.
+        local center = self.config and self.config.center
+        if center and center.key == 'j_hnds_most_wanted' and type(full_UI_table) == 'table' then
+            full_UI_table.info = {}
+        end
+
+        return full_UI_table
     end
     HNDS._suit_joker_tooltip_fix = true
 end

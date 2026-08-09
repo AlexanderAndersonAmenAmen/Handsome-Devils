@@ -15,12 +15,21 @@ SMODS.Joker {
     atlas = "Jokers",
     pos = { x = 5, y = 2 },
     soul_pos = { x = 0, y = 3 },
-    info_queue = function(self, info_queue, card)
-        if not self.unlocked then return end
-        if G.GAME.blind then
-            info_queue[#info_queue + 1] = HNDS.get_blind_soul(G.GAME.blind)
+    loc_vars = function(self, info_queue, card)
+        -- In Steamodded BETA-1620a, Joker auxiliary tooltips must be queued
+        -- from loc_vars. A standalone `info_queue` callback is ignored.
+        -- Always show the Soul sticker explanation on an unlocked Pennywise.
+        info_queue[#info_queue + 1] = { set = "Other", key = "hnds_soul", vars = {} }
+
+        if G and G.GAME and G.GAME.blind and HNDS and HNDS.get_blind_souls then
+            for _, soul in ipairs(HNDS.get_blind_souls(G.GAME.blind, "hnds_pennywise_preview") or {}) do
+                info_queue[#info_queue + 1] = soul
+            end
         end
-        info_queue[#info_queue + 1] = G.P_CENTERS.e_negative
+        if G and G.P_CENTERS and G.P_CENTERS.e_negative then
+            info_queue[#info_queue + 1] = G.P_CENTERS.e_negative
+        end
+        return { vars = {} }
     end,
     remove_from_deck = function(self, card, from_debuff)
         if from_debuff or not (G and G.jokers and G.jokers.cards) then return end
@@ -43,17 +52,30 @@ SMODS.Joker {
     end,
     calculate = function(self, card, context)
         if (context.end_of_round and context.beat_boss and context.main_eval and G.GAME.current_round.hands_played == 1) or (context.forcetrigger and G.GAME.blind) then
-            local args = HNDS.get_blind_soul(G.GAME.blind, "hnds_pennywise")
-            if args then
+            local souls = HNDS.get_blind_souls(G.GAME.blind, "hnds_pennywise") or {}
+            for i, soul_args in ipairs(souls) do
+                local args = {}
+                for k, v in pairs(soul_args) do args[k] = v end
                 args.edition = "e_negative"
-                args.key_append = "hnds_pennywise_card"
+                args.key_append = "hnds_pennywise_card_" .. tostring(i)
                 args.set = "Joker"
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         local c = SMODS.add_card(args)
-                        c.ability.hnds_soul = true
-                        c.ability.hnds_soul_owner = card.sort_id
-                        c.sell_cost = 0
+                        if c then
+                            c.ability = c.ability or {}
+                            -- Apply the actual registered Sticker instead of
+                            -- only toggling its ability flag. This gives the
+                            -- generated Joker the Soul badge/tooltip through
+                            -- Steamodded's normal sticker UI path.
+                            if c.add_sticker then
+                                c:add_sticker('hnds_soul', true)
+                            else
+                                c.ability.hnds_soul = true
+                                c.sell_cost = 0
+                            end
+                            c.ability.hnds_soul_owner = card.sort_id
+                        end
                         return true
                     end
                 }))
@@ -72,8 +94,12 @@ SMODS.Sticker {
     rate = 0,
     sets = { Joker = true },
     should_apply = function(self, card, center, area, bypass_roll)
-        if card.ability.eternal or card.ability.hnds_cursed then return false end
+        local ability = card and card.ability or {}
+        if ability.eternal or ability.hnds_cursed then return false end
         return SMODS.Sticker.should_apply(self, card, center, area, bypass_roll)
+    end,
+    loc_vars = function(self, info_queue, card)
+        return { vars = {} }
     end,
     apply = function(self, card, val)
         card.ability[self.key] = val

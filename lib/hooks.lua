@@ -2122,3 +2122,80 @@ function get_blind_amount(ante)
 	end
 	return amount
 end
+
+
+-------------------------------------------------------------------
+-- HANDSOME DEVILS TOOLTIP POSITION STABILITY
+-------------------------------------------------------------------
+-- Card:hover asks Card:align_h_popup() where the popup should live.  Locking
+-- Node.hover (the previous workaround) happens one layer too late and can itself
+-- make a popup get torn down/recreated with a different side.  Cache the native
+-- alignment result instead.  We preserve Balatro/SMODS's own alignment table and
+-- only reuse the side/offset while the card stays in the same CardArea.
+if Card and Card.align_h_popup and not HNDS._stable_hnds_tooltip_align_v3 then
+    HNDS._stable_hnds_tooltip_align_v3 = true
+
+    local function hnds_uses_custom_tooltip(card)
+        if not card then return false end
+        local center = card.config and card.config.center
+        if center and center.mod and center.mod.id == 'HandsomeDevils' then return true end
+        local key = center and tostring(center.key or '') or ''
+        if key:find('hnds_', 1, true) then return true end
+        if card.seal and tostring(card.seal):find('hnds_', 1, true) then return true end
+        if card.edition then
+            for k, v in pairs(card.edition) do
+                if v and tostring(k):find('hnds_', 1, true) then return true end
+            end
+        end
+        if card.ability then
+            for k, v in pairs(card.ability) do
+                if v and tostring(k):find('hnds_', 1, true) then return true end
+            end
+            if type(card.ability.stickers) == 'table' then
+                for k, v in pairs(card.ability.stickers) do
+                    if v and tostring(k):find('hnds_', 1, true) then return true end
+                end
+            end
+        end
+        if card.stickers then
+            for k, v in pairs(card.stickers) do
+                if v and tostring(k):find('hnds_', 1, true) then return true end
+            end
+        end
+        return false
+    end
+
+    local hnds_align_h_popup_ref = Card.align_h_popup
+    function Card:align_h_popup(...)
+        local native = hnds_align_h_popup_ref(self, ...)
+        if not hnds_uses_custom_tooltip(self) or type(native) ~= 'table' then
+            return native
+        end
+
+        -- A different area (shop -> jokers, hand -> play, collection page, etc.)
+        -- is a legitimate reason to choose a new side.  Hover tilt, juice,
+        -- controller focus jitter and brief hover reacquisition are not.
+        local area = self.area
+        local cache = self.hnds_tooltip_alignment_cache
+        if type(cache) ~= 'table' or cache.area ~= area then
+            cache = {
+                area = area,
+                type = native.type,
+                align = native.align,
+                offset_x = native.offset and native.offset.x or nil,
+                offset_y = native.offset and native.offset.y or nil,
+                lr_clamp = native.lr_clamp,
+            }
+            self.hnds_tooltip_alignment_cache = cache
+        end
+
+        if cache.type ~= nil then native.type = cache.type end
+        if cache.align ~= nil then native.align = cache.align end
+        if native.offset then
+            if cache.offset_x ~= nil then native.offset.x = cache.offset_x end
+            if cache.offset_y ~= nil then native.offset.y = cache.offset_y end
+        end
+        if cache.lr_clamp ~= nil then native.lr_clamp = cache.lr_clamp end
+        return native
+    end
+end

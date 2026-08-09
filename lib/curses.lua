@@ -137,19 +137,45 @@ G.CURSE_OFFERS = {
             end
         end
     },
-    -- 6. Raises interest cap by 5
+    -- 6. Create one Spectral card each Ante.
+    -- The legacy ID is retained so existing saves keep the same rolled offer.
     [6] = {
-        id = 'offer_interest_cap',
+        id = 'offer_spectral_gen',
         func = function(card, context)
-            if context.add_to_deck and G.GAME.interest_cap then
-                G.GAME.interest_cap = G.GAME.interest_cap + 25
-            elseif context.remove_from_deck and G.GAME and G.GAME.interest_cap then
-                G.GAME.interest_cap = G.GAME.interest_cap - 25
-                if G.GAME.interest_cap < 0 then G.GAME.interest_cap = 0 end
+            if not (context and context.setting_blind) or context.repetition or context.blueprint then return end
+            if not (G and G.GAME and G.GAME.round_resets and G.consumeables and G.consumeables.cards
+                and G.consumeables.config and SMODS and SMODS.add_card) then return end
+
+            card.ability = card.ability or {}
+            local ante = tonumber(G.GAME.round_resets.ante) or 0
+            if card.ability.hnds_curse_spectral_ante == ante then return end
+            card.ability.hnds_curse_spectral_ante = ante
+
+            local buffer = tonumber(G.GAME.consumeable_buffer) or 0
+            local limit = tonumber(G.consumeables.config.card_limit) or 0
+            if #G.consumeables.cards + buffer >= limit then
+                card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
+                return
             end
+
+            G.GAME.consumeable_buffer = buffer + 1
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after', delay = 0.1,
+                func = function()
+                    SMODS.add_card({
+                        set = 'Spectral',
+                        area = G.consumeables,
+                        key_append = 'hnds_curse_ante_spectral_' .. tostring(ante),
+                    })
+                    if G.GAME then
+                        G.GAME.consumeable_buffer = math.max(0, (tonumber(G.GAME.consumeable_buffer) or 1) - 1)
+                    end
+                    return true
+                end
+            }))
         end
     },
-    -- 7. Gain 2 free rerolls for each shop
+    -- 7. Gain 2 free reroll for each shop
     [7] = {
         id = 'offer_free_rerolls',
         func = function(card, context)
@@ -299,32 +325,20 @@ G.CURSE_PRICES = {
             end
         end
     },
-    -- 4. Increases Prices by 25% 
+    -- 4. Permanently increase reroll cost by $2
     [4] = {
-        id = 'price_inflation',
+        id = 'price_inflation', -- legacy ID retained for save compatibility
         func = function(card, context)
-            if not (G and G.GAME) then return end
-            if not context.buying_card then return end
-
-            G.GAME.hnds_curse_inflation_count = (G.GAME.hnds_curse_inflation_count or 0) + 1
-            G.GAME.hnds_price_multiplier = (G.GAME.hnds_price_multiplier or 1) * 1.25
-
-            if G.shop_jokers and G.shop_jokers.cards then
-                for _, c in ipairs(G.shop_jokers.cards) do
-                    if c and c.set_cost then c:set_cost() end
-                end
+            if not (context and context.buying_card and G and G.GAME) then return end
+            G.GAME.round_resets = G.GAME.round_resets or {}
+            G.GAME.round_resets.reroll_cost = math.max(0,
+                (tonumber(G.GAME.round_resets.reroll_cost) or 0) + 2)
+            if calculate_reroll_cost then
+                calculate_reroll_cost(true)
+            elseif G.GAME.current_round then
+                G.GAME.current_round.reroll_cost = math.max(0,
+                    (tonumber(G.GAME.current_round.reroll_cost) or 0) + 2)
             end
-            if G.shop_booster and G.shop_booster.cards then
-                for _, c in ipairs(G.shop_booster.cards) do
-                    if c and c.set_cost then c:set_cost() end
-                end
-            end
-            if G.shop_consumables and G.shop_consumables.cards then
-                for _, c in ipairs(G.shop_consumables.cards) do
-                    if c and c.set_cost then c:set_cost() end
-                end
-            end
-            if calculate_reroll_cost then calculate_reroll_cost() end
         end
     },
     -- 5. -1 Hand
@@ -657,6 +671,18 @@ local function hnds_assign_curse_data(card, attach_sticker)
         -- Reroll if offer_self_negative landed on a joker that already has an edition
         if offer_entry and offer_entry.id == 'offer_self_negative' and has_existing_edition then
             offer_entry = nil
+        end
+
+        -- Mutually exclusive curse combinations. These effects directly cancel
+        -- or undermine each other and must never be assigned to the same Joker.
+        if offer_entry and price_entry then
+            local incompatible =
+                (offer_entry.id == 'offer_free_rerolls' and price_entry.id == 'price_inflation')
+                or (offer_entry.id == 'offer_random_enhancement' and price_entry.id == 'price_destroy_cards')
+            if incompatible then
+                offer_entry = nil
+                price_entry = nil
+            end
         end
 
         if offer_entry and price_entry then

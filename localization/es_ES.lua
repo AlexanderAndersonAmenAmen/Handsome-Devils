@@ -431,8 +431,9 @@ return {
 				name = "Comodín Jigsaw",
 				text = {
 					"Tras jugar {C:attention}8{} manos",
-					"únicas, vende esta carta",
-					"para crear {C:attention}#3#{} Etiquetas",
+					"de póquer {C:attention}únicas{}, vende esta",
+					"carta para subir {C:attention}#3#{} niveles",
+					"todas las {C:attention}manos de póquer{}",
 					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive}/8){}",
 				},
 			},
@@ -751,7 +752,99 @@ return {
 				},
 			},
 		},
+
 		Other = {
+            hnds_jigsaw_progress_empty = {
+                name = "Played Poker Hands",
+                text = {
+                    "Currently: {C:attention}#1#{}",
+                    "{C:inactive}(#2#/#3# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_1 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:inactive}(#2#/#3# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_2 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:inactive}(#3#/#4# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_3 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:inactive}(#4#/#5# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_4 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:inactive}(#5#/#6# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_5 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:inactive}(#6#/#7# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_6 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:inactive}(#7#/#8# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_7 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:inactive}(#8#/#9# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_8 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:inactive}(#9#/#10# unique hands){}",
+                },
+            },
 			hnds_jester_temp_negative = {
 				name = "Elegido por Carcosa",
 				text = {
@@ -917,10 +1010,10 @@ return {
 					"este Comodín",
 				},
 			},
-			offer_interest_cap = {
+			offer_spectral_gen = {
 				text = {
-					"{C:money}Aumenta{} el interés",
-					"máximo en $5",
+					"Crea una carta {C:spectral}Espectral{}",
+					"en cada {C:attention}Ante{}",
 				},
 			},
 			offer_free_rerolls = {

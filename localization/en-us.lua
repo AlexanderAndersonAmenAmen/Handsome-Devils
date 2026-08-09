@@ -29,7 +29,7 @@ local localization = {
 				name = "Flower Pot",
 				text = {
                     'Gives {X:mult,C:white}X{} Mult equal to the',
-                    'number of {C:attention}unique suits{}',
+                    'number of {C:attention}unique{} suits',
                     'in played poker hand',
                     '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)',
 				},
@@ -38,7 +38,7 @@ local localization = {
 				name = "Flower Pot",
 				text = {
                     'Gives {X:mult,C:white}X{} Mult equal to the',
-                    'number of {C:attention}unique suits{}',
+                    'number of {C:attention}unique{} suits',
                     'in played poker hand',
 					"{C:inactive}(Currently none)",
 				},
@@ -129,7 +129,7 @@ local localization = {
 				name = "Color of Madness",
 				text = {
 					"Enhances {C:attention}first two{} scored",
-					"cards into a {C:attention}Wild Cards{} if",
+					"cards into {C:attention}Wild Cards{} if",
 					"poker hand contains",
 					"{C:attention}4{} different suits",
 				},
@@ -156,8 +156,8 @@ local localization = {
 			j_hnds_supersuit = {
 				name = "Supersuit",
 				text = {
-					"Retrigger all",
-					"cards with {V:1}#1#{} suit",
+					"Retrigger all cards",
+					"with {V:1}#1#{} suit",
 					"{s:0.8}Suit changes every round",
 				},
 				unlock = {
@@ -169,10 +169,10 @@ local localization = {
 			j_hnds_dark_idol = {
 				name = "The Dark Idol",
 				text = {
-					"Gains {X:mult,C:white}X#1#{} Mult per",
-					"scoring {C:attention}#2#{} of {V:1}#3#{}",
-					"played and destroys them",
-					"{s:0.8}Card changes at end of round",
+					"Destroys scored {C:attention}#2#{} of",
+					"{V:1}#3#{} and gains {X:mult,C:white}X#1#{}",
+					"Mult for each destroyed",
+					"{s:0.8}Card changes every round",
 					"{C:inactive}(Currently {X:mult,C:white}X#4#{C:inactive} Mult)"
 				},
 				unlock = {
@@ -311,10 +311,10 @@ local localization = {
 			j_hnds_stone_mask = {
 				name = "Stone Mask",
 				text = {
-					"If {C:attention}first hand{} of round",
-					"is a single card, give it a",
-					"random {C:attention}Enhancement{}, {C:attention}Seal{} or",
-					"{C:dark_edition}Edition{} if it doesn't have one",
+					"{C:green}#1# in #2#{} chance for first",
+					"scored {C:attention}face{} card to steal",
+					"{C:attention}Enhancements{}, {C:dark_edition}Editions{} or",
+					"{C:attention}Seals{} of adjacent cards",
 				},
 				unlock = {
 					"Reach {X:mult,C:white}X5{} Mult",
@@ -366,7 +366,7 @@ local localization = {
 				text = {
 					"Gains {X:mult,C:white}X#2#{} Mult",
 					"for every Joker",
-					"{C:attention}sold{} while in {C:attention}Blind",
+					"sold while in {C:attention}Blind",
 					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
 				},
 				unlock = {
@@ -393,8 +393,8 @@ local localization = {
 			j_hnds_dark_humor = {
 				name = "Dark Humor",
 				text = {
-					"When hand is played, {C:red}destroy",
-					"a random {C:attention}held in hand{} card",
+					"When hand is played, destroy",
+					"a random held in hand card",
 					"to gain its {C:mult}Mult{} and {C:chips}Chips",
 					"{C:inactive}(Currently{} {C:mult}+#2#{} {C:inactive}Mult,{} {C:chips}+#1#{} {C:inactive}Chips)",
 				},
@@ -418,7 +418,7 @@ local localization = {
 				text = {
 					"If played hand is a single card,",
 					"retrigger it {C:attention}#3#{} additional times",
-					"{C:green}#1# in #2#{} chance to {C:red}destroy{} it"
+					"{C:green}#1# in #2#{} chance to destroy it"
 				},
 				unlock = {
 					"Destroy a total",
@@ -586,10 +586,10 @@ local localization = {
 			j_hnds_one_punchline_man = {
 				name = "One Punchline Man",
 				text = {
-					"Gains {X:mult,C:white}X#2#{} Mult",
-					"per {C:attention}unused{} {C:blue}hand{}",
-					"at end of round",
-					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
+					"{X:mult,C:white}X#1#{} Mult for the",
+					"{C:attention}first hand{} of round",
+					"If it didn't defeat the",
+					"{C:attention}Blind{}, destroy this card",
 				},
 				unlock = {
 					"Beat {C:attention}3{} Boss Blinds",
@@ -600,14 +600,106 @@ local localization = {
 				name = "Jigsaw",
 				text = {
 					"After playing {C:attention}8{} {C:attention}unique{}",
-					"poker hands, sell this card",
-					"to create {C:attention}#3#{} random {C:attention}Tags",
+					"poker hands, sell this",
+					"card to upgrade every",
+					"{C:attention}poker hand{} by {C:attention}#3#{} levels",
 					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/8){}",
 				},
 				unlock = {
 					"Play {C:attention}8 unique{}",
 					"poker hands",
 					"in one Ante {C:inactive}(#1#)",
+				},
+			},
+			hnds_jigsaw_progress_empty = {
+				name = "Played Poker Hands",
+				text = {
+					"Currently: {C:attention}#1#{}",
+					"{C:inactive}(#2#/#3# unique hands){}",
+				},
+			},
+			hnds_jigsaw_progress_1 = {
+				name = "Played Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:inactive}(#2#/#3# unique hands){}",
+				},
+			},
+			hnds_jigsaw_progress_2 = {
+				name = "Played Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:inactive}(#3#/#4# unique hands){}",
+				},
+			},
+			hnds_jigsaw_progress_3 = {
+				name = "Played Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:inactive}(#4#/#5# unique hands){}",
+				},
+			},
+			hnds_jigsaw_progress_4 = {
+				name = "Played Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:inactive}(#5#/#6# unique hands){}",
+				},
+			},
+			hnds_jigsaw_progress_5 = {
+				name = "Played Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:inactive}(#6#/#7# unique hands){}",
+				},
+			},
+			hnds_jigsaw_progress_6 = {
+				name = "Played Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+					"{C:inactive}(#7#/#8# unique hands){}",
+				},
+			},
+			hnds_jigsaw_progress_7 = {
+				name = "Played Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+					"{C:attention}#7#{}",
+					"{C:inactive}(#8#/#9# unique hands){}",
+				},
+			},
+			hnds_jigsaw_progress_8 = {
+				name = "Played Poker Hands",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+					"{C:attention}#7#{}",
+					"{C:attention}#8#{}",
+					"{C:inactive}(#9#/#10# unique hands){}",
 				},
 			},
 			j_hnds_dynamic_duos = {
@@ -655,8 +747,8 @@ local localization = {
 				name = "Last Laugh",
 				text = {
 					"Sell this card to draw {C:attention}#1#{}",
-					"card from your deck, then",
-					"{C:red}destroy{} all cards in hand",
+					"#3# from your deck, then",
+					"destroy all cards in hand",
 					"{s:0.8}Upgrades at end of round",
 				},
 				unlock = {
@@ -1110,7 +1202,99 @@ local localization = {
 				},
 			},
 		},
+
 		Other = {
+            hnds_jigsaw_progress_empty = {
+                name = "Played Poker Hands",
+                text = {
+                    "Currently: {C:attention}#1#{}",
+                    "{C:inactive}(#2#/#3# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_1 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:inactive}(#2#/#3# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_2 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:inactive}(#3#/#4# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_3 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:inactive}(#4#/#5# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_4 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:inactive}(#5#/#6# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_5 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:inactive}(#6#/#7# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_6 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:inactive}(#7#/#8# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_7 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:inactive}(#8#/#9# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_8 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:inactive}(#9#/#10# unique hands){}",
+                },
+            },
 			hnds_exchange_draw = {
 				name = "Bound",
 				text = {
@@ -1329,10 +1513,10 @@ local localization = {
 					"additional time",
 				},
 			},
-			offer_interest_cap = {
+			offer_spectral_gen = {
 				text = {
-					"Raises the cap",
-					"on interest by {C:money}$5{}",
+					"Creates a {C:spectral}Spectral{}",
+					"card each Ante",
 				},
 			},
 			offer_free_rerolls = {
@@ -1367,9 +1551,8 @@ local localization = {
 			},
 			price_inflation = {
 				text = {
-					"{C:red}+25%{} mark up on all",
-					"cards and packs in",
-					"shop permanently",
+					"{C:green}Rerolls{} cost {C:red}$2{}",
+					"more permanently",
 				},
 			},
 			price_lose_hand = {

@@ -82,32 +82,17 @@ local function clone_table(value, seen)
     return setmetatable(result, getmetatable(value))
 end
 
-local function duplicate_alias(original_key)
-    if not (G and G.P_CENTERS) then return nil end
-    local alias_key = "m_hnds_aberrant_duplicate_" .. original_key:gsub("[^%w_]", "_")
-    if G.P_CENTERS[alias_key] then return alias_key end
-
-    local original = G.P_CENTERS[original_key]
-    if not original then return nil end
-    local alias = clone_table(original)
-    alias.key = alias_key
-    alias.order = (tonumber(original.order) or 0) + 0.0001
-    alias.hnds_aberrant_original_key = original_key
-    alias.no_collection = true
-    alias.unlocked = true
-    alias.discovered = true
-    G.P_CENTERS[alias_key] = alias
-    return alias_key
-end
-
 local function fusion_entries(card)
-    local entries, counts = {}, {}
+    -- `SMODS.get_enhancements` is a key set, so duplicate fusions should not be
+    -- represented by fake Center keys. Duplicate effects are evaluated from the
+    -- ordered fusion slots in `SMODS.calculate_quantum_enhancements` below.
+    -- Keeping only real enhancement keys here avoids invalid/synthetic Centers
+    -- leaking into probability and compatibility checks (notably Lucky/Lucky).
+    local entries, seen = {}, {}
     for _, key in ipairs(aberrant_fusions(card)) do
-        counts[key] = (counts[key] or 0) + 1
-        if counts[key] == 1 then
+        if not seen[key] then
             entries[#entries + 1] = key
-        else
-            entries[#entries + 1] = duplicate_alias(key) or key
+            seen[key] = true
         end
     end
     return entries
@@ -119,10 +104,9 @@ local function invalidate_enhancement_cache(card)
     end
 end
 
--- Expose fused enhancements to all normal Steamodded enhancement helpers.
--- Duplicate fusions receive a private alias so loops such as held-in-hand
--- end-of-round processing execute the effect twice without showing duplicate
--- tooltips or adding anything to the collection.
+-- Expose fused enhancement TYPES to normal Steamodded enhancement helpers.
+-- Duplicate slots intentionally collapse here because this API is a key set;
+-- their effects are still evaluated once per stored fusion slot below.
 local get_enhancements_ref = SMODS.get_enhancements
 function SMODS.get_enhancements(card, extra_only)
     local enhancements = get_enhancements_ref(card, extra_only) or {}
@@ -235,16 +219,15 @@ function SMODS.calculate_quantum_enhancements(card, effects, context)
         fused_set[key] = true
     end
 
-    -- Preserve enhancements granted externally by Jokers while avoiding the
-    -- private duplicate aliases used by generic helper loops.
+    -- Preserve enhancements granted externally by Jokers while avoiding keys
+    -- that are already supplied by Aberrant's own fusion slots.
     HNDS._aberrant_reading_quantum = true
     local extra = SMODS.get_enhancements(card, true) or {}
     HNDS._aberrant_reading_quantum = nil
     local external = {}
     for key in pairs(extra) do
         local center = G.P_CENTERS[key]
-        local original_key = center and center.hnds_aberrant_original_key
-        if center and not original_key and not fused_set[key] then
+        if center and not fused_set[key] then
             external[#external + 1] = key
         end
     end
@@ -336,6 +319,135 @@ mod.set_debuff = function(card)
         return "prevent_debuff"
     end
 end
+
+-- Aberrant fusion indicators are visual-only sticker sprites. They are never
+-- applied to the card as real Stickers, so they cannot create badges/tooltips,
+-- participate in sticker rolls, or interfere with Cursed sticker exclusivity.
+local ABERRANT_INDICATOR_POS = {
+    unknown = { top = { x = 4, y = 0 }, bottom = { x = 5, y = 0 } },
+    stone = { top = { x = 3, y = 1 }, bottom = { x = 5, y = 3 } },
+    bonus = { top = { x = 4, y = 1 }, bottom = { x = 0, y = 4 } },
+    mult = { top = { x = 5, y = 1 }, bottom = { x = 1, y = 4 } },
+    glass = { top = { x = 0, y = 2 }, bottom = { x = 2, y = 4 } },
+    gold = { top = { x = 1, y = 2 }, bottom = { x = 0, y = 3 } },
+    steel = { top = { x = 2, y = 2 }, bottom = { x = 1, y = 3 } },
+    wild = { top = { x = 3, y = 2 }, bottom = { x = 2, y = 3 } },
+    lucky = { top = { x = 4, y = 2 }, bottom = { x = 3, y = 3 } },
+    obsidian = { top = { x = 5, y = 2 }, bottom = { x = 4, y = 3 } },
+}
+
+local ABERRANT_INDICATOR_KIND = {
+    m_stone = "stone",
+    m_bonus = "bonus",
+    m_mult = "mult",
+    m_glass = "glass",
+    m_gold = "gold",
+    m_steel = "steel",
+    m_wild = "wild",
+    m_lucky = "lucky",
+    m_hnds_obsidian = "obsidian",
+}
+
+-- These four take the top position whenever paired with a lower-priority
+-- enhancement. When both fusions are from this group, fusion order breaks the
+-- tie (first = top, second = bottom), which is the only way to show both.
+local ABERRANT_TOP_PRIORITY = {
+    stone = true, mult = true, bonus = true, glass = true,
+}
+
+local function aberrant_indicator_kind(key)
+    return ABERRANT_INDICATOR_KIND[key] or "unknown"
+end
+
+local function aberrant_indicator_slots(card)
+    local fusions = aberrant_fusions(card)
+    if #fusions == 0 then return nil, nil end
+
+    local first = aberrant_indicator_kind(fusions[1])
+    if #fusions == 1 then return first, nil end
+
+    local second = aberrant_indicator_kind(fusions[2])
+    if first == second then
+        return first, second
+    end
+
+    local first_priority = ABERRANT_TOP_PRIORITY[first]
+    local second_priority = ABERRANT_TOP_PRIORITY[second]
+
+    -- Stone/Mult/Bonus/Glass versus Stone/Mult/Bonus/Glass is order-based:
+    -- the first fused enhancement stays on top and the second goes on bottom.
+    -- (The identical-pair case above also draws one copy in each position.)
+    if first_priority and second_priority then
+        return first, second
+    elseif first_priority then
+        return first, second
+    elseif second_priority then
+        return second, first
+    end
+
+    -- Steel/Gold/Lucky/Wild/Obsidian/Unknown combinations are also order-based.
+    return first, second
+end
+
+-- These are intentionally NOT registered as SMODS.Sticker objects. In
+-- Steamodded BETA-1620a Sticker has no object-level :draw() method, and
+-- registering visual-only helpers also makes them appear in the Stickers
+-- collection. Instead, cache plain sprites from HDstickers and render them
+-- directly in a DrawStep.
+local ABERRANT_INDICATOR_ATLAS = "hnds_Stickers"
+local ABERRANT_INDICATOR_SPRITES = {}
+
+local function aberrant_indicator_sprite(kind, slot)
+    local cache_key = kind .. "_" .. slot
+    if ABERRANT_INDICATOR_SPRITES[cache_key] then
+        return ABERRANT_INDICATOR_SPRITES[cache_key]
+    end
+
+    local positions = ABERRANT_INDICATOR_POS[kind]
+    local pos = positions and positions[slot]
+    if not pos or not (G and G.ASSET_ATLAS and G.ASSET_ATLAS[ABERRANT_INDICATOR_ATLAS]) then
+        return nil
+    end
+
+    local sprite = SMODS.create_sprite(
+        0, 0, G.CARD_W, G.CARD_H,
+        ABERRANT_INDICATOR_ATLAS, pos
+    )
+    ABERRANT_INDICATOR_SPRITES[cache_key] = sprite
+    return sprite
+end
+
+local function draw_aberrant_indicator(card, kind, slot)
+    local sprite = aberrant_indicator_sprite(kind, slot)
+    if not sprite or not card.children or not card.children.center then return end
+
+    sprite.role.draw_major = card
+    -- Keep the indicators flat: only use the dissolve pass so they follow the
+    -- card's materialize/dissolve animation. The vanilla sticker-style
+    -- 'voucher' pass adds the moving shine, which these indicators should not
+    -- have.
+    sprite:draw_shader('dissolve', nil, nil, nil, card.children.center)
+end
+
+SMODS.DrawStep({
+    key = "hnds_aberrant_fusion_indicators",
+    order = 35,
+    func = function(card, layer)
+        if not is_aberrant(card) then return end
+        -- A Card flip updates `facing` and `sprite_facing` at slightly
+        -- different points. Draw only once both agree that the front is
+        -- visible; this prevents an indicator frame leaking onto the card back.
+        if card.facing ~= "front" or card.sprite_facing ~= "front" then return end
+
+        local top_kind, bottom_kind = aberrant_indicator_slots(card)
+        if not top_kind then return end
+
+        draw_aberrant_indicator(card, top_kind, "top")
+        if bottom_kind then
+            draw_aberrant_indicator(card, bottom_kind, "bottom")
+        end
+    end,
+})
 
 SMODS.Enhancement({
     key = "aberrant",

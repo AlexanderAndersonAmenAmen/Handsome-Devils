@@ -52,6 +52,42 @@ function HNDS.poll_non_vintage_edition(...)
 	return unpack_fn(result)
 end
 
+-- Digital Circus and Most Wanted use a guaranteed weighted Edition pool.
+-- These are relative weights, matching the requested Edition weighting:
+-- Foil 20, Holographic 14, Vintage 7, Polychrome 3, Negative 3.
+local HNDS_FEATURED_EDITION_WEIGHTS = {
+	{ key = 'e_foil',         weight = 20 },
+	{ key = 'e_holo',         weight = 14 },
+	{ key = 'e_hnds_vintage', weight = 7  },
+	{ key = 'e_polychrome',   weight = 3  },
+	{ key = 'e_negative',     weight = 3  },
+}
+
+function HNDS.poll_featured_edition(seed)
+	local available = {}
+	local total_weight = 0
+
+	for _, entry in ipairs(HNDS_FEATURED_EDITION_WEIGHTS) do
+		-- Vintage can be disabled by config, so only include Editions that
+		-- actually exist in the current center registry.
+		if G and G.P_CENTERS and G.P_CENTERS[entry.key] then
+			available[#available + 1] = entry
+			total_weight = total_weight + entry.weight
+		end
+	end
+
+	if total_weight <= 0 then return nil end
+
+	local roll = pseudorandom(seed or 'hnds_featured_edition') * total_weight
+	local cumulative = 0
+	for _, entry in ipairs(available) do
+		cumulative = cumulative + entry.weight
+		if roll < cumulative then return entry.key end
+	end
+
+	return available[#available] and available[#available].key or nil
+end
+
 ----------------------------
 -- Config tab
 ----------------------------
@@ -100,6 +136,85 @@ local function config_toggle_row(label, config_key, subtitle)
 		},
 	}
 end
+
+
+
+-- Main-menu presentation: replace the vanilla title card with Handsome
+-- Joker and recolour the background swirl to black and gold.
+
+
+SMODS.current_mod.menu_cards = function()
+    -- Weighted title-card categories:
+    --   3/5) a random UNLOCKED Handsome Devils Joker
+    --   1/5) Dream
+    --   1/5) Cursed Pack
+    -- Jokers are collected dynamically so newly added HD Jokers automatically
+    -- become eligible once unlocked, without maintaining a hard-coded list.
+    local roll = math.random(5)
+    local chosen_key
+
+    if roll <= 3 then
+        local hnds_jokers = {}
+        for key, center in pairs((G and G.P_CENTERS) or {}) do
+            if type(key) == 'string'
+                and key:match('^j_hnds_')
+                and center
+                and center.set == 'Joker'
+                and center.unlocked == true
+            then
+                hnds_jokers[#hnds_jokers + 1] = key
+            end
+        end
+        table.sort(hnds_jokers)
+        if #hnds_jokers > 0 then
+            chosen_key = hnds_jokers[math.random(#hnds_jokers)]
+        end
+    elseif roll == 4 then
+        chosen_key = 'c_hnds_dream'
+    else
+        chosen_key = 'p_hnds_cursed_pack'
+    end
+
+    -- Safety fallback for unusual load orders where the Joker pool has not
+    -- been populated yet.
+    chosen_key = chosen_key or 'c_devil'
+
+    return {
+        remove_original = true,
+        { key = chosen_key },
+    }
+end
+
+-- local HNDS_MENU_COLOUR_1_HEX = '4c6064'
+-- local HNDS_MENU_COLOUR_2_HEX = 'fda200'
+
+--local hnds_game_main_menu_ref = Game.main_menu
+--[[
+function Game:main_menu(change_context)
+    local ret = hnds_game_main_menu_ref(self, change_context)
+
+    if G and G.C then
+        G.C.HNDS_MENU_COLOUR_1 = G.C.HNDS_MENU_COLOUR_1 or HEX(HNDS_MENU_COLOUR_1_HEX)
+        G.C.HNDS_MENU_COLOUR_2 = G.C.HNDS_MENU_COLOUR_2 or HEX(HNDS_MENU_COLOUR_2_HEX)
+    end
+
+    if G and G.SPLASH_BACK then
+        G.SPLASH_BACK:define_draw_steps({
+            {
+                shader = 'splash',
+                send = {
+                    { name = 'time', ref_table = G.TIMERS, ref_value = 'REAL_SHADER' },
+                    { name = 'vort_speed', val = 0.4 },
+                    { name = 'colour_1', ref_table = G.C, ref_value = 'HNDS_MENU_COLOUR_1' },
+                    { name = 'colour_2', ref_table = G.C, ref_value = 'HNDS_MENU_COLOUR_2' },
+                }
+            }
+        })
+    end
+
+    return ret
+end
+]]
 
 SMODS.current_mod.config_tab = function()
 	return {
@@ -325,13 +440,13 @@ local files = {
 			"color_of_madness",
 			"dark_idol",
 			"perfectionist",
-			"handsome",
+			"one_punchline_man",
 			
 			"walking_joke",
 			"digital_circus",
 			"excommunicado",
 			"meme",
-			"one_punchline_man",
+			"handsome",
 
 			"stone_mask",
 			"energized",
@@ -496,6 +611,19 @@ SMODS.Atlas({ key = "Extras",      path = "EHD.png",     px = 71, py = 95 })
 SMODS.Atlas({ key = "Stakes", path = "HDstakes.png", px = 29, py = 29 })
 SMODS.Atlas({ key = "Stickers", path = "HDstickers.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "hnds_sleeves", path = "HDS.png", px = 73, py = 95 })
+
+-- Replace Balatro's main-menu title/logo with the Handsome Devils title art.
+-- raw_key keeps the vanilla atlas key ("balatro") instead of prefixing it
+-- with this mod's ID, so the existing title UI picks this texture up directly.
+SMODS.Atlas({
+    key = "balatro",
+    path = "balatro.png",
+    -- Wider title frame: artwork can use a 499x232 canvas at 1x
+    -- (998x464 at 2x) without resizing the pixels inside it.
+    px = 499,
+    py = 232,
+    raw_key = true,
+})
 -- Inside main.lua
 SMODS.Atlas {
     key = 'ante_10_atlas',

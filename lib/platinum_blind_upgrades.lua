@@ -407,10 +407,62 @@ end
 -- Ante transition cleanup
 -------------------------------------------------------------------
 
+-- Blind Select hardening. A failed/over-filtered Boss roll leaves the Boss
+-- choice nil, and vanilla then creates an empty blind_choice table before
+-- immediately indexing blind_choice.config. Repair only invalid slots, leaving
+-- every valid vanilla/modded selection untouched.
+local function hnds_valid_blind_choice(key)
+    return type(key) == 'string' and G and G.P_BLINDS and G.P_BLINDS[key] ~= nil
+end
+
+local function hnds_emergency_boss_choice()
+    if not (G and G.P_BLINDS) then return nil end
+    local banned = G.GAME and G.GAME.banned_keys or {}
+    local normal, showdown = {}, {}
+    for key, blind in pairs(G.P_BLINDS) do
+        if blind and blind.boss and not banned[key] then
+            if blind.boss.showdown then
+                showdown[#showdown + 1] = key
+            else
+                normal[#normal + 1] = key
+            end
+        end
+    end
+    table.sort(normal)
+    table.sort(showdown)
+    return normal[1] or showdown[1]
+end
+
+local function hnds_repair_blind_choices_for_ui()
+    if not (G and G.GAME and G.GAME.round_resets and G.P_BLINDS) then return end
+    local choices = G.GAME.round_resets.blind_choices
+    if type(choices) ~= 'table' then return end
+
+    if not hnds_valid_blind_choice(choices.Small) and G.P_BLINDS.bl_small then
+        choices.Small = 'bl_small'
+    end
+    if not hnds_valid_blind_choice(choices.Big) and G.P_BLINDS.bl_big then
+        choices.Big = 'bl_big'
+    end
+
+    if not hnds_valid_blind_choice(choices.Boss) then
+        local previous = G.GAME.hnds_bypass_platinum_reroll_bans
+        G.GAME.hnds_bypass_platinum_reroll_bans = true
+        local ok, boss = pcall(get_new_boss)
+        G.GAME.hnds_bypass_platinum_reroll_bans = previous
+        if ok and hnds_valid_blind_choice(boss) then
+            choices.Boss = boss
+        else
+            choices.Boss = hnds_emergency_boss_choice()
+        end
+    end
+end
+
 if type(create_UIBox_blind_select) == 'function' then
     local create_UIBox_blind_select_ref = create_UIBox_blind_select
     function create_UIBox_blind_select(...)
         HNDS.restore_stale_platinum_blind_slots()
+        hnds_repair_blind_choices_for_ui()
 
         -- Apply the Nightmare Stake shop effect only after vanilla has prepared the
         -- upcoming Blind slot. Doing this before constructing the UI makes the
@@ -419,6 +471,10 @@ if type(create_UIBox_blind_select) == 'function' then
             HNDS.apply_pending_nightmare_shop_upgrade()
         end
 
+        -- Tag rewards and compatibility hooks can reroll the real Boss while the
+        -- pending upgrade is consumed. Validate once more immediately before the
+        -- vanilla UI dereferences the selected Blind center.
+        hnds_repair_blind_choices_for_ui()
         local result = create_UIBox_blind_select_ref(...)
 
         -- Compatibility fallback for unusual load orders that finalize

@@ -190,7 +190,107 @@ return {
 				},
 			},
 		},
+
 		Other = {
+            hnds_soul = {
+                name = "Soul",
+                text = {
+                    "No {C:attention}sell value",
+                    "Remove this when",
+                    "you lose {C:legendary,E:1}Pennywise",
+                },
+            },
+            hnds_jigsaw_progress_empty = {
+                name = "Played Poker Hands",
+                text = {
+                    "Currently: {C:attention}#1#{}",
+                    "{C:inactive}(#2#/#3# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_1 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:inactive}(#2#/#3# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_2 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:inactive}(#3#/#4# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_3 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:inactive}(#4#/#5# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_4 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:inactive}(#5#/#6# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_5 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:inactive}(#6#/#7# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_6 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:inactive}(#7#/#8# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_7 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:inactive}(#8#/#9# unique hands){}",
+                },
+            },
+            hnds_jigsaw_progress_8 = {
+                name = "Played Poker Hands",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:inactive}(#9#/#10# unique hands){}",
+                },
+            },
 			hnds_black_seal = {
 				name = "黑色蜡封",
 				text = {

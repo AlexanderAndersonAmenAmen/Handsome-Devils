@@ -17,7 +17,10 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = false,
 	perishable_compat = false,
-	config = { extra = { Xmult = 1.5, odds = 6, } },
+	config = {
+		extra_value = 13, -- $5 shop cost still; vanilla $2 sell + $13 = $15 starting sell value
+		extra = { Xmult = 1.5, odds = 6, }
+	},
 	pools = { Food = true },
 	loc_vars = function(self, info_queue, card)
 		local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_banana_split")
@@ -33,15 +36,46 @@ SMODS.Joker({
 		if
 			(context.end_of_round and context.main_eval or context.forcetrigger)
 				and not context.blueprint
-				and #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit
 		then
-			if
+			G.GAME.joker_buffer = G.GAME.joker_buffer or 0
+			local has_room = #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit
+			if has_room and (
 				context.forcetrigger
 				or SMODS.pseudorandom_probability(card, "banan", 1, card.ability.extra.odds, "hnds_banana_split")
-			then
-				local _card = copy_card(card, nil, nil, nil, card.edition and card.edition.negative)
+			) then
+				-- Reserve the slot immediately. Without this, two Banana Splits that
+				-- trigger during the same evaluation can both see the same free slot
+				-- before either delayed copy is emplaced, causing an overflow.
+				G.GAME.joker_buffer = G.GAME.joker_buffer + 1
+
+				-- Banana Split copies inherit this exact copy's current sell value.
+				-- Gift Card and similar effects change ability.extra_value at runtime;
+				-- copy_card can re-seed it from the center config, so restore the
+				-- live value explicitly without touching the Joker's shop cost.
+				local inherited_extra_value = card.ability and card.ability.extra_value
+				local inherited_sell_cost = card.sell_cost
+				local source_card = card
+
 				G.E_MANAGER:add_event(Event({
 					func = function()
+						-- Release our reservation before checking the real CardArea again.
+						G.GAME.joker_buffer = math.max(0, (G.GAME.joker_buffer or 1) - 1)
+						if not (G.jokers and G.jokers.cards and G.jokers.config)
+							or #G.jokers.cards >= G.jokers.config.card_limit
+						then
+							return true
+						end
+
+						local _card = copy_card(source_card, nil, nil, nil, source_card.edition and source_card.edition.negative)
+						_card.ability = _card.ability or {}
+						if inherited_extra_value ~= nil then
+							_card.ability.extra_value = inherited_extra_value
+						end
+						if _card.set_cost then _card:set_cost() end
+						if inherited_sell_cost ~= nil then
+							_card.sell_cost = inherited_sell_cost
+							_card.sell_cost_label = inherited_sell_cost
+						end
 						_card:add_to_deck()
 						G.jokers:emplace(_card)
 						return true
