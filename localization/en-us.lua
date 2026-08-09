@@ -1513,7 +1513,7 @@ local localization = {
 					"additional time",
 				},
 			},
-			offer_spectral_gen = {
+			offer_interest_cap = {
 				text = {
 					"Creates a {C:spectral}Spectral{}",
 					"card each Ante",

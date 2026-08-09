@@ -1010,7 +1010,7 @@ return {
 					"este Comodín",
 				},
 			},
-			offer_spectral_gen = {
+			offer_interest_cap = {
 				text = {
 					"Crea una carta {C:spectral}Espectral{}",
 					"en cada {C:attention}Ante{}",

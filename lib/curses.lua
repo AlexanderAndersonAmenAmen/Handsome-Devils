@@ -138,9 +138,9 @@ G.CURSE_OFFERS = {
         end
     },
     -- 6. Create one Spectral card each Ante.
-    -- The legacy ID is retained so existing saves keep the same rolled offer.
+    -- Keep the legacy internal ID for save compatibility; only the effect/text changed.
     [6] = {
-        id = 'offer_spectral_gen',
+        id = 'offer_interest_cap',
         func = function(card, context)
             if not (context and context.setting_blind) or context.repetition or context.blueprint then return end
             if not (G and G.GAME and G.GAME.round_resets and G.consumeables and G.consumeables.cards
@@ -503,7 +503,12 @@ SMODS.Sticker {
     -- Dynamic tooltip using loc_vars with global state
     -- Store current card data in globals for loc_vars to access
     loc_vars = function(self, info_queue, card)
-        -- Store reference for potential use
+        -- Store reference for potential use. Builds that briefly renamed the
+        -- Spectral-per-Ante offer saved `offer_spectral_gen`; migrate those
+        -- cards back to the stable legacy ID before tooltip localization.
+        if card and card.ability and card.ability.hnds_curse_offer == 'offer_spectral_gen' then
+            card.ability.hnds_curse_offer = 'offer_interest_cap'
+        end
         _G.HNDS_CURRENT_CURSE_CARD = card
         return { vars = {} }
     end,
@@ -754,6 +759,10 @@ local function hnds_build_lookups()
     for _, def in pairs(G.CURSE_PRICES) do
         hnds_price_lookup[def.id] = def
     end
+    -- Compatibility with the short-lived broken ID used by one build.
+    if hnds_offer_lookup.offer_interest_cap then
+        hnds_offer_lookup.offer_spectral_gen = hnds_offer_lookup.offer_interest_cap
+    end
 end
 
 -- Run the offer and price funcs under pcall, log failures, return the combined effect.
@@ -779,6 +788,9 @@ function trigger_curse(card, context)
     -- - lovely button callback hook (buying_card)
     -- - cursed sticker calculate (normal evaluation)
     if not card.ability or not (card.ability.hnds_curse_offer or card.ability.hnds_curse_price) then return end
+    if card.ability.hnds_curse_offer == 'offer_spectral_gen' then
+        card.ability.hnds_curse_offer = 'offer_interest_cap'
+    end
     
     -- Prevent re-triggering on eternal copies (Devil's Round joker copies).
     if card.ability.hnds_eternal_copy_created then return end
