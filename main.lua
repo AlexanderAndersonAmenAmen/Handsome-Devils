@@ -8,7 +8,11 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
     local hnds_card_collection_UIBox = SMODS.card_collection_UIBox
     SMODS.card_collection_UIBox = function(pool, rows, args)
         local pools = G and G.P_CENTER_POOLS
-        if pools then
+        -- Steamodded's Sticker collection passes SMODS.Stickers directly, not
+        -- a G.P_CENTER_POOLS entry. Force exactly 2 rows x 4 cards here.
+        if SMODS and SMODS.Stickers and pool == SMODS.Stickers then
+            rows = { 4, 4 }
+        elseif pools then
             if pool == pools.Seal then
                 rows = { 3, 3, 3 }
             elseif pool == pools.Edition then

@@ -572,15 +572,6 @@ if Card and Card.generate_UIBox_ability_table and not HNDS._suit_joker_tooltip_f
         normalize_suit_joker_extra(self)
         local full_UI_table = hnds_generate_UIBox_ability_table(self, ...)
 
-        -- Most Wanted must never create a secondary info/Edition tooltip.
-        -- In beta-1620a collection previews can retain an empty info node even
-        -- when the Joker itself no longer enqueues Edition info. Clear the
-        -- generated auxiliary list at the final Card tooltip boundary.
-        local center = self.config and self.config.center
-        if center and center.key == 'j_hnds_most_wanted' and type(full_UI_table) == 'table' then
-            full_UI_table.info = {}
-        end
-
         return full_UI_table
     end
     HNDS._suit_joker_tooltip_fix = true

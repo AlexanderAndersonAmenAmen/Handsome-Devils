@@ -7,7 +7,9 @@ SMODS.Back {
         return HNDS.unlock_condition_met("cursed", args)
     end,
     calculate = function(self, back, context)
-        if context.end_of_round and context.main_eval and context.beat_boss and G.GAME.round_resets.ante == 1 and not G.GAME.hnds_cursed_pack_opened then
+        if context.end_of_round and context.main_eval
+            and HNDS.active_blind_is_real_ante_boss and HNDS.active_blind_is_real_ante_boss()
+            and G.GAME.round_resets.ante == 1 and not G.GAME.hnds_cursed_pack_opened then
             G.GAME.hnds_cursed_pack_opened = true
             local tag = Tag('tag_hnds_cursed_tag')
             tag.ability = tag.ability or {}

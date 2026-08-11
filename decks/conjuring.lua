@@ -89,9 +89,18 @@ for pack_index, pack_pos in ipairs(magic_pack_positions) do
         end,
         cry_digital_hallucinations = magic_diha_compat,
         in_pool = function (self, args)
-            local hasConjuringDeck = G.GAME.selected_back and G.GAME.selected_back.effect.center.key == "b_hnds_conjuring"
-            local hasConjuringSleeve = CardSleeves and G.GAME.selected_sleeve == "sleeve_hnds_conjuring_sleeve"
-            return hasConjuringDeck or hasConjuringSleeve or hnds_config.enableMagicPackSpawning
+            local game = G and G.GAME
+            local hasConjuringDeck = game and game.selected_back
+                and game.selected_back.effect and game.selected_back.effect.center
+                and game.selected_back.effect.center.key == "b_hnds_conjuring"
+            local hasConjuringSleeve = CardSleeves and game
+                and game.selected_sleeve == "sleeve_hnds_conjuring_sleeve"
+            local ante = game and game.round_resets and tonumber(game.round_resets.ante) or 0
+
+            -- Conjuring Deck/Sleeve explicitly force Magic boosters and remain
+            -- exempt. Ordinary natural Magic Pack rolls begin at Ante 3.
+            return hasConjuringDeck or hasConjuringSleeve
+                or (hnds_config.enableMagicPackSpawning and ante >= 3)
         end
     }
 end

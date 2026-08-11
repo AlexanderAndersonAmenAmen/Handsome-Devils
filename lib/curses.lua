@@ -741,10 +741,14 @@ SMODS.Booster{
         return c
     end,
     in_pool = function (self, args)
-        local blood_active = G and G.GAME and G.GAME.modifiers
-            and G.GAME.modifiers.hnds_blood_stake == true
+        local game = G and G.GAME
+        local blood_active = game and game.modifiers
+            and game.modifiers.hnds_blood_stake == true
         self.weight = blood_active and 1.6 or 0.8
-        return hnds_config.enableCursedPackSpawning
+        local ante = game and game.round_resets and tonumber(game.round_resets.ante) or 0
+        -- This only gates natural booster-pool rolls. Directly created Cursed
+        -- Packs (Tags, decks/sleeves, scripted effects) still work before Ante 3.
+        return hnds_config.enableCursedPackSpawning and ante >= 3
     end
 }
 

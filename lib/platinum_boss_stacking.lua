@@ -459,15 +459,57 @@ function HNDS.set_platinum_next_upgrade_exponent(step)
     )
 end
 
+-- Blind Raiser score scaling is global for the whole run. Each committed
+-- upgrade step adds +20% to the natural/base score of every undefeated and
+-- future Blind. Keep the old save-field name for the next step so existing
+-- runs remain compatible, but store the last actually-applied step separately
+-- from record-hand catch-up (which may advance the *next* step without buying
+-- an upgrade).
+local function derive_applied_blind_raiser_step()
+    if not (G and G.GAME) then return 0 end
+
+    local applied = math.max(0, math.floor(tonumber(G.GAME.hnds_blind_raiser_applied_step) or 0))
+    local records = G.GAME.hnds_platinum_blind_replacements or {}
+    for _, record in pairs(records) do
+        if type(record) == "table" then
+            applied = math.max(applied, math.max(0, math.floor(tonumber(record.upgrade_index) or 0)))
+        end
+    end
+
+    -- Migration fallback for very old saves that tracked only the count.
+    if applied == 0 then
+        applied = math.max(0, math.floor(tonumber(G.GAME.hnds_blind_upgrades) or 0))
+    end
+
+    G.GAME.hnds_blind_raiser_applied_step = applied
+    return applied
+end
+
+function HNDS.platinum_blind_raiser_applied_step()
+    return derive_applied_blind_raiser_step()
+end
+
+function HNDS.set_platinum_blind_raiser_applied_step(step)
+    if not (G and G.GAME) then return end
+    G.GAME.hnds_blind_raiser_applied_step = math.max(
+        derive_applied_blind_raiser_step(),
+        math.max(0, math.floor(tonumber(step) or 0))
+    )
+end
+
+function HNDS.platinum_blind_raiser_multiplier(step)
+    step = math.max(0, tonumber(step) or derive_applied_blind_raiser_step())
+    return 1 + (0.2 * step)
+end
+
 
 -- Record-hand catch-up for the global Blind Raiser. The next upgrade exponent
 -- is independent from the number of upgrades actually bought: clearing score
 -- thresholds never grants a Tag reward or adds a stacked Boss effect.
 --
--- Catch-up is atomic in groups of three. Starting at 2^1, a hand must reach
--- the 2^3 threshold to advance the next upgrade to 2^4. If it also reaches
--- 2^6, another complete group is cleared and the next upgrade becomes 2^7,
--- repeating for every full three-step group the run's highest hand can clear.
+-- Catch-up remains atomic in groups of three. Each step is now +20% Blind
+-- size instead of a power of two: starting at step 1, a hand must reach the
+-- step-3 threshold (base x 1.6) to advance the next upgrade to step 4.
 local function normalized_blind_raiser_score(value)
     if value == nil then return nil end
 
@@ -564,11 +606,14 @@ local function normalized_score_at_least(left, right)
     return comparison ~= nil and comparison >= 0
 end
 
-local function blind_raiser_exponent_threshold(base_score, step)
+local function blind_raiser_step_threshold(base_score, step)
+    step = math.max(0, tonumber(step) or 0)
+    local multiplier = 1 + (0.2 * step)
+
     -- Prefer the active Big-number implementation when available.
     if type(to_big) == "function" then
         local ok, threshold = pcall(function()
-            return to_big(base_score) * (to_big(2) ^ step)
+            return to_big(base_score) * multiplier
         end)
         if ok then
             local normalized = normalized_blind_raiser_score(threshold)
@@ -576,17 +621,21 @@ local function blind_raiser_exponent_threshold(base_score, step)
         end
     end
 
-    -- Avoid ordinary-number overflow by constructing the scientific value from
-    -- logarithms instead of evaluating 2^step directly.
     local base = normalized_blind_raiser_score(base_score)
-    if not base or base.coefficient <= 0 or base.e_count ~= 0 then return nil end
-    local log10_value = math.log10(math.abs(base.coefficient))
-        + base.exponent + (step * math.log10(2))
-    local exponent = math.floor(log10_value)
+    if not base or base.coefficient <= 0 then return nil end
+
+    -- Linear multipliers are safe to apply in normalized scientific form and
+    -- do not require evaluating an exponentially growing power.
+    local coefficient = base.coefficient * multiplier
+    local exponent = base.exponent
+    while math.abs(coefficient) >= 10 do
+        coefficient = coefficient / 10
+        exponent = exponent + 1
+    end
     return {
-        coefficient = 10 ^ (log10_value - exponent),
+        coefficient = coefficient,
         exponent = exponent,
-        e_count = 0,
+        e_count = base.e_count or 0,
     }
 end
 
@@ -622,7 +671,7 @@ function HNDS.on_blind_raiser_hand_scored(hand_score)
     local function full_groups_pass(group_count)
         if group_count < 1 then return true end
         local final_step = step + (group_count * 3) - 1
-        local threshold = blind_raiser_exponent_threshold(base_score, final_step)
+        local threshold = blind_raiser_step_threshold(base_score, final_step)
         return threshold ~= nil and normalized_score_at_least(highest, threshold)
     end
 
@@ -731,9 +780,9 @@ local function score_from_replacement_record(blind_choice, record)
         or regular_score_for_slot(blind_choice, record.ante or current_ante())
     if not base then return nil end
     record.base_score = base
-    local exponent = math.max(1, math.floor(tonumber(record.upgrade_index) or 1))
-    record.upgrade_index = exponent
-    record.score_multiplier = 2 ^ exponent
+
+    local step = derive_applied_blind_raiser_step()
+    record.score_multiplier = HNDS.platinum_blind_raiser_multiplier(step)
     record.score_chips = base * record.score_multiplier
     return record.score_chips
 end
@@ -741,19 +790,7 @@ end
 function HNDS.platinum_next_upgrade_score(blind_choice)
     local base = regular_score_for_slot(blind_choice, current_ante())
     if not base then return nil end
-    return base * (2 ^ HNDS.platinum_next_upgrade_exponent())
-end
-
-local function latest_upgrade_exponent_for_ante(ante)
-    local latest = 0
-    local records = G.GAME.hnds_platinum_blind_replacements or {}
-    for _, blind_choice in ipairs({ "Small", "Big" }) do
-        local record = records[tostring(ante) .. ":" .. blind_choice]
-        if type(record) == "table" then
-            latest = math.max(latest, math.floor(tonumber(record.upgrade_index) or 1))
-        end
-    end
-    return latest
+    return base * HNDS.platinum_blind_raiser_multiplier(HNDS.platinum_next_upgrade_exponent())
 end
 
 function HNDS.platinum_boss_score_for_ante(ante, extra_upgrades)
@@ -764,18 +801,17 @@ function HNDS.platinum_boss_score_for_ante(ante, extra_upgrades)
     local mult = boss and tonumber(boss.mult)
     if not mult then return nil end
 
-    local exponent = latest_upgrade_exponent_for_ante(ante)
+    local step = derive_applied_blind_raiser_step()
     if math.max(0, tonumber(extra_upgrades) or 0) > 0 then
-        -- Tooltip preview: the next upgrade uses the current exponent step, and
-        -- the real Boss immediately adopts that same (previous-after-commit)
-        -- exponent. Keep the existing tooltip labels/layout unchanged.
-        exponent = HNDS.platinum_next_upgrade_exponent()
+        -- Preview the run-wide +20% step that will be committed by the next
+        -- upgrade. Catch-up can move this step forward in groups of three.
+        step = HNDS.platinum_next_upgrade_exponent()
             + math.max(0, tonumber(extra_upgrades) or 0) - 1
     end
 
     local scaling = G.GAME.starting_params and G.GAME.starting_params.ante_scaling or 1
     local natural_score = get_blind_amount(ante) * mult * scaling
-    return exponent > 0 and natural_score * (2 ^ exponent) or natural_score
+    return natural_score * HNDS.platinum_blind_raiser_multiplier(step)
 end
 
 local function dictionary_text(key, vars, fallback)
@@ -817,18 +853,20 @@ end
 function HNDS.adjust_platinum_blind_preview_amount(blind_choice, vanilla_amount, blind_config)
     if not blind_raiser_active() then return vanilla_amount end
 
+    -- An upgraded Small/Big uses that physical slot's ordinary base score even
+    -- though its visible/effect center is a Boss Blind. It still receives the
+    -- same run-wide +20%-per-step multiplier as every other Blind.
     if blind_choice == "Small" or blind_choice == "Big" then
         local record = replacement_record(blind_choice, current_ante())
         if type(record) == "table" then
             local score = score_from_replacement_record(blind_choice, record)
             if score then return score end
         end
-    elseif blind_choice == "Boss" then
-        local score = HNDS.platinum_boss_score_for_ante(current_ante(), 0)
-        if score then return score end
     end
 
-    return vanilla_amount
+    local amount = tonumber(vanilla_amount)
+    if not amount then return vanilla_amount end
+    return amount * HNDS.platinum_blind_raiser_multiplier()
 end
 
 local function append_plus_to_name(loc_name)
@@ -1326,8 +1364,14 @@ function HNDS.sync_live_platinum_blind_score(blind)
         if type(record) == "table" then
             score = score_from_replacement_record(slot, record)
         end
-    elseif slot == "Boss" then
-        score = HNDS.platinum_boss_score_for_ante(current_ante(), 0)
+    end
+
+    -- Ordinary Small/Big/Boss Blinds keep their normal Blind-specific base
+    -- score, then receive the run-wide linear Blind Raiser multiplier. The
+    -- wrapped vanilla set_blind has just rebuilt blind.chips, so multiplying it
+    -- here cannot compound across rounds.
+    if not score and tonumber(blind.chips) then
+        score = tonumber(blind.chips) * HNDS.platinum_blind_raiser_multiplier()
     end
 
     if not score then return false end

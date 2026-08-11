@@ -12,7 +12,9 @@ SMODS.Back {
         G.GAME.modifiers.hnds_crystal_ante_8_replacement = true
     end,
     calculate = function(self, back, context)
-        if context.end_of_round and context.main_eval and G.GAME.round_resets.ante == 4 and context.beat_boss then
+        if context.end_of_round and context.main_eval
+            and HNDS.active_blind_is_real_ante_boss and HNDS.active_blind_is_real_ante_boss()
+            and G.GAME.round_resets.ante == 4 then
             G.GAME.hnds_crystal_queued = true
         end
     end,
