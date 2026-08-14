@@ -1,6 +1,7 @@
 SMODS.Tag {
     key = "cursed_tag",
     atlas = "HDtags",
+    min_ante = 3,
     pos = { x = 3, y = 0 },
     discovered = false,
     loc_vars = function(self, info_queue, tag)

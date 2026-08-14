@@ -653,23 +653,95 @@ take_vanilla_ownership(SMODS.Joker, 'ring_master', {
 take_vanilla_ownership(SMODS.Joker, 'hiker', {
     blueprint_compat = true,
     config = { extra = 5 },
+    -- Explicitly preserve the vanilla Hiker attributes. In current Steamodded
+    -- these are also used by systems that classify card-modifying effects.
+    attributes = { 'modify_card', 'chips', 'perma_bonus' },
     loc_vars = function(self, info_queue, card)
-        return { vars = { extra_value(card, 'chips', 5) } }
+        return { vars = { 5 } }
     end,
     calculate = function(self, card, context)
-        if context.before and context.scoring_hand then
-            local upgraded = false
-            for _, scoring_card in ipairs(context.scoring_hand) do
-                if not scoring_card.debuff then
-                    scoring_card.ability.perma_bonus =
-                        (scoring_card.ability.perma_bonus or 0) + extra_value(card, 'chips', 5)
-                    upgraded = true
-                end
-            end
-            if upgraded then return { message = localize('k_upgrade_ex'), colour = G.C.CHIPS } end
+        -- In SMODS' scoring order the playing card's stored perma_bonus has
+        -- already been read by the time Joker `context.individual` runs.
+        -- Store Hiker's +5 permanently, then also score that exact +5 now so
+        -- the upgrade affects the same scoring instance (and every retrigger).
+        if context.individual and context.cardarea == G.play
+            and context.other_card and not context.other_card.debuff
+        then
+            local amount = tonumber(card.ability.extra) or 5
+            context.other_card.ability = context.other_card.ability or {}
+            context.other_card.ability.perma_bonus =
+                (tonumber(context.other_card.ability.perma_bonus) or 0) + amount
+            return {
+                chips = amount,
+                remove_default_message = true,
+                message = localize('k_upgrade_ex'),
+                colour = G.C.CHIPS,
+            }
         end
     end,
 })
+
+-- Blue Stake rework -----------------------------------------------------------
+-- Replaces vanilla Blue Stake's discard penalty. While Blue Stake (or any
+-- higher Stake that applies it) is active, level-1 hand values and their
+-- per-level Planet gains use the reduced table below.
+local HNDS_BLUE_STAKE_HAND_VALUES = {
+    ['High Card']       = { mult = 1,  chips = 1,   l_mult = 1, l_chips = 5  },
+    ['Pair']            = { mult = 1,  chips = 10,  l_mult = 1, l_chips = 10 },
+    ['Two Pair']        = { mult = 2,  chips = 10,  l_mult = 1, l_chips = 15 },
+    ['Three of a Kind'] = { mult = 3,  chips = 20,  l_mult = 2, l_chips = 15 },
+    ['Straight']        = { mult = 4,  chips = 25,  l_mult = 3, l_chips = 25 },
+    ['Flush']           = { mult = 4,  chips = 30,  l_mult = 2, l_chips = 10 },
+    ['Full House']      = { mult = 4,  chips = 40,  l_mult = 4, l_chips = 35 },
+    ['Four of a Kind']  = { mult = 6,  chips = 60,  l_mult = 3, l_chips = 25 },
+    ['Straight Flush']  = { mult = 7,  chips = 100, l_mult = 6, l_chips = 50 },
+    ['Five of a Kind']  = { mult = 11, chips = 110, l_mult = 3, l_chips = 30 },
+    ['Flush House']     = { mult = 13, chips = 130, l_mult = 5, l_chips = 40 },
+    ['Flush Five']      = { mult = 15, chips = 150, l_mult = 3, l_chips = 40 },
+    ['hnds_stone_ocean']= { mult = 1,  chips = 200, l_mult = 1, l_chips = 40 },
+}
+
+function HNDS.apply_blue_stake_hand_rework()
+    if not (G and G.GAME and G.GAME.hands and G.GAME.modifiers
+        and G.GAME.modifiers.hnds_blue_stake_rework)
+    then
+        return
+    end
+
+    for hand_key, values in pairs(HNDS_BLUE_STAKE_HAND_VALUES) do
+        local hand = G.GAME.hands[hand_key]
+        if hand then
+            local level = math.max(1, tonumber(hand.level) or 1)
+            hand.l_mult = values.l_mult
+            hand.l_chips = values.l_chips
+            -- Preserve any legitimate starting hand level while rebuilding its
+            -- score from the new Blue-Stake level-1 base and level gains.
+            hand.mult = values.mult + (level - 1) * values.l_mult
+            hand.chips = values.chips + (level - 1) * values.l_chips
+        end
+    end
+end
+
+take_vanilla_ownership(SMODS.Stake, 'blue', {
+    modifiers = function(self)
+        G.GAME.modifiers = G.GAME.modifiers or {}
+        G.GAME.modifiers.hnds_blue_stake_rework = true
+        HNDS.apply_blue_stake_hand_rework()
+    end,
+})
+
+-- Stake modifiers normally run after the hand table exists, but keep a
+-- post-start sync as a compatibility fallback for load orders that initialise
+-- custom poker hands (notably Stone Ocean) later in Game:start_run().
+if Game and type(Game.start_run) == 'function' and not HNDS._blue_stake_start_run_hook then
+    HNDS._blue_stake_start_run_hook = true
+    local hnds_blue_stake_start_run_ref = Game.start_run
+    function Game:start_run(...)
+        local result = hnds_blue_stake_start_run_ref(self, ...)
+        HNDS.apply_blue_stake_hand_rework()
+        return result
+    end
+end
 
 -- Spectral / poker hands -------------------------------------------------------
 
@@ -705,6 +777,6 @@ take_vanilla_ownership(SMODS.Consumable, 'black_hole', {
     can_use = function() return true end,
 })
 
-take_vanilla_ownership(SMODS.PokerHand, 'Full House', { l_mult = 4, l_chips = 40 })
+take_vanilla_ownership(SMODS.PokerHand, 'Full House', { mult = 4, chips = 45, l_mult = 4, l_chips = 40 })
 take_vanilla_ownership(SMODS.PokerHand, 'Flush House', { l_mult = 5, l_chips = 50 })
 take_vanilla_ownership(SMODS.PokerHand, 'Straight Flush', { l_mult = 6, l_chips = 60 })

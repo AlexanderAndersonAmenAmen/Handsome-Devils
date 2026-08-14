@@ -271,11 +271,10 @@ local localization = {
 			j_hnds_jackpot = {
 				name = "Jackpot",
 				text = {
-					"{C:green}#1# in #2#{} chance to win {C:money}$#3#{} and",
-					"give {C:mult}+#4#{} Mult per hand played",
-					"Each scoring {C:attention}7{} doubles this",
-					"{C:green}probability{} for played hand",
-					"{C:inactive}(ex. {C:green}1 in #5#{C:inactive} -> {C:green}2 in #5#{C:inactive})"
+					"{C:green}#1# in #2#{} chance to",
+					"give {C:money}$#3#{} and {C:mult}+#4#{} Mult",
+					"Each scoring {C:attention}7{} doubles",
+					"{C:attention}listed{} {C:green}probability{}",
 				},
 				unlock = {
 					"Gain {C:money}$50{} or",
@@ -337,8 +336,8 @@ local localization = {
 				name = "Meme",
 				text = {
 					"This Joker gains",
-					"{X:mult,C:white}X0.05{} Mult per {C:attention}unique",
-					"suit in scored hand",
+					"{X:mult,C:white}X0.05{} Mult per unique",
+					"{C:attention}suit{} in scored hand",
 					"{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)",
 				},
 				unlock = {
@@ -395,8 +394,8 @@ local localization = {
 				text = {
 					"When hand is played, destroy",
 					"a random held in hand card",
-					"to gain its {C:mult}Mult{} and {C:chips}Chips",
-					"{C:inactive}(Currently{} {C:mult}+#2#{} {C:inactive}Mult,{} {C:chips}+#1#{} {C:inactive}Chips)",
+					"to gain its {C:chips}Chips{} and {C:mult}Mult",
+					"{C:inactive}(Currently{} {C:chips}+#1#{} {C:inactive}Chips,{} {C:mult}+#2#{} {C:inactive}Mult)",
 				},
 				unlock = {
 					"Have a deck",
@@ -474,6 +473,23 @@ local localization = {
 					"Make a total",
 					"of {C:attention}10{} Jokers",
 					"{C:dark_edition}Negative{} {C:inactive}(#1#)",
+				},
+			},
+			j_hnds_conquest = {
+				name = "Conquest",
+				text = {
+					"Gains {X:mult,C:white}X#1#{} Mult for each",
+					"{C:attention}Boss Blind{} defeated this run",
+					"{C:inactive}(Currently {X:mult,C:white}X#2#{C:inactive} Mult)",
+				},
+			},
+			j_hnds_joker_reverse = {
+				name = "Joker Reverse",
+				text = {
+					"Replace adjacent",
+					"Jokers with their",
+					"{C:attention}unique counterparts{}",
+					"at end of round",
 				},
 			},
 			j_hnds_wait_what = {
@@ -599,7 +615,7 @@ local localization = {
 			j_hnds_jigsaw_joker = {
 				name = "Jigsaw",
 				text = {
-					"After playing {C:attention}8{} {C:attention}unique{}",
+					"After playing {C:attention}8{} unique",
 					"poker hands, sell this",
 					"card to upgrade every",
 					"{C:attention}poker hand{} by {C:attention}#3#{} levels",
@@ -614,7 +630,7 @@ local localization = {
 			hnds_jigsaw_progress_empty = {
 				name = "Played Poker Hands",
 				text = {
-					"Currently: {C:attention}#1#{}",
+					"Currently {C:attention}#1#{}",
 					"{C:inactive}(#2#/#3# unique hands){}",
 				},
 			},
@@ -733,10 +749,8 @@ local localization = {
 			j_hnds_contagion = {
 				name = "Contagion",
 				text = {
-					"{C:attention}Consumables{} allow to",
-					"select {C:attention}1{} extra card",
-					"{C:inactive}(ex: Enhances {C:attention}2{} {C:inactive}selected",
-					"{C:inactive}cards -> {C:attention}3{} {C:inactive}selected cards)",
+					"{C:attention}Consumable cards{} allow",
+					"to select {C:attention}1{} extra card",
 				},
 				unlock = {
 					"Have a deck full",
@@ -838,7 +852,36 @@ local localization = {
 					"the same Joker",
 				},
 			},
-		},
+		
+			j_hnds_jack_in_the_box = {
+				name = "Jack-in-the-Box",
+				text = {
+					"Every other round",
+					"gains an ability of a",
+					"random {C:red}Rare Joker{}",
+					"{C:inactive}(Currently {C:attention}#1#{C:inactive}){}",
+				},
+			},
+			j_hnds_be_not_afraid = {
+				name = "Be not Afraid",
+				text = {
+					"If played hand contains",
+					"a {C:attention}Three of a Kind{}, every",
+					"card permanently gains",
+					"{C:mult}+#1#{} Mult when scoring",
+				},
+			},
+			j_hnds_jodiac = {
+				name = "Jodiac",
+				text = {
+					"Gains {C:mult}+#1#{} Mult per",
+					"card with unique {C:attention}rank{}",
+					"you score, reset scored",
+					"ranks at end of Ante",
+					"{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult){}",
+				},
+			},
+},
 		Back = {
 			b_hnds_premiumdeck = {
 				name = "Premium Deck",
@@ -1204,6 +1247,7 @@ local localization = {
 		},
 
 		Other = {
+
             hnds_jigsaw_progress_empty = {
                 name = "Played Poker Hands",
                 text = {
@@ -1579,7 +1623,171 @@ local localization = {
 					"size permanently",
 				},
 			},
-		},
+		
+            hnds_jodiac_ranks_empty = {
+                name = "Scored Ranks",
+                text = {
+					"No ranks scored",
+				    "this Ante",
+			},
+            },
+            hnds_jodiac_ranks_1 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                },
+            },
+            hnds_jodiac_ranks_2 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                },
+            },
+            hnds_jodiac_ranks_3 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                },
+            },
+            hnds_jodiac_ranks_4 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                },
+            },
+            hnds_jodiac_ranks_5 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                },
+            },
+            hnds_jodiac_ranks_6 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                },
+            },
+            hnds_jodiac_ranks_7 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                },
+            },
+            hnds_jodiac_ranks_8 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                },
+            },
+            hnds_jodiac_ranks_9 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                },
+            },
+            hnds_jodiac_ranks_10 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                },
+            },
+            hnds_jodiac_ranks_11 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                    "{C:attention}#11#{}",
+                },
+            },
+            hnds_jodiac_ranks_12 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                    "{C:attention}#11#{}",
+                    "{C:attention}#12#{}",
+                },
+            },
+            hnds_jodiac_ranks_13 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                    "{C:attention}#11#{}",
+                    "{C:attention}#12#{}",
+                    "{C:attention}#13#{}",
+                },
+            },
+},
 		Voucher = {
 			v_magic_trick = {
 				name = "Magic Trick",
@@ -1814,6 +2022,14 @@ local localization = {
 			},
 		},
 		Stake = {
+			stake_blue = {
+				name = "Blue Stake",
+				text = {
+					"Level {C:attention}1{} poker hands and {C:planet}Planet{}",
+					"cards give less {C:chips}Chips{} and {C:mult}Mult{}",
+					"{s:0.8}Applies all previous Stakes",
+				},
+			},
 			stake_hnds_platinum = {
 				name = "Platinum Stake",
 				text = {
@@ -1893,6 +2109,7 @@ local localization = {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_be_not_afraid = "Holy trinity!",
 			k_hnds_krusty_voucher_tag = "Voucher Tag",
 			k_hnds_krusty_voucher_tags = "Voucher Tags",
 			hnds_upgrade_blind = "Upgrade Blind",
@@ -2019,6 +2236,7 @@ if vanilla_tweaks_config and vanilla_tweaks_config.enableVanillaTweaks == false 
 	localization.descriptions.Enhanced.m_wild = nil
 	localization.descriptions.Tag.tag_juggle = nil
 	localization.descriptions.Tag.tag_boss = nil
+	localization.descriptions.Stake.stake_blue = nil
 end
 
 return localization

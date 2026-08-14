@@ -967,10 +967,15 @@ local function hnds_contagion_bonus()
     local bonus = 0
     if G and G.jokers and G.jokers.cards then
         for _, joker in ipairs(G.jokers.cards) do
-            if joker and not joker.debuff and joker.config and joker.config.center
-                and joker.config.center.key == 'j_hnds_contagion'
-            then
-                bonus = bonus + 1
+            if joker and not joker.debuff and joker.config and joker.config.center then
+                local key = joker.config.center.key
+                local jack_contagion = key == 'j_hnds_jack_in_the_box'
+                    and joker.ability and joker.ability.extra
+                    and joker.ability.extra.active == true
+                    and joker.ability.extra.rare_key == 'j_hnds_contagion'
+                if key == 'j_hnds_contagion' or jack_contagion then
+                    bonus = bonus + 1
+                end
             end
         end
     end

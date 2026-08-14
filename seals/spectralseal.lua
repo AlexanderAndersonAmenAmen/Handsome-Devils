@@ -1,3 +1,50 @@
+local HNDS_VANILLA_HAND_HIERARCHY = {
+    'Flush Five',
+    'Flush House',
+    'Five of a Kind',
+    'Straight Flush',
+    'Four of a Kind',
+    'Full House',
+    'Flush',
+    'Straight',
+    'Three of a Kind',
+    'Two Pair',
+    'Pair',
+    'High Card',
+}
+
+local function hnds_order_tracked_hands(tracked)
+    local ordered = {}
+    local added = {}
+    if type(tracked) ~= 'table' then return ordered end
+
+    -- First use Balatro's fixed poker-hand hierarchy (strongest to weakest).
+    for _, hand_key in ipairs(HNDS_VANILLA_HAND_HIERARCHY) do
+        if tracked[hand_key] then
+            ordered[#ordered + 1] = hand_key
+            added[hand_key] = true
+        end
+    end
+
+    -- Keep modded hands deterministic too: follow the live hand list after all
+    -- vanilla hierarchy entries, then alphabetically append any unknown keys.
+    for _, hand_key in ipairs((G and G.handlist) or {}) do
+        if tracked[hand_key] and not added[hand_key] then
+            ordered[#ordered + 1] = hand_key
+            added[hand_key] = true
+        end
+    end
+
+    local remaining = {}
+    for hand_key in pairs(tracked) do
+        if not added[hand_key] then remaining[#remaining + 1] = hand_key end
+    end
+    table.sort(remaining)
+    for _, hand_key in ipairs(remaining) do ordered[#ordered + 1] = hand_key end
+
+    return ordered
+end
+
 SMODS.Seal {
     key = "spectralseal",
     pos = { x = 2, y = 1 },
@@ -8,30 +55,7 @@ SMODS.Seal {
 
     loc_vars = function(self, info_queue, card)
         local tracked = card and card.ability and card.ability.hnds_spectral_hands
-        local ordered_keys = {}
-        local added = {}
-
-        if type(tracked) == "table" then
-            -- Show vanilla and modded hands in the same order used by Balatro's
-            -- hand list, then append any unlisted custom hands alphabetically.
-            for _, hand_key in ipairs((G and G.handlist) or {}) do
-                if tracked[hand_key] then
-                    ordered_keys[#ordered_keys + 1] = hand_key
-                    added[hand_key] = true
-                end
-            end
-
-            local remaining_keys = {}
-            for hand_key in pairs(tracked) do
-                if not added[hand_key] then
-                    remaining_keys[#remaining_keys + 1] = hand_key
-                end
-            end
-            table.sort(remaining_keys)
-            for _, hand_key in ipairs(remaining_keys) do
-                ordered_keys[#ordered_keys + 1] = hand_key
-            end
-        end
+        local ordered_keys = hnds_order_tracked_hands(tracked)
 
         local progress = #ordered_keys
         local remaining = math.max(0, self.config.extra.hands - progress)

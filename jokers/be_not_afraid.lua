@@ -1,0 +1,53 @@
+SMODS.Joker {
+    key = 'be_not_afraid',
+    atlas = 'Jokers',
+    pos = { x = 6, y = 6 },
+    rarity = 1,
+    cost = 6,
+    unlocked = true,
+    discovered = true,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+
+    config = { extra = { mult = 1 } },
+
+    loc_vars = function(self, info_queue, card)
+        local extra = card and card.ability and card.ability.extra or self.config.extra
+        return { vars = { tonumber(extra.mult) or 1 } }
+    end,
+
+    calculate = function(self, card, context)
+        local three_kind = context.poker_hands
+            and context.poker_hands['Three of a Kind']
+
+        -- `context.individual` is evaluated again for each playing-card
+        -- retrigger. Increase the permanent Mult on every scoring instance.
+        -- Permanent card Mult has already been read for the current scoring
+        -- pass by this point, so return the same +Mult once as an immediate
+        -- compensation: numerically the newly gained +1 applies to this score
+        -- as requested, while remaining stored for all future scores.
+        if context.individual and context.cardarea == G.play
+            and three_kind and next(three_kind)
+            and context.other_card and context.other_card.ability
+            and not context.other_card.debuff
+        then
+            local amount = tonumber(card.ability.extra.mult) or 1
+            context.other_card.ability.perma_mult =
+                (tonumber(context.other_card.ability.perma_mult) or 0) + amount
+
+            return {
+                -- perma_mult was already read for this scoring pass, so add
+                -- the newly gained amount to this score as well. On a
+                -- retrigger, the previously stored gains are read normally
+                -- and this trigger contributes its new +1 immediately.
+                mult = amount,
+                remove_default_message = true,
+                message = localize('k_upgrade_ex'),
+                colour = G.C.MULT,
+            }
+        end
+    end,
+
+    attributes = { 'modify_card', 'mult', 'hand_type', 'perma_bonus' },
+}

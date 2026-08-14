@@ -23,7 +23,22 @@ SMODS.Joker {
 
         if G and G.GAME and G.GAME.blind and HNDS and HNDS.get_blind_souls then
             for _, soul in ipairs(HNDS.get_blind_souls(G.GAME.blind, "hnds_pennywise_preview") or {}) do
-                info_queue[#info_queue + 1] = soul
+                -- Soul generation recipes are also used as tooltip descriptors,
+                -- but some fallback recipes only contain `key`. BETA-1620a's
+                -- generate_card_ui requires a set for these descriptor tables.
+                -- Normalize keyed Joker recipes here and never queue an invalid
+                -- recipe/filter table into info_queue.
+                if type(soul) == "table" and soul.key then
+                    local preview_center = G and G.P_CENTERS and G.P_CENTERS[soul.key]
+                    if preview_center then
+                        -- Queue the registered Center itself. This guarantees
+                        -- generate_card_ui receives a complete set/key/config
+                        -- object rather than a partial Soul generation recipe.
+                        info_queue[#info_queue + 1] = preview_center
+                    elseif G and G.P_CENTERS and G.P_CENTERS.j_joker then
+                        info_queue[#info_queue + 1] = G.P_CENTERS.j_joker
+                    end
+                end
             end
         end
         if G and G.P_CENTERS and G.P_CENTERS.e_negative then
