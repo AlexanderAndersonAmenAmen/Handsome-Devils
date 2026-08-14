@@ -141,6 +141,20 @@ HNDS.restore_stale_platinum_blind_slots = function()
     if not (G.GAME.round_resets and G.GAME.round_resets.blind_choices) then return end
 
     local ante = current_ante()
+
+    -- Ante rollover is a hard runtime boundary for Boss+ delegation. In case a
+    -- modded transition skipped Blind:defeat/disable, tear down any stack that
+    -- still belongs to an older Ante before the new Blind-select UI is built.
+    if G.GAME.hnds_platinum_boss_stack_active
+        and tonumber(G.GAME.hnds_platinum_boss_stack_ante) ~= ante
+        and HNDS.stop_platinum_boss_stack
+    then
+        HNDS.stop_platinum_boss_stack({
+            blind_defeated = true,
+            hnds_scope_cleanup = true,
+        })
+    end
+
     local choices = G.GAME.round_resets.blind_choices
     local upgrades = upgraded_blinds()
     local records = replacement_records()

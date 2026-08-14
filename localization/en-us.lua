@@ -2115,6 +2115,7 @@ local localization = {
 			hnds_upgrade_blind = "Upgrade Blind",
 			hnds_blind_raiser_tooltip_title = "Score if upgraded",
 			hnds_blind_raiser_tooltip_current_blind = "Current Blind: #1#",
+			hnds_blind_raiser_tooltip_big_blind = "Big Blind: #1#",
 			hnds_blind_raiser_tooltip_boss_blind = "Boss Blind: #1#",
 			k_hnds_petrified = "Petrified!",
 			k_hnds_goldfish = "Goldfish!",

@@ -327,7 +327,7 @@ HNDS.DEVIL_BOSSES.bl_hook_the_house = {
 
 
 
-        if context.blind_disabled then
+        if context.blind_disabled or context.blind_defeated then
 
 
             for _,card in ipairs(G.hand.cards) do
@@ -1183,7 +1183,7 @@ HNDS.DEVIL_BOSSES.bl_hook_the_water = {
 
 
 
-        if context.blind_disabled then
+        if context.blind_disabled or context.blind_defeated then
 
 
 
