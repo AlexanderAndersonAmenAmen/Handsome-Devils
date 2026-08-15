@@ -9,12 +9,17 @@ SMODS.Back {
     calculate = function(self, back, context)
         if context.end_of_round and context.main_eval
             and HNDS.active_blind_is_real_ante_boss and HNDS.active_blind_is_real_ante_boss()
-            and G.GAME.round_resets.ante == 1 and not G.GAME.hnds_cursed_pack_opened then
-            G.GAME.hnds_cursed_pack_opened = true
-            local tag = Tag('tag_hnds_cursed_tag')
-            tag.ability = tag.ability or {}
-            tag.ability.hnds_forced = true
-            add_tag(tag)
+            and G.GAME.round_resets.ante == 1
+            and not G.GAME.hnds_cursed_deck_reward_claimed
+            and not G.GAME.hnds_cursed_pack_opened then
+            -- Claim before queueing.  Even if calculate is evaluated more than
+            -- once for the same Boss, this run can never schedule another deck
+            -- reward on a later Ante.
+            G.GAME.hnds_cursed_deck_reward_claimed = true
+            G.GAME.hnds_cursed_pack_opened = true -- legacy/save compatibility
+            if HNDS.queue_cursed_pack then
+                HNDS.queue_cursed_pack({ forced = true, source = 'cursed_deck' })
+            end
         end
     end,
     pools = { RedeemableBacks = true }

@@ -127,6 +127,9 @@ local function parse_upgrade_key(key)
 end
 
 local function excommunicado_active()
+    if HNDS and HNDS.excommunicado_effect_active then
+        return HNDS.excommunicado_effect_active()
+    end
     if not (SMODS and SMODS.find_card) then return false end
     local cards = SMODS.find_card('j_hnds_excommunicado')
     return cards and next(cards) ~= nil
@@ -221,6 +224,10 @@ HNDS.restore_stale_platinum_blind_slots = function()
     end
     for _, key in ipairs(stale_upgrade_keys) do
         upgrades[key] = nil
+    end
+
+    if HNDS.prune_platinum_boss_stack_records then
+        HNDS.prune_platinum_boss_stack_records(ante)
     end
 end
 

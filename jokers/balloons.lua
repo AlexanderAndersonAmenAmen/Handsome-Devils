@@ -24,18 +24,26 @@ SMODS.Joker({
     eternal_compat = false,
     
     calculate = function(self, card, context)
-        if context.end_of_round and not context.individual and not context.repetition and not context.blueprint then
-            
-            if SMODS.last_hand_oneshot then
-                
-                local pool = {}
-                for tag_key, _ in pairs(G.P_TAGS) do
-                    table.insert(pool, tag_key)
-                end
-                
-                local seed_modifier = 'balloons_seed_' .. tostring(card.ability.extra.balloons)
-                local chosen_tag_key = pseudorandom_element(pool, seed_modifier)
-                
+        -- "Defeated in one hand" must be scoped to THIS Blind.
+        -- SMODS.last_hand_oneshot describes whether the most recently scored
+        -- hand cleared the requirement and can still be present in contexts
+        -- after that hand, so it is not a reliable round-length check here.
+        -- Match Pennywise's explicit current-round hand counter instead.
+        if context.end_of_round and context.main_eval
+            and not context.game_over
+            and not context.blueprint
+            and G and G.GAME and G.GAME.current_round
+            and G.GAME.current_round.hands_played == 1
+        then
+            local pool = {}
+            for tag_key, _ in pairs(G.P_TAGS) do
+                pool[#pool + 1] = tag_key
+            end
+
+            local seed_modifier = 'balloons_seed_' .. tostring(card.ability.extra.balloons)
+            local chosen_tag_key = pseudorandom_element(pool, pseudoseed(seed_modifier))
+
+            if chosen_tag_key then
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         add_tag(Tag(chosen_tag_key))
@@ -43,28 +51,28 @@ SMODS.Joker({
                         return true
                     end
                 }))
-                
-                card.ability.extra.balloons = card.ability.extra.balloons - 1
-                
-                if card.ability.extra.balloons <= 0 then
-                    G.E_MANAGER:add_event(Event({
-                        func = function()
-                            play_sound('tarot1')
-                            card:start_dissolve() 
-                            return true
-                        end
-                    }))
-                    return {
-                        message = "Popped!",
-                        colour = G.C.FILTER
-                    }
-                end
-                
+            end
+
+            card.ability.extra.balloons = card.ability.extra.balloons - 1
+
+            if card.ability.extra.balloons <= 0 then
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        play_sound('tarot1')
+                        card:start_dissolve()
+                        return true
+                    end
+                }))
                 return {
-                    message = "Pop!",
+                    message = "Popped!",
                     colour = G.C.FILTER
                 }
             end
+
+            return {
+                message = "Pop!",
+                colour = G.C.FILTER
+            }
         end
     end
 })

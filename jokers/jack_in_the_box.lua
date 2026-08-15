@@ -117,6 +117,31 @@ local function rare_name(key)
     return ok and name or key
 end
 
+
+local function enhanced_cards_in_full_deck()
+    local count = 0
+    for _, playing_card in ipairs((G and G.playing_cards) or {}) do
+        local center = playing_card and playing_card.config and playing_card.config.center
+        local key = center and center.key
+        -- Editions and Seals do not change config.center. Any real Enhancement
+        -- does; support both vanilla m_* centers and Steamodded Enhanced centers.
+        if center and key ~= 'c_base' and key ~= 'm_base'
+            and (center.set == 'Enhanced' or (type(key) == 'string' and key:sub(1, 2) == 'm_'))
+        then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+local function drivers_license_tooltip_vars()
+    local center = G and G.P_CENTERS and G.P_CENTERS.j_drivers_license
+    local xmult = center and center.config and tonumber(center.config.extra) or 3
+    local threshold = center and center.unlock_condition and center.unlock_condition.extra
+        and tonumber(center.unlock_condition.extra.count) or 16
+    return xmult, threshold, enhanced_cards_in_full_deck()
+end
+
 local function rolled_center(extra)
     local key = extra and extra.active and extra.rare_key
     return key and G and G.P_CENTERS and G.P_CENTERS[key] or nil
@@ -242,87 +267,213 @@ local function apply_jack_art(center, card)
 end
 
 local function clear_proxy(card)
-    if card then card.hnds_jack_box_proxy = nil end
+    if not card then return end
+    local proxy = card.hnds_jack_box_proxy
+    card.hnds_jack_box_proxy = nil
+    if not proxy then return end
+
+    -- Borrowed runtime cards are deliberately never emplaced/add_to_deck'd.
+    -- They still own Card/Sprite objects, though, so explicitly destroy them
+    -- when Jack closes/rerolls/is removed instead of leaving headless Card
+    -- instances in the engine registries.
+    proxy.area = nil
+    proxy.added_to_deck = false
+    if type(proxy.remove) == 'function' then
+        pcall(proxy.remove, proxy)
+    end
 end
 
--- Build a virtual Joker state table instead of a real Card object. The old
--- implementation used SMODS.create_card(), which registered a genuine card/UI
--- node even though it was intended to be hidden. That ghost card could render,
--- be dragged and even expose sell controls. This proxy is plain Lua data only.
-local function make_proxy(card, extra)
-    if not (card and extra and extra.active and extra.rare_key and G and G.P_CENTERS) then
+local function hit_the_road_gain()
+    local center = G and G.P_CENTERS and G.P_CENTERS.j_hit_the_road
+    local cfg = center and center.config or {}
+    local extra = cfg.extra
+    if type(extra) == 'number' then return extra end
+    if type(extra) == 'table' then
+        return tonumber(extra.gain or extra.scaling or extra.xmult_gain or extra.x_mult_gain) or 0.5
+    end
+    return tonumber(cfg.scaling or cfg.xmult_gain or cfg.x_mult_gain) or 0.5
+end
+
+local function run_hit_the_road(card, extra, context)
+    local state = extra.rare_state
+    if type(state) ~= 'table' then
+        local center = G and G.P_CENTERS and G.P_CENTERS.j_hit_the_road
+        state = deep_copy((center and center.config) or {})
+        extra.rare_state = state
+    end
+
+    state.x_mult = tonumber(state.x_mult or state.xmult) or 1
+
+    -- Hit the Road scales only from real discards. Blueprint/retriggers may
+    -- copy the current multiplier, but must never increment Jack's stored state.
+    if context.discard and context.other_card and not context.blueprint
+        and not context.retrigger_joker
+    then
+        local ok, id = pcall(context.other_card.get_id, context.other_card)
+        if ok and id == 11 then
+            state.x_mult = state.x_mult + hit_the_road_gain()
+            state.xmult = state.x_mult
+            return {
+                message = localize({ type = 'variable', key = 'a_xmult', vars = { state.x_mult } }),
+                colour = G.C.MULT,
+                card = card,
+            }
+        end
+    end
+
+    if context.joker_main then
+        return { xmult = state.x_mult }
+    end
+end
+
+local function merge_saved_rare_state(initialized, saved)
+    if type(initialized) ~= 'table' then initialized = {} end
+    if type(saved) == 'table' then
+        -- A real Card constructor supplies compatibility/runtime aliases that do
+        -- not necessarily exist in center.config (notably vanilla x_mult). Keep
+        -- those initialized fields and overlay only state that actually changed
+        -- while Jack was borrowing the Rare.
+        for k, v in pairs(saved) do
+            initialized[k] = v
+        end
+    end
+    return initialized
+end
+
+local function hide_proxy(proxy)
+    if not (proxy and proxy.states) then return end
+    if proxy.states.visible then proxy.states.visible = false end
+    if proxy.states.hover then proxy.states.hover.can = false end
+    if proxy.states.click then proxy.states.click.can = false end
+    if proxy.states.drag then proxy.states.drag.can = false end
+    if proxy.states.collide then proxy.states.collide.can = false end
+end
+
+-- Build one real, fully initialized Rare Joker Card for the active Jack round.
+--
+-- This is intentionally NOT an emplaced Joker and never calls add_to_deck(), so
+-- it cannot consume a slot, enter find_card(), grant an edition/sticker, or run
+-- a passive twice. Its only job is to carry the exact runtime `ability` table a
+-- real Rare receives from Card:set_ability and to execute calculate_joker on
+-- that state. This is the same basic model Blueprint uses (calculate another
+-- real Card), without marking the ordinary Jack calculation as a blueprint.
+local function borrowed_runtime(card, extra, center)
+    if not (card and extra and center and SMODS and type(SMODS.create_card) == 'function') then
         return nil
     end
 
-    local center = G.P_CENTERS[extra.rare_key]
-    if not center then return nil end
-
-    local existing = card.hnds_jack_box_proxy
-    if existing and existing.config and existing.config.center == center then
-        return existing
+    local proxy = card.hnds_jack_box_proxy
+    if proxy and proxy.config and proxy.config.center == center then
+        proxy.area = card.area or (G and G.jokers) or proxy.area
+        proxy.added_to_deck = true
+        return proxy
     end
 
-    local ability
-    if type(extra.rare_state) == 'table' then
-        ability = deep_copy(extra.rare_state)
-    else
-        ability = deep_copy(center.config or {})
-    end
+    clear_proxy(card)
 
-    -- Card:calculate_joker's vanilla fallback keys off these fields. Modded
-    -- Joker calculate functions generally only need ability.extra/config.center.
-    ability.set = 'Joker'
-    ability.name = center.name or ability.name or center.key
-    ability.effect = center.effect or ability.effect
-    ability.eternal = nil
-    ability.perishable = nil
-    ability.rental = nil
-    ability.hnds_cursed = nil
-    ability.hnds_jester_temp_negative = nil
+    local ok, created = pcall(SMODS.create_card, {
+        set = 'Joker',
+        key = center.key,
+        area = G and G.jokers or nil,
+        no_edition = true,
+        skip_materialize = true,
+        discover = false,
+        bypass_discovery_center = true,
+        allow_duplicates = true,
+        key_append = 'hnds_jack_runtime',
+    })
+    if not ok or not created then return nil end
+    proxy = created
 
-    local proxy = {
-        config = { center = center },
-        ability = ability,
-        edition = nil,
-        seal = nil,
-        area = G.jokers,
-        added_to_deck = true,
-        debuff = card.debuff,
-        sort_id = card.sort_id,
-        cost = 0,
-        sell_cost = 0,
-        hnds_jack_box_virtual = true,
-    }
+    proxy.config = proxy.config or {}
+    proxy.config.center = center
+    proxy.config.center_key = center.key
+    proxy.area = card.area or (G and G.jokers) or proxy.area
+    -- Some compatibility wrappers require this flag, but do NOT call
+    -- add_to_deck(): Jack handles the few transferable add_to_deck passives
+    -- (currently Stuntman/Excommunicado) explicitly.
+    proxy.added_to_deck = true
+    proxy.edition = nil
+    proxy.seal = nil
+    proxy.debuff = false
+    proxy.hnds_jack_box_runtime = true
+    hide_proxy(proxy)
 
-    -- Missing Card fields/methods fall through to Jack itself. Methods are still
-    -- invoked with the virtual proxy as `self`, so ability/config mutations stay
-    -- isolated while harmless visual feedback (juice/status effects) can target
-    -- Jack's existing sprites. No Node/Card constructor is ever called.
-    setmetatable(proxy, { __index = card })
+    proxy.ability = merge_saved_rare_state(proxy.ability, extra.rare_state)
+    proxy.ability.set = 'Joker'
+    proxy.ability.name = center.name or proxy.ability.name
+    proxy.ability.effect = center.effect or proxy.ability.effect
+    -- Never borrow Jack's/another card's stickers through serialized state.
+    proxy.ability.eternal = nil
+    proxy.ability.perishable = nil
+    proxy.ability.rental = nil
+    proxy.ability.hnds_cursed = nil
+    proxy.ability.hnds_jester_temp_negative = nil
+    proxy.stickers = nil
 
+    -- Store the actual initialized ability table, not a deep-copy. It is plain
+    -- serializable card state and therefore survives save/load through Jack's
+    -- own ability.extra without allocating a new clone on every calculation.
+    extra.rare_state = proxy.ability
     card.hnds_jack_box_proxy = proxy
     return proxy
 end
 
-local function retarget_effect(value, proxy, card, seen)
+local function rebind_proxy_effect_source(value, proxy, jack, seen)
     if type(value) ~= 'table' then return end
     seen = seen or {}
     if seen[value] then return end
     seen[value] = true
     for k, v in pairs(value) do
-        if k == 'card' and v == proxy then
-            value[k] = card
-        elseif type(v) == 'table' then
-            retarget_effect(v, proxy, card, seen)
+        if (k == 'card' or k == 'juice_card') and v == proxy then
+            value[k] = jack
+        elseif type(v) == 'table' and v ~= G
+            and not (v.config and v.T)
+        then
+            rebind_proxy_effect_source(v, proxy, jack, seen)
         end
     end
+end
+
+local function run_borrowed_card_dispatch(card, extra, center, context)
+    local proxy = borrowed_runtime(card, extra, center)
+    if not (proxy and type(proxy.calculate_joker) == 'function') then return nil end
+
+    -- Match Jack's live area/debuff state on every evaluation. The runtime card
+    -- is not in area.cards; assigning area is only so vanilla/mod compatibility
+    -- checks see the same Joker context as the owner.
+    proxy.area = card.area or (G and G.jokers) or proxy.area
+    proxy.debuff = card.debuff or false
+
+    local ok, ret, post = pcall(proxy.calculate_joker, proxy, context)
+    extra.rare_state = proxy.ability
+    if not ok then
+        -- A third-party Rare may require lifecycle state that cannot be borrowed.
+        -- Drop the bad runtime so the next context can rebuild cleanly; never let
+        -- it corrupt Jack or the actual Joker area.
+        clear_proxy(card)
+        return nil
+    end
+
+    -- Effects that explicitly carry their source Card must resolve visually and
+    -- mechanically to Jack, not to the invisible runtime object.
+    rebind_proxy_effect_source(ret, proxy, card)
+    rebind_proxy_effect_source(post, proxy, card)
+    return ret, post
 end
 
 local function run_rare_ability(card, extra, context)
     local key = extra and extra.rare_key
 
-    -- Blueprint/Brainstorm need Jack's real position in G.jokers; a virtual
-    -- proxy cannot represent positional copying correctly.
+    -- Hit the Road needs persistent per-round state but does not need a physical
+    -- card. Handle it explicitly so its XMult gain is exact and cannot be reset
+    -- or double-counted by compatibility wrappers around Card:calculate_joker.
+    if key == 'j_hit_the_road' then
+        return run_hit_the_road(card, extra, context)
+    end
+
+    -- Blueprint/Brainstorm need Jack's real position in G.jokers and have their
+    -- own copier semantics, so keep the explicit implementation.
     if key == 'j_blueprint' or key == 'j_brainstorm' then
         return run_copy_rare(card, key, context)
     end
@@ -333,36 +484,14 @@ local function run_rare_ability(card, extra, context)
         return run_jester_in_yellow(card, context)
     end
 
-    local proxy = make_proxy(card, extra)
-    if not proxy then return nil end
+    local center = key and G and G.P_CENTERS and G.P_CENTERS[key]
+    if not center then return nil end
 
-    local center = proxy.config and proxy.config.center
-    local ok, ret, post
-
-    -- Steamodded Jokers expose their native calculate function on the center.
-    -- Vanilla/compatibility centers without one still go through the normal
-    -- Card:calculate_joker dispatcher, but with our plain virtual table as self.
-    if center and type(center.calculate) == 'function' then
-        ok, ret, post = pcall(center.calculate, center, proxy, context)
-    elseif Card and type(Card.calculate_joker) == 'function' then
-        ok, ret, post = pcall(Card.calculate_joker, proxy, context)
-    else
-        return nil
-    end
-
-    if not ok then
-        -- A Rare Joker can still make assumptions that require its own physical
-        -- card in G.jokers. Fail closed instead of crashing or spawning a ghost.
-        clear_proxy(card)
-        return nil
-    end
-
-    if proxy.ability then
-        extra.rare_state = deep_copy(proxy.ability)
-    end
-    retarget_effect(ret, proxy, card)
-    retarget_effect(post, proxy, card)
-    return ret, post
+    -- IMPORTANT: do not normalize legacy scoring keys here. Steamodded
+    -- BETA-1620a natively registers chip_mod/mult_mod/Xmult_mod alongside
+    -- chips/mult/xmult in SMODS.scoring_parameter_keys. Returning the exact
+    -- result of Card:calculate_joker preserves vanilla and modded Rare behavior.
+    return run_borrowed_card_dispatch(card, extra, center, context)
 end
 
 local function schedule_transition(center, card, activate)
@@ -465,7 +594,16 @@ SMODS.Joker {
         local extra = jack_extra(card, self)
         local key = extra.active and extra.rare_key or nil
         if info_queue and key and G and G.P_CENTERS and G.P_CENTERS[key] then
-            info_queue[#info_queue + 1] = G.P_CENTERS[key]
+            if key == 'j_drivers_license' then
+                local xmult, threshold, enhanced_count = drivers_license_tooltip_vars()
+                info_queue[#info_queue + 1] = {
+                    set = 'Other',
+                    key = 'hnds_jack_drivers_license',
+                    vars = { xmult, threshold, enhanced_count },
+                }
+            else
+                info_queue[#info_queue + 1] = G.P_CENTERS[key]
+            end
         end
         return {
             vars = { rare_name(key) },
@@ -513,6 +651,7 @@ SMODS.Joker {
         if extra.active and extra.rare_key then
             on_borrowed_ability_changed(card, extra.rare_key, nil)
         end
+        clear_proxy(card)
     end,
 
     calculate = function(self, card, context)
@@ -527,8 +666,8 @@ SMODS.Joker {
             return nil
         end
 
-        -- While active, evaluate the rolled Rare Joker through Jack's virtual
-        -- non-rendered proxy and serialise its ability state for save/load safety.
+        -- While active, evaluate the rolled Rare through one fully initialized,
+        -- non-emplaced runtime Card and retain its ability state for save/load.
         if extra.active and extra.rare_key then
             ret, post = run_rare_ability(card, extra, context)
         end

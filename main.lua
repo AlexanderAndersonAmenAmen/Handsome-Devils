@@ -509,10 +509,17 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.individual and SMODS.has_enhancement(context.other_card, "m_stone") then
 		G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
 	end
-	-- Spawn queued booster packs at the start of each shop
-	if context.starting_shop and G.GAME.hnds_crystal_queued then
-		spawn_queued_booster('p_hnds_spectral_ultra')
-		G.GAME.hnds_crystal_queued = nil
+	-- Spawn queued booster packs at the start of each shop.  Cursed Deck uses
+	-- this boundary instead of a cash_out polling Event: payout has completed,
+	-- while the queued booster can cleanly return to the Shop after selection.
+	if context.starting_shop then
+		if G.GAME.hnds_crystal_queued then
+			spawn_queued_booster('p_hnds_spectral_ultra')
+			G.GAME.hnds_crystal_queued = nil
+		end
+		if HNDS.open_pending_cursed_pack_at_shop then
+			HNDS.open_pending_cursed_pack_at_shop()
+		end
 	end
 	-- Art the Clown: make the added final slot Art itself. Because this runs
 	-- inside Steamodded's normal booster creation loop, Art is centred and
@@ -887,6 +894,7 @@ assert(SMODS.load_file("lib/vanilla_investment_tag.lua"))()
 assert(SMODS.load_file("lib/conquest_tracker.lua"))()
 assert(SMODS.load_file("lib/blind_souls.lua"))()
 assert(SMODS.load_file("lib/utils.lua"))()
+assert(SMODS.load_file("lib/cursed_pack.lua"))()
 
 -- Load sleeves
 if CardSleeves then

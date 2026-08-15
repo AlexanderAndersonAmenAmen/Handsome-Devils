@@ -72,6 +72,29 @@ local function stack_record(ante, create)
     return record
 end
 
+-- Boss+ records and reservation tables are Ante-scoped. Keeping every finished
+-- Ante forever is unnecessary and makes Endless runs grow these tables without
+-- bound. Preserve only the current Ante; cumulative upgrade count lives in the
+-- scalar hnds_blind_upgrades and Conquest has its own defeat tracker.
+function HNDS.prune_platinum_boss_stack_records(ante)
+    if not (G and G.GAME) then return end
+    local keep = tostring(tonumber(ante) or current_ante())
+
+    local records = G.GAME.hnds_platinum_boss_stacks
+    if type(records) == 'table' then
+        for key in pairs(records) do
+            if tostring(key) ~= keep then records[key] = nil end
+        end
+    end
+
+    local reservations = G.GAME.hnds_platinum_upgrade_reservations
+    if type(reservations) == 'table' then
+        for key in pairs(reservations) do
+            if tostring(key) ~= keep then reservations[key] = nil end
+        end
+    end
+end
+
 local function boss_choice()
     return G and G.GAME and G.GAME.round_resets
         and G.GAME.round_resets.blind_choices

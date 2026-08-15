@@ -883,6 +883,27 @@ local function hnds_card_has_cursed(card)
 		or (card.ability and card.ability.stickers and card.ability.stickers.hnds_cursed)
 end
 
+local function hnds_cursed_needs_strip(card)
+    if not (card and card.ability) then return false end
+    if card.ability.perishable or card.ability.eternal or card.ability.rental then return true end
+    if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
+        for _, k in ipairs(SMODS.Sticker.obj_buffer) do
+            if k ~= 'hnds_cursed' and card.ability[k] then return true end
+        end
+    end
+    if type(card.stickers) == 'table' then
+        for k, v in pairs(card.stickers) do
+            if k ~= 'hnds_cursed' and v then return true end
+        end
+    end
+    if type(card.ability.stickers) == 'table' then
+        for k, v in pairs(card.ability.stickers) do
+            if k ~= 'hnds_cursed' and v then return true end
+        end
+    end
+    return false
+end
+
 local function hnds_strip_other_stickers(card)
 	if not hnds_card_has_cursed(card) then return end
 	if not card.ability then return end
@@ -1093,7 +1114,7 @@ if Card and Card.update and not Card._hnds_wrapped_update_runtime then
     local card_update_ref = Card.update
     function Card:update(dt)
         local ret = card_update_ref(self, dt)
-        if hnds_card_has_cursed(self) then
+        if hnds_card_has_cursed(self) and hnds_cursed_needs_strip(self) then
             hnds_strip_other_stickers(self)
         end
         -- Previously every Card scanned the complete Joker area every frame.
@@ -1111,14 +1132,23 @@ end
 if Game and Game.update and not Game._hnds_wrapped_update_runtime then
     Game._hnds_wrapped_update_runtime = true
     local game_update_runtime_ref = Game.update
+    local hnds_runtime_game_ref = nil
     function Game:update(dt)
         local ret = game_update_runtime_ref(self, dt)
         hnds_update_ante_10_runtime()
-        if HNDS and HNDS.cleanup_removed_reroll_tag_rework then
-            HNDS.cleanup_removed_reroll_tag_rework()
-        end
-        if HNDS and HNDS.install_investment_blind_hooks then
-            HNDS.install_investment_blind_hooks()
+
+        -- These are installation/migration helpers, not frame maintenance. The
+        -- previous code called both every frame, which could repeatedly inspect
+        -- or re-wrap runtime methods and needlessly retained wrapper chains when
+        -- another mod touched the same Blind methods. Run them once per G.GAME.
+        if hnds_runtime_game_ref ~= (G and G.GAME) then
+            hnds_runtime_game_ref = G and G.GAME or nil
+            if HNDS and HNDS.cleanup_removed_reroll_tag_rework then
+                HNDS.cleanup_removed_reroll_tag_rework()
+            end
+            if HNDS and HNDS.install_investment_blind_hooks then
+                HNDS.install_investment_blind_hooks()
+            end
         end
         return ret
     end
@@ -1900,30 +1930,29 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 	end
 
 	function Card:calculate_joker(context, ...)
-		local hnds_args = { ... }
-
-		-- Skip spoofing in collection view or outside a run
+		-- Skip spoofing in collection view or outside a run. Do not pack varargs
+		-- here: this function is called extremely often while playing/discarding.
 		if (self.area and self.area.config and self.area.config.collection)
 			or not (G and G.STAGE == G.STAGES.RUN) then
 			hnds_impostor_is_active()
-			return calculate_joker_ref(self, context, hnds_unpack(hnds_args))
+			return calculate_joker_ref(self, context, ...)
 		end
 
 		-- Only spoof for active jokers during relevant contexts
 		if not (self.ability and self.ability.set == 'Joker' and self.added_to_deck) then
-			return calculate_joker_ref(self, context, hnds_unpack(hnds_args))
+			return calculate_joker_ref(self, context, ...)
 		end
 		if type(context) ~= 'table' then
-			return calculate_joker_ref(self, context, hnds_unpack(hnds_args))
+			return calculate_joker_ref(self, context, ...)
 		end
 		if not (context.individual or context.repetition or context.other_joker or context.before
 				or context.after or context.cardarea or context.joker_main or context.joker_act
 				or context.joker_post or context.destroying_card or context.setting_blind) then
-			return calculate_joker_ref(self, context, hnds_unpack(hnds_args))
+			return calculate_joker_ref(self, context, ...)
 		end
 
 		-- Run the original calculation first
-		local eff, post = calculate_joker_ref(self, context, hnds_unpack(hnds_args))
+		local eff, post = calculate_joker_ref(self, context, ...)
 
 		if not hnds_impostor_is_active() then return eff, post end
 
@@ -1964,6 +1993,9 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 		local cached_spoof = spoof_cache[cache_key][sig]
 		local hint_spoof = spoof_hints[hint_key]
 		local original_get_id = target.get_id
+		-- Only the actual brute-force spoof path needs to replay varargs. Packing
+		-- here avoids one temporary table for every ordinary Joker evaluation.
+		local hnds_args = { ... }
 
 		local function hnds_try_spoof(spoof_id)
 			target.get_id = function() return spoof_id end
@@ -2013,9 +2045,30 @@ end
 -- EXCOMMUNICADO: Boss Blind Replacement
 -------------------------------------------------------------------
 
--- Helper: Check if Excommunicado effect should be active
+-- Helper: Check if Excommunicado effect should be active. The effect can come
+-- from the real Rare Joker OR from an active Jack-in-the-Box borrowing it.
+-- Keep this as the single authority because Lovely patches cannot see Jack's
+-- borrowed center through SMODS.find_card('j_hnds_excommunicado').
+function HNDS.excommunicado_effect_active()
+	if not (SMODS and SMODS.find_card) then return false end
+
+	local excom_cards = SMODS.find_card('j_hnds_excommunicado')
+	if excom_cards and next(excom_cards) then return true end
+
+	local jack_cards = SMODS.find_card('j_hnds_jack_in_the_box')
+	if jack_cards then
+		for _, jack in pairs(jack_cards) do
+			local extra = jack and jack.ability and jack.ability.extra
+			if extra and extra.active == true and extra.rare_key == 'j_hnds_excommunicado' then
+				return true
+			end
+		end
+	end
+	return false
+end
+
 local function hnds_excommunicado_active()
-	return G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_excommunicado_active
+	return HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active() or false
 end
 
 -- Ensure Blind:get_type() returns Small/Big for replaced blinds
@@ -2080,9 +2133,9 @@ function HNDS.replace_current_blinds_with_bosses()
 	replace_if_vanilla('Big', 'excom_big')
 end
 function HNDS.update_excom()
-	if next(SMODS.find_card("j_hnds_excommunicado")) then
+	if HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active() then
 		HNDS.replace_current_blinds_with_bosses()
-	else
+	elseif G and G.GAME and G.GAME.round_resets and G.GAME.round_resets.blind_choices then
 		G.GAME.round_resets.blind_choices.Small = "bl_small"
 		G.GAME.round_resets.blind_choices.Big = "bl_big"
 	end
