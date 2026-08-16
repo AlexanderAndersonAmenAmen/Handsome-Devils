@@ -1,6 +1,127 @@
 return {
 	descriptions = {
 		Joker = {
+			j_matador = {
+				name = "Matador",
+				text = {
+					"Gana {C:money}$#1#{} por cada mano",
+					"jugada contra una {C:attention}Ciega Jefe{}",
+				},
+			},
+			j_superposition = {
+				name = "Superposición",
+				text = {
+					"Crea una carta {C:tarot}Bufón{}",
+					"si la mano de póker contiene",
+					"un {C:attention}As{} y una {C:attention}Escalera{}",
+					"{C:inactive}(Debe haber espacio)",
+				},
+			},
+			j_splash = {
+				name = "Salpicadura",
+				text = {
+					"Las cartas jugadas",
+					"{C:attention}siempre{} anotan",
+				},
+			},
+			j_flower_pot = {
+				name = "Maceta",
+				text = {
+					"Da {X:mult,C:white}X{} Multi según la",
+					"cantidad de palos {C:attention}únicos{}",
+					"en la mano de póker jugada",
+					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
+				},
+			},
+			j_hnds_flower_pot_none = {
+				name = "Maceta",
+				text = {
+					"Da {X:mult,C:white}X{} Multi según la",
+					"cantidad de palos {C:attention}únicos{}",
+					"en la mano de póker jugada",
+					"{C:inactive}(Actualmente ninguno)",
+				},
+			},
+			j_mail = {
+				name = "Reembolso por Correo",
+				text = {
+					"Gana {C:money}$#1#{} por cada",
+					"{C:attention}#2#{} descartado; la categoría",
+					"cambia cada ronda",
+				},
+			},
+			j_stone = {
+				name = "Comodín de Piedra",
+				text = {
+					"Da {C:chips}+#1#{} Fichas por cada",
+					"{C:attention}Carta de Piedra{} en tu baraja",
+					"{C:inactive}(Actualmente {C:chips}+#2#{C:inactive} Fichas)",
+				},
+			},
+			j_greedy_joker = {
+				name = "Comodín Codicioso",
+				text = {
+					"Las cartas jugadas de",
+					"{C:diamonds}Diamantes{} dan {C:mult}+#1#{} Multi",
+					"al anotar",
+				},
+			},
+			j_lusty_joker = {
+				name = "Comodín Lujurioso",
+				text = {
+					"Las cartas jugadas de",
+					"{C:hearts}Corazones{} dan {C:mult}+#1#{} Multi",
+					"al anotar",
+				},
+			},
+			j_wrathful_joker = {
+				name = "Comodín Iracundo",
+				text = {
+					"Las cartas jugadas de",
+					"{C:spades}Espadas{} dan {C:mult}+#1#{} Multi",
+					"al anotar",
+				},
+			},
+			j_gluttenous_joker = {
+				name = "Comodín Glotón",
+				text = {
+					"Las cartas jugadas de",
+					"{C:clubs}Tréboles{} dan {C:mult}+#1#{} Multi",
+					"al anotar",
+				},
+			},
+			j_throwback = {
+				name = "Nostalgia",
+				text = {
+					"{X:mult,C:white}X#1#{} Multi por cada",
+					"{C:attention}Ciega{} omitida en esta partida",
+					"{C:inactive}(Actualmente {X:mult,C:white}X#2#{C:inactive} Multi)",
+				},
+			},
+			j_seeing_double = {
+				name = "Doble Visión",
+				text = {
+					"Reactiva todos los {C:attention}7{}",
+					"Reactívalos una vez más si",
+					"su palo es {C:clubs}Tréboles{}",
+				},
+			},
+			j_ring_master = {
+				name = "Presentador",
+				text = {
+					"Las cartas {C:attention}Comodín{}, {C:tarot}Tarot{},",
+					"{C:planet}Planeta{} y {C:spectral}Espectral{} pueden",
+					"aparecer varias veces",
+				},
+			},
+			j_hiker = {
+				name = "Excursionista",
+				text = {
+					"Cada {C:attention}carta{} jugada obtiene",
+					"permanentemente {C:chips}+#1#{} Fichas",
+					"al anotar",
+				},
+			},
 			j_hnds_color_of_madness = {
 				name = "El Color de la Locura",
 				text = {
@@ -8,6 +129,11 @@ return {
 					"anotadas a {C:attention}Cartas Versátiles{}",
 					"si la mano jugada tiene",
 					"{C:attention}4{} palos diferentes",
+				},
+				unlock = {
+					"Ten al menos {C:attention}10{}",
+					"{C:attention}Cartas Versátiles{}",
+					"en tu baraja",
 				},
 			},
 			j_hnds_occultist = {
@@ -18,6 +144,11 @@ return {
 					"crea una {C:attention}Etiqueta{} {C:tarot}Encantada{},",
 					"{C:spectral}Etérea{}, de {C:planet}Meteoro{} o {C:attention}Bufón{}",
 				},
+				unlock = {
+					"Crea un total de",
+					"{C:attention}150 Etiquetas{}",
+					"{C:inactive}(#1#){}",
+				},
 			},
 			j_hnds_supersuit = {
 				name = "Supertraje",
@@ -25,6 +156,11 @@ return {
 					"Reactiva las cartas",
 					"del palo {V:1}#1#{},",
 					"{C:inactive,s:0.8}(Cambia cada ronda)",
+				},
+				unlock = {
+					"Anota {C:attention}4{} Colores",
+					"de palos diferentes",
+					"en una Apuesta",
 				},
 			},
 			j_hnds_dark_idol = {
@@ -36,6 +172,11 @@ return {
 					"{s:0.8}(Cambia al final de la ronda)",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#4#{C:inactive} Multi)"
 				},
+				unlock = {
+					"Destruye un total",
+					"de {C:attention}50{} cartas",
+					"{C:inactive}(#1#){}",
+				},
 			},
 			j_hnds_perfectionist = {
 				name = "Perfeccionista",
@@ -43,6 +184,11 @@ return {
 					"Al mejorar una carta",
 					"{C:attention}Mejorada{} obtiene adicionalmente",
 					"{C:mult}+#1#{} Multi y {C:chips}+#2#{} Fichas",
+				},
+				unlock = {
+					"Mejora {C:attention}10{}",
+					"cartas {C:attention}Mejoradas{}",
+					"{C:inactive}(#1#){}",
 				},
 			},
 			j_hnds_banana_split = {
@@ -54,6 +200,11 @@ return {
 					"al final de la ronda",
 					"{C:inactive}(Debe haber espacio){}",
 				},
+				unlock = {
+					"Ten a la vez {C:attention}Cavendish{}",
+					"y {C:attention}Gros Michel{}",
+					"en tu partida",
+				},
 			},
 			j_hnds_head_of_medusa = {
 				name = "Cabeza de Medusa",
@@ -64,6 +215,11 @@ return {
 					"convierte en {C:attention}Piedra{}",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
 				},
+				unlock = {
+					"Ten al menos {C:attention}10{}",
+					"{C:attention}Cartas de Piedra{}",
+					"en tu baraja",
+				},
 			},
 			j_hnds_deep_pockets = {
 				name = "Bolsillos Anchos",
@@ -72,6 +228,10 @@ return {
 					"cada carta en el",
 					"{C:attention}área de consumibles{}",
 					"otorga {C:mult}+#2#{} Multi",
+				},
+				unlock = {
+					"Crea {C:attention}5{} cartas",
+					"consumibles en una ronda",
 				},
 			},
 			j_hnds_digital_circus = {
@@ -83,6 +243,10 @@ return {
 					"{s:0.8}Se mejora cada {s:0.8}{C:attention}#3#{} {s:0.8}rondas",
 					"{C:inactive}(Actualmente {C:attention}#2#{C:inactive}/#3#)",
 				},
+				unlock = {
+					"Ten {C:attention}4{} Comodines",
+					"de rarezas diferentes",
+				},
 			},
 			j_hnds_coffee_break = {
 				name = "Descanso",
@@ -92,6 +256,11 @@ return {
 					"El pago se reduce en {C:money}$1{}",
 					"por carta jugada",
 					"{C:inactive}(Actualmente {C:attention}#2#{C:inactive}/#1#)",
+				},
+				unlock = {
+					"Omite la Ciega Pequeña y",
+					"la Ciega Grande de la",
+					"Apuesta {C:attention}8{}",
 				},
 			},
 			j_hnds_jackpot = {
@@ -103,6 +272,11 @@ return {
 					"{C:attention}7{} en mano jugada",
 					"{C:inactive}(Ej. {C:green}1 en #5#{C:inactive} -> {C:green}2 en #5#{C:inactive})"
 				},
+				unlock = {
+					"Gana {C:money}$50{} o",
+					"más en una ronda",
+					"{C:inactive}(#1#)",
+				},
 			},
 			j_hnds_pot_of_greed = {
 				name = "Olla de la Codicia",
@@ -111,8 +285,8 @@ return {
 					"sacas {C:attention}#1#{} cartas",
 				},
 				unlock = {
-					"Usa {C:attention}4{} consumibles",
-					"durante una {C:attention}Ciega{}",
+					"Saca toda tu",
+					"baraja en una ronda",
 				},
 			},
 			j_hnds_seismic_activity = {
@@ -121,14 +295,19 @@ return {
 					"Reactiva las",
 					"{C:attention}Cartas de Piedra{}",
 				},
+				unlock = {
+					"Anota {C:attention}30 Cartas de Piedra{}",
+					"en una partida",
+					"{C:inactive}(#1#)",
+				},
 			},
 			j_hnds_stone_mask = {
 				name = "Máscara de Piedra",
 				text = {
-					"Si la {C:attention}primera mano{} es una",
-					"sola carta, esta obtiene",
-					"una {C:attention}Mejora{}, {C:dark_edition}Edición{}",
-					"o {C:attention}Sello{}",
+					"Prob. de {C:green}#1# en #2#{} de que la primera",
+					"carta de {C:attention}figura{} anotada robe",
+					"las {C:attention}Mejoras{}, {C:dark_edition}Ediciones{} o",
+					"{C:attention}Sellos{} de cartas adyacentes",
 				},
 				unlock = {
 					"Alcanza {X:mult,C:white}X5{} Multi",
@@ -139,8 +318,8 @@ return {
 				name = "Jokestone",
 				text = {
 					"Al iniciar la ronda,",
-					"sacas hasta {C:attention}3{}",
-					"cartas mejoradas",
+					"sacas hasta {C:attention}#1#{} cartas",
+					"Mejoradas de tu baraja",
 				},
 				unlock = {
 					"Juega una mano con",
@@ -155,6 +334,11 @@ return {
 					"en la mano jugada",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
 				},
+				unlock = {
+					"Juega una {C:attention}mano de póker{}",
+					"con {C:attention}5{} cartas",
+					"{C:red}Debilitadas{}",
+				},
 			},
 			j_hnds_balloons = {
 				name = "Globos",
@@ -164,6 +348,11 @@ return {
 					"y crea una {C:attention}Etiqueta{} al azar",
 					"{C:inactive}({C:attention}#1#{C:inactive}/#2# Globos restantes)",
 				},
+				unlock = {
+					"Crea un total de",
+					"{C:attention}50 Etiquetas{}",
+					"{C:inactive}(#1#)",
+				},
 			},
 			j_hnds_jokes_aside = {
 				name = "Fuera de broma",
@@ -172,6 +361,11 @@ return {
 					'cada {C:attention}Comodín{} vendido',
 					"durante una {C:attention}Ciega{}",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
+				},
+				unlock = {
+					"Vende un total de",
+					"{C:attention}15{} Comodines en",
+					"una partida {C:inactive}(#1#)",
 				},
 			},
 			j_hnds_ms_fortune = {
@@ -183,6 +377,11 @@ return {
 					"seleccionar una {C:attention}Ciega{}",
 					"{C:inactive}(Ej. {}{C:green}1 en 3{} {C:inactive}->{} {C:green}#1# en 3{}{C:inactive}){}",
 				},
+				unlock = {
+					"Falla una comprobación de",
+					"{C:green}probabilidad{} {C:attention}100{} veces",
+					"{C:inactive}(#1#)",
+				},
 			},
 			j_hnds_dark_humor = {
 				name = "Humor Negro",
@@ -191,6 +390,10 @@ return {
 					'carta en {C:attention}mano{} {C:red}\"desaparece\"{}',
 					"y obtienes su {C:mult}Multi{} y {C:chips}Fichas{}",
 					"{C:inactive}(Actualmente{} {C:mult}+#2#{} {C:inactive}Multi y{} {C:chips}+#1#{} {C:inactive}Fichas){}",
+				},
+				unlock = {
+					"Ten una baraja de",
+					"{C:attention}25{} cartas o menos",
 				},
 			},
 			j_hnds_krusty = {
@@ -210,8 +413,9 @@ return {
 					"una prob. de {C:green}#1# en #2#{} de {C:red}destruirse{}",
 				},
 				unlock = {
-					"Destruye {C:attention}50{}",
-					"cartas en total",
+					"Destruye un total",
+					"de {C:attention}100{} cartas",
+					"{C:inactive}(#1#)",
 				}
 			},
 			j_hnds_pennywise = {
@@ -230,17 +434,25 @@ return {
 					"aparece {C:attention}#2#X{} veces más.",
 					"Vende este Comodín para hacer que",
 					"El Comodín Mencionado sea {C:green}gratis{}"
-				}
+				},
+				unlock = {
+					"Ten {C:attention}5 Comodines Raros{}",
+					"a la vez",
+				},
 			},
 			j_hnds_clown_devil = {
 				name = "Payaso Demoniaco",
 				text = {
-					"Al seleccionar {C:attention}Ciega{},",
-					"se consume todos los",
-					"{C:attention}consumibles{} crea una",
-					"{C:attention}Etiqueta{} al azar",
-					"cada {C:attention}#2#{} {C:inactive}({C:attention}#1#{C:inactive}/#2#) consumibles"
-				}
+					"Al seleccionar una {C:attention}Ciega{},",
+					"consume todos los {C:attention}consumibles{} en mano",
+					"Crea una {C:attention}Etiqueta{} al azar por",
+					"cada {C:attention}2{} {C:inactive}[#1#]{} cartas consumidas",
+				},
+				unlock = {
+					"Crea un total de",
+					"{C:attention}100 Etiquetas{}",
+					"{C:inactive}(#1#)",
+				},
 			},
 			j_hnds_jester_in_yellow = {
 				name = "El Comodín de Amarillo",
@@ -249,12 +461,21 @@ return {
 					"el Comodín del extremo izquierdo",
 					"se vuelve {C:dark_edition}Negativo{} y se {C:hnds_carcosa}desvance{}",
 					"{C:attention}#1#{} rondas"
-				}
+				},
+				unlock = {
+					"Convierte un total de",
+					"{C:attention}10{} Comodines en {C:dark_edition}Negativos{}",
+					"{C:inactive}(#1#)",
+				},
 			},
 			j_hnds_wait_what = {
 				name = "¿Espera, qué?",
 				text = {
 					"{X:mult,C:white}X#1#{} Multi",
+				}
+				,
+				unlock = {
+					"?????",
 				}
 			},
 			j_hnds_excommunicado = {
@@ -263,14 +484,23 @@ return {
 					"Todas las {C:attention}Ciegas{} son",
 					"{C:attention}Ciegas Jefe{}, obtienes una",
 					"{C:attention}Etiqueta{} al derrotar una {C:attention}Ciega{}"
-				}
+				},
+				unlock = {
+					"Derrota un total de",
+					"{C:attention}100 Ciegas Jefe{}",
+					"{C:inactive}(#1#)",
+				},
 			},
 			j_hnds_handsome = {
 				name = "Picaro Hermoso",
 				text = {
 					"Reactiva todas las",
 					"cartas con {C:dark_edition}Ediciones{}",
-				}
+				},
+				unlock = {
+					"Ten {C:attention}4{} Comodines",
+					"con {C:dark_edition}Ediciones{} diferentes",
+				},
 			},
 			j_hnds_art = {
 				name = "Art el Payaso",
@@ -284,10 +514,15 @@ return {
 			j_hnds_public_nuisance = {
 				name = "Comodín Linchado",
 				text = {
-					"Puedes seguir jugando {C:blue}Manos{}",
-					"después de obtener la",
-					"{C:attention}Puntuación Requerida{}"
-				}
+					"Sigue jugando {C:blue}Manos{} después de",
+					"alcanzar la puntuación de la {C:attention}Ciega{}",
+					"y gana {C:money}$#1#{} por cada mano jugada"
+				},
+				unlock = {
+					"Usa todas las {C:blue}manos{}",
+					"para derrotar una",
+					"{C:attention}Ciega Jefe{}",
+				},
 			},
 			-- Bizzare Joker section
 			j_hnds_bizzare_joker = {
@@ -356,14 +591,14 @@ return {
 				name = "Bromita Pesada",
 				text = {
 					"Al venderse, saca {C:attention}#1#{}",
-					"cartas de la baraja, y luego",
-					"{C:red}destruye{} todas las cartas",
-					"en mano",
-					"{C:inactive,s:0.8}(Aumenta en{} {C:attention}1{} {C:inactive,s:0.8}cada ronda){}",
+					"{C:attention}#3#{} de tu baraja, luego",
+					"{C:red}destruye{} todas las cartas en mano",
+					"{s:0.8}Mejora al final de la ronda",
 				},
 				unlock = {
-					"Destruye {C:attention}100{}",
-					"cartas en total",
+					"Destruye un total",
+					"de {C:attention}150{} cartas",
+					"{C:inactive}(#1#){}",
 				}
 			},
 			j_hnds_fregoli = {
@@ -372,6 +607,12 @@ return {
 					"Copia la habilidad del",
 					"último {C:attention}Comodín{} comprado",
 				}
+				,
+				unlock = {
+					"Compra el mismo",
+					"Comodín {C:attention}3{} veces",
+					"en una partida",
+				},
 			},
 			j_hnds_walking_joke = {
 				name = "Chiste Andante",
@@ -391,6 +632,12 @@ return {
 					"cambia al azar las {C:attention}categorías{} y {C:attention}palos{}",
 					"de todas las cartas en mano",
 				}
+				,
+				unlock = {
+					"Cambia las {C:attention}categorías{} o",
+					"{C:attention}palos{} de {C:attention}100{} cartas",
+					"{C:inactive}(#1#){}",
+				},
 			},
 			j_hnds_angry_mob = {
 				name = "Protesta Violenta",
@@ -398,7 +645,12 @@ return {
 					"{X:mult,C:white}X#1#{} Multi,",
 					"no aparecen {C:attention}Comodines{}",
 					"en la {C:money}Tienda{}"
-				}
+				},
+				unlock = {
+					"No compres Comodines durante",
+					"{C:attention}10{} rondas seguidas",
+					"{C:inactive}(#1#)",
+				},
 			},
 			j_hnds_sarmenti = {
 				name = "Sarmenti",
@@ -416,7 +668,11 @@ return {
 					"prob. de {C:green}#2# en #3#{} de convertir",
 					"comodines adyacentes al",
 					"final de la ronda",
-				}
+				},
+				unlock = {
+					"Ten {C:attention}3{} copias del",
+					"mismo Comodín",
+				},
 			},
 			j_hnds_one_punchline_man = {
 				name = "One Punchline Man",
@@ -425,6 +681,10 @@ return {
 					"cada {C:blue}mano{} que no usaste",
 					"al final de la ronda",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
+				},
+				unlock = {
+					"Derrota {C:attention}3{} Ciegas Jefe",
+					"seguidas en {C:attention}una mano{}",
 				},
 			},
 			j_hnds_jigsaw_joker = {
@@ -436,6 +696,11 @@ return {
 					"todas las {C:attention}manos de póquer{}",
 					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive}/8){}",
 				},
+				unlock = {
+					"Juega {C:attention}8 manos de póker{}",
+					"únicas en una Apuesta",
+					"{C:inactive}(#1#)",
+				},
 			},
 			j_hnds_dynamic_duos = {
 				name = "Dúo Dinámico",
@@ -444,12 +709,21 @@ return {
 					"cartas de {C:attention}pares{} e {C:attention}impares{},",
 					"reactiva las cartas",
 				},
+				unlock = {
+					"Juega un {C:attention}Doble Par{}",
+					"de categorías {C:attention}par{} e {C:attention}impar{}",
+				},
 			},
 			j_hnds_imposter = {
 				name = "Impostor",
 				text = {
 					"Las cartas de {C:attention}figura{} anotadas",
 					"actúan como cartas enumeradas",
+				},
+				unlock = {
+					"Gana {C:attention}3{} rondas seguidas",
+					"con un Comodín que no",
+					"se haya activado ni una vez",
 				},
 			},
 			j_hnds_contagion = {
@@ -459,6 +733,10 @@ return {
 					"seleccionar {C:attention}1{} carta extra",
 					"{C:inactive,s:0.8}(ej: Mejora {C:attention,s:0.8}2{} {C:inactive,s:0.8}cartas",
 					"{C:inactive,s:0.8}seleccionadas -> {C:attention,s:0.8}3{} {C:inactive,s:0.8}cartas)",
+				},
+				unlock = {
+					"Ten una baraja llena de",
+					"cartas {C:attention}Mejoradas{}",
 				},
 			},
 		},
@@ -471,6 +749,11 @@ return {
 					"Los comodines cuestan {C:money}dinero{}",
 					"adicional igual a tu {C:attention}Apuesta{}",
 				},
+				unlock = {
+					"Descubre al menos",
+					"{C:attention}150{} objetos de",
+					"tu colección",
+				},
 			},
 			b_hnds_crystal = {
 				name = "Baraja Cristalina",
@@ -480,6 +763,12 @@ return {
 					"si ganas obtienes",
 					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Paquete Espectral{}",
 				}
+				,
+				unlock = {
+					"Gana una partida con cualquier",
+					"baraja al menos en dificultad",
+					"de {C:attention}Pozo de Oro{}",
+				},
 			},
 			b_hnds_conjuring = {
 				name = "Baraja Conjuradora",
@@ -489,16 +778,24 @@ return {
 					"por {C:attention,T:p_hnds_magic_1}Paquetes Mágicos{}",
 					"que contienen {C:dark_edition,E:1}cartas al azar{}",
 				}
+				,
+				unlock = {
+					"Descubre todos los",
+					"{C:attention}Paquetes Potenciadores{}",
+				},
 			},
 			b_hnds_circus = {
 				name = "Baraja de Circo",
 				text = {
 					"Tiene la habilidad de",
 					"un {C:attention}Comodín{} al azar",
-					"cambia de comodín después",
-					"de cada {C:attention}Ciega{}",
-					"{C:inactive}(Actualmente: {V:1}#1#{C:inactive})",
-				}
+					"Después de derrotar cada",
+					"{C:attention}Ciega{}, cambia la habilidad",
+				},
+				unlock = {
+					"Descubre todos los",
+					"{C:attention}Comodines{}",
+				},
 			},
 			b_hnds_ol_reliable = {
 				name = "Baraja de la Suerte",
@@ -508,6 +805,12 @@ return {
 					"la {C:attention}Ciega Jefe{}",
 					"{C:inactive}(Ej. {C:green}1 en 3{C:inactive} -> {C:green}3 en 3){C:inactive}",
 				}
+				,
+				unlock = {
+					"Activa correctamente el efecto",
+					"de probabilidad de las {C:attention}Cartas de la Suerte{}",
+					"{C:green}77{} veces {C:inactive}(#1#)",
+				},
 			},
 			b_hnds_cursed = {
 				name = "Baraja Maldita",
@@ -516,6 +819,12 @@ return {
 					"{C:attention}Ciega Jefe{} para abrir un",
 					"{C:red,T:p_hnds_cursed_pack}Paquete Maldito Inevitable{}",
 				}
+				,
+				unlock = {
+					"Gana una partida con cualquier",
+					"baraja al menos en dificultad",
+					"de {C:dark_edition}Pozo de Platino{}",
+				},
 			},
 		},
 		Sleeve = {
@@ -622,6 +931,14 @@ return {
 			},
 		},
 		Spectral = {
+			c_black_hole = {
+				name = "Agujero Negro",
+				text = {
+					"Duplica el",
+					"nivel de todas las",
+					"{C:legendary,E:1}manos de póker{}",
+				},
+			},
 			c_hnds_contagion_talisman = {
 				name = "Talismán",
 				text = {
@@ -666,12 +983,21 @@ return {
                     "en tu mano",
 				},
 			},
+			c_hnds_contagion_death = {
+				name = "Muerte",
+				text = {
+					"Selecciona {C:attention}3{} cartas,",
+					"convierte todas",
+					"en copias de la",
+					"{C:attention}carta del extremo derecho{}",
+				},
+			},
 			c_hnds_exchange_contagion = {
 				name = "Intercambio",
 				text = {
-					"Otorga edición {C:dark_edition}Negativa{}",
-					"a {C:attention}#1#{} cartas seleccionadas,",
-					"y pierdes {C:blue}#2#{} mano",
+					"Otorga el efecto {C:dark_edition}Negativo{} a",
+					"{C:attention}#1#{} cartas seleccionadas en mano,",
+					"-1 {C:blue}mano{} cada ronda",
 				},
 			},
 			c_hnds_abyss = {
@@ -700,8 +1026,8 @@ return {
 				name = "Intercambio",
 				text = {
 					"Otorga edición {C:dark_edition}Negativa{}",
-					"a {C:attention}#1#{} carta seleccionada,",
-					"y pierdes {C:blue}#2#{} mano",
+					"a {C:attention}1{} carta seleccionada en mano,",
+					"-1 {C:blue}mano{} cada ronda",
 				},
 			},
 			c_hnds_possess = {
@@ -743,7 +1069,7 @@ return {
 			}
 		},
 		Edition = {
-			e_hnds_vintage = {
+				e_hnds_vintage = {
 				name = "Vintage",
 				text = {
 					"Ganas un {C:money}$1{} adicional",
@@ -751,63 +1077,77 @@ return {
 					"al final de la ronda",
 				},
 			},
+			e_hnds_vintage_playing_card = {
+				name = "Vintage",
+				text = {
+					"Ganas {C:money}$3{} cuando esta",
+					"carta se juega",
+					"y anota",
+				},
+			},
+			e_negative_playing_card = {
+				name = "Negativa",
+				text = {
+					"{C:attention}+1{} al tamaño de mano",
+				},
+			},
 		},
 
 		Other = {
             hnds_jigsaw_progress_empty = {
-                name = "Played Poker Hands",
+                name = "Manos de póker jugadas",
                 text = {
-                    "Currently: {C:attention}#1#{}",
-                    "{C:inactive}(#2#/#3# unique hands){}",
+                    "Actualmente: {C:attention}#1#{}",
+                    "{C:inactive}(#2#/#3# manos únicas){}",
                 },
             },
             hnds_jigsaw_progress_1 = {
-                name = "Played Poker Hands",
+                name = "Manos de póker jugadas",
                 text = {
                     "{C:attention}#1#{}",
-                    "{C:inactive}(#2#/#3# unique hands){}",
+                    "{C:inactive}(#2#/#3# manos únicas){}",
                 },
             },
             hnds_jigsaw_progress_2 = {
-                name = "Played Poker Hands",
+                name = "Manos de póker jugadas",
                 text = {
                     "{C:attention}#1#{}",
                     "{C:attention}#2#{}",
-                    "{C:inactive}(#3#/#4# unique hands){}",
+                    "{C:inactive}(#3#/#4# manos únicas){}",
                 },
             },
             hnds_jigsaw_progress_3 = {
-                name = "Played Poker Hands",
+                name = "Manos de póker jugadas",
                 text = {
                     "{C:attention}#1#{}",
                     "{C:attention}#2#{}",
                     "{C:attention}#3#{}",
-                    "{C:inactive}(#4#/#5# unique hands){}",
+                    "{C:inactive}(#4#/#5# manos únicas){}",
                 },
             },
             hnds_jigsaw_progress_4 = {
-                name = "Played Poker Hands",
+                name = "Manos de póker jugadas",
                 text = {
                     "{C:attention}#1#{}",
                     "{C:attention}#2#{}",
                     "{C:attention}#3#{}",
                     "{C:attention}#4#{}",
-                    "{C:inactive}(#5#/#6# unique hands){}",
+                    "{C:inactive}(#5#/#6# manos únicas){}",
                 },
             },
             hnds_jigsaw_progress_5 = {
-                name = "Played Poker Hands",
+                name = "Manos de póker jugadas",
                 text = {
                     "{C:attention}#1#{}",
                     "{C:attention}#2#{}",
                     "{C:attention}#3#{}",
                     "{C:attention}#4#{}",
                     "{C:attention}#5#{}",
-                    "{C:inactive}(#6#/#7# unique hands){}",
+                    "{C:inactive}(#6#/#7# manos únicas){}",
                 },
             },
             hnds_jigsaw_progress_6 = {
-                name = "Played Poker Hands",
+                name = "Manos de póker jugadas",
                 text = {
                     "{C:attention}#1#{}",
                     "{C:attention}#2#{}",
@@ -815,11 +1155,11 @@ return {
                     "{C:attention}#4#{}",
                     "{C:attention}#5#{}",
                     "{C:attention}#6#{}",
-                    "{C:inactive}(#7#/#8# unique hands){}",
+                    "{C:inactive}(#7#/#8# manos únicas){}",
                 },
             },
             hnds_jigsaw_progress_7 = {
-                name = "Played Poker Hands",
+                name = "Manos de póker jugadas",
                 text = {
                     "{C:attention}#1#{}",
                     "{C:attention}#2#{}",
@@ -828,11 +1168,11 @@ return {
                     "{C:attention}#5#{}",
                     "{C:attention}#6#{}",
                     "{C:attention}#7#{}",
-                    "{C:inactive}(#8#/#9# unique hands){}",
+                    "{C:inactive}(#8#/#9# manos únicas){}",
                 },
             },
             hnds_jigsaw_progress_8 = {
-                name = "Played Poker Hands",
+                name = "Manos de póker jugadas",
                 text = {
                     "{C:attention}#1#{}",
                     "{C:attention}#2#{}",
@@ -842,9 +1182,29 @@ return {
                     "{C:attention}#6#{}",
                     "{C:attention}#7#{}",
                     "{C:attention}#8#{}",
-                    "{C:inactive}(#9#/#10# unique hands){}",
+                    "{C:inactive}(#9#/#10# manos únicas){}",
                 },
             },
+			hnds_exchange_draw = {
+				name = "Fijada",
+				text = {
+					"Siempre se saca al",
+					"inicio de cada ronda",
+				},
+			},
+			hnds_bound = {
+				name = "Fijada",
+				text = {
+					"Siempre se saca al",
+					"inicio de cada ronda",
+				},
+			},
+			hnds_negative_playing_card = {
+				name = "Negativa",
+				text = {
+					"{C:attention}+1{} al tamaño de mano",
+				},
+			},
 			hnds_jester_temp_negative = {
 				name = "Elegido por Carcosa",
 				text = {
@@ -1108,6 +1468,37 @@ return {
 			},
 		},
 		Voucher = {
+			v_magic_trick = {
+				name = "Truco de Magia",
+				text = {
+					"Las {C:attention}cartas de juego{} pueden",
+					"comprarse en la Tienda y tener",
+					"una {C:attention}Mejora{}",
+				},
+			},
+			v_illusion = {
+				name = "Ilusión",
+				text = {
+					"Las {C:attention}cartas de juego{} en la",
+					"Tienda pueden tener una",
+					"{C:dark_edition}Edición{} o un {C:attention}Sello{}",
+				},
+			},
+			v_planet_merchant = {
+				name = "Mercader de Planetas",
+				text = {
+					"Al comprar una carta {C:planet}Planeta{},",
+					"crea una copia adicional",
+					"{C:inactive}(Debe haber espacio)",
+				},
+			},
+			v_planet_tycoon = {
+				name = "Magnate de Planetas",
+				text = {
+					"Al comprar una carta {C:planet}Planeta{},",
+					"crea una copia {C:dark_edition}Negativa{}",
+				},
+			},
 			v_hnds_tag_hunter = {
 				name = "Cazaetiquetas",
 				text = {
@@ -1120,6 +1511,10 @@ return {
 				text = {
 					"Retrocedes {C:attention}1{} Apuesta",
 					"cada {C:attention}#1#{} ciegas omitidas",
+				},
+				unlock = {
+					"Omite un total de",
+					"{C:attention}50 Ciegas{} {C:inactive}(#1#)",
 				},
 			},
 			v_hnds_premium = {
@@ -1137,6 +1532,11 @@ return {
 					"aparecen con {C:attention}X#1#{}",
 					"más frecuencia",
 				},
+				unlock = {
+					"Compra un total de {C:attention}50{}",
+					"cartas {C:rare}Comodín Raras{}",
+					"en la Tienda {C:inactive}(#1#)",
+				},
 			},
 			v_hnds_stuffed = {
 				name = "Paquetes Amplios",
@@ -1152,6 +1552,11 @@ return {
 					"Agrega {C:attention}1{} {C:attention}Paquete{}",
 					"{C:attention}Potenciador{} a las tiendas",
 				},
+				unlock = {
+					"Compra al menos {C:attention}40{}",
+					"{C:attention}Paquetes Potenciadores{}",
+					"en una partida {C:inactive}(#1#)",
+				},
 			},
 			v_hnds_soaked = {
 				name = "Empapado",
@@ -1162,12 +1567,16 @@ return {
 				}
 			},
 			v_hnds_beyond = {
-				name = "Jabonoso",
+				name = "Más Allá",
 				text = {
 					"La carta del extremo derecho",
 					"que tengas en {C:attention}mano{}",
 					"cuenta en la {C:blue}mano{} jugada"
-				}
+				},
+				unlock = {
+					"Activa un total de {C:attention}100{}",
+					"efectos {C:attention}en mano{} {C:inactive}(#1#)",
+				},
 			}
 		},
 		Planet = {
@@ -1183,6 +1592,15 @@ return {
 			},
 		},
 		Enhanced = {
+			m_wild = {
+				name = "Carta Versátil",
+				text = {
+					"No puede voltearse",
+					"ni debilitarse",
+					"Puede usarse",
+					"como cualquier palo",
+				},
+			},
 			m_hnds_aberrant = {
 				name = "Carta Aberrante",
 				text = {
@@ -1203,13 +1621,36 @@ return {
 			m_hnds_obsidian = {
 				name = "Carta de Obsidiana",
 				text = {
-					"Sacas {C:attention}2{} cartas después",
-					"de que esta sea {C:blue}jugada{}",
-					"o {C:red}descartada{}"
+					"Se vuelve {C:dark_edition}Fijada{} permanentemente",
+					"si anota en las {C:attention}#1#{} manos finales",
+					"de la ronda",
+					"{C:inactive}(Actualmente {C:attention}#2#{}{C:inactive}/2)",
+				},
+			},
+			m_hnds_obsidian_complete = {
+				name = "Carta de Obsidiana",
+				text = {
+					"{C:dark_edition}Fijada{} permanentemente",
 				},
 			},
 		},
 		Tag = {
+			tag_juggle = {
+				name = "Etiqueta de Malabares",
+				text = {
+					"{C:attention}+#1#{} al tamaño de mano,",
+					"se reduce en {C:red}1{}",
+					"cada ronda",
+				},
+			},
+			tag_investment = {
+				name = "Etiqueta de Inversión",
+				text = {
+					"Después de derrotar la",
+					"{C:attention}Ciega Jefe{} de la Apuesta,",
+					"gana {C:money}$#1#{}",
+				},
+			},
 			tag_hnds_vintage_tag = {
 				name = "Etiqueta Vintage",
 				text = {
@@ -1259,23 +1700,32 @@ return {
 			stake_hnds_platinum = {
 				name = "Pozo de Platino",
 				text = {
-					"Debes alcanzar la Apuesta {C:attention}10{} para ganar.",
-					"Puedes mejorar las {C:attention}Ciegas{} a {C:attention,E:1}Ciegas Jefe{}",
-					"para obtener una etiqueta de omisión",
-					"{s:0.8}Aplica todos los pozos anteriores{}",
+					"Derrota la {C:attention}Ciega Jefe{} de la Apuesta {C:attention}10{} para ganar",
+					"{s:0.8}Aplica todos los Pozos anteriores",
 				}
 			},
 			stake_hnds_blood_stake = {
 				name = "Pozo de Sangre",
 				text = {
 					"La Tienda puede tener Comodines {C:red}Malditos{}",
-					"Ignorarlos convierte la siguiente {C:attention}Ciega{}",
-					"en una {C:attention,E:1}Ciegas Jefe{}",
-					"{s:0.8}Aplica todos los pozos anteriores{}",
+					"{C:inactive,s:0.8}(Poder {C:green,s:0.8}adicional{} {C:inactive,s:0.8}a cambio de un {C:red,s:0.8}precio{}{C:inactive,s:0.8})",
+					"{s:0.8}Aplica todos los Pozos anteriores",
 				},
 				unlock = {
 					"Gana con esta",
 					"baraja en el Pozo de Platino",
+				}
+			},
+			stake_hnds_nightmare = {
+				name = "Pozo de Pesadilla",
+				text = {
+					"Dejar un Comodín {C:red}Maldito{} en",
+					"la Tienda mejora la siguiente {C:attention}Ciega{}",
+					"{s:0.8}Aplica todos los Pozos anteriores",
+				},
+				unlock = {
+					"Gana con esta",
+					"baraja en el Pozo de Sangre",
 				}
 			}
 		},
@@ -1301,6 +1751,13 @@ return {
 					"50% de la puntuación requerida",
 				},
 			},
+			bl_hnds_perilous_pact_active = {
+				name = "Pacto Aletargante",
+				text = {
+					"Limita cada mano al",
+					"{C:attention}#1#%{} de la puntuación requerida",
+				},
+			},
 			bl_hnds_sinful_soul = {
 				name = "Alma Pecadora",
 				text = {
@@ -1323,11 +1780,15 @@ return {
 			k_hnds_krusty_voucher_tag = "Etiqueta de Vale",
 			k_hnds_krusty_voucher_tags = "Etiquetas de Vale",
 			hnds_upgrade_blind = "Mejorar Ciega",
+			hnds_blind_raiser_tooltip_title = "Puntuación si mejora",
+			hnds_blind_raiser_tooltip_current_blind = "Ciega actual: #1#",
+			hnds_blind_raiser_tooltip_boss_blind = "Ciega Jefe: #1#",
 			k_hnds_petrified = "¡Petrificado!",
 			k_hnds_goldfish = "¡Pez Dorado!",
 			k_hnds_jester_negative = "¡Comodín Negativo!",
 			k_hnds_jester_fade = "¡Negativo Desvanecido!",
 			k_hnds_clown_eat = "¡Consumido!",
+			k_hnds_ritual_complete = "Ritual completado",
 			k_hnds_cursed_offers = "Ofertas Malditas",
 			k_hnds_cursed_prices = "Precios Malditos",
 			k_hnds_boom_timer = "!!!",
@@ -1355,6 +1816,7 @@ return {
 			k_hnds_sarmenti_inactive = "Inactivo",
 			k_hnds_sarmenti_enhanced = "¡Mejorado!",
 			k_hnds_free_reroll = "+1 Renovación gratis",
+			k_hnds_arthurs_suit = " ",
 			k_hnds_enhancements = "Mejoras",
 			k_hnds_creepy_1 = "Fue la Planta...",
 			k_hnds_creepy_2 = "...nos arrastró",
@@ -1385,9 +1847,11 @@ return {
 			hnds_config_MagicPack = "Habilitar paquetes Mágicos",
 			hnds_config_CursedPack = "Habilitar Paquetes Malditos",
 			hnds_config_CustomSounds = "Habilitar sonidos personalizados",
-			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
+			hnds_config_VanillaTweaks = "Habilitar ajustes de vanilla",
 		},
 		labels = {
+			hnds_exchange_draw = "Fijada",
+			hnds_bound = "Fijada",
 			hnds_vintage = "Vintage",
 			hnds_black_seal = "Sello Negro",
 			hnds_spectralseal_seal = "Sello Espectral",
@@ -1406,7 +1870,7 @@ return {
 		},
 		v_text = {
 			ch_c_hnds_devils_round = {  "Todos los Comodines están {C:red,E:2}Malditos{}", },
-			ch_c_hnds_draw_2_cards = { "", },
+			ch_c_hnds_draw_2_cards = { "Comienzas con un {C:attention}tamaño de mano{} de 5", },
 			ch_c_hnds_dark_ritual = { "No puedes visitar la {C:money}Tienda{}", },
 			ch_c_hnds_the_circus = {  "", },
 			ch_c_hnds_gambling_opportunity = {  "Los {C:attention}Comodines{}, {C:attention}Sello de Oro{}, {C:attention}Carta de Oro{} y {C:attention}de la Suerte{} están deshabilitados", },
