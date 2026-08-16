@@ -1,4 +1,4 @@
-return {
+local localization = {
 	descriptions = {
 		Joker = {
 			j_matador = {
@@ -251,7 +251,7 @@ return {
 			j_hnds_coffee_break = {
 				name = "Descanso",
 				text = {
-					"Después de {C:attention}2{} rondas, vende",
+					"Después de {C:attention}2{} ciegas, vende",
 					"esta carta para obtener {C:money}$#3#{}",
 					"El pago se reduce en {C:money}$1{}",
 					"por carta jugada",
@@ -371,7 +371,7 @@ return {
 			j_hnds_ms_fortune = {
 				name = "Ms. Fortune",
 				text = {
-					"Cuadriplica todas las",
+					"Cuadruplica todas las",
 					"{C:green,E:1}probabilidades{}, te",
 					"quedas en {C:red}$0{} al",
 					"seleccionar una {C:attention}Ciega{}",
@@ -424,7 +424,6 @@ return {
 					"Si derrotas a la {C:attention}Ciega Jefe{}",
 					"con {C:attention}una mano{}, absorbe su {C:legendary}Alma{}",
 					"y crea un Comodín {C:dark_edition}Negativo{}.",
-					"Reactiva todas las {C:legendary}Almas{}",
 				}
 			},
 			j_hnds_most_wanted = {
@@ -432,8 +431,8 @@ return {
 				text = {
 					"{C:attention}#1#{}",
 					"aparece {C:attention}#2#X{} veces más.",
-					"Vende este Comodín para hacer que",
-					"El Comodín Mencionado sea {C:green}gratis{}"
+					"Se vuelve {C:green}gratis{} al",
+					"vender esta comodín"
 				},
 				unlock = {
 					"Ten {C:attention}5 Comodines Raros{}",
@@ -459,7 +458,7 @@ return {
 				text = {
 					"Al seleccionar una Ciega",
 					"el Comodín del extremo izquierdo",
-					"se vuelve {C:dark_edition}Negativo{} y se {C:hnds_carcosa}desvance{}",
+					"se vuelve {C:dark_edition}Negativo{} y se {C:hnds_carcosa}desvanece{}",
 					"{C:attention}#1#{} rondas"
 				},
 				unlock = {
@@ -470,15 +469,21 @@ return {
 			},
 			j_hnds_wait_what = {
 				name = "¿Espera, qué?",
-				text = { "{X:mult,C:white}X#1#{} Multi", },
-				unlock = { "?????", }
+				text = {
+					"{X:mult,C:white}X#1#{} Multi",
+				}
+				,
+				unlock = {
+					"?????",
+				}
 			},
 			j_hnds_excommunicado = {
 				name = "Excomulgado",
 				text = {
-					"Todas las {C:attention}Ciegas{} son",
-					"{C:attention}Ciegas Jefe{}, obtienes una",
-					"{C:attention}Etiqueta{} al derrotar una {C:attention}Ciega{}",
+					"Las {C:attention}Ciegas{} Pequeña y Grande",
+					"son {C:attention}Ciegas Jefe{}. Crea una",
+					"{C:attention}Etiqueta{} al azar al derrotar",
+					"una {C:attention}Ciega Jefe{}"
 				},
 				unlock = {
 					"Derrota un total de",
@@ -487,7 +492,7 @@ return {
 				},
 			},
 			j_hnds_handsome = {
-				name = "Picaro Hermoso",
+				name = "Pícaro Hermoso",
 				text = {
 					"Reactiva todas las",
 					"cartas con {C:dark_edition}Ediciones{}",
@@ -501,9 +506,9 @@ return {
 				name = "Art el Payaso",
 				text = {
 					"Vende esta carta para",
-					"crear una copia en el siguiente",
-					"{C:attention}Paquete Potenciador{} al abrirlo",
-					"y crear una {C:attention}Etiqueta{}",
+					"añadir a Art el Payaso al siguiente",
+					"{C:attention}Paquete Potenciador{} que abras",
+					"y crear una {C:attention}Etiqueta{} al azar",
 				}
 			},
 			j_hnds_public_nuisance = {
@@ -545,7 +550,7 @@ return {
 			j_hnds_bizzare_joker_clubs = {
 				name = "El Comodín desalinado",
 				text = {
-					"Gana {C:mult}+#4#{} Multi al anotar {C:clubs}Treboles{}",
+					"Gana {C:mult}+#4#{} Multi al anotar {C:clubs}Tréboles{}",
 					"{s:0.8}Su efecto cambia cada ronda",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#5#{C:inactive} Multi,",
 					"{C:mult}+#3#{C:inactive} Multi, {C:chips}+#1#{C:inactive} Fichas)",
@@ -576,10 +581,9 @@ return {
 				name = "Arthur",
 				text = {
 					"Destruye cartas {V:1}#3#{} anotadas",
-					"y gana {C:attention}#2#{} {C:green}Renovación{} gratis",
-					"por cada carta destruida",
+					"y gana {C:attention}#2#{} {C:inactive}[#1#]{} {C:green}Renovación{}",
+					"gratis por cada carta destruida",
 					"{s:0.8}El palo cambia cada mano",
-					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive} Renovaciones gratis)",
 				}
 			},
 			j_hnds_last_laugh = {
@@ -601,7 +605,8 @@ return {
 				text = {
 					"Copia la habilidad del",
 					"último {C:attention}Comodín{} comprado",
-				},
+				}
+				,
 				unlock = {
 					"Compra el mismo",
 					"Comodín {C:attention}3{} veces",
@@ -625,7 +630,8 @@ return {
 					"La primera {C:attention}mano{} de la ronda,",
 					"cambia al azar las {C:attention}categorías{} y {C:attention}palos{}",
 					"de todas las cartas en mano",
-				},
+				}
+				,
 				unlock = {
 					"Cambia las {C:attention}categorías{} o",
 					"{C:attention}palos{} de {C:attention}100{} cartas",
@@ -670,10 +676,10 @@ return {
 			j_hnds_one_punchline_man = {
 				name = "One Punchline Man",
 				text = {
-					"Gana {X:mult,C:white}X0.25{} Multi por",
-					"cada {C:blue}mano{} que no usaste",
-					"al final de la ronda",
-					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
+					"Gana {X:mult,C:white}X#1#{} Multi por",
+					"la {C:attention}primera mano{} de la ronda.",
+					"Si no derrota la {C:attention}Ciega{},",
+					"{C:red}destruye{} esta carta",
 				},
 				unlock = {
 					"Derrota {C:attention}3{} Ciegas Jefe",
@@ -684,9 +690,9 @@ return {
 				name = "Comodín Jigsaw",
 				text = {
 					"Tras jugar {C:attention}8{} manos",
-					"de póquer {C:attention}únicas{}, vende esta",
+					"de póker {C:attention}únicas{}, vende esta",
 					"carta para subir {C:attention}#3#{} niveles",
-					"todas las {C:attention}manos de póquer{}",
+					"todas las {C:attention}manos de póker{}",
 					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive}/8){}",
 				},
 				unlock = {
@@ -701,6 +707,7 @@ return {
 					"Si juegas un {C:attention}Doble Par{} de",
 					"cartas de {C:attention}pares{} e {C:attention}impares{},",
 					"reactiva las cartas",
+					"{C:inactive}(ej: 6, 6, 7, 7)",
 				},
 				unlock = {
 					"Juega un {C:attention}Doble Par{}",
@@ -711,7 +718,8 @@ return {
 				name = "Impostor",
 				text = {
 					"Las cartas de {C:attention}figura{} anotadas",
-					"actúan como cartas enumeradas",
+					"cuentan como cualquier {C:attention}categoría{}",
+					"para los efectos de Comodines",
 				},
 				unlock = {
 					"Gana {C:attention}3{} rondas seguidas",
@@ -724,15 +732,88 @@ return {
 				text = {
 					"Los {C:attention}Consumibles{} permiten",
 					"seleccionar {C:attention}1{} carta extra",
-					"{C:inactive,s:0.8}(ej: Mejora {C:attention,s:0.8}2{} {C:inactive,s:0.8}cartas",
-					"{C:inactive,s:0.8}seleccionadas -> {C:attention,s:0.8}3{} {C:inactive,s:0.8}cartas)",
 				},
 				unlock = {
 					"Ten una baraja llena de",
 					"cartas {C:attention}Mejoradas{}",
 				},
 			},
-		},
+			j_hnds_conquest = {
+				name = "Conquista",
+				text = {
+					"Gana {X:mult,C:white}X#1#{} Multi por cada",
+					"{C:attention}Ciega Jefe{} derrotada esta partida",
+					"{C:inactive}(Actualmente {X:mult,C:white}X#2#{C:inactive} Multi)",
+				},
+			},
+			j_hnds_joker_reverse = {
+				name = "Comodín Invertido",
+				text = {
+					"Reemplaza los Comodines",
+					"adyacentes por sus",
+					"{C:attention}contrapartes únicas{}",
+					"al final de la ronda",
+				},
+			},
+			j_hnds_jack_in_the_box = {
+				name = "Caja de Sorpresas",
+				text = {
+					"Cada dos rondas gana la",
+					"habilidad de un {C:red}Comodín Raro{}",
+					"al azar",
+					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive}){}",
+				},
+			},
+			j_hnds_be_not_afraid = {
+				name = "Comodín Arcangel",
+				text = {
+					"Si la mano jugada contiene un",
+					"{C:attention}Trío{}, cada carta obtiene",
+					"permanentemente {C:mult}+#1#{} Multi",
+					"al anotar",
+				},
+			},
+			j_hnds_jodiac = {
+				name = "Codiaco",
+				text = {
+					"Gana {C:mult}+#1#{} Multi por",
+					"carta con {C:attention}categoría{} única",
+					"que anotes; se reinicia al",
+					"final de la Apuesta",
+					"{C:inactive}(Actualmente {C:mult}+#2#{C:inactive} Multi){}",
+				},
+			},
+		
+
+			j_hnds_jack_in_the_box = {
+				name = "Jack-in-the-box",
+				text = {
+					"Every other round",
+					"gains an ability of a",
+					"random {C:attention}Rare Joker{}",
+					"{C:inactive}(Currently {C:attention}#1#{C:inactive}){}",
+				},
+			},
+			j_hnds_be_not_afraid = {
+				name = "Be not Afraid",
+				text = {
+					"If played hand contains",
+					"a {C:attention}Three of a Kind{}, every",
+					"scoring card permanently gains",
+					"{C:mult}+#1#{} Mult before scoring",
+				},
+			},
+			j_hnds_jodiac = {
+				name = "Jodiac",
+				text = {
+					"Gains {C:mult}+#1#{} Mult per",
+					"card with {C:attention}unique rank{}",
+					"you score, reset scored",
+					"ranks at end of {C:attention}Ante{}",
+					"{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult){}",
+				},
+			},
+},
 		Back = {
 			b_hnds_premiumdeck = {
 				name = "Baraja Premium",
@@ -755,7 +836,8 @@ return {
 					"enfrentas una {C:attention}Ciega Final{}",
 					"si ganas obtienes",
 					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Paquete Espectral{}",
-				},
+				}
+				,
 				unlock = {
 					"Gana una partida con cualquier",
 					"baraja al menos en dificultad",
@@ -769,7 +851,8 @@ return {
 					"los {C:attention}Paquetes Potenciadores{}",
 					"por {C:attention,T:p_hnds_magic_1}Paquetes Mágicos{}",
 					"que contienen {C:dark_edition,E:1}cartas al azar{}",
-				},
+				}
+				,
 				unlock = {
 					"Descubre todos los",
 					"{C:attention}Paquetes Potenciadores{}",
@@ -795,7 +878,8 @@ return {
 					"en la {C:money}Tienda{} y durante",
 					"la {C:attention}Ciega Jefe{}",
 					"{C:inactive}(Ej. {C:green}1 en 3{C:inactive} -> {C:green}3 en 3){C:inactive}",
-				},
+				}
+				,
 				unlock = {
 					"Activa correctamente el efecto",
 					"de probabilidad de las {C:attention}Cartas de la Suerte{}",
@@ -808,7 +892,8 @@ return {
 					"Derrota la {C:attention}primera",
 					"{C:attention}Ciega Jefe{} para abrir un",
 					"{C:red,T:p_hnds_cursed_pack}Paquete Maldito Inevitable{}",
-				},
+				}
+				,
 				unlock = {
 					"Gana una partida con cualquier",
 					"baraja al menos en dificultad",
@@ -913,10 +998,21 @@ return {
 				name = "Funda de la Suerte",
 				text = {
 					"Duplica las {C:green}probabilidades{} y las",
-					"{C:attention,E:1}Cuadriplica{} en la {C:money}Tienda{} y",
+					"{C:attention,E:1}Cuadruplica{} en la {C:money}Tienda{} y",
 					"durante la {C:attention}Ciega Jefe{}",
 					"{C:inactive}(Ej. {C:green}1 en 3{C:inactive} -> {C:green}4 en 3){C:inactive}",
 				}
+			},
+		},
+		Tarot = {
+			c_hnds_contagion_death = {
+				name = "Muerte",
+				text = {
+					"Selecciona {C:attention}3{} cartas,",
+					"convierte todas",
+					"en copias de la",
+					"{C:attention}carta del extremo derecho{}",
+				},
 			},
 		},
 		Spectral = {
@@ -931,29 +1027,33 @@ return {
 			c_hnds_contagion_talisman = {
 				name = "Talismán",
 				text = {
-                    "Otorga un {C:attention}sello de oro{}",
+                    "Otorga un {C:attention}Sello de Oro{}",
                     "a {C:attention}#1#{} cartas seleccionadas",
+                    "en tu mano",
 				},
 			},
 			c_hnds_contagion_deja_vu = {
 				name = "Déjà vu",
 				text = {
-                    "Otorga un {C:red}sello rojo{}",
+                    "Otorga un {C:red}Sello Rojo{}",
                     "a {C:attention}#1#{} cartas seleccionadas",
+                    "en tu mano",
 				},
 			},
 			c_hnds_contagion_trance = {
 				name = "Trance",
 				text = {
-                    "Otorga un {C:blue}sello azul{}",
+                    "Otorga un {C:blue}Sello Azul{}",
                     "a {C:attention}#1#{} cartas seleccionadas",
+                    "en tu mano",
 				},
 			},
 			c_hnds_contagion_medium = {
 				name = "Médium",
 				text = {
-                    "Otorga un {C:purple}sello morado{}",
+                    "Otorga un {C:purple}Sello Morado{}",
                     "a {C:attention}#1#{} cartas seleccionadas",
+                    "en tu mano",
 				},
 			},
 			c_hnds_contagion_aura = {
@@ -968,17 +1068,8 @@ return {
 				name = "Críptido",
 				text = {
                     "Crea {C:attention}#1#{} copias de",
-                    "{C:attention}#2#{} cartas seleccionadas",
-                    "en tu mano",
-				},
-			},
-			c_hnds_contagion_death = {
-				name = "Muerte",
-				text = {
-					"Selecciona {C:attention}3{} cartas,",
-					"convierte todas",
-					"en copias de la",
-					"{C:attention}carta del extremo derecho{}",
+                    "cada una de {C:attention}#2#{} cartas",
+                    "seleccionadas en tu mano",
 				},
 			},
 			c_hnds_exchange_contagion = {
@@ -992,8 +1083,9 @@ return {
 			c_hnds_abyss = {
 				name = "Abismo",
 				text = {
-					"Otorga un {C:dark_edition}Sello negro{}",
+					"Otorga un {C:dark_edition}Sello Negro{}",
 					"a {C:attention}#1#{} carta seleccionada",
+					"en tu mano",
 				},
 			},
 			c_hnds_cycle = {
@@ -1006,9 +1098,10 @@ return {
 			c_hnds_petrify = {
 				name = "Petrificación",
 				text = {
-					"Convierte las cartas de {C:attention}figura{}",
-					"en {C:attention}piedra{} y ganas {C:money}$#1#{}",
-					"por carta petrificada",
+					"Convierte todas las cartas de {C:attention}figura{}",
+					"en mano en {C:attention}Cartas de Piedra{},",
+					"ganas {C:money}$#1#{} por cada",
+					"carta petrificada",
 				},
 			},
 			c_hnds_exchange = {
@@ -1020,10 +1113,11 @@ return {
 				},
 			},
 			c_hnds_possess = {
-				name = "Poseción",
+				name = "Posesión",
 				text = {
 					"Otorga un {C:spectral}Sello Espectral{}",
 					"a {C:attention}#1#{} carta seleccionada",
+					"en tu mano",
 				},
 			},
 			c_hnds_dream = {
@@ -1037,23 +1131,22 @@ return {
 				name = "Colisión",
 				text = {
 					"Mejora {C:attention}#1#{} cartas",
-					"a {C:dark_edition}#2#s",
+					"seleccionadas a {C:dark_edition}#2#s",
 				},
 			},
 			c_hnds_gateway = {
 				name = "Umbral",
 				text = {
 					"Mejora {C:attention}#1#{} cartas",
-					"a {C:dark_edition}#2#s",
+					"seleccionadas a {C:dark_edition}#2#s",
 				},
 			},
 			c_hnds_spectrum = {
 				name = "Espectro",
 				text = {
 					"Otorga una {C:attention}Mejora{}",
-					"y {C:attention}Sello{} a las",
-					"cartas en mano",
-					"{s:0.8,C:inactive}(Multi y Adicionales Escluidas){}"
+					"y un {C:attention}Sello{} al azar",
+					"a cada carta en tu mano",
 				}
 			}
 		},
@@ -1061,9 +1154,8 @@ return {
 				e_hnds_vintage = {
 				name = "Vintage",
 				text = {
-					"Ganas un {C:money}$1{} adicional",
-					"por cada {C:money}$1{} de {C:attention}interés{}",
-					"al final de la ronda",
+					"{C:money}+$2{} {C:attention}valor de venta{}",
+					"cada ronda",
 				},
 			},
 			e_hnds_vintage_playing_card = {
@@ -1280,7 +1372,11 @@ return {
 			},
 			hnds_soul = {
 				name = "Alma",
-				text = { "Creado por {C:legendary,E:1}Pennywise" }
+				text = {
+					"Sin {C:attention}valor de venta{}",
+					"Quítala al perder",
+					"a {C:legendary,E:1}Pennywise",
+				}
 			},
 			p_hnds_magic = {
 				name = "Paquete Mágico",
@@ -1320,24 +1416,20 @@ return {
 			hnds_cursed = {
 				name = "Maldito",
 				text = {
-					"Obtienes una {C:green}Oferta{}:",
-					"{C:inactive}({C:green}sin oferta{C:inactive}){}",
-					"a cambio de un {C:red}Precio{}:",
-					"{C:inactive}({C:red}sin precio{C:inactive}){}",
+					"{C:green}Poder{} adicional,",
+					"¿pero a qué {C:red}costo{}?",
 				}
 			},
 			offer_copy_random_tarot = {
 				text = {
-					"Crea una carta del",
-					"{C:tarot}Tarot{} al final",
-					"de la {C:attention}ronda{}",
+					"Crea una carta",
+					"de {C:tarot}Tarot{} cada ronda",
 				},
 			},
 			offer_copy_random_planet = {
 				text = {
-					"Crea {C:attention}2{} cartas de",
-					"{C:planet}Planeta{} al final",
-					"de la {C:attention}ronda{}",
+					"Crea {C:attention}2{} cartas",
+					"de {C:planet}Planeta{} cada ronda",
 				},
 			},
 			offer_random_enhancement = {
@@ -1379,14 +1471,14 @@ return {
 			},
 			price_destroy_jokers = {
 				text = {
-					"{C:red,E:2}Destruye{} todos",
-					"tus {C:attention}Comodines{}",
+					"{C:red,E:2}Destruye{} tus",
+					"otros {C:attention}Comodines{}",
 				},
 			},
 			price_destroy_cards = {
 				text = {
 					"{C:red}Destruye{} 8 cartas",
-					"de tu baraja",
+					"al azar de tu baraja",
 				},
 			},
 			price_bankrupt = {
@@ -1396,9 +1488,8 @@ return {
 			},
 			price_inflation = {
 				text = {
-					"Aumenta {C:money}precios{} de las {C:attention}Cartas{}",
-					"y {C:attention}Paquetes Potenciadores{}",
-					"en un {C:red}25%{}",
+					"Las {C:green}Renovaciones{} cuestan",
+					"{C:red}$2{} más permanentemente",
 				},
 			},
 			price_lose_hand = {
@@ -1421,8 +1512,8 @@ return {
 			},
 			price_ante_scaling = {
 				text = {
-					"Aumenta en {C:red}X1.50{} la",
-					"{C:attention}puntuación requerida{}",
+					"{C:red}+50%{} tamaño de Ciega base",
+					"permanentemente",
 				},
 			},
 			dna_tag_tooltip_singular = {
@@ -1455,7 +1546,336 @@ return {
 					"ganar el Pozo de {C:attention}Sangre{}",
 				}
 			},
+<<<<<<< HEAD
+			hnds_jodiac_ranks_empty = {
+				name = "Categorías Anotadas",
+				text = {
+					"No anotaste categorías",
+					"esta Apuesta",
+				},
+			},
+			hnds_jodiac_ranks_1 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+				},
+			},
+			hnds_jodiac_ranks_2 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+				},
+			},
+			hnds_jodiac_ranks_3 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+				},
+			},
+			hnds_jodiac_ranks_4 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+				},
+			},
+			hnds_jodiac_ranks_5 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+				},
+			},
+			hnds_jodiac_ranks_6 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+				},
+			},
+			hnds_jodiac_ranks_7 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+					"{C:attention}#7#{}",
+				},
+			},
+			hnds_jodiac_ranks_8 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+					"{C:attention}#7#{}",
+					"{C:attention}#8#{}",
+				},
+			},
+			hnds_jodiac_ranks_9 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+					"{C:attention}#7#{}",
+					"{C:attention}#8#{}",
+					"{C:attention}#9#{}",
+				},
+			},
+			hnds_jodiac_ranks_10 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+					"{C:attention}#7#{}",
+					"{C:attention}#8#{}",
+					"{C:attention}#9#{}",
+					"{C:attention}#10#{}",
+				},
+			},
+			hnds_jodiac_ranks_11 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+					"{C:attention}#7#{}",
+					"{C:attention}#8#{}",
+					"{C:attention}#9#{}",
+					"{C:attention}#10#{}",
+					"{C:attention}#11#{}",
+				},
+			},
+			hnds_jodiac_ranks_12 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+					"{C:attention}#7#{}",
+					"{C:attention}#8#{}",
+					"{C:attention}#9#{}",
+					"{C:attention}#10#{}",
+					"{C:attention}#11#{}",
+					"{C:attention}#12#{}",
+				},
+			},
+			hnds_jodiac_ranks_13 = {
+				name = "Categorías Anotadas",
+				text = {
+					"{C:attention}#1#{}",
+					"{C:attention}#2#{}",
+					"{C:attention}#3#{}",
+					"{C:attention}#4#{}",
+					"{C:attention}#5#{}",
+					"{C:attention}#6#{}",
+					"{C:attention}#7#{}",
+					"{C:attention}#8#{}",
+					"{C:attention}#9#{}",
+					"{C:attention}#10#{}",
+					"{C:attention}#11#{}",
+					"{C:attention}#12#{}",
+					"{C:attention}#13#{}",
+				},
+			},
 		},
+=======
+		
+
+            hnds_jodiac_ranks_empty = {
+                name = "Scored Ranks",
+                text = { "No ranks scored this Ante" },
+            },
+            hnds_jodiac_ranks_1 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                },
+            },
+            hnds_jodiac_ranks_2 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                },
+            },
+            hnds_jodiac_ranks_3 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                },
+            },
+            hnds_jodiac_ranks_4 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                },
+            },
+            hnds_jodiac_ranks_5 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                },
+            },
+            hnds_jodiac_ranks_6 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                },
+            },
+            hnds_jodiac_ranks_7 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                },
+            },
+            hnds_jodiac_ranks_8 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                },
+            },
+            hnds_jodiac_ranks_9 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                },
+            },
+            hnds_jodiac_ranks_10 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                },
+            },
+            hnds_jodiac_ranks_11 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                    "{C:attention}#11#{}",
+                },
+            },
+            hnds_jodiac_ranks_12 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                    "{C:attention}#11#{}",
+                    "{C:attention}#12#{}",
+                },
+            },
+            hnds_jodiac_ranks_13 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                    "{C:attention}#11#{}",
+                    "{C:attention}#12#{}",
+                    "{C:attention}#13#{}",
+                },
+            },
+},
+>>>>>>> 466efd06b1ce8afc35576d096aede1c320691a86
 		Voucher = {
 			v_magic_trick = {
 				name = "Truco de Magia",
@@ -1686,6 +2106,23 @@ return {
 			},
 		},
 		Stake = {
+			stake_blue = {
+<<<<<<< HEAD
+				name = "Pozo Azul",
+				text = {
+					"Las manos de póker de nivel {C:attention}1{} y las",
+					"cartas {C:planet}Planeta{} dan menos {C:chips}Fichas{} y {C:mult}Multi{}",
+					"{s:0.8}Aplica todos los Pozos anteriores",
+=======
+				name = "Blue Stake",
+				text = {
+					"Level 1 poker hands and",
+					"their respective {C:planet}Planet{} cards",
+					"give less {C:mult}Mult{} and {C:chips}Chips{}",
+					"{s:0.8}Applies all previous Stakes",
+>>>>>>> 466efd06b1ce8afc35576d096aede1c320691a86
+				},
+			},
 			stake_hnds_platinum = {
 				name = "Pozo de Platino",
 				text = {
@@ -1766,11 +2203,13 @@ return {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_be_not_afraid = "¡Santísima Trinidad!",
 			k_hnds_krusty_voucher_tag = "Etiqueta de Vale",
 			k_hnds_krusty_voucher_tags = "Etiquetas de Vale",
 			hnds_upgrade_blind = "Mejorar Ciega",
 			hnds_blind_raiser_tooltip_title = "Puntuación si mejora",
 			hnds_blind_raiser_tooltip_current_blind = "Ciega actual: #1#",
+			hnds_blind_raiser_tooltip_big_blind = "Ciega Grande: #1#",
 			hnds_blind_raiser_tooltip_boss_blind = "Ciega Jefe: #1#",
 			k_hnds_petrified = "¡Petrificado!",
 			k_hnds_goldfish = "¡Pez Dorado!",
@@ -1814,7 +2253,7 @@ return {
 			k_hnds_creepy_5 = "...nos queda rezar",
 			k_hnds_creepy_6 = "volver a ver...",
 			k_hnds_creepy_7 = "al Barón...",
-			k_hnds_creepy_8 = "...que nos tracionó",
+			k_hnds_creepy_8 = "...que nos traicionó",
 			-- DEVIL BLIND ALIASES
 			hnds_devil_name_default = "El Diablo",
 			hnds_devil_name_legion = "La Legión",
@@ -1822,12 +2261,12 @@ return {
 			hnds_devil_name_deceiver = "El Embustero",
 			hnds_devil_name_tempter = "El Tentador",
 			hnds_devil_name_adversary = "El Adversario",
-			hnds_devil_name_prince_of_darkness = "El Princípe de la Oscuridad",
+			hnds_devil_name_prince_of_darkness = "El Príncipe de la Oscuridad",
 			hnds_devil_name_belial = "Belial",
 			hnds_devil_name_apollyon = "Apollyon",
 			hnds_devil_name_lucifer = "Lucifer",
 			hnds_devil_name_abaddon = "Abaddon",
-			hnds_devil_name_leviathan = "Levitán",
+			hnds_devil_name_leviathan = "Leviatán",
 			-- CONFIG TAB LOCALIZATION
 			hnds_require_restart = "Requiere reiniciar",
 			hnds_config_StoneOcean = "Habilitar mano de Stone Ocean",
@@ -1873,3 +2312,27 @@ return {
 		},
 	},
 }
+
+-- Vanilla balance text must follow the restart-required config toggle. When
+-- disabled, omit these entries so Balatro's original localization remains.
+local vanilla_tweaks_config = hnds_config
+	or (SMODS and SMODS.Mods and SMODS.Mods.HandsomeDevils and SMODS.Mods.HandsomeDevils.config)
+	or (SMODS and SMODS.current_mod and SMODS.current_mod.config)
+if vanilla_tweaks_config and vanilla_tweaks_config.enableVanillaTweaks == false then
+	local joker_keys = {
+		"j_matador", "j_superposition", "j_splash", "j_flower_pot",
+		"j_mail", "j_stone", "j_greedy_joker", "j_lusty_joker",
+		"j_wrathful_joker", "j_gluttenous_joker", "j_throwback",
+		"j_seeing_double", "j_ring_master", "j_hiker",
+	}
+	for _, key in ipairs(joker_keys) do
+		localization.descriptions.Joker[key] = nil
+	end
+	localization.descriptions.Spectral.c_black_hole = nil
+	localization.descriptions.Enhanced.m_wild = nil
+	localization.descriptions.Tag.tag_juggle = nil
+	localization.descriptions.Tag.tag_boss = nil
+	localization.descriptions.Stake.stake_blue = nil
+end
+
+return localization
