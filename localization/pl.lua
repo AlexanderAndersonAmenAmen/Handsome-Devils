@@ -154,7 +154,37 @@ return {
 					"{C:inactive}(np. {}{C:green}1 na 3{} {C:inactive}->{} {C:green}#1# na 3{}{C:inactive}){}",
 				},
 			},
-		},
+		
+
+			j_hnds_jack_in_the_box = {
+				name = "Jack-in-the-box",
+				text = {
+					"Every other round",
+					"gains an ability of a",
+					"random {C:attention}Rare Joker{}",
+					"{C:inactive}(Currently {C:attention}#1#{C:inactive}){}",
+				},
+			},
+			j_hnds_be_not_afraid = {
+				name = "Be not Afraid",
+				text = {
+					"If played hand contains",
+					"a {C:attention}Three of a Kind{}, every",
+					"scoring card permanently gains",
+					"{C:mult}+#1#{} Mult before scoring",
+				},
+			},
+			j_hnds_jodiac = {
+				name = "Jodiac",
+				text = {
+					"Gains {C:mult}+#1#{} Mult per",
+					"card with {C:attention}unique rank{}",
+					"you score, reset scored",
+					"ranks at end of {C:attention}Ante{}",
+					"{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult){}",
+				},
+			},
+},
 		Spectral = {
 			c_hnds_abyss = {
 				name = "Odchłań",
@@ -373,7 +403,169 @@ return {
 					"{C:inactive}({C:red}brak ceny{C:inactive}){}",
 				}
 			},
-		},
+		
+
+            hnds_jodiac_ranks_empty = {
+                name = "Scored Ranks",
+                text = { "No ranks scored this Ante" },
+            },
+            hnds_jodiac_ranks_1 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                },
+            },
+            hnds_jodiac_ranks_2 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                },
+            },
+            hnds_jodiac_ranks_3 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                },
+            },
+            hnds_jodiac_ranks_4 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                },
+            },
+            hnds_jodiac_ranks_5 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                },
+            },
+            hnds_jodiac_ranks_6 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                },
+            },
+            hnds_jodiac_ranks_7 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                },
+            },
+            hnds_jodiac_ranks_8 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                },
+            },
+            hnds_jodiac_ranks_9 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                },
+            },
+            hnds_jodiac_ranks_10 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                },
+            },
+            hnds_jodiac_ranks_11 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                    "{C:attention}#11#{}",
+                },
+            },
+            hnds_jodiac_ranks_12 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                    "{C:attention}#11#{}",
+                    "{C:attention}#12#{}",
+                },
+            },
+            hnds_jodiac_ranks_13 = {
+                name = "Scored Ranks",
+                text = {
+                    "{C:attention}#1#{}",
+                    "{C:attention}#2#{}",
+                    "{C:attention}#3#{}",
+                    "{C:attention}#4#{}",
+                    "{C:attention}#5#{}",
+                    "{C:attention}#6#{}",
+                    "{C:attention}#7#{}",
+                    "{C:attention}#8#{}",
+                    "{C:attention}#9#{}",
+                    "{C:attention}#10#{}",
+                    "{C:attention}#11#{}",
+                    "{C:attention}#12#{}",
+                    "{C:attention}#13#{}",
+                },
+            },
+},
 		Enhanced = {
 			m_hnds_aberrant = {
 				name = "Karta aberracyjna",

@@ -890,14 +890,20 @@ end
 if Card and type(Card.calculate_joker) == "function" and not Card._hnds_unlock_trigger_wrapped then
     Card._hnds_unlock_trigger_wrapped = true
     local calculate_joker_unlock_ref = Card.calculate_joker
+    local function hnds_unlock_effect_triggered(value)
+        return value ~= nil and value ~= false
+            and (type(value) ~= "table" or next(value) ~= nil)
+    end
     function Card:calculate_joker(...)
         local a, b, c, d = calculate_joker_unlock_ref(self, ...)
-        local triggered = false
-        for _, value in pairs({a, b, c, d}) do
-            if value ~= nil and value ~= false and (type(value) ~= "table" or next(value) ~= nil) then triggered = true break end
+        local triggered = hnds_unlock_effect_triggered(a)
+            or hnds_unlock_effect_triggered(b)
+            or hnds_unlock_effect_triggered(c)
+            or hnds_unlock_effect_triggered(d)
+        if triggered and card_set(self) == "Joker" then
+            local state = run_state()
+            if state then self.hnds_unlock_trigger_round = state.round_serial end
         end
-        local state = run_state()
-        if triggered and state and card_set(self) == "Joker" then self.hnds_unlock_trigger_round = state.round_serial end
         return a, b, c, d
     end
 end

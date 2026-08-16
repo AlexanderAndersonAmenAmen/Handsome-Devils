@@ -470,20 +470,15 @@ return {
 			},
 			j_hnds_wait_what = {
 				name = "¿Espera, qué?",
-				text = {
-					"{X:mult,C:white}X#1#{} Multi",
-				}
-				,
-				unlock = {
-					"?????",
-				}
+				text = { "{X:mult,C:white}X#1#{} Multi", },
+				unlock = { "?????", }
 			},
 			j_hnds_excommunicado = {
 				name = "Excomulgado",
 				text = {
 					"Todas las {C:attention}Ciegas{} son",
 					"{C:attention}Ciegas Jefe{}, obtienes una",
-					"{C:attention}Etiqueta{} al derrotar una {C:attention}Ciega{}"
+					"{C:attention}Etiqueta{} al derrotar una {C:attention}Ciega{}",
 				},
 				unlock = {
 					"Derrota un total de",
@@ -606,8 +601,7 @@ return {
 				text = {
 					"Copia la habilidad del",
 					"último {C:attention}Comodín{} comprado",
-				}
-				,
+				},
 				unlock = {
 					"Compra el mismo",
 					"Comodín {C:attention}3{} veces",
@@ -631,8 +625,7 @@ return {
 					"La primera {C:attention}mano{} de la ronda,",
 					"cambia al azar las {C:attention}categorías{} y {C:attention}palos{}",
 					"de todas las cartas en mano",
-				}
-				,
+				},
 				unlock = {
 					"Cambia las {C:attention}categorías{} o",
 					"{C:attention}palos{} de {C:attention}100{} cartas",
@@ -762,8 +755,7 @@ return {
 					"enfrentas una {C:attention}Ciega Final{}",
 					"si ganas obtienes",
 					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Paquete Espectral{}",
-				}
-				,
+				},
 				unlock = {
 					"Gana una partida con cualquier",
 					"baraja al menos en dificultad",
@@ -777,8 +769,7 @@ return {
 					"los {C:attention}Paquetes Potenciadores{}",
 					"por {C:attention,T:p_hnds_magic_1}Paquetes Mágicos{}",
 					"que contienen {C:dark_edition,E:1}cartas al azar{}",
-				}
-				,
+				},
 				unlock = {
 					"Descubre todos los",
 					"{C:attention}Paquetes Potenciadores{}",
@@ -804,8 +795,7 @@ return {
 					"en la {C:money}Tienda{} y durante",
 					"la {C:attention}Ciega Jefe{}",
 					"{C:inactive}(Ej. {C:green}1 en 3{C:inactive} -> {C:green}3 en 3){C:inactive}",
-				}
-				,
+				},
 				unlock = {
 					"Activa correctamente el efecto",
 					"de probabilidad de las {C:attention}Cartas de la Suerte{}",
@@ -818,8 +808,7 @@ return {
 					"Derrota la {C:attention}primera",
 					"{C:attention}Ciega Jefe{} para abrir un",
 					"{C:red,T:p_hnds_cursed_pack}Paquete Maldito Inevitable{}",
-				}
-				,
+				},
 				unlock = {
 					"Gana una partida con cualquier",
 					"baraja al menos en dificultad",

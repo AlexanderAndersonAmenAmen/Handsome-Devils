@@ -4,12 +4,188 @@ HNDS = {}
 -- The rows argument is a list of per-row card limits, not a {row, column}
 -- dimension pair. Handsome Devils currently has 10 Enhancements and 13 Planets,
 -- so their bounded layouts are two rows of 5 and rows of 6/7 respectively.
+--
+-- Joker collection special case: the five Handsome Devils Legendary Jokers are
+-- removed from the normal sequence and placed on a dedicated FINAL page. That
+-- page is exactly 3 rows x 5 cards: empty top row, the 5 Legendaries in the
+-- middle row, empty bottom row. The padding is renderer-only; no fake Jokers are
+-- registered and gameplay pools / collection completion counts are unaffected.
 if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
     local hnds_card_collection_UIBox = SMODS.card_collection_UIBox
+
+    local hnds_legendary_collection_order = {
+        'j_hnds_pennywise',
+        'j_hnds_art',
+        'j_hnds_krusty',
+        'j_hnds_sarmenti',
+        'j_hnds_arthur',
+    }
+    local hnds_legendary_collection_lookup = {}
+    for _, key in ipairs(hnds_legendary_collection_order) do
+        hnds_legendary_collection_lookup[key] = true
+    end
+
+    -- A private sentinel used only by the collection renderer. It occupies a
+    -- layout position but never becomes a Card or a registered game object.
+    local hnds_collection_blank = {}
+
+    local function hnds_legendary_joker_collection_UIBox(_pool, args)
+        args = args or {}
+        args.w_mod = args.w_mod or 1
+        args.h_mod = args.h_mod or 1
+        args.card_scale = args.card_scale or 1
+
+        -- Joker collection is intentionally fixed at 3 x 5. This gives the
+        -- dedicated Legendary page a literal row above and beneath the cards.
+        local rows = { 5, 5, 5 }
+        local cards_per_page = 15
+        local source_pool = SMODS.collection_pool(_pool)
+        local pool = {}
+        local legendary_by_key = {}
+
+        -- Keep every non-HD-Legendary center in its existing collection order.
+        -- Pull the five HD Legendaries out so nothing can share their final page.
+        for _, center in ipairs(source_pool) do
+            if center and hnds_legendary_collection_lookup[center.key] then
+                legendary_by_key[center.key] = center
+            else
+                pool[#pool + 1] = center
+            end
+        end
+
+        -- Finish the preceding page first. These are true empty positions, not
+        -- hidden/dummy Jokers, so they cannot affect unlock or discovery counts.
+        local remainder = #pool % cards_per_page
+        if remainder ~= 0 then
+            for _ = 1, cards_per_page - remainder do
+                pool[#pool + 1] = hnds_collection_blank
+            end
+        end
+
+        -- Dedicated final page: blank row / Legendaries / blank row.
+        for _ = 1, 5 do pool[#pool + 1] = hnds_collection_blank end
+        for _, key in ipairs(hnds_legendary_collection_order) do
+            local center = legendary_by_key[key]
+            if center then
+                pool[#pool + 1] = center
+            else
+                -- Keep the five middle-row positions stable even in an unusual
+                -- partial-load state where one center has not registered yet.
+                pool[#pool + 1] = hnds_collection_blank
+            end
+        end
+        for _ = 1, 5 do pool[#pool + 1] = hnds_collection_blank end
+
+        local deck_tables = {}
+        local row_totals = {}
+        G.your_collection = {}
+
+        local running_total = 0
+        for j = 1, #rows do
+            row_totals[j] = running_total
+            running_total = running_total + rows[j]
+            G.your_collection[j] = CardArea(
+                G.ROOM.T.x + 0.2 * G.ROOM.T.w / 2,
+                G.ROOM.T.h,
+                (args.w_mod * rows[j] + 0.25) * G.CARD_W,
+                args.h_mod * G.CARD_H,
+                { card_limit = rows[j], type = args.area_type or 'title', highlight_limit = 0, collection = true }
+            )
+            table.insert(deck_tables, {
+                n = G.UIT.R,
+                config = { align = 'cm', padding = 0.07, no_fill = true },
+                nodes = {
+                    { n = G.UIT.O, config = { object = G.your_collection[j] } }
+                }
+            })
+        end
+
+        local total_pages = math.max(1, math.ceil(#pool / cards_per_page))
+        local options = {}
+        for i = 1, total_pages do
+            table.insert(options, localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(total_pages))
+        end
+
+        G.FUNCS.SMODS_card_collection_page = function(e)
+            if not e or not e.cycle_config then return end
+
+            for j = 1, #G.your_collection do
+                for i = #G.your_collection[j].cards, 1, -1 do
+                    local c = G.your_collection[j]:remove_card(G.your_collection[j].cards[i])
+                    c:remove()
+                end
+            end
+
+            local page = e.cycle_config.current_option or 1
+            for j = 1, #rows do
+                for i = 1, rows[j] do
+                    local index = i + row_totals[j] + (cards_per_page * (page - 1))
+                    local center = pool[index]
+                    if not center then break end
+
+                    -- Sentinels deliberately leave this exact collection slot
+                    -- empty while allowing later positions in the row/page to
+                    -- be populated normally.
+                    if center ~= hnds_collection_blank then
+                        local card = Card(
+                            G.your_collection[j].T.x + G.your_collection[j].T.w / 2,
+                            G.your_collection[j].T.y,
+                            G.CARD_W * args.card_scale,
+                            G.CARD_H * args.card_scale,
+                            G.P_CARDS.empty,
+                            (args.center and G.P_CENTERS[args.center]) or center
+                        )
+                        if args.modify_card then args.modify_card(card, center, i, j) end
+                        if not args.no_materialize then card:start_materialize(nil, i > 1 or j > 1) end
+                        G.your_collection[j]:emplace(card)
+                    end
+                end
+            end
+            INIT_COLLECTION_CARD_ALERTS()
+        end
+
+        G.FUNCS.SMODS_card_collection_page { cycle_config = { current_option = 1 } }
+
+        return create_UIBox_generic_options({
+            colour = G.ACTIVE_MOD_UI and ((G.ACTIVE_MOD_UI.ui_config or {}).collection_colour or (G.ACTIVE_MOD_UI.ui_config or {}).colour),
+            bg_colour = G.ACTIVE_MOD_UI and ((G.ACTIVE_MOD_UI.ui_config or {}).collection_bg_colour or (G.ACTIVE_MOD_UI.ui_config or {}).bg_colour),
+            back_colour = G.ACTIVE_MOD_UI and ((G.ACTIVE_MOD_UI.ui_config or {}).collection_back_colour or (G.ACTIVE_MOD_UI.ui_config or {}).back_colour),
+            outline_colour = G.ACTIVE_MOD_UI and ((G.ACTIVE_MOD_UI.ui_config or {}).collection_outline_colour or (G.ACTIVE_MOD_UI.ui_config or {}).outline_colour),
+            back_func = (args and args.back_func) or G.ACTIVE_MOD_UI and 'openModUI_' .. G.ACTIVE_MOD_UI.id or 'your_collection',
+            snap_back = args.snap_back,
+            infotip = args.infotip,
+            contents = {
+                { n = G.UIT.R, config = { align = 'cm', r = 0.1, colour = G.C.BLACK, emboss = 0.05 }, nodes = deck_tables },
+                (not args.hide_single_page or cards_per_page < #pool) and {
+                    n = G.UIT.R,
+                    config = { align = 'cm' },
+                    nodes = {
+                        create_option_cycle({
+                            options = options,
+                            w = 4.5,
+                            cycle_shoulders = true,
+                            opt_callback = 'SMODS_card_collection_page',
+                            current_option = 1,
+                            colour = G.ACTIVE_MOD_UI and (G.ACTIVE_MOD_UI.ui_config or {}).collection_option_cycle_colour or G.C.RED,
+                            no_pips = true,
+                            focus_args = { snap_to = true, nav = 'wide' }
+                        })
+                    }
+                } or nil,
+            }
+        })
+    end
+
     SMODS.card_collection_UIBox = function(pool, rows, args)
         local pools = G and G.P_CENTER_POOLS
-        if pools then
-            if pool == pools.Seal then
+        -- Steamodded's Sticker collection passes SMODS.Stickers directly, not
+        -- a G.P_CENTER_POOLS entry. Force exactly 2 rows x 4 cards here.
+        if SMODS and SMODS.Stickers and pool == SMODS.Stickers then
+            rows = { 4, 4 }
+        elseif pools then
+            if pool == pools.Joker then
+                return hnds_legendary_joker_collection_UIBox(pool, args)
+            elseif pool == pools.Seal then
                 rows = { 3, 3, 3 }
             elseif pool == pools.Edition then
                 rows = { 3, 3, 3 }
@@ -333,10 +509,17 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.individual and SMODS.has_enhancement(context.other_card, "m_stone") then
 		G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
 	end
-	-- Spawn queued booster packs at the start of each shop
-	if context.starting_shop and G.GAME.hnds_crystal_queued then
-		spawn_queued_booster('p_hnds_spectral_ultra')
-		G.GAME.hnds_crystal_queued = nil
+	-- Spawn queued booster packs at the start of each shop.  Cursed Deck uses
+	-- this boundary instead of a cash_out polling Event: payout has completed,
+	-- while the queued booster can cleanly return to the Shop after selection.
+	if context.starting_shop then
+		if G.GAME.hnds_crystal_queued then
+			spawn_queued_booster('p_hnds_spectral_ultra')
+			G.GAME.hnds_crystal_queued = nil
+		end
+		if HNDS.open_pending_cursed_pack_at_shop then
+			HNDS.open_pending_cursed_pack_at_shop()
+		end
 	end
 	-- Art the Clown: make the added final slot Art itself. Because this runs
 	-- inside Steamodded's normal booster creation loop, Art is centred and
@@ -453,6 +636,12 @@ local files = {
 			"last_laugh",
 			"bizzare_joker",
 			"jokestone",
+
+			"conquest",
+			"be_not_afraid",
+			"jodiac",
+			"jack_in_the_box",
+			"joker_reverse",
 
 			"jester_in_yellow",
 			"demented",
@@ -677,6 +866,9 @@ function Game:init_game_object()
 	-- Wholesale unlock progress is deliberately per-run.
 	ret.hnds_boosters_bought_run = 0
 	ret.hnds_juggle_bonuses = {}
+	-- Conquest tracks Boss-equivalent Blind defeats for the entire run, even
+	-- before the Joker is owned.
+	ret.hnds_conquest_bosses_defeated = 0
 	return ret
 end
 
@@ -699,8 +891,10 @@ assert(SMODS.load_file("lib/platinum_blind_upgrades.lua"))()
 assert(SMODS.load_file("lib/platinum_boss_stacking.lua"))()
 -- Investment must wrap Blind:set_blind/defeat after Blind Raiser does.
 assert(SMODS.load_file("lib/vanilla_investment_tag.lua"))()
+assert(SMODS.load_file("lib/conquest_tracker.lua"))()
 assert(SMODS.load_file("lib/blind_souls.lua"))()
 assert(SMODS.load_file("lib/utils.lua"))()
+assert(SMODS.load_file("lib/cursed_pack.lua"))()
 
 -- Load sleeves
 if CardSleeves then

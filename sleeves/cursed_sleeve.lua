@@ -9,8 +9,9 @@ CardSleeves.Sleeve({
         return HNDS.sleeve_loc(self, "b_hnds_cursed")
     end,
     apply = function(self)
-        -- Base effect: Initialize cursed deck variables
-        G.GAME.hnds_cursed_pack_opened = false
+        -- The one-shot Cursed Pack reward uses lazy run-state markers in the
+        -- calculate callback.  Do not reset them here: sleeve/back apply hooks
+        -- may be revisited while loading a saved run.
 
         -- Sleeve additional effect: Enable rare-only for first cursed pack when paired with Cursed Deck
         if self.get_current_deck_key() == "b_hnds_cursed" then
@@ -21,12 +22,16 @@ CardSleeves.Sleeve({
     end,
     calculate = function(self, sleeve, context)
         -- Base effect: Cursed pack on first boss blind (same as deck)
-        if context.end_of_round and context.main_eval and context.beat_boss and G.GAME.round_resets.ante == 1 and not G.GAME.hnds_cursed_pack_opened then
-            G.GAME.hnds_cursed_pack_opened = true
-            local tag = Tag('tag_hnds_cursed_tag')
-            tag.ability = tag.ability or {}
-            tag.ability.hnds_forced = true
-            add_tag(tag)
+        if context.end_of_round and context.main_eval
+            and HNDS.active_blind_is_real_ante_boss and HNDS.active_blind_is_real_ante_boss()
+            and G.GAME.round_resets.ante == 1
+            and not G.GAME.hnds_cursed_deck_reward_claimed
+            and not G.GAME.hnds_cursed_pack_opened then
+            G.GAME.hnds_cursed_deck_reward_claimed = true
+            G.GAME.hnds_cursed_pack_opened = true -- legacy/save compatibility
+            if HNDS.queue_cursed_pack then
+                HNDS.queue_cursed_pack({ forced = true, source = 'cursed_sleeve' })
+            end
         end
     end,
 })

@@ -127,6 +127,9 @@ local function parse_upgrade_key(key)
 end
 
 local function excommunicado_active()
+    if HNDS and HNDS.excommunicado_effect_active then
+        return HNDS.excommunicado_effect_active()
+    end
     if not (SMODS and SMODS.find_card) then return false end
     local cards = SMODS.find_card('j_hnds_excommunicado')
     return cards and next(cards) ~= nil
@@ -141,6 +144,20 @@ HNDS.restore_stale_platinum_blind_slots = function()
     if not (G.GAME.round_resets and G.GAME.round_resets.blind_choices) then return end
 
     local ante = current_ante()
+
+    -- Ante rollover is a hard runtime boundary for Boss+ delegation. In case a
+    -- modded transition skipped Blind:defeat/disable, tear down any stack that
+    -- still belongs to an older Ante before the new Blind-select UI is built.
+    if G.GAME.hnds_platinum_boss_stack_active
+        and tonumber(G.GAME.hnds_platinum_boss_stack_ante) ~= ante
+        and HNDS.stop_platinum_boss_stack
+    then
+        HNDS.stop_platinum_boss_stack({
+            blind_defeated = true,
+            hnds_scope_cleanup = true,
+        })
+    end
+
     local choices = G.GAME.round_resets.blind_choices
     local upgrades = upgraded_blinds()
     local records = replacement_records()
@@ -207,6 +224,10 @@ HNDS.restore_stale_platinum_blind_slots = function()
     end
     for _, key in ipairs(stale_upgrade_keys) do
         upgrades[key] = nil
+    end
+
+    if HNDS.prune_platinum_boss_stack_records then
+        HNDS.prune_platinum_boss_stack_records(ante)
     end
 end
 
@@ -700,6 +721,69 @@ local function hnds_rebuild_upgraded_blind_option(blind_choice, boss)
     })
 end
 
+-- Rebuild an ordinary undefeated Small/Big option solely to refresh its score
+-- text after the run-wide Blind Raiser multiplier changes. This is especially
+-- important when Small is upgraded: Big has not changed center, but its score
+-- must immediately move from e.g. 450 to 540 on the same Blind Select screen.
+local function hnds_rebuild_remaining_blind_score_option(blind_choice)
+    if not (G and G.blind_select and G.GAME and G.GAME.round_resets) then return end
+    local state = G.GAME.round_resets.blind_states
+        and G.GAME.round_resets.blind_states[blind_choice]
+    if state == 'Defeated' or state == 'Skipped' then return end
+
+    local blind_key = G.GAME.round_resets.blind_choices
+        and G.GAME.round_resets.blind_choices[blind_choice]
+    if not (blind_key and G.P_BLINDS and G.P_BLINDS[blind_key]) then return end
+
+    local current_option = G.blind_select_opts
+        and G.blind_select_opts[blind_choice:lower()]
+    local current_parent = blind_option_parent(current_option)
+    if not (current_option and current_parent) then return end
+
+    current_option:remove()
+    G.blind_select_opts[blind_choice:lower()] = UIBox({
+        T = { current_parent.T.x, 0, 0, 0 },
+        definition = {
+            n = G.UIT.ROOT,
+            config = { align = 'cm', colour = G.C.CLEAR },
+            nodes = {
+                UIBox_dyn_container(
+                    { create_UIBox_blind_choice(blind_choice) },
+                    false,
+                    get_blind_main_colour(blind_key),
+                    mix_colours(G.C.BLACK, get_blind_main_colour(blind_key), 0.8)
+                ),
+            },
+        },
+        config = {
+            align = 'bmi',
+            offset = { x = 0, y = G.ROOM.T.y + 9 },
+            major = current_parent,
+            xy_bond = 'Weak',
+        },
+    })
+
+    local new_option = G.blind_select_opts[blind_choice:lower()]
+    current_parent.config.object = new_option
+    current_parent.config.object:recalculate()
+    new_option.parent = current_parent
+    new_option.alignment.offset.y = 0
+
+    HNDS.sync_platinum_blind_tag_ui({
+        config = { id = blind_choice },
+        UIBox = new_option,
+    })
+end
+
+local function hnds_refresh_undefeated_blind_scores(except_choice)
+    for _, choice in ipairs({ 'Small', 'Big' }) do
+        if choice ~= except_choice then
+            hnds_rebuild_remaining_blind_score_option(choice)
+        end
+    end
+    if HNDS.rebuild_platinum_boss_option then HNDS.rebuild_platinum_boss_option() end
+end
+
 -- Returns true after upgrading, "not_upgradable" when the actual next Blind is
 -- the Boss, and nil while vanilla is still transitioning out of the shop.
 HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
@@ -805,6 +889,9 @@ HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
 
     upgraded_blinds()[current_upgrade_key] = true
     G.GAME.hnds_blind_upgrades = actual_upgrade_count
+    if HNDS.set_platinum_blind_raiser_applied_step then
+        HNDS.set_platinum_blind_raiser_applied_step(upgrade_index)
+    end
     if HNDS.set_platinum_next_upgrade_exponent then
         HNDS.set_platinum_next_upgrade_exponent(upgrade_index + 1)
     end
@@ -814,7 +901,7 @@ HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
     end
 
     hnds_rebuild_upgraded_blind_option(blind_choice, boss)
-    if HNDS.rebuild_platinum_boss_option then HNDS.rebuild_platinum_boss_option() end
+    hnds_refresh_undefeated_blind_scores(blind_choice)
 
     if SMODS and SMODS.calculate_context then
         SMODS.calculate_context({
@@ -970,6 +1057,9 @@ G.FUNCS.hnds_upgrade_blind = function(e)
 
     upgraded_blinds()[current_upgrade_key] = true
     G.GAME.hnds_blind_upgrades = actual_upgrade_count
+    if HNDS.set_platinum_blind_raiser_applied_step then
+        HNDS.set_platinum_blind_raiser_applied_step(upgrade_index)
+    end
     if HNDS.set_platinum_next_upgrade_exponent then
         HNDS.set_platinum_next_upgrade_exponent(upgrade_index + 1)
     end
@@ -1067,7 +1157,7 @@ G.FUNCS.hnds_upgrade_blind = function(e)
                 -- the remaining tag/context work for this upgrade.
                 hnds_rebuild_upgraded_blind_option(blind_choice, boss)
             end
-            if HNDS.rebuild_platinum_boss_option then HNDS.rebuild_platinum_boss_option() end
+            hnds_refresh_undefeated_blind_scores(blind_choice)
 
             if SMODS and SMODS.calculate_context then
                 SMODS.calculate_context({

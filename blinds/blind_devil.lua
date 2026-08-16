@@ -151,22 +151,58 @@ end
 -- Called from a narrow Lovely injection immediately after Balatro creates the
 -- blind-choice AnimatedSprite. This changes only the Devil badge itself; the
 -- surrounding blind-selection UI hierarchy and button hitboxes are untouched.
+HNDS.clear_devil_blind_tooltip = function(sprite)
+    if not sprite then return end
+    if sprite.hnds_devil_blind_tooltip_attached then
+        sprite.hover = sprite.hnds_devil_blind_native_hover
+        sprite.stop_hover = sprite.hnds_devil_blind_native_stop_hover
+    end
+    sprite.hovering = false
+    sprite.hover_tilt = 0
+    sprite.hnds_devil_blind_tooltip_attached = nil
+    sprite.hnds_devil_blind_native_hover = nil
+    sprite.hnds_devil_blind_native_stop_hover = nil
+    if sprite.config then
+        sprite.config.hnds_devil_blind_tooltip_ante = nil
+        sprite.config.h_popup = nil
+        sprite.config.h_popup_config = nil
+    end
+end
+
 HNDS.attach_devil_blind_tooltip = function(sprite, blind_config)
     local key = blind_config and blind_config.key
-    if not (sprite and is_devil_key(key)) then return end
+    if not (sprite and is_devil_key(key)) then
+        if sprite then HNDS.clear_devil_blind_tooltip(sprite) end
+        return
+    end
+
+    if not sprite.hnds_devil_blind_tooltip_attached then
+        sprite.hnds_devil_blind_native_hover = sprite.hover
+        sprite.hnds_devil_blind_native_stop_hover = sprite.stop_hover
+        sprite.hnds_devil_blind_tooltip_attached = true
+    end
 
     sprite.states.hover.can = true
     sprite.states.drag.can = false
     sprite.states.collide.can = true
     sprite.config = sprite.config or {}
     sprite.config.force_focus = true
+    sprite.config.hnds_devil_blind_tooltip_ante = G and G.GAME and G.GAME.round_resets
+        and tonumber(G.GAME.round_resets.ante) or 0
 
     sprite.hover = function(_self)
+        local ante = G and G.GAME and G.GAME.round_resets
+            and tonumber(G.GAME.round_resets.ante) or 0
+        if not (_self.config and tonumber(_self.config.hnds_devil_blind_tooltip_ante) == ante) then
+            HNDS.clear_devil_blind_tooltip(_self)
+            return
+        end
+
         if (not G.CONTROLLER.dragging.target or G.CONTROLLER.using_touch)
             and not _self.hovering
             and _self.states.visible
         then
-            local popup = HNDS.create_devil_blind_tooltip()
+            local popup = HNDS.create_devil_blind_tooltip(ante)
             if not popup then return end
 
             _self.hovering = true
@@ -193,89 +229,6 @@ HNDS.attach_devil_blind_tooltip = function(sprite, blind_config)
     end
 end
 
-local devil_name_keys = {
-    "hnds_devil_name_default",
-    "hnds_devil_name_legion",
-    "hnds_devil_name_old_nick",
-    "hnds_devil_name_deceiver",
-    "hnds_devil_name_tempter",
-    "hnds_devil_name_adversary",
-    "hnds_devil_name_prince_of_darkness",
-    "hnds_devil_name_belial",
-    "hnds_devil_name_apollyon",
-    "hnds_devil_name_lucifer",
-    "hnds_devil_name_abaddon",
-    "hnds_devil_name_leviathan",
-}
-
-local function devil_localized_name(key)
-    return (G.localization
-        and G.localization.misc
-        and G.localization.misc.dictionary
-        and G.localization.misc.dictionary[key])
-        or "The Devil"
-end
-
-local function apply_devil_name(key)
-    if not key then return end
-    local name = devil_localized_name(key)
-
-    -- loc_vars runs before Steamodded renders a Blind's name. Updating the
-    -- localization entry here makes the blind-select name use the nickname.
-    if G.localization
-        and G.localization.descriptions
-        and G.localization.descriptions.Blind
-    then
-        for _, k in ipairs(DEVIL_KEYS) do
-            if G.localization.descriptions.Blind[k] then
-                G.localization.descriptions.Blind[k].name = name
-            end
-        end
-    end
-
-    if G.P_BLINDS then
-        for _, k in ipairs(DEVIL_KEYS) do
-            if G.P_BLINDS[k] then
-                G.P_BLINDS[k].name = name
-            end
-        end
-    end
-
-    if G.GAME and G.GAME.blind then
-        local active_key = G.GAME.blind.config
-            and G.GAME.blind.config.blind
-            and G.GAME.blind.config.blind.key
-
-        if active_key == DEVIL_KEY then
-            G.GAME.blind.loc_name = name
-        end
-    end
-end
-
-local function ensure_devil_name()
-    if not (G and G.GAME) then
-        return "The Devil"
-    end
-
-    if not G.GAME.hnds_devil_name_key then
-        local ante = G.GAME.round_resets and G.GAME.round_resets.ante or 0
-        G.GAME.hnds_devil_name_key = pseudorandom_element(
-            devil_name_keys,
-            pseudoseed("hnds_devil_name_" .. tostring(ante))
-        ) or "hnds_devil_name_default"
-    end
-
-    apply_devil_name(G.GAME.hnds_devil_name_key)
-    return devil_localized_name(G.GAME.hnds_devil_name_key)
-end
-
-local function ensure_devil_roll()
-    if not (G and G.GAME) then return end
-
-    if not G.GAME.hnds_devil_bosses then
-        G.GAME.hnds_devil_bosses = HNDS.roll_devil_bosses()
-    end
-end
 
 -- Called by the boss-selection hook so the nickname exists before the
 -- blind-select UI is constructed.

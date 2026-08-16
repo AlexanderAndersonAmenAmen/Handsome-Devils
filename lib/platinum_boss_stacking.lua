@@ -72,6 +72,29 @@ local function stack_record(ante, create)
     return record
 end
 
+-- Boss+ records and reservation tables are Ante-scoped. Keeping every finished
+-- Ante forever is unnecessary and makes Endless runs grow these tables without
+-- bound. Preserve only the current Ante; cumulative upgrade count lives in the
+-- scalar hnds_blind_upgrades and Conquest has its own defeat tracker.
+function HNDS.prune_platinum_boss_stack_records(ante)
+    if not (G and G.GAME) then return end
+    local keep = tostring(tonumber(ante) or current_ante())
+
+    local records = G.GAME.hnds_platinum_boss_stacks
+    if type(records) == 'table' then
+        for key in pairs(records) do
+            if tostring(key) ~= keep then records[key] = nil end
+        end
+    end
+
+    local reservations = G.GAME.hnds_platinum_upgrade_reservations
+    if type(reservations) == 'table' then
+        for key in pairs(reservations) do
+            if tostring(key) ~= keep then reservations[key] = nil end
+        end
+    end
+end
+
 local function boss_choice()
     return G and G.GAME and G.GAME.round_resets
         and G.GAME.round_resets.blind_choices
@@ -413,21 +436,14 @@ end
 local function replacement_record(blind_choice, ante)
     if not (G and G.GAME) then return nil end
     local records = G.GAME.hnds_platinum_blind_replacements or {}
-    local exact = records[tostring(tonumber(ante) or current_slot_ante()) .. ":" .. tostring(blind_choice)]
-    if type(exact) == "table" then return exact end
-
-    local best, best_ante = nil, -math.huge
-    for key, record in pairs(records) do
-        if type(record) == "table" then
-            local key_ante, key_choice = key:match("^(-?%d+):([%a_]+)$")
-            local record_ante = tonumber(record.ante) or tonumber(key_ante)
-            local record_choice = record.blind_choice or key_choice
-            if record_choice == blind_choice and record_ante and record_ante >= best_ante then
-                best, best_ante = record, record_ante
-            end
-        end
-    end
-    return best
+    -- Replacement records are strictly Ante-scoped. Never fall back to the
+    -- latest record for the same physical slot: doing so makes an upgraded
+    -- Small/Big Blind from an older Ante leak its score/effect state into a
+    -- later Ante after the slot has already been regenerated.
+    local key = tostring(tonumber(ante) or current_slot_ante())
+        .. ":" .. tostring(blind_choice)
+    local exact = records[key]
+    return type(exact) == "table" and exact or nil
 end
 
 local function regular_score_for_slot(blind_choice, ante)
@@ -459,15 +475,57 @@ function HNDS.set_platinum_next_upgrade_exponent(step)
     )
 end
 
+-- Blind Raiser score scaling is global for the whole run. Each committed
+-- upgrade step adds +20% to the natural/base score of every undefeated and
+-- future Blind. Keep the old save-field name for the next step so existing
+-- runs remain compatible, but store the last actually-applied step separately
+-- from record-hand catch-up (which may advance the *next* step without buying
+-- an upgrade).
+local function derive_applied_blind_raiser_step()
+    if not (G and G.GAME) then return 0 end
+
+    local applied = math.max(0, math.floor(tonumber(G.GAME.hnds_blind_raiser_applied_step) or 0))
+    local records = G.GAME.hnds_platinum_blind_replacements or {}
+    for _, record in pairs(records) do
+        if type(record) == "table" then
+            applied = math.max(applied, math.max(0, math.floor(tonumber(record.upgrade_index) or 0)))
+        end
+    end
+
+    -- Migration fallback for very old saves that tracked only the count.
+    if applied == 0 then
+        applied = math.max(0, math.floor(tonumber(G.GAME.hnds_blind_upgrades) or 0))
+    end
+
+    G.GAME.hnds_blind_raiser_applied_step = applied
+    return applied
+end
+
+function HNDS.platinum_blind_raiser_applied_step()
+    return derive_applied_blind_raiser_step()
+end
+
+function HNDS.set_platinum_blind_raiser_applied_step(step)
+    if not (G and G.GAME) then return end
+    G.GAME.hnds_blind_raiser_applied_step = math.max(
+        derive_applied_blind_raiser_step(),
+        math.max(0, math.floor(tonumber(step) or 0))
+    )
+end
+
+function HNDS.platinum_blind_raiser_multiplier(step)
+    step = math.max(0, tonumber(step) or derive_applied_blind_raiser_step())
+    return 1 + (0.2 * step)
+end
+
 
 -- Record-hand catch-up for the global Blind Raiser. The next upgrade exponent
 -- is independent from the number of upgrades actually bought: clearing score
 -- thresholds never grants a Tag reward or adds a stacked Boss effect.
 --
--- Catch-up is atomic in groups of three. Starting at 2^1, a hand must reach
--- the 2^3 threshold to advance the next upgrade to 2^4. If it also reaches
--- 2^6, another complete group is cleared and the next upgrade becomes 2^7,
--- repeating for every full three-step group the run's highest hand can clear.
+-- Catch-up remains atomic in groups of three. Each step is now +20% Blind
+-- size instead of a power of two: starting at step 1, a hand must reach the
+-- step-3 threshold (base x 1.6) to advance the next upgrade to step 4.
 local function normalized_blind_raiser_score(value)
     if value == nil then return nil end
 
@@ -564,11 +622,14 @@ local function normalized_score_at_least(left, right)
     return comparison ~= nil and comparison >= 0
 end
 
-local function blind_raiser_exponent_threshold(base_score, step)
+local function blind_raiser_step_threshold(base_score, step)
+    step = math.max(0, tonumber(step) or 0)
+    local multiplier = 1 + (0.2 * step)
+
     -- Prefer the active Big-number implementation when available.
     if type(to_big) == "function" then
         local ok, threshold = pcall(function()
-            return to_big(base_score) * (to_big(2) ^ step)
+            return to_big(base_score) * multiplier
         end)
         if ok then
             local normalized = normalized_blind_raiser_score(threshold)
@@ -576,17 +637,21 @@ local function blind_raiser_exponent_threshold(base_score, step)
         end
     end
 
-    -- Avoid ordinary-number overflow by constructing the scientific value from
-    -- logarithms instead of evaluating 2^step directly.
     local base = normalized_blind_raiser_score(base_score)
-    if not base or base.coefficient <= 0 or base.e_count ~= 0 then return nil end
-    local log10_value = math.log10(math.abs(base.coefficient))
-        + base.exponent + (step * math.log10(2))
-    local exponent = math.floor(log10_value)
+    if not base or base.coefficient <= 0 then return nil end
+
+    -- Linear multipliers are safe to apply in normalized scientific form and
+    -- do not require evaluating an exponentially growing power.
+    local coefficient = base.coefficient * multiplier
+    local exponent = base.exponent
+    while math.abs(coefficient) >= 10 do
+        coefficient = coefficient / 10
+        exponent = exponent + 1
+    end
     return {
-        coefficient = 10 ^ (log10_value - exponent),
+        coefficient = coefficient,
         exponent = exponent,
-        e_count = 0,
+        e_count = base.e_count or 0,
     }
 end
 
@@ -622,7 +687,7 @@ function HNDS.on_blind_raiser_hand_scored(hand_score)
     local function full_groups_pass(group_count)
         if group_count < 1 then return true end
         local final_step = step + (group_count * 3) - 1
-        local threshold = blind_raiser_exponent_threshold(base_score, final_step)
+        local threshold = blind_raiser_step_threshold(base_score, final_step)
         return threshold ~= nil and normalized_score_at_least(highest, threshold)
     end
 
@@ -731,9 +796,9 @@ local function score_from_replacement_record(blind_choice, record)
         or regular_score_for_slot(blind_choice, record.ante or current_ante())
     if not base then return nil end
     record.base_score = base
-    local exponent = math.max(1, math.floor(tonumber(record.upgrade_index) or 1))
-    record.upgrade_index = exponent
-    record.score_multiplier = 2 ^ exponent
+
+    local step = derive_applied_blind_raiser_step()
+    record.score_multiplier = HNDS.platinum_blind_raiser_multiplier(step)
     record.score_chips = base * record.score_multiplier
     return record.score_chips
 end
@@ -741,19 +806,7 @@ end
 function HNDS.platinum_next_upgrade_score(blind_choice)
     local base = regular_score_for_slot(blind_choice, current_ante())
     if not base then return nil end
-    return base * (2 ^ HNDS.platinum_next_upgrade_exponent())
-end
-
-local function latest_upgrade_exponent_for_ante(ante)
-    local latest = 0
-    local records = G.GAME.hnds_platinum_blind_replacements or {}
-    for _, blind_choice in ipairs({ "Small", "Big" }) do
-        local record = records[tostring(ante) .. ":" .. blind_choice]
-        if type(record) == "table" then
-            latest = math.max(latest, math.floor(tonumber(record.upgrade_index) or 1))
-        end
-    end
-    return latest
+    return base * HNDS.platinum_blind_raiser_multiplier(HNDS.platinum_next_upgrade_exponent())
 end
 
 function HNDS.platinum_boss_score_for_ante(ante, extra_upgrades)
@@ -764,18 +817,17 @@ function HNDS.platinum_boss_score_for_ante(ante, extra_upgrades)
     local mult = boss and tonumber(boss.mult)
     if not mult then return nil end
 
-    local exponent = latest_upgrade_exponent_for_ante(ante)
+    local step = derive_applied_blind_raiser_step()
     if math.max(0, tonumber(extra_upgrades) or 0) > 0 then
-        -- Tooltip preview: the next upgrade uses the current exponent step, and
-        -- the real Boss immediately adopts that same (previous-after-commit)
-        -- exponent. Keep the existing tooltip labels/layout unchanged.
-        exponent = HNDS.platinum_next_upgrade_exponent()
+        -- Preview the run-wide +20% step that will be committed by the next
+        -- upgrade. Catch-up can move this step forward in groups of three.
+        step = HNDS.platinum_next_upgrade_exponent()
             + math.max(0, tonumber(extra_upgrades) or 0) - 1
     end
 
     local scaling = G.GAME.starting_params and G.GAME.starting_params.ante_scaling or 1
     local natural_score = get_blind_amount(ante) * mult * scaling
-    return exponent > 0 and natural_score * (2 ^ exponent) or natural_score
+    return natural_score * HNDS.platinum_blind_raiser_multiplier(step)
 end
 
 local function dictionary_text(key, vars, fallback)
@@ -793,42 +845,59 @@ function HNDS.platinum_upgrade_button_tooltip(blind_choice)
     local boss_score = HNDS.platinum_boss_score_for_ante(current_ante(), 1)
     local formatted_blind = blind_score and number_format(blind_score) or "?"
     local formatted_boss = boss_score and number_format(boss_score) or "?"
+    local text = {
+        dictionary_text(
+            "hnds_blind_raiser_tooltip_current_blind",
+            { formatted_blind },
+            "Current Blind: " .. tostring(formatted_blind)
+        ),
+    }
+
+    -- Upgrading Small immediately advances the run-wide Blind Raiser score
+    -- multiplier, so preview the Big Blind at that same post-upgrade step too.
+    if blind_choice == "Small" then
+        local big_score = HNDS.platinum_next_upgrade_score("Big")
+        local formatted_big = big_score and number_format(big_score) or "?"
+        text[#text + 1] = dictionary_text(
+            "hnds_blind_raiser_tooltip_big_blind",
+            { formatted_big },
+            "Big Blind: " .. tostring(formatted_big)
+        )
+    end
+
+    text[#text + 1] = dictionary_text(
+        "hnds_blind_raiser_tooltip_boss_blind",
+        { formatted_boss },
+        "Boss Blind: " .. tostring(formatted_boss)
+    )
+
     return {
         title = dictionary_text(
             "hnds_blind_raiser_tooltip_title",
             nil,
             "Score if upgraded"
         ),
-        text = {
-            dictionary_text(
-                "hnds_blind_raiser_tooltip_current_blind",
-                { formatted_blind },
-                "Current Blind: " .. tostring(formatted_blind)
-            ),
-            dictionary_text(
-                "hnds_blind_raiser_tooltip_boss_blind",
-                { formatted_boss },
-                "Boss Blind: " .. tostring(formatted_boss)
-            ),
-        },
+        text = text,
     }
 end
 
 function HNDS.adjust_platinum_blind_preview_amount(blind_choice, vanilla_amount, blind_config)
     if not blind_raiser_active() then return vanilla_amount end
 
+    -- An upgraded Small/Big uses that physical slot's ordinary base score even
+    -- though its visible/effect center is a Boss Blind. It still receives the
+    -- same run-wide +20%-per-step multiplier as every other Blind.
     if blind_choice == "Small" or blind_choice == "Big" then
         local record = replacement_record(blind_choice, current_ante())
         if type(record) == "table" then
             local score = score_from_replacement_record(blind_choice, record)
             if score then return score end
         end
-    elseif blind_choice == "Boss" then
-        local score = HNDS.platinum_boss_score_for_ante(current_ante(), 0)
-        if score then return score end
     end
 
-    return vanilla_amount
+    local amount = tonumber(vanilla_amount)
+    if not amount then return vanilla_amount end
+    return amount * HNDS.platinum_blind_raiser_multiplier()
 end
 
 local function append_plus_to_name(loc_name)
@@ -966,9 +1035,37 @@ local function create_effect_box(blind_key)
     }
 end
 
+local function platinum_tooltip_effects_for_ante(ante)
+    -- UI is intentionally derived from the exact physical Small/Big replacement
+    -- records for the visible Ante, not from the historical Boss-stack registry.
+    -- The latter is retained for encounter logic/save compatibility and therefore
+    -- may still contain older Antes. It must never be allowed to populate a new
+    -- Ante's hover popup.
+    if not (G and G.GAME) then return {} end
+    ante = tonumber(ante) or current_ante()
+    if ante ~= current_ante() then return {} end
+
+    local records = G.GAME.hnds_platinum_blind_replacements or {}
+    local effects = {}
+    local seen = {}
+    for _, blind_choice in ipairs({ "Small", "Big" }) do
+        local record = records[tostring(ante) .. ":" .. blind_choice]
+        local key = type(record) == "table" and record.boss or nil
+        if tonumber(type(record) == "table" and record.ante or ante) == ante
+            and type(key) == "string"
+            and G.P_BLINDS and G.P_BLINDS[key]
+            and not seen[key]
+        then
+            seen[key] = true
+            effects[#effects + 1] = key
+        end
+    end
+    return effects
+end
+
 function HNDS.create_platinum_upgrade_effect_boxes(ante)
     local nodes = {}
-    for _, blind_key in ipairs(HNDS.platinum_boss_effects_for_ante(ante or current_ante())) do
+    for _, blind_key in ipairs(platinum_tooltip_effects_for_ante(ante or current_ante())) do
         local box = create_effect_box(blind_key)
         if box then nodes[#nodes + 1] = box end
     end
@@ -1000,28 +1097,77 @@ function HNDS.create_platinum_boss_tooltip(ante)
     }
 end
 
+function HNDS.clear_platinum_boss_tooltip(sprite)
+    if not sprite then return end
+
+    if sprite.hnds_platinum_boss_tooltip_attached then
+        sprite.hover = sprite.hnds_platinum_boss_native_hover
+        sprite.stop_hover = sprite.hnds_platinum_boss_native_stop_hover
+    end
+
+    sprite.hovering = false
+    sprite.hover_tilt = 0
+    sprite.hnds_platinum_boss_tooltip_attached = nil
+    sprite.hnds_platinum_boss_native_hover = nil
+    sprite.hnds_platinum_boss_native_stop_hover = nil
+    if sprite.config then
+        sprite.config.hnds_platinum_boss_tooltip_ante = nil
+        sprite.config.hnds_platinum_boss_tooltip_key = nil
+        sprite.config.h_popup = nil
+        sprite.config.h_popup_config = nil
+    end
+end
+
 function HNDS.attach_platinum_boss_tooltip(sprite, blind_config)
-    if not (sprite and blind_config and G and G.GAME and G.GAME.round_resets) then return end
-    if blind_config.key ~= boss_choice() then return end
-    -- The Devil's handler preserves its three original individual effect boxes
-    -- and appends upgrade boxes. The generic Boss+ handler must not overwrite it.
-    if is_devil_blind_key(blind_config.key) then return end
-    if HNDS.platinum_boss_upgrade_count_for_ante(current_ante()) < 1 then return end
+    if not sprite then return end
+
+    local ante = current_ante()
+    local key = blind_config and blind_config.key
+    local qualifies = blind_config
+        and G and G.GAME and G.GAME.round_resets
+        and key == boss_choice()
+        and not is_devil_blind_key(key)
+        and HNDS.platinum_boss_upgrade_count_for_ante(ante) > 0
+
+    -- Blind/AnimatedSprite objects can be reused between encounters. Restore
+    -- their native hover handlers as soon as the new physical Blind does not
+    -- qualify for Boss+, otherwise the previous Ante's popup can survive even
+    -- though none of its gameplay effects are active.
+    if not qualifies then
+        HNDS.clear_platinum_boss_tooltip(sprite)
+        return
+    end
+
+    if not sprite.hnds_platinum_boss_tooltip_attached then
+        sprite.hnds_platinum_boss_native_hover = sprite.hover
+        sprite.hnds_platinum_boss_native_stop_hover = sprite.stop_hover
+        sprite.hnds_platinum_boss_tooltip_attached = true
+    end
 
     sprite.states.hover.can = true
     sprite.states.drag.can = false
     sprite.states.collide.can = true
     sprite.config = sprite.config or {}
     sprite.config.force_focus = true
-    sprite.config.hnds_platinum_boss_tooltip_ante = current_ante()
+    sprite.config.hnds_platinum_boss_tooltip_ante = ante
+    sprite.config.hnds_platinum_boss_tooltip_key = key
 
     sprite.hover = function(_self)
+        local stored_ante = _self.config and tonumber(_self.config.hnds_platinum_boss_tooltip_ante)
+        local stored_key = _self.config and _self.config.hnds_platinum_boss_tooltip_key
+        local still_current = stored_ante == current_ante()
+            and stored_key == boss_choice()
+            and HNDS.platinum_boss_upgrade_count_for_ante(current_ante()) > 0
+
+        if not still_current then
+            HNDS.clear_platinum_boss_tooltip(_self)
+            return
+        end
+
         if (not G.CONTROLLER.dragging.target or G.CONTROLLER.using_touch)
             and not _self.hovering and _self.states.visible
         then
-            local popup = HNDS.create_platinum_boss_tooltip(
-                _self.config.hnds_platinum_boss_tooltip_ante or current_ante()
-            )
+            local popup = HNDS.create_platinum_boss_tooltip(stored_ante)
             if not popup then return end
             _self.hovering = true
             _self.hover_tilt = 3
@@ -1098,26 +1244,101 @@ local function active_effect_hooks()
     return hooks
 end
 
+local STACK_DEBUFF_FIELDS = { "h_size_ge", "h_size_le", "hand" }
+
+local function restore_stacked_hand_debuff_fields(blind)
+    local snapshot = blind and blind.hnds_platinum_debuff_snapshot
+    if not (blind and type(snapshot) == "table") then return end
+    blind.debuff = blind.debuff or {}
+    for _, field in ipairs(STACK_DEBUFF_FIELDS) do
+        local saved = snapshot[field]
+        if saved and saved.present then
+            blind.debuff[field] = saved.value
+        else
+            blind.debuff[field] = nil
+        end
+    end
+    blind.hnds_platinum_debuff_snapshot = nil
+end
+
+local function apply_stacked_hand_debuff_fields(blind)
+    if not blind then return end
+    -- Snapshot the natural Blind values before adding delegated fields so a
+    -- refresh/Ante transition can restore them exactly.
+    restore_stacked_hand_debuff_fields(blind)
+    blind.debuff = blind.debuff or {}
+    local snapshot = {}
+    for _, field in ipairs(STACK_DEBUFF_FIELDS) do
+        snapshot[field] = {
+            present = blind.debuff[field] ~= nil,
+            value = blind.debuff[field],
+        }
+    end
+    blind.hnds_platinum_debuff_snapshot = snapshot
+
+    for _, hook_key in ipairs(active_effect_hooks()) do
+        local component = HNDS.DEVIL_BOSSES and HNDS.DEVIL_BOSSES[hook_key]
+        local debuff = component and component.debuff
+        if debuff then
+            for _, field in ipairs(STACK_DEBUFF_FIELDS) do
+                if debuff[field] ~= nil then blind.debuff[field] = debuff[field] end
+            end
+        end
+    end
+end
+
+local function live_stack_matches(blind)
+    if not (G and G.GAME and blind) then return false end
+    local center = blind.config and blind.config.blind
+    local key = center and center.key
+    return G.GAME.hnds_platinum_boss_stack_active == true
+        and blind.hnds_platinum_boss_stack_active == true
+        and tonumber(G.GAME.hnds_platinum_boss_stack_ante) == current_ante()
+        and G.GAME.hnds_platinum_boss_stack_key == key
+end
+
 local function boss_stack_active(blind)
     return blind_raiser_active()
         and G and G.GAME
-        and (G.GAME.blind_on_deck == "Boss" or (blind and blind.boss))
+        and G.GAME.blind_on_deck == "Boss"
         and HNDS.platinum_boss_upgrade_count_for_ante(current_ante()) > 0
 end
 
 function HNDS.start_platinum_boss_stack(blind)
     if not boss_stack_active(blind) then
-        if G and G.GAME then G.GAME.hnds_platinum_boss_stack_active = nil end
+        if G and G.GAME and G.GAME.hnds_platinum_boss_stack_active
+            and HNDS.stop_platinum_boss_stack
+        then
+            HNDS.stop_platinum_boss_stack({
+                blind_defeated = true,
+                hnds_scope_cleanup = true,
+            })
+        end
         return
     end
 
+    -- `set_blind(nil, true, ...)` is a runtime refresh used by vanilla/SMODS
+    -- when cards are sold/removed. Never restart the component lifecycle for
+    -- the same live Boss: effects such as Needle/Water/Manacle are stateful.
+    if live_stack_matches(blind) then return end
+
+    if G.GAME.hnds_platinum_boss_stack_active and HNDS.stop_platinum_boss_stack then
+        HNDS.stop_platinum_boss_stack({
+            blind_defeated = true,
+            hnds_scope_cleanup = true,
+        })
+    end
+
+    local base_key = blind.config and blind.config.blind and blind.config.blind.key
     G.GAME.hnds_platinum_boss_stack_active = true
     G.GAME.hnds_platinum_boss_stack_ante = current_ante()
+    G.GAME.hnds_platinum_boss_stack_key = base_key
+    blind.hnds_platinum_boss_stack_active = true
+    blind.hnds_platinum_boss_stack_ante = current_ante()
 
     -- Fish/Serpent drawing contexts are gated by Steamodded's active-Blind
     -- registry. Temporarily mark the real Boss as draw-modifying while Boss+
     -- carries either effect, then restore its original flag on cleanup.
-    local base_key = blind.config and blind.config.blind and blind.config.blind.key
     local needs_draw_context = false
     for _, hook_key in ipairs(active_effect_hooks()) do
         if hook_key == "bl_hook_the_fish" or hook_key == "bl_hook_the_serpent" then
@@ -1135,21 +1356,15 @@ function HNDS.start_platinum_boss_stack(blind)
         local component = HNDS.DEVIL_BOSSES and HNDS.DEVIL_BOSSES[hook_key]
         if component then
             if component.set_blind then component:set_blind() end
-            if component.debuff then
-                blind.debuff = blind.debuff or {}
-                -- Hand-validation fields belong on the live Blind. Card-specific
-                -- debuffs are evaluated independently in Blind:debuff_card below;
-                -- copying a single suit/type here overwrote or misidentified the
-                -- natural Boss's debuff data.
-                if component.debuff.h_size_ge then blind.debuff.h_size_ge = component.debuff.h_size_ge end
-                if component.debuff.h_size_le then blind.debuff.h_size_le = component.debuff.h_size_le end
-                if component.debuff.hand then blind.debuff.hand = component.debuff.hand end
-            end
             -- The original setting_blind context fired before this wrapper could
             -- activate Boss+. Replay it once for components such as The Needle.
             if component.calculate then component:calculate(blind, { setting_blind = true }) end
         end
     end
+
+    -- Hand-validation fields (e.g. Psychic) must be merged onto the live
+    -- Blind, but are snapshotted so they can never leak into the next Blind.
+    apply_stacked_hand_debuff_fields(blind)
 
     -- Blind:set_blind evaluated the deck before Boss+ was active. Re-run card
     -- debuff evaluation now so The Club/Goad/Window/Head, Plant and Pillar are
@@ -1191,10 +1406,12 @@ end
 
 function HNDS.calculate_platinum_boss_stack(context)
     if not (G and G.GAME and G.GAME.hnds_platinum_boss_stack_active and context) then return nil end
+    local live_blind = G.GAME.blind
+    if not live_stack_matches(live_blind) then return nil end
     -- Steamodded versions differ in how mod-level {debuff = true} results are
     -- consumed. Blind:debuff_card below is the single authoritative path.
     if context.debuff_card then return nil end
-    local blind = G.GAME.blind
+    local blind = live_blind
     if not blind then return nil end
 
     -- Luchador and Chicot mark the live Blind disabled. Once that happens no
@@ -1241,8 +1458,9 @@ end
 local function active_stacked_components_debuff_card(blind, card)
     if not (G and G.GAME and blind and card) or blind.disabled then return false end
 
-    -- Effects added by Blind Raiser upgrades.
-    if G.GAME.hnds_platinum_boss_stack_active then
+    -- Effects added by Blind Raiser upgrades. The per-Blind marker prevents
+    -- a stale global flag from affecting a Small/Big/new-Ante Blind.
+    if live_stack_matches(blind) then
         for _, hook_key in ipairs(active_effect_hooks()) do
             local component = HNDS.DEVIL_BOSSES and HNDS.DEVIL_BOSSES[hook_key]
             if component_debuffs_card(component, blind, card) then return true end
@@ -1286,6 +1504,11 @@ function HNDS.stop_platinum_boss_stack(cleanup_context)
     -- a blind_disabled context on some Steamodded versions; clearing this first
     -- prevents the same component cleanup from running twice.
     G.GAME.hnds_platinum_boss_stack_active = nil
+    if blind then
+        blind.hnds_platinum_boss_stack_active = nil
+        blind.hnds_platinum_boss_stack_ante = nil
+        restore_stacked_hand_debuff_fields(blind)
+    end
 
     for _, hook_key in ipairs(hooks) do
         local component = HNDS.DEVIL_BOSSES and HNDS.DEVIL_BOSSES[hook_key]
@@ -1302,6 +1525,7 @@ function HNDS.stop_platinum_boss_stack(cleanup_context)
     G.GAME.hnds_platinum_boss_draw_key = nil
     G.GAME.hnds_platinum_boss_draw_original = nil
     G.GAME.hnds_platinum_boss_stack_ante = nil
+    G.GAME.hnds_platinum_boss_stack_key = nil
 end
 
 local Blind_set_text_ref = Blind.set_text
@@ -1316,21 +1540,51 @@ function Blind:set_text(...)
     return result
 end
 
-function HNDS.sync_live_platinum_blind_score(blind)
+function HNDS.sync_live_platinum_blind_score(blind, capture_base)
     if not (blind_raiser_active() and G and G.GAME and blind) then return false end
     local slot = G.GAME.blind_on_deck
+    local ante = current_ante()
     local score = nil
 
     if slot == "Small" or slot == "Big" then
-        local record = replacement_record(slot, current_ante())
+        local record = replacement_record(slot, ante)
         if type(record) == "table" then
             score = score_from_replacement_record(slot, record)
         end
-    elseif slot == "Boss" then
-        score = HNDS.platinum_boss_score_for_ante(current_ante(), 0)
     end
 
-    if not score then return false end
+    -- Keep a stable *unscaled* score for the physical encounter. Vanilla/SMODS
+    -- may call set_blind(nil, true, ...) while selling/removing a card. On that
+    -- refresh path blind.chips can already contain our +20% multiplier, so
+    -- multiplying the live value again causes the requirement to climb on
+    -- every sale. Capture only when a genuinely new Blind is installed (or
+    -- when recovering an old save with no cached base), then always recompute
+    -- from that same base.
+    if not score then
+        local center = blind.config and blind.config.blind
+        local center_key = center and center.key
+        local cache_matches = blind.hnds_platinum_score_base ~= nil
+            and blind.hnds_platinum_score_ante == ante
+            and blind.hnds_platinum_score_slot == slot
+            and blind.hnds_platinum_score_key == center_key
+
+        if capture_base or not cache_matches then
+            blind.hnds_platinum_score_base = blind.chips
+            blind.hnds_platinum_score_ante = ante
+            blind.hnds_platinum_score_slot = slot
+            blind.hnds_platinum_score_key = center_key
+        end
+
+        local base = blind.hnds_platinum_score_base
+        if base ~= nil then
+            local ok, scaled = pcall(function()
+                return base * HNDS.platinum_blind_raiser_multiplier()
+            end)
+            if ok then score = scaled end
+        end
+    end
+
+    if score == nil then return false end
     blind.chips = score
     blind.chip_text = number_format(score)
     return true
@@ -1338,7 +1592,64 @@ end
 
 local Blind_set_blind_ref = Blind.set_blind
 function Blind:set_blind(blind, reset, silent)
+    local slot_before = G and G.GAME and G.GAME.blind_on_deck
+    local ante_before = current_ante()
+    local incoming_key = blind and blind.key
+    local stack_key = G and G.GAME and G.GAME.hnds_platinum_boss_stack_key
+    local same_boss_refresh = blind == nil
+        and slot_before == "Boss"
+        and G and G.GAME
+        and G.GAME.hnds_platinum_boss_stack_active == true
+        and tonumber(G.GAME.hnds_platinum_boss_stack_ante) == ante_before
+        and self.hnds_platinum_boss_stack_active == true
+
+    -- A new physical Blind (especially the next Ante's Small/Big) is a hard
+    -- scope boundary. Clean any stale Boss+ runtime before vanilla configures
+    -- the new Blind so previous-Ante component state cannot bleed into it.
+    if G and G.GAME and G.GAME.hnds_platinum_boss_stack_active then
+        local stale_scope = slot_before ~= "Boss"
+            or tonumber(G.GAME.hnds_platinum_boss_stack_ante) ~= ante_before
+            or (blind ~= nil and stack_key ~= nil and incoming_key ~= stack_key)
+        if stale_scope then
+            HNDS.stop_platinum_boss_stack({
+                blind_defeated = true,
+                hnds_scope_cleanup = true,
+            })
+            same_boss_refresh = false
+        elseif same_boss_refresh then
+            -- Remove only fields injected by Boss+ before vanilla refreshes the
+            -- same Boss; they will be merged back afterwards without replaying
+            -- any setting_blind/set_blind component side effects.
+            restore_stacked_hand_debuff_fields(self)
+        end
+    end
+
+    local new_physical_blind = blind ~= nil
+    if new_physical_blind then
+        -- The live Blind object (and sometimes its child sprite) is reused for
+        -- the next encounter. Remove any custom Boss+/Devil hover handlers before
+        -- vanilla installs the new center so old Ante popup state cannot survive.
+        if HNDS.clear_platinum_boss_tooltip then
+            HNDS.clear_platinum_boss_tooltip(self)
+            if self.children and self.children.animatedSprite then
+                HNDS.clear_platinum_boss_tooltip(self.children.animatedSprite)
+            end
+        end
+        if HNDS.clear_devil_blind_tooltip then
+            HNDS.clear_devil_blind_tooltip(self)
+            if self.children and self.children.animatedSprite then
+                HNDS.clear_devil_blind_tooltip(self.children.animatedSprite)
+            end
+        end
+
+        self.hnds_platinum_score_base = nil
+        self.hnds_platinum_score_ante = nil
+        self.hnds_platinum_score_slot = nil
+        self.hnds_platinum_score_key = nil
+    end
+
     local result = Blind_set_blind_ref(self, blind, reset, silent)
+
     -- Persist the physical slot on the live Blind. This remains reliable during
     -- end-of-round transitions where blind_on_deck may already be advancing.
     self.hnds_platinum_replacement_slot = nil
@@ -1351,8 +1662,27 @@ function Blind:set_blind(blind, reset, silent)
             self.hnds_platinum_replacement_slot = slot
             self.hnds_platinum_replacement_ante = current_ante()
         end
-        HNDS.sync_live_platinum_blind_score(self)
-        if slot == "Boss" then HNDS.start_platinum_boss_stack(self) end
+
+        HNDS.sync_live_platinum_blind_score(self, new_physical_blind)
+
+        if slot == "Boss" then
+            if same_boss_refresh and live_stack_matches(self) then
+                -- Refresh only the declarative/debuff presentation. Stateful
+                -- component setup (Needle/Water/Manacle/etc.) must run once.
+                apply_stacked_hand_debuff_fields(self)
+                for _, card in ipairs(G.playing_cards or {}) do
+                    self:debuff_card(card)
+                end
+                self.loc_name = append_plus_to_name(self.loc_name)
+            else
+                HNDS.start_platinum_boss_stack(self)
+            end
+        else
+            self.hnds_platinum_boss_stack_active = nil
+            self.hnds_platinum_boss_stack_ante = nil
+            restore_stacked_hand_debuff_fields(self)
+        end
+
         if G.HUD_blind and G.HUD_blind.recalculate then
             G.HUD_blind:recalculate(false)
         end

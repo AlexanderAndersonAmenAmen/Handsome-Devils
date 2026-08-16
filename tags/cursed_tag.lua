@@ -1,6 +1,7 @@
 SMODS.Tag {
     key = "cursed_tag",
     atlas = "HDtags",
+    min_ante = 3,
     pos = { x = 3, y = 0 },
     discovered = false,
     loc_vars = function(self, info_queue, tag)
@@ -11,18 +12,13 @@ SMODS.Tag {
             local lock = tag.ID
             G.CONTROLLER.locks[lock] = true
             tag:yep('+', G.C.RED, function()
-                local key = 'p_hnds_cursed_pack'
-                local booster = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
-                G.play.T.y + G.play.T.h/2 - G.CARD_H*1.27/2, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[key], {bypass_discovery_center = true, bypass_discovery_ui = true})
-                booster.cost = 0
-                booster.from_tag = true
-                if tag.ability and tag.ability.hnds_forced then
-                    if not (HNDS and HNDS.joker_slots_full_of_unmovables and HNDS.joker_slots_full_of_unmovables()) then
-                        G.GAME.hnds_forced_pack_no_skip = true
-                    end
+                if HNDS and HNDS.open_cursed_pack then
+                    HNDS.open_cursed_pack({
+                        from_tag = true,
+                        forced = tag.ability and tag.ability.hnds_forced == true,
+                        source = 'cursed_tag',
+                    })
                 end
-                G.FUNCS.use_card({config = {ref_table = booster}})
-                booster:start_materialize()
                 G.CONTROLLER.locks[lock] = nil
                 return true
             end)

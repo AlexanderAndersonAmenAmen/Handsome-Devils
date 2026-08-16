@@ -44,7 +44,9 @@ target = 'functions/button_callbacks.lua'
 pattern = 'G.FUNCS.can_skip_booster = function(e)'
 position = 'after'
 payload = '''
-    if G and G.GAME and G.GAME.hnds_forced_pack_no_skip then
+    if G and G.STATE == G.STATES.SMODS_BOOSTER_OPENED
+      and SMODS and SMODS.OPENED_BOOSTER
+      and SMODS.OPENED_BOOSTER.hnds_forced_no_skip then
       e.config.colour = G.C.UI.BACKGROUND_INACTIVE
       e.config.button = nil
       return
@@ -58,20 +60,10 @@ target = 'functions/button_callbacks.lua'
 pattern = 'G.FUNCS.skip_booster = function(e)'
 position = 'after'
 payload = '''
-    if G and G.GAME and G.GAME.hnds_forced_pack_no_skip then
+    if G and G.STATE == G.STATES.SMODS_BOOSTER_OPENED
+      and SMODS and SMODS.OPENED_BOOSTER
+      and SMODS.OPENED_BOOSTER.hnds_forced_no_skip then
       return
-    end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/button_callbacks.lua'
-pattern = 'G.FUNCS.end_consumeable = function(e, delayfac)'
-position = 'after'
-payload = '''
-    if G and G.GAME and G.GAME.hnds_forced_pack_no_skip then
-      G.GAME.hnds_forced_pack_no_skip = nil
     end
 '''
 match_indent = true

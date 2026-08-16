@@ -110,7 +110,7 @@ end
 -- for modded, get_hnds_soul(self, seed) can be added to support this. seed should in some way be used for the internal rng
 HNDS.get_blind_soul = function (blind, seed)
 	local blind_obj = blind and blind.config and blind.config.blind
-	if type(blind_obj) ~= "table" then return { key = "j_joker" } end
+	if type(blind_obj) ~= "table" then return { set = "Joker", key = "j_joker" } end
     local k = blind_obj.key
     seed = seed or ("hnds_pennywise_preview_" .. tostring(k or "unknown"))
     if type(blind_obj.get_hnds_soul) == "function" then
@@ -244,7 +244,7 @@ HNDS.get_blind_soul = function (blind, seed)
         end
     end
 	-- Safe fallback for bosses from mods that do not define get_hnds_soul.
-	return { key = "j_joker" }
+	return { set = "Joker", key = "j_joker" }
 end
 
 -- Pennywise normally creates one Soul. The Devil is a container for three

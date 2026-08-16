@@ -38,17 +38,14 @@ local cols = 5
 match_indent = false
 times = 1
 
+# Sticker collection: Steamodded beta-1620a defines this page in src/ui.lua
+# as SMODS.card_collection_UIBox(SMODS.Stickers, {5,5}, ...). Patch that exact
+# call instead of the unrelated 4x6 Tag collection in src/overrides.lua.
 [[patches]]
 [patches.pattern]
-target = '=[SMODS _ "src/overrides.lua"]'
-pattern = '''
-local rows = 4
-    local cols = 6
-'''
+target = '=[SMODS _ "src/ui.lua"]'
+pattern = '''return SMODS.card_collection_UIBox(SMODS.Stickers, { 5, 5 }, {'''
 position = "at"
-payload = '''
-local rows = 4
-    local cols = 8
-'''
-match_indent = false
+payload = '''return SMODS.card_collection_UIBox(SMODS.Stickers, { 4, 4 }, {'''
+match_indent = true
 times = 1
