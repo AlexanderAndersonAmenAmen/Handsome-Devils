@@ -783,37 +783,7 @@ local localization = {
 					"{C:inactive}(Actualmente {C:mult}+#2#{C:inactive} Multi){}",
 				},
 			},
-		
-
-			j_hnds_jack_in_the_box = {
-				name = "Jack-in-the-box",
-				text = {
-					"Every other round",
-					"gains an ability of a",
-					"random {C:attention}Rare Joker{}",
-					"{C:inactive}(Currently {C:attention}#1#{C:inactive}){}",
-				},
-			},
-			j_hnds_be_not_afraid = {
-				name = "Be not Afraid",
-				text = {
-					"If played hand contains",
-					"a {C:attention}Three of a Kind{}, every",
-					"scoring card permanently gains",
-					"{C:mult}+#1#{} Mult before scoring",
-				},
-			},
-			j_hnds_jodiac = {
-				name = "Jodiac",
-				text = {
-					"Gains {C:mult}+#1#{} Mult per",
-					"card with {C:attention}unique rank{}",
-					"you score, reset scored",
-					"ranks at end of {C:attention}Ante{}",
-					"{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult){}",
-				},
-			},
-},
+		},
 		Back = {
 			b_hnds_premiumdeck = {
 				name = "Baraja Premium",
@@ -1546,7 +1516,6 @@ local localization = {
 					"ganar el Pozo de {C:attention}Sangre{}",
 				}
 			},
-<<<<<<< HEAD
 			hnds_jodiac_ranks_empty = {
 				name = "Categorías Anotadas",
 				text = {
@@ -1711,171 +1680,6 @@ local localization = {
 				},
 			},
 		},
-=======
-		
-
-            hnds_jodiac_ranks_empty = {
-                name = "Scored Ranks",
-                text = { "No ranks scored this Ante" },
-            },
-            hnds_jodiac_ranks_1 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                },
-            },
-            hnds_jodiac_ranks_2 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                },
-            },
-            hnds_jodiac_ranks_3 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                },
-            },
-            hnds_jodiac_ranks_4 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                    "{C:attention}#4#{}",
-                },
-            },
-            hnds_jodiac_ranks_5 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                    "{C:attention}#4#{}",
-                    "{C:attention}#5#{}",
-                },
-            },
-            hnds_jodiac_ranks_6 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                    "{C:attention}#4#{}",
-                    "{C:attention}#5#{}",
-                    "{C:attention}#6#{}",
-                },
-            },
-            hnds_jodiac_ranks_7 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                    "{C:attention}#4#{}",
-                    "{C:attention}#5#{}",
-                    "{C:attention}#6#{}",
-                    "{C:attention}#7#{}",
-                },
-            },
-            hnds_jodiac_ranks_8 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                    "{C:attention}#4#{}",
-                    "{C:attention}#5#{}",
-                    "{C:attention}#6#{}",
-                    "{C:attention}#7#{}",
-                    "{C:attention}#8#{}",
-                },
-            },
-            hnds_jodiac_ranks_9 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                    "{C:attention}#4#{}",
-                    "{C:attention}#5#{}",
-                    "{C:attention}#6#{}",
-                    "{C:attention}#7#{}",
-                    "{C:attention}#8#{}",
-                    "{C:attention}#9#{}",
-                },
-            },
-            hnds_jodiac_ranks_10 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                    "{C:attention}#4#{}",
-                    "{C:attention}#5#{}",
-                    "{C:attention}#6#{}",
-                    "{C:attention}#7#{}",
-                    "{C:attention}#8#{}",
-                    "{C:attention}#9#{}",
-                    "{C:attention}#10#{}",
-                },
-            },
-            hnds_jodiac_ranks_11 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                    "{C:attention}#4#{}",
-                    "{C:attention}#5#{}",
-                    "{C:attention}#6#{}",
-                    "{C:attention}#7#{}",
-                    "{C:attention}#8#{}",
-                    "{C:attention}#9#{}",
-                    "{C:attention}#10#{}",
-                    "{C:attention}#11#{}",
-                },
-            },
-            hnds_jodiac_ranks_12 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                    "{C:attention}#4#{}",
-                    "{C:attention}#5#{}",
-                    "{C:attention}#6#{}",
-                    "{C:attention}#7#{}",
-                    "{C:attention}#8#{}",
-                    "{C:attention}#9#{}",
-                    "{C:attention}#10#{}",
-                    "{C:attention}#11#{}",
-                    "{C:attention}#12#{}",
-                },
-            },
-            hnds_jodiac_ranks_13 = {
-                name = "Scored Ranks",
-                text = {
-                    "{C:attention}#1#{}",
-                    "{C:attention}#2#{}",
-                    "{C:attention}#3#{}",
-                    "{C:attention}#4#{}",
-                    "{C:attention}#5#{}",
-                    "{C:attention}#6#{}",
-                    "{C:attention}#7#{}",
-                    "{C:attention}#8#{}",
-                    "{C:attention}#9#{}",
-                    "{C:attention}#10#{}",
-                    "{C:attention}#11#{}",
-                    "{C:attention}#12#{}",
-                    "{C:attention}#13#{}",
-                },
-            },
-},
->>>>>>> 466efd06b1ce8afc35576d096aede1c320691a86
 		Voucher = {
 			v_magic_trick = {
 				name = "Truco de Magia",
@@ -2107,20 +1911,11 @@ local localization = {
 		},
 		Stake = {
 			stake_blue = {
-<<<<<<< HEAD
 				name = "Pozo Azul",
 				text = {
 					"Las manos de póker de nivel {C:attention}1{} y las",
 					"cartas {C:planet}Planeta{} dan menos {C:chips}Fichas{} y {C:mult}Multi{}",
 					"{s:0.8}Aplica todos los Pozos anteriores",
-=======
-				name = "Blue Stake",
-				text = {
-					"Level 1 poker hands and",
-					"their respective {C:planet}Planet{} cards",
-					"give less {C:mult}Mult{} and {C:chips}Chips{}",
-					"{s:0.8}Applies all previous Stakes",
->>>>>>> 466efd06b1ce8afc35576d096aede1c320691a86
 				},
 			},
 			stake_hnds_platinum = {
