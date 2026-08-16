@@ -1837,6 +1837,7 @@ return {
 			hnds_config_CursedPack = "Habilitar Paquetes Malditos",
 			hnds_config_CustomSounds = "Habilitar sonidos personalizados",
 			hnds_config_VanillaTweaks = "Habilitar ajustes de vanilla",
+			hnds_config_CustomMenu = "Habilitar menú principal personalizado",
 		},
 		labels = {
 			hnds_exchange_draw = "Fijada",

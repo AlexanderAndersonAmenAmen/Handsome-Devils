@@ -319,6 +319,7 @@ end
 -- Joker and recolour the background swirl to black and gold.
 
 
+if hnds_config.enableCustomMenu ~= false then
 SMODS.current_mod.menu_cards = function()
     -- Weighted title-card categories:
     --   3/5) a random UNLOCKED Handsome Devils Joker
@@ -359,6 +360,7 @@ SMODS.current_mod.menu_cards = function()
         remove_original = true,
         { key = chosen_key },
     }
+end
 end
 
 -- local HNDS_MENU_COLOUR_1_HEX = '4c6064'
@@ -408,6 +410,7 @@ SMODS.current_mod.config_tab = function()
 			config_toggle_row(localize("hnds_config_CursedPack"), "enableCursedPackSpawning"),
 			config_toggle_row(localize("hnds_config_CustomSounds"), "enableCustomSounds"),
 			config_toggle_row(localize("hnds_config_VanillaTweaks"), "enableVanillaTweaks", localize("hnds_require_restart")),
+			config_toggle_row(localize("hnds_config_CustomMenu"), "enableCustomMenu", localize("hnds_require_restart")),
 		},
 	}
 end
@@ -804,6 +807,7 @@ SMODS.Atlas({ key = "hnds_sleeves", path = "HDS.png", px = 73, py = 95 })
 -- Replace Balatro's main-menu title/logo with the Handsome Devils title art.
 -- raw_key keeps the vanilla atlas key ("balatro") instead of prefixing it
 -- with this mod's ID, so the existing title UI picks this texture up directly.
+if hnds_config.enableCustomMenu ~= false then
 SMODS.Atlas({
     key = "balatro",
     path = "balatro.png",
@@ -813,6 +817,7 @@ SMODS.Atlas({
     py = 232,
     raw_key = true,
 })
+end
 -- Inside main.lua
 SMODS.Atlas {
     key = 'ante_10_atlas',

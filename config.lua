@@ -6,6 +6,7 @@ local configDefinition = {
 	["enableCursedPackSpawning"] = false,
 	["enableCustomSounds"] = true,
 	["enableVanillaTweaks"] = true,
+	["enableCustomMenu"] = true,
 }
 
 return configDefinition

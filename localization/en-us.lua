@@ -2182,6 +2182,7 @@ local localization = {
 			hnds_config_CursedPack = "Enable Cursed packs spawning",
 			hnds_config_CustomSounds = "Enable custom joker sounds",
 			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
+			hnds_config_CustomMenu = "Enable custom main menu",
 		},
 		labels = {
 			hnds_exchange_draw = "Bound",
