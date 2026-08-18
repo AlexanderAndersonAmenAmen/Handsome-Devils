@@ -108,12 +108,12 @@ if Card and Card.set_ability and not Card._hnds_obsidian_ability_wrapped then
     Card._hnds_obsidian_ability_wrapped = true
     local set_ability_obsidian_ref = Card.set_ability
 
-    function Card:set_ability(center, initial, delay_sprites)
+    function Card:set_ability(center, initial, delay_sprites, ...)
         -- During Card:init (including the collection UI), ability does not exist
         -- yet. Let the original method initialize the card before applying any
         -- runtime Obsidian transition rules.
         if initial or not self.ability then
-            return set_ability_obsidian_ref(self, center, initial, delay_sprites)
+            return set_ability_obsidian_ref(self, center, initial, delay_sprites, ...)
         end
 
         local new_center = resolve_center(center)
@@ -140,7 +140,7 @@ if Card and Card.set_ability and not Card._hnds_obsidian_ability_wrapped then
             if self.ability then self.ability.hnds_obsidian_scored_last_hand = nil end
         end
 
-        local ret = set_ability_obsidian_ref(self, center, initial, delay_sprites)
+        local ret = set_ability_obsidian_ref(self, center, initial, delay_sprites, ...)
 
         -- Bound is permanent even after changing to another enhancement.
         if was_bound and not is_bound(self) then make_bound(self, true) end

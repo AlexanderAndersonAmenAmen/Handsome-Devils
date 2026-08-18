@@ -33,6 +33,11 @@ local jokestone_draw = function(self, card, context)
 						for i = 1, #cards_to_draw do
 							cards_to_draw[i].ability.hnds_drawing = nil
 						end
+						-- Persist the *post-draw* card areas.  The old save point was
+						-- queued from calculate() before draw_card's nested movement
+						-- Events had finished, so reopening a run restored these cards
+						-- back into G.deck.
+						if not (context and context.forcetrigger) and type(save_run) == "function" then save_run() end
 						return true
 					end,
 				}))
@@ -82,14 +87,6 @@ SMODS.Joker({
 	calculate = function(self, card, context)
 		if (context.first_hand_drawn or context.forcetrigger) and #G.deck.cards > 0 then
 			jokestone_draw(self, card, context)
-			if not context.forcetrigger then
-				G.E_MANAGER:add_event(Event({
-					func = function()
-						save_run()
-						return true
-					end,
-				}))
-			end
 			return nil, true
 		end
 	end,

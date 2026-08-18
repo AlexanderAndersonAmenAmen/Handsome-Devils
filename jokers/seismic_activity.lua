@@ -18,8 +18,10 @@ SMODS.Joker({
 	perishable_compat = true,
 	config = { extra = { repetitions = 1, }, },
 	calculate = function(self, card, context)
-		if (context.cardarea == G.play or context.cardarea == G.hand) and context.repetition then
-			if SMODS.has_enhancement(context.other_card, "m_stone") then
+        if type(context) ~= "table" then return end
+        local other = context.other_card
+		if other and G and (context.cardarea == G.play or context.cardarea == G.hand) and context.repetition then
+			if SMODS.has_enhancement(other, "m_stone") then
 				return {
 					message = localize("k_hnds_seismic"),
 					repetitions = card.ability.extra.repetitions,
@@ -28,7 +30,9 @@ SMODS.Joker({
 		end
 	end,
 	in_pool = function(self, args)
-		for _, card in pairs(G.playing_cards) do
+		-- The main-menu title-card randomizer can query Joker pools before a
+		-- run exists, so G.playing_cards may legitimately be nil here.
+		for _, card in pairs((G and G.playing_cards) or {}) do
 			if SMODS.has_enhancement(card, "m_stone") then
 				return true
 			end

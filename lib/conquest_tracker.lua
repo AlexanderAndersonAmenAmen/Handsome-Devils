@@ -96,6 +96,29 @@ function HNDS.conquest_blind_counts(blind)
     return is_real_boss_blind(blind) or is_upgraded_boss_blind(blind)
 end
 
+
+-- Balatro reuses the same live Blind object across encounters. The old tracker
+-- stored its duplicate-defeat guard on that object, so after the first Boss it
+-- stayed true forever and every later Boss was ignored. Clear the guard only
+-- when a genuinely new Blind center is installed; set_blind(nil, true) refresh
+-- calls (selling cards, HUD refreshes, etc.) must not create a second count.
+function HNDS.install_conquest_set_blind_hook()
+    if not (Blind and type(Blind.set_blind) == 'function') then return false end
+    if Blind.set_blind == HNDS._conquest_set_blind_wrapper then return true end
+
+    local set_blind_ref = Blind.set_blind
+    local wrapper = function(self, blind, ...)
+        if blind ~= nil and self then
+            self.hnds_conquest_defeat_counted = nil
+        end
+        return set_blind_ref(self, blind, ...)
+    end
+
+    HNDS._conquest_set_blind_wrapper = wrapper
+    Blind.set_blind = wrapper
+    return true
+end
+
 function HNDS.install_conquest_defeat_hook()
     if not (Blind and type(Blind.defeat) == 'function') then return false end
     if Blind.defeat == HNDS._conquest_defeat_wrapper then return true end
@@ -123,4 +146,5 @@ function HNDS.install_conquest_defeat_hook()
     return true
 end
 
+HNDS.install_conquest_set_blind_hook()
 HNDS.install_conquest_defeat_hook()

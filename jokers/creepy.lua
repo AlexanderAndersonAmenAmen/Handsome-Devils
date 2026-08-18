@@ -16,7 +16,7 @@ SMODS.Joker({
 	blueprint_compat = true,
 	eternal_compat = true,
 	perishable_compat = true,
-	config = { extra = { xmult = 2, odds = 4 } },
+	config = { extra = { xmult = 3, odds = 4 } },
 	loc_vars = function(self, info_queue, card)
 		local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_creepy")
 		return { vars = { card.ability.extra.xmult, numerator, denominator } }

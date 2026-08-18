@@ -806,8 +806,8 @@ end
 if CardArea and type(CardArea.draw_card_from) == "function" and not CardArea._hnds_unlock_draw_from_wrapped then
     CardArea._hnds_unlock_draw_from_wrapped = true
     local draw_card_from_unlock_ref = CardArea.draw_card_from
-    function CardArea:draw_card_from(area, stay_flipped, discarded_only)
-        local moved = draw_card_from_unlock_ref(self, area, stay_flipped, discarded_only)
+    function CardArea:draw_card_from(area, stay_flipped, discarded_only, ...)
+        local moved = draw_card_from_unlock_ref(self, area, stay_flipped, discarded_only, ...)
         if moved and in_run()
             and G.GAME.facing_blind
             and area == G.deck and self == G.hand
@@ -842,8 +842,8 @@ end
 if type(eval_card) == "function" and not HNDS._unlock_eval_card_wrapped then
     HNDS._unlock_eval_card_wrapped = true
     local eval_card_unlock_ref = eval_card
-    function eval_card(card, context)
-        local ret, post = eval_card_unlock_ref(card, context)
+    function eval_card(card, context, ...)
+        local ret, post = eval_card_unlock_ref(card, context, ...)
         if G and context and context.cardarea == G.hand then
             local triggered = meaningful_effect_count(ret)
             if triggered > 0 then HNDS.record_held_effects(triggered, "hnds_held_effect") end
@@ -874,7 +874,7 @@ end
 if G and G.FUNCS and type(G.FUNCS.use_card) == "function" and not HNDS._unlock_use_card_wrapped then
     HNDS._unlock_use_card_wrapped = true
     local use_card_unlock_ref = G.FUNCS.use_card
-    function G.FUNCS.use_card(e, mute, nosave)
+    function G.FUNCS.use_card(e, mute, nosave, ...)
         local card = e and e.config and e.config.ref_table
         local set = card and card.ability and card.ability.set
         local paid_shop_booster = set == "Booster"
@@ -883,7 +883,7 @@ if G and G.FUNCS and type(G.FUNCS.use_card) == "function" and not HNDS._unlock_u
             and not card.from_tag
             and not card.hnds_wholesale_purchase_counted
         if paid_shop_booster then HNDS.record_booster_purchase(card) end
-        return use_card_unlock_ref(e, mute, nosave)
+        return use_card_unlock_ref(e, mute, nosave, ...)
     end
 end
 
@@ -911,9 +911,9 @@ end
 if Card and type(Card.set_edition) == "function" and not Card._hnds_unlock_edition_wrapped then
     Card._hnds_unlock_edition_wrapped = true
     local set_edition_unlock_ref = Card.set_edition
-    function Card:set_edition(edition, immediate, silent)
+    function Card:set_edition(edition, immediate, silent, ...)
         local was_negative = self.edition and (self.edition.negative or self.edition.key == "e_negative")
-        local ret = set_edition_unlock_ref(self, edition, immediate, silent)
+        local ret = set_edition_unlock_ref(self, edition, immediate, silent, ...)
         local is_negative = self.edition and (self.edition.negative or self.edition.key == "e_negative")
         if in_run() and card_set(self) == "Joker" and not was_negative and is_negative then
             increment_career_stat(STAT_NEGATIVE_JOKERS, 1)
@@ -928,10 +928,10 @@ end
 if Card and type(Card.set_base) == "function" and not Card._hnds_unlock_base_wrapped then
     Card._hnds_unlock_base_wrapped = true
     local set_base_unlock_ref = Card.set_base
-    function Card:set_base(card, initial)
+    function Card:set_base(card, initial, ...)
         local old_suit = self.base and self.base.suit
         local old_rank = self.base and (self.base.value or self.base.id)
-        local ret = set_base_unlock_ref(self, card, initial)
+        local ret = set_base_unlock_ref(self, card, initial, ...)
         if in_run() and not initial and old_suit and old_rank and self.base then
             local changes = 0
             local new_rank = self.base.value or self.base.id
@@ -986,22 +986,22 @@ end
 if type(ease_dollars) == "function" and not HNDS._unlock_ease_dollars_wrapped then
     HNDS._unlock_ease_dollars_wrapped = true
     local ease_dollars_unlock_ref = ease_dollars
-    function ease_dollars(mod, instant)
+    function ease_dollars(mod, instant, ...)
         local state = run_state()
         local amount = tonumber(mod) or 0
         if state and state.round_serial > 0 and amount > 0 then
             state.money_gained_round = state.money_gained_round + amount
             HNDS.request_unlock_check("hnds_money_gained")
         end
-        return ease_dollars_unlock_ref(mod, instant)
+        return ease_dollars_unlock_ref(mod, instant, ...)
     end
 end
 
 if SMODS and type(SMODS.add_card) == "function" and not SMODS._hnds_unlock_add_card_wrapped then
     SMODS._hnds_unlock_add_card_wrapped = true
     local add_card_unlock_ref = SMODS.add_card
-    function SMODS.add_card(args)
-        local card = add_card_unlock_ref(args)
+    function SMODS.add_card(args, ...)
+        local card = add_card_unlock_ref(args, ...)
         if card_is_consumable(card) then record_consumable_created(card) end
         HNDS.request_unlock_check("hnds_card_added")
         return card
@@ -1035,9 +1035,11 @@ if type(discover_card) == "function" and not HNDS._unlock_discover_card_wrapped 
     HNDS._unlock_discover_card_wrapped = true
     local discover_card_unlock_ref = discover_card
     function discover_card(...)
-        local result = { discover_card_unlock_ref(...) }
+        local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+        local unpack_values = table.unpack or unpack
+        local result = pack(discover_card_unlock_ref(...))
         HNDS.request_unlock_check("hnds_discovery")
-        return unpack(result)
+        return unpack_values(result, 1, result.n)
     end
 end
 

@@ -92,8 +92,8 @@ local function hnds_crystal_replaces_ante_8_showdown()
         and G.GAME.win_ante == 8
 end
 
-function get_new_boss()
-    if G.GAME
+function get_new_boss(...)
+    if G and G.GAME
         and not G.GAME.hnds_bypass_ante_10_force
         and G.GAME.round_resets
         and (hnds_crystal_replaces_ante_8_showdown()
@@ -102,7 +102,7 @@ function get_new_boss()
         return get_ante_10_boss()
     end
 
-    return get_new_boss_ref()
+    return get_new_boss_ref(...)
 end
 
 HNDS.get_new_boss_unforced = function()
@@ -742,7 +742,7 @@ if Tag and type(Tag.apply_to_run) == "function" and not HNDS._tag_pop_hooked the
     HNDS._tag_pop_hooked = true
     local tag_apply_to_run_ref = Tag.apply_to_run
 
-    function Tag:apply_to_run(context)
+    function Tag:apply_to_run(context, ...)
         local was_triggered = self.triggered == true
         local result
 
@@ -752,7 +752,7 @@ if Tag and type(Tag.apply_to_run) == "function" and not HNDS._tag_pop_hooked the
             -- broad last_blind.boss check to avoid upgraded Small/Big payouts.
             result = false
         else
-            result = tag_apply_to_run_ref(self, context)
+            result = tag_apply_to_run_ref(self, context, ...)
         end
 
         if not was_triggered
@@ -1112,8 +1112,8 @@ end
 if Card and Card.update and not Card._hnds_wrapped_update_runtime then
     Card._hnds_wrapped_update_runtime = true
     local card_update_ref = Card.update
-    function Card:update(dt)
-        local ret = card_update_ref(self, dt)
+    function Card:update(dt, ...)
+        local ret = card_update_ref(self, dt, ...)
         if hnds_card_has_cursed(self) and hnds_cursed_needs_strip(self) then
             hnds_strip_other_stickers(self)
         end
@@ -1133,8 +1133,8 @@ if Game and Game.update and not Game._hnds_wrapped_update_runtime then
     Game._hnds_wrapped_update_runtime = true
     local game_update_runtime_ref = Game.update
     local hnds_runtime_game_ref = nil
-    function Game:update(dt)
-        local ret = game_update_runtime_ref(self, dt)
+    function Game:update(dt, ...)
+        local ret = game_update_runtime_ref(self, dt, ...)
         hnds_update_ante_10_runtime()
 
         -- These are installation/migration helpers, not frame maintenance. The
@@ -1206,7 +1206,7 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
     Card._hnds_wrapped_contagion_use = true
     local use_consumeable_contagion_ref = Card.use_consumeable
 
-    function Card:use_consumeable(area, copier)
+    function Card:use_consumeable(area, copier, ...)
         local center_key = hnds_contagion_center_key(self)
         local bonus = hnds_contagion_bonus()
         local supported = hnds_contagion_seal_spectrals[center_key]
@@ -1216,7 +1216,7 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
         local selected = (bonus > 0 and supported) and hnds_copy_highlighted_cards() or nil
         local death_source = center_key == 'c_death' and selected and hnds_rightmost_selected_card(selected) or nil
 
-        local ret = use_consumeable_contagion_ref(self, area, copier)
+        local ret = use_consumeable_contagion_ref(self, area, copier, ...)
 
         if not selected or #selected <= 1 then return ret end
 
@@ -1299,8 +1299,8 @@ if Card and Card.can_use_consumeable and not Card._hnds_wrapped_contagion_can_us
     Card._hnds_wrapped_contagion_can_use = true
     local can_use_consumeable_contagion_ref = Card.can_use_consumeable
 
-    function Card:can_use_consumeable(any_state, skip_check)
-        local vanilla_result = can_use_consumeable_contagion_ref(self, any_state, skip_check)
+    function Card:can_use_consumeable(any_state, skip_check, ...)
+        local vanilla_result = can_use_consumeable_contagion_ref(self, any_state, skip_check, ...)
         if hnds_contagion_center_key(self) == 'c_aura' and hnds_contagion_bonus() > 0
             and G and G.hand and G.hand.highlighted and #G.hand.highlighted > 0
         then
@@ -1346,9 +1346,9 @@ end
 if Card and Card.set_seal and not Card._hnds_wrapped_spectral_progress then
     Card._hnds_wrapped_spectral_progress = true
     local set_seal_spectral_ref = Card.set_seal
-    function Card:set_seal(seal, silent)
+    function Card:set_seal(seal, silent, ...)
         local old_seal = self.seal
-        local ret = set_seal_spectral_ref(self, seal, silent)
+        local ret = set_seal_spectral_ref(self, seal, silent, ...)
         if old_seal == 'hnds_spectralseal' and self.seal ~= 'hnds_spectralseal' and self.ability then
             self.ability.hnds_spectral_hands = nil
             self.ability.hnds_spectral_last_token = nil
@@ -1425,7 +1425,7 @@ if not _G._hnds_contagion_generate_card_ui_wrapped then
     _G._hnds_contagion_generate_card_ui_wrapped = true
     local generate_card_ui_ref = generate_card_ui
 
-    function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
+    function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card, ...)
         if _c and (_c.set == 'Spectral' or _c.key == 'c_death') and _c.key
             and not _c.generate_ui
             and hnds_contagion_bonus() > 0
@@ -1433,7 +1433,7 @@ if not _G._hnds_contagion_generate_card_ui_wrapped then
         then
             _c = hnds_contagion_make_proxy(_c)
         end
-        return generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
+        return generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card, ...)
     end
 end
 
@@ -1510,15 +1510,20 @@ end
 -------------------------------------------------------------------
 
 HNDS.should_hand_destroy = function(card)
-	return card:get_seal() == "hnds_black" or (G.GAME.used_vouchers.v_hnds_soaked and card == G.hand.cards[1]) or
-		(G.GAME.used_vouchers.v_hnds_beyond and card == G.hand.cards[#G.hand.cards])
+	if not (card and type(card.get_seal) == 'function' and G and G.GAME) then return false end
+	local vouchers = G.GAME.used_vouchers or {}
+	local hand_cards = G.hand and G.hand.cards or {}
+	return card:get_seal() == "hnds_black"
+		or (vouchers.v_hnds_soaked and card == hand_cards[1])
+		or (vouchers.v_hnds_beyond and card == hand_cards[#hand_cards])
 end
 
 local destroy_cards_ref = SMODS.calculate_destroying_cards
 -- Handle destruction of cards with black seal or voucher effects
-function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand)
-	destroy_cards_ref(context, cards_destroyed, scoring_hand)
-	for i, card in ipairs(G.hand.cards) do
+function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand, ...)
+	local result = destroy_cards_ref(context, cards_destroyed, scoring_hand, ...)
+	if type(context) ~= 'table' or type(cards_destroyed) ~= 'table' then return result end
+	for _, card in ipairs((G and G.hand and G.hand.cards) or {}) do
 		if HNDS.should_hand_destroy(card) then
 			local destroyed = nil
 			local new_context = {}
@@ -1543,22 +1548,26 @@ function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand
 			end
 		end
 	end
+	return result
 end
 
 -- Black Seal scoring: Force scoring of destroyed cards as if they were played
 local score_card_ref = SMODS.score_card
-function SMODS.score_card(card, context)
-	if (not G.scorehand) and HNDS.should_hand_destroy(card) and context.cardarea == G.hand then
+function SMODS.score_card(card, context, ...)
+	if type(context) ~= 'table' then return score_card_ref(card, context, ...) end
+	if (not (G and G.scorehand)) and HNDS.should_hand_destroy(card) and G and context.cardarea == G.hand then
 		if card:get_seal() == "hnds_black" and HNDS.record_held_effects then
 			HNDS.record_held_effects(1, "hnds_black_seal")
 		end
+		local original_area = context.cardarea
 		G.scorehand = true
 		context.cardarea = G.play
-		SMODS.score_card(card, context)
+		local ok, err = pcall(score_card_ref, card, context, ...)
+		context.cardarea = original_area
 		G.scorehand = nil
-		context.cardarea = G.hand
+		if not ok then error(err) end
 	end
-	return score_card_ref(card, context)
+	return score_card_ref(card, context, ...)
 end
 
 -------------------------------------------------------------------
@@ -1567,8 +1576,9 @@ end
 
 -- Card cost modifications: Coffee Break, Art, Premium Deck, and curse multiplier.
 local set_cost_ref = Card.set_cost
-function Card.set_cost(self)
-	set_cost_ref(self)
+function Card.set_cost(self, ...)
+	local ret = set_cost_ref(self, ...)
+	if not self then return ret end
 	local key = self.config and self.config.center and self.config.center.key
 	local set = self.config and self.config.center and self.config.center.set
 
@@ -1586,11 +1596,12 @@ function Card.set_cost(self)
 	end
 
 	-- Curse price multiplier (affects jokers, boosters, and consumables; NOT vouchers)
-	if G.GAME and G.GAME.hnds_price_multiplier and G.GAME.hnds_price_multiplier > 1 then
+	if G and G.GAME and G.GAME.hnds_price_multiplier and G.GAME.hnds_price_multiplier > 1 then
 		if set == "Joker" or set == "Booster" or set == "Consumable" then
 			self.cost = math.max(0, math.floor(self.cost * G.GAME.hnds_price_multiplier))
 		end
 	end
+	return ret
 end
 
 -------------------------------------------------------------------
@@ -1609,14 +1620,20 @@ HNDS.finalize_generated_curse = hnds_finalize_generated_curse
 if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 	SMODS._hnds_wrapped_create_card_shop = true
 	local smods_create_card_ref = SMODS.create_card
-	function SMODS.create_card(args)
+	function SMODS.create_card(args, ...)
 		HNDS = HNDS or {}
+        local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+        local unpack_values = table.unpack or unpack
 		local previous_type = HNDS._creating_smods_card_type
 		HNDS._creating_smods_card_type = type(args) == 'table' and args.type or nil
-		local created_card = smods_create_card_ref(args)
+		local packed = pack(pcall(smods_create_card_ref, args, ...))
 		HNDS._creating_smods_card_type = previous_type
+		if not packed[1] then error(packed[2]) end
+		local created_card = packed[2]
 		hnds_finalize_generated_curse(created_card)
-		return created_card
+        -- Preserve every foreign return value after the Card. Some compatibility
+        -- layers attach metadata here even though base Steamodded returns only a Card.
+		return unpack_values(packed, 2, packed.n)
 	end
 end
 
@@ -1628,7 +1645,7 @@ end
 if not _G._hnds_wrapped_create_card then
 	_G._hnds_wrapped_create_card = true
 	local create_card_ref = create_card
-	function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+	function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append, ...)
 		-- Sticker.should_apply only receives the destination area. Preserve the
 		-- creation append/source while the underlying generator performs its
 		-- central sticker roll so Cursed can reject non-pack generation effects.
@@ -1640,8 +1657,12 @@ if not _G._hnds_wrapped_create_card then
 			forced_key = forced_key,
 			key_append = key_append,
 		}
-		local card = create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+        local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+        local unpack_values = table.unpack or unpack
+		local packed = pack(pcall(create_card_ref, _type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append, ...))
 		HNDS._creating_card_source = previous_source
+		if not packed[1] then error(packed[2]) end
+        local card = packed[2]
 
 
 		-- Feature: Devil's Round challenge - curse jokers on creation
@@ -1652,7 +1673,7 @@ if not _G._hnds_wrapped_create_card then
 		-- Cursed Sticker is exclusive even if a later generation hook applied
 		-- another sticker after the central curse roll.
 		hnds_finalize_generated_curse(card)
-		return card
+		return unpack_values(packed, 2, packed.n)
 	end
 end
 
@@ -1665,8 +1686,8 @@ end
 if not Card._hnds_wrapped_add_to_deck then
 	Card._hnds_wrapped_add_to_deck = true
 	local add_to_deck_ref = Card.add_to_deck
-	function Card:add_to_deck(from_debuff)
-		local ret = add_to_deck_ref(self, from_debuff)
+	function Card:add_to_deck(from_debuff, ...)
+		local ret = add_to_deck_ref(self, from_debuff, ...)
 
 		if not from_debuff then
 			-- Feature: DNA Tag - create copies when hnds_copies_to_create is set.
@@ -1674,7 +1695,9 @@ if not Card._hnds_wrapped_add_to_deck then
 			-- yet, then verify capacity again when the queued copy is created.
 			-- This prevents DNA from ever overflowing the Joker limit (for example
 			-- creating a sixth Joker in a 5-slot area).
-			if self.ability and self.ability.hnds_copies_to_create then
+			if self.ability and self.ability.hnds_copies_to_create
+				and G and G.GAME and G.jokers and G.jokers.cards and G.jokers.config
+			then
 				G.GAME.joker_buffer = G.GAME.joker_buffer or 0
 				local pending_original = self.area == G.jokers and 0 or 1
 				for _ = 1, self.ability.hnds_copies_to_create do
@@ -1725,11 +1748,14 @@ end
 
 -- Circus Deck: extend find_joker to include the offscreen joker in results.
 local find_joker_ref = find_joker
-function find_joker(name, non_debuff)
-	local jokers = find_joker_ref(name, non_debuff)
-	if G.hnds_circus_joker then
-		for _, v in pairs(G.hnds_circus_joker.cards) do
-			if v and type(v) == 'table' and v.ability.name == name and (non_debuff or not v.debuff) then
+function find_joker(name, non_debuff, ...)
+	local jokers = find_joker_ref(name, non_debuff, ...)
+	if type(jokers) ~= 'table' then jokers = {} end
+	local circus_cards = G and G.hnds_circus_joker and G.hnds_circus_joker.cards
+	if type(circus_cards) == 'table' then
+		for _, v in pairs(circus_cards) do
+			local ability = v and type(v) == 'table' and v.ability
+			if ability and ability.name == name and (non_debuff or not v.debuff) then
 				table.insert(jokers, v)
 			end
 		end
@@ -1754,8 +1780,8 @@ local function hnds_crystal_forces_showdown(ante)
     return (modifiers.hnds_crystal_showdown or modifiers.hnds_double_showdown) and ante == 4
 end
 
-function get_new_boss()
-    if not (G and G.GAME and G.GAME.round_resets) then return get_new_boss_ref() end
+function get_new_boss(...)
+    if not (G and G.GAME and G.GAME.round_resets) then return get_new_boss_ref(...) end
 
     local win_ante = G.GAME.win_ante
     local ante = G.GAME.round_resets.ante
@@ -1766,17 +1792,24 @@ function get_new_boss()
         G.GAME.win_ante = ante
     end
 
+    local boss_args = { n = select('#', ...), ... }
+    local unpack_values = table.unpack or unpack
+    local function invoke_boss_ref()
+        return get_new_boss_ref(unpack_values(boss_args, 1, boss_args.n))
+    end
     local function select_boss()
         if HNDS and HNDS.call_with_platinum_reroll_bans then
-            return HNDS.call_with_platinum_reroll_bans(get_new_boss_ref)
+            return HNDS.call_with_platinum_reroll_bans(invoke_boss_ref)
         end
-        return get_new_boss_ref()
+        return invoke_boss_ref()
     end
 
-    local ok, boss = pcall(select_boss)
+    local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+    local unpack_values2 = table.unpack or unpack
+    local packed = pack(pcall(select_boss))
     G.GAME.win_ante = win_ante
-    if not ok then error(boss) end
-    return boss
+    if not packed[1] then error(packed[2]) end
+    return unpack_values2(packed, 2, packed.n)
 end
 
 -------------------------------------------------------------------
@@ -1788,8 +1821,8 @@ end
 if G and G.UIDEF and G.UIDEF.challenge_description_tab and not G.UIDEF._hnds_wrapped_challenge_description_tab then
 	G.UIDEF._hnds_wrapped_challenge_description_tab = true
 	local challenge_description_tab_ref = G.UIDEF.challenge_description_tab
-	function G.UIDEF.challenge_description_tab(args)
-		local ret = challenge_description_tab_ref(args)
+	function G.UIDEF.challenge_description_tab(args, ...)
+		local ret = challenge_description_tab_ref(args, ...)
 		if not (args and args._tab == 'Restrictions') then
 			return ret
 		end
@@ -1999,10 +2032,11 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 
 		local function hnds_try_spoof(spoof_id)
 			target.get_id = function() return spoof_id end
-			local e, p = calculate_joker_ref(self, context, hnds_unpack(hnds_args))
+			local ok, e, p = pcall(calculate_joker_ref, self, context, hnds_unpack(hnds_args))
+			target.get_id = original_get_id
+			if not ok then error(e) end
 			local has_e = e and (type(e) ~= 'table' or next(e))
 			local has_p = p and (type(p) ~= 'table' or #p > 0)
-			target.get_id = original_get_id
 			if has_e or has_p then return e, p, true end
 			return e, p, false
 		end
@@ -2073,9 +2107,9 @@ end
 
 -- Ensure Blind:get_type() returns Small/Big for replaced blinds
 local Blind_get_type_ref = Blind.get_type
-function Blind:get_type()
+function Blind:get_type(...)
 	if not hnds_excommunicado_active() then
-		return Blind_get_type_ref(self)
+		return Blind_get_type_ref(self, ...)
 	end
 
 	-- For the active blind, use blind_on_deck which always knows the slot
@@ -2083,7 +2117,7 @@ function Blind:get_type()
 		return G.GAME.blind_on_deck
 	end
 
-	return Blind_get_type_ref(self)
+	return Blind_get_type_ref(self, ...)
 end
 
 -- Replace current vanilla Small/Big blinds with random bosses
@@ -2172,15 +2206,65 @@ end
 -------------------------------------------------------------------
 
 local get_blind_amount_ref = get_blind_amount
-function get_blind_amount(ante)
-	local amount = get_blind_amount_ref(ante)
+function get_blind_amount(ante, ...)
+	local amount = get_blind_amount_ref(ante, ...)
 	local count = G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_base_blind_increase
-	if count and count > 0 then
-		amount = math.floor(amount * (1.5 ^ count))
+	if count and count > 0 and amount ~= nil then
+		-- Big-number mods often return an arithmetic object rather than a Lua
+		-- number. Multiply through its metamethod, but only math.floor native
+		-- numbers; math.floor(big-number-object) is a common modpack crash.
+		local ok, scaled = pcall(function() return amount * (1.5 ^ count) end)
+		if ok then amount = type(scaled) == 'number' and math.floor(scaled) or scaled end
 	end
 	return amount
 end
 
+
+-------------------------------------------------------------------
+-- MAIN-MENU LOCKED HINT SUPPRESSION
+-------------------------------------------------------------------
+-- Balatro can queue a delayed locked Joker/Voucher hint when the title card is
+-- clicked repeatedly. With a custom Steamodded menu card already occupying
+-- G.title_top, that delayed card must never be allowed to replace or stack under
+-- the Handsome Devils title card.
+--
+-- Let CardArea:emplace perform its normal bookkeeping, then immediately remove
+-- only that incoming locked hint in the same call. No frame can render between
+-- those operations, so the visible title card remains untouched while the
+-- temporary Card is still cleaned up correctly.
+if CardArea and CardArea.emplace and not HNDS._title_locked_hint_suppress_guard then
+    HNDS._title_locked_hint_suppress_guard = true
+    local hnds_cardarea_emplace_ref = CardArea.emplace
+
+    local function hnds_is_locked_title_hint(area, card)
+        if not (G and G.title_top and area == G.title_top and card) then return false end
+        local center = card.config and card.config.center
+        if not center or center.unlocked ~= false then return false end
+        if center.set ~= 'Joker' and center.set ~= 'Voucher' then return false end
+
+        -- G.title_top is shared with every menu-card mod. Only suppress the
+        -- vanilla locked hint while a Handsome Devils menu card owns the slot;
+        -- never delete another mod's intentionally locked title card.
+        local existing = area.cards and area.cards[1]
+        local existing_center = existing and existing.config and existing.config.center
+        local key = existing_center and existing_center.key
+        return type(key) == 'string' and (key:match('^j_hnds_')
+            or key:match('^c_hnds_') or key:match('^p_hnds_')) ~= nil
+    end
+
+    function CardArea:emplace(card, ...)
+        if hnds_is_locked_title_hint(self, card) and self.cards and #self.cards > 0 then
+            -- Complete the native emplacement/removal lifecycle synchronously so
+            -- the transient Card does not leave sprites/nodes registered, but do
+            -- not disturb the card that was already in G.title_top.
+            local ret = hnds_cardarea_emplace_ref(self, card, ...)
+            self:remove_card(card)
+            if card.remove then card:remove() end
+            return ret
+        end
+        return hnds_cardarea_emplace_ref(self, card, ...)
+    end
+end
 
 -------------------------------------------------------------------
 -- HANDSOME DEVILS TOOLTIP POSITION STABILITY

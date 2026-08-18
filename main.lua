@@ -5,13 +5,18 @@ HNDS = {}
 -- dimension pair. Handsome Devils currently has 10 Enhancements and 13 Planets,
 -- so their bounded layouts are two rows of 5 and rows of 6/7 respectively.
 --
--- Joker collection special case: the five Handsome Devils Legendary Jokers are
--- removed from the normal sequence and placed on a dedicated FINAL page. That
--- page is exactly 3 rows x 5 cards: empty top row, the 5 Legendaries in the
--- middle row, empty bottom row. The padding is renderer-only; no fake Jokers are
--- registered and gameplay pools / collection completion counts are unaffected.
+-- The old dedicated Handsome Devils Legendary Joker page is intentionally
+-- disabled below, but its full implementation is retained inside comments so
+-- it can be re-enabled later without reconstructing it. Other collection layout
+-- adjustments in this wrapper remain active.
 if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
     local hnds_card_collection_UIBox = SMODS.card_collection_UIBox
+
+    --[[
+    HD LEGENDARY COLLECTION PAGE (TEMPORARILY DISABLED)
+    Remove these long-comment delimiters and restore the Joker branch below to
+    re-enable the dedicated final page. The implementation is intentionally kept
+    intact here for future use.
 
     local hnds_legendary_collection_order = {
         'j_hnds_pennywise',
@@ -40,6 +45,7 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
         local rows = { 5, 5, 5 }
         local cards_per_page = 15
         local source_pool = SMODS.collection_pool(_pool)
+        if type(source_pool) ~= 'table' then return nil end
         local pool = {}
         local legendary_by_key = {}
 
@@ -106,7 +112,7 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
             table.insert(options, localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(total_pages))
         end
 
-        G.FUNCS.SMODS_card_collection_page = function(e)
+        G.FUNCS.hnds_legendary_collection_page = function(e)
             if not e or not e.cycle_config then return end
 
             for j = 1, #G.your_collection do
@@ -144,7 +150,7 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
             INIT_COLLECTION_CARD_ALERTS()
         end
 
-        G.FUNCS.SMODS_card_collection_page { cycle_config = { current_option = 1 } }
+        G.FUNCS.hnds_legendary_collection_page { cycle_config = { current_option = 1 } }
 
         return create_UIBox_generic_options({
             colour = G.ACTIVE_MOD_UI and ((G.ACTIVE_MOD_UI.ui_config or {}).collection_colour or (G.ACTIVE_MOD_UI.ui_config or {}).colour),
@@ -164,7 +170,7 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
                             options = options,
                             w = 4.5,
                             cycle_shoulders = true,
-                            opt_callback = 'SMODS_card_collection_page',
+                            opt_callback = 'hnds_legendary_collection_page',
                             current_option = 1,
                             colour = G.ACTIVE_MOD_UI and (G.ACTIVE_MOD_UI.ui_config or {}).collection_option_cycle_colour or G.C.RED,
                             no_pips = true,
@@ -176,15 +182,31 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
         })
     end
 
+    ]]
+
     SMODS.card_collection_UIBox = function(pool, rows, args)
         local pools = G and G.P_CENTER_POOLS
+        -- Collection UI is shared by every mod. Never assume Handsome Devils is
+        -- the only renderer installed; if the normal runtime/UI primitives are
+        -- unavailable, delegate to the function we wrapped unchanged.
+        if not (G and G.FUNCS and G.ROOM and G.UIT and CardArea and Card
+            and SMODS and type(SMODS.collection_pool) == 'function') then
+            return hnds_card_collection_UIBox(pool, rows, args)
+        end
         -- Steamodded's Sticker collection passes SMODS.Stickers directly, not
         -- a G.P_CENTER_POOLS entry. Force exactly 2 rows x 4 cards here.
         if SMODS and SMODS.Stickers and pool == SMODS.Stickers then
             rows = { 4, 4 }
         elseif pools then
             if pool == pools.Joker then
-                return hnds_legendary_joker_collection_UIBox(pool, args)
+                --[[ HD LEGENDARY COLLECTION PAGE (TEMPORARILY DISABLED)
+                local ok, result = pcall(hnds_legendary_joker_collection_UIBox, pool, args)
+                if ok and result then return result end
+                if sendDebugMessage and not ok then
+                    sendDebugMessage('Legendary collection layout fallback: '..tostring(result), 'HandsomeDevils')
+                end
+                ]]
+                return hnds_card_collection_UIBox(pool, rows, args)
             elseif pool == pools.Seal then
                 rows = { 3, 3, 3 }
             elseif pool == pools.Edition then
@@ -410,6 +432,7 @@ SMODS.current_mod.config_tab = function()
 			config_toggle_row(localize("hnds_config_CursedPack"), "enableCursedPackSpawning"),
 			config_toggle_row(localize("hnds_config_CustomSounds"), "enableCustomSounds"),
 			config_toggle_row(localize("hnds_config_VanillaTweaks"), "enableVanillaTweaks", localize("hnds_require_restart")),
+			config_toggle_row(localize("hnds_config_BlindUpgradeButton"), "enableBlindUpgradeButton", localize("hnds_require_restart")),
 			config_toggle_row(localize("hnds_config_CustomMenu"), "enableCustomMenu", localize("hnds_require_restart")),
 		},
 	}
@@ -420,7 +443,7 @@ end
 -- mismatches, and the queue is consumed only when Art is actually created.
 local hnds_card_open = Card.open
 function Card:open(...)
-	local queued_art = G.GAME
+	local queued_art = G and G.GAME
 		and (tonumber(G.GAME.art_queue) or 0) > 0
 		and self.ability
 		and self.ability.set == 'Booster'
@@ -446,6 +469,8 @@ end
 -- Helper: spawns a free booster pack at the center of the play area.
 -- Used by tags that queue packs to open at the start of the next shop.
 local function spawn_queued_booster(pack_key, pre_open_func)
+	if not (G and G.E_MANAGER and G.play and G.FUNCS and G.FUNCS.use_card
+		and SMODS and type(SMODS.create_card) == 'function' and Event) then return false end
 	G.E_MANAGER:add_event(Event({
 		func = function()
 			local booster = SMODS.create_card { key = pack_key, area = G.play }
@@ -461,10 +486,12 @@ local function spawn_queued_booster(pack_key, pre_open_func)
 			return true
 		end
 	}))
+	return true
 end
 
 -- Mod-level calculate: handles global context events that aren't tied to a specific card.
 SMODS.current_mod.calculate = function(self, context)
+	if type(context) ~= 'table' then return end
 	if HNDS.calculate_vanilla_tweaks then HNDS.calculate_vanilla_tweaks(context) end
 	if HNDS.calculate_aberrant then HNDS.calculate_aberrant(context) end
 
@@ -562,6 +589,17 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.card_added then
 		G.GAME.hnds_dna_tag_copy = context.card.sort_id
 	end
+	-- Jevil: defer until every start-of-round draw effect has had a chance to
+	-- resolve, then mark the final cards actually present in hand.
+	if context.first_hand_drawn and HNDS.jevil_schedule_starting_hand then
+		HNDS.jevil_schedule_starting_hand()
+	end
+	-- The marked starting hand stays Wild for the whole round, even if Jevil is
+	-- sold afterwards; clear the temporary tooltip marker only at round end.
+	if context.end_of_round and context.main_eval and HNDS.jevil_clear_round then
+		HNDS.jevil_clear_round()
+	end
+
 	-- Bound: guarantee every marked, non-debuffed card is present in the
 	-- opening hand. The helper guards against duplicate first_hand_drawn events.
 	if context.first_hand_drawn and HNDS.draw_bound_cards then
@@ -606,9 +644,21 @@ local files = {
 
 			"dynamic_duos",
 			"wait_what",
-			"dark_humor",
+			"jokestone",
 			"clown_devil",
 			"public_nuisance",
+
+			"spaghettified_joker",
+			"ecg",
+			"jevil",
+			"headless_joker",
+			"water_slide",
+
+			"be_not_afraid",
+			"joker_reverse",
+			"time_fcked_joker",
+			"jodiac",
+			"jack_in_the_box",
 
 			"banana_split",
 			"supersuit",
@@ -618,8 +668,8 @@ local files = {
 	
 		    "seismic_activity",
 	        "creepy",
-			"occultist",
-			"ms_fortune",
+			"dark_humor",
+			"stone_mask",
 			"head_of_medusa",
 
 		    "deep_pockets",
@@ -627,30 +677,30 @@ local files = {
 			"dark_idol",
 			"perfectionist",
 			"one_punchline_man",
-			
+
+			"conquest",
+			"plague",
+			"war",
+			"famine",
+			"death",
+
+			"demented",
+			"imposter",
+			"ms_fortune",
+			"fregoli",
+			"bizzare_joker",
+
+			"jester_in_yellow",
+			"occultist",
+			"contagion",
+			"energized",
+			"last_laugh",
+
 			"walking_joke",
 			"digital_circus",
 			"excommunicado",
 			"meme",
 			"handsome",
-
-			"stone_mask",
-			"energized",
-			"last_laugh",
-			"bizzare_joker",
-			"jokestone",
-
-			"conquest",
-			"be_not_afraid",
-			"jodiac",
-			"jack_in_the_box",
-			"joker_reverse",
-
-			"jester_in_yellow",
-			"demented",
-			"imposter",
-			"contagion",
-			"fregoli",
 
 			"pennywise",
 			"art",
@@ -741,7 +791,6 @@ local files = {
 		list = {
 			"platinum",
 			"blood",
-			"nightmare"
 		},
 		directory = "stakes/"
 	},
@@ -771,6 +820,13 @@ if hnds_config.enableStoneOcean then
 	table.insert(files.poker_hands.list, "stone_ocean")
 end
 
+-- Blind Raiser/Nightmare are a single optional feature. The config is read at
+-- mod load, so disabling it removes Nightmare Stake registration and leaves the
+-- normal Blind Select UI untouched.
+if hnds_config.enableBlindUpgradeButton then
+	table.insert(files.stakes.list, "nightmare")
+end
+
 
 ----------------------------
 -- Atlases, colours, and sounds
@@ -797,6 +853,7 @@ SMODS.Sound({ key = "wp_buy_inshop", path = "WP_buy_inshop.ogg", })
 -- Sprites
 SMODS.Atlas({ key = "HDtags", path = "HDtags.png", px = 34, py = 34, })
 SMODS.Atlas({ key = "Jokers",      path = "Jokers.png", px = 71, py = 95 })
+SMODS.Atlas({ key = "JackOfLanterns", path = "JackOfLanterns.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "Consumables", path = "THD.png",     px = 71, py = 95 })
 SMODS.Atlas({ key = "Vouchers",    path = "VHD.png",     px = 71, py = 95 })
 SMODS.Atlas({ key = "Extras",      path = "EHD.png",     px = 71, py = 95 })
@@ -854,26 +911,32 @@ SMODS.ObjectType({
 -- Imposter Joker: allows face cards (J/Q/K) to match any required rank
 -- when the Imposter joker is in the player's joker slots.
 HNDS.imposter_rank_match = function(card, required_id)
-	if #SMODS.find_card('j_hnds_imposter') > 0 and card:get_id() >= 11 and card:get_id() <= 13 then
-		return true
-	end
-	return card:get_id() == required_id
+	if not (card and type(card.get_id) == 'function') then return false end
+	local id = card:get_id()
+	if id == nil then return false end
+	local found = SMODS and type(SMODS.find_card) == 'function' and SMODS.find_card('j_hnds_imposter') or {}
+	if type(found) ~= 'table' then found = {} end
+	if #found > 0 and id >= 11 and id <= 13 then return true end
+	return id == required_id
 end
 
 -- Extend the game object with mod-specific state variables
 local _init_game_object = Game.init_game_object
-function Game:init_game_object()
-	local ret = _init_game_object(self)
-	ret.hnds_booster_choice_mod = 0
+function Game:init_game_object(...)
+	local ret = _init_game_object(self, ...)
+	-- A foreign wrapper should still return the normal game-state table, but do
+	-- not turn an unusual load-order return into a nil-index crash here.
+	if type(ret) ~= 'table' then return ret end
+	ret.hnds_booster_choice_mod = ret.hnds_booster_choice_mod or 0
 	-- Forbidden Fruit tracks Tags that actually trigger ("pop"), not Tags
 	-- merely created or held. Existing saves safely fall back to zero.
-	ret.hnds_tags_popped = 0
+	ret.hnds_tags_popped = ret.hnds_tags_popped or 0
 	-- Wholesale unlock progress is deliberately per-run.
-	ret.hnds_boosters_bought_run = 0
-	ret.hnds_juggle_bonuses = {}
+	ret.hnds_boosters_bought_run = ret.hnds_boosters_bought_run or 0
+	ret.hnds_juggle_bonuses = ret.hnds_juggle_bonuses or {}
 	-- Conquest tracks Boss-equivalent Blind defeats for the entire run, even
 	-- before the Joker is owned.
-	ret.hnds_conquest_bosses_defeated = 0
+	ret.hnds_conquest_bosses_defeated = ret.hnds_conquest_bosses_defeated or 0
 	return ret
 end
 
@@ -892,13 +955,16 @@ for _, set in pairs(files) do
 end
 assert(SMODS.load_file("lib/hooks.lua"))()
 if hnds_config.enableVanillaTweaks then assert(SMODS.load_file("lib/vanilla_tweaks.lua"))() end
-assert(SMODS.load_file("lib/platinum_blind_upgrades.lua"))()
+if hnds_config.enableBlindUpgradeButton then
+	assert(SMODS.load_file("lib/platinum_blind_upgrades.lua"))()
+end
 assert(SMODS.load_file("lib/platinum_boss_stacking.lua"))()
 -- Investment must wrap Blind:set_blind/defeat after Blind Raiser does.
 assert(SMODS.load_file("lib/vanilla_investment_tag.lua"))()
 assert(SMODS.load_file("lib/conquest_tracker.lua"))()
 assert(SMODS.load_file("lib/blind_souls.lua"))()
 assert(SMODS.load_file("lib/utils.lua"))()
+assert(SMODS.load_file("lib/headless_jack.lua"))()
 assert(SMODS.load_file("lib/cursed_pack.lua"))()
 
 -- Load sleeves
@@ -912,5 +978,8 @@ if CardSleeves then
 end
 assert(SMODS.load_file("lib/curses.lua"))()
 assert(SMODS.load_file("lib/challenge_rules.lua"))()
+-- Time Fc#ked Joker must wrap Cash Out after challenge_rules so it can cleanly
+-- redirect a successful replay without bypassing existing challenge behavior.
+assert(SMODS.load_file("lib/time_fcked.lua"))()
 
 if HNDS.apply_unlock_state_migration then HNDS.apply_unlock_state_migration() end

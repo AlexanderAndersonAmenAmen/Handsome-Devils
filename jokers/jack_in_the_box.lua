@@ -241,8 +241,31 @@ local function on_borrowed_ability_changed(card, old_key, new_key)
     end
 end
 
+local function jack_art_visible(center, card)
+    -- Card:set_sprites creates Steamodded's normal Locked/Undiscovered Joker
+    -- sprite before invoking the center's custom set_sprites callback. Jack's
+    -- animated art must not reposition that placeholder: it lives on the
+    -- vanilla Joker atlas, so Jack's custom atlas coordinates would display an
+    -- unrelated vanilla Joker (notably 8 Ball). Discovery-bypass cards are
+    -- intentional real-art previews and may still use Jack's animation.
+    if card and card.params and card.params.bypass_discovery_center then return true end
+    if center and (center.unlocked == false or center.discovered == false) then return false end
+    return true
+end
+
 local function apply_jack_art(center, card)
     if not card or not card.children then return end
+    if not jack_art_visible(center, card) then
+        -- soul_pos is used by Jack for its open-box animation, so Steamodded
+        -- creates that floating sprite even for Locked/Undiscovered cards. Do
+        -- not let the animation overlay leak onto the collection placeholder.
+        if card.children.floating_sprite then
+            card.children.floating_sprite:remove()
+            card.children.floating_sprite = nil
+        end
+        card.hnds_jack_box_art_state = 'hidden_collection_sprite'
+        return
+    end
 
     local extra = jack_extra(card, center)
     local active = extra.active == true
@@ -571,7 +594,7 @@ SMODS.Joker {
     rarity = 1,
     cost = 4,
     unlocked = true,
-    discovered = true,
+    discovered = false,
     -- Mechanically compatible while closed or while borrowing a compatible
     -- Rare. calculate() suppresses Blueprint/Brainstorm when the borrowed Rare
     -- itself has blueprint_compat = false.
@@ -615,6 +638,13 @@ SMODS.Joker {
     end,
 
     update = function(self, card, dt)
+        -- Do not continuously re-run Jack's custom art logic on collection
+        -- Locked/Undiscovered placeholders. Steamodded owns those sprites.
+        if not jack_art_visible(self, card) then
+            card.hnds_jack_box_art_state = 'hidden_collection_sprite'
+            return
+        end
+
         local extra = jack_extra(card, self)
         local desired = extra.active
             and ('active_' .. tostring(tonumber(extra.hover_x) or 2))

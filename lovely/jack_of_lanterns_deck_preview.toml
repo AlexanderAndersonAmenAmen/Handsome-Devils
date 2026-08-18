@@ -1,0 +1,135 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 25
+
+# Jack of Lanterns deck-view layout (Steamodded beta-1620a).
+# Keep Lanterns as a private/decoy suit on page 2. The helper pins it to
+# visible-suit position 5 while Steamodded keeps normal 4-row pagination.
+# Lanterns stays hidden from the suit tally and its custom rank counts as J.
+
+# Initial deck-view page: pin Lanterns to position 5 (page 2).
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+	for j = 1, #visible_suit do
+		if (j >= 1 and j <= 4) or num_suits <= 4 then
+'''
+position = "at"
+payload = '''
+	local hnds_suits_per_page = (HNDS and HNDS.prepare_jol_deck_preview and HNDS.prepare_jol_deck_preview(visible_suit)) or 4
+	for j = 1, #visible_suit do
+		if (j >= 1 and j <= hnds_suits_per_page) or num_suits <= hnds_suits_per_page then
+'''
+match_indent = false
+times = 1
+
+# Subsequent suit pages use the same page size and ordering.
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+	local deck_start_index = (args.cycle_config.current_option - 1) * 4 + 1
+	local deck_end_index = math.min(deck_start_index + 4 - 1, #visible_suit)
+'''
+position = "at"
+payload = '''
+	local hnds_suits_per_page = (HNDS and HNDS.prepare_jol_deck_preview and HNDS.prepare_jol_deck_preview(visible_suit)) or 4
+	local deck_start_index = (args.cycle_config.current_option - 1) * hnds_suits_per_page + 1
+	local deck_end_index = math.min(deck_start_index + hnds_suits_per_page - 1, #visible_suit)
+'''
+match_indent = false
+times = 1
+
+# Hide only the Lanterns suit icon/count from the left-side suit summary.
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+	for _, suit in ipairs(suit_map) do
+		if suit_tallies[suit] == 0 and SMODS.Suits[suit].in_pool and not SMODS.add_to_pool(SMODS.Suits[suit], {rank=''}) then
+			hidden_suits[suit] = true
+		end
+	end
+'''
+position = "after"
+payload = '''
+	if HNDS and HNDS.hide_jol_suit_tally then HNDS.hide_jol_suit_tally(hidden_suits) end
+'''
+match_indent = false
+times = 2
+
+# Initial left-side tally remains the normal four page rows.
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''while i <= math.min(4, #visible_suit) do'''
+position = "at"
+payload = '''while i <= math.min(hnds_suits_per_page, #visible_suit) do'''
+match_indent = true
+times = 1
+
+# Page counts/options remain four rows per page.
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+	for i = 1, math.ceil(#visible_suit / 4) do
+		table.insert(suit_options,
+			localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(math.ceil(#visible_suit / 4)))
+	end
+'''
+position = "at"
+payload = '''
+	for i = 1, math.ceil(#visible_suit / hnds_suits_per_page) do
+		table.insert(suit_options,
+			localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(math.ceil(#visible_suit / hnds_suits_per_page)))
+	end
+'''
+match_indent = false
+times = 2
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''#visible_suit > 4 and {n = G.UIT.R'''
+position = "at"
+payload = '''#visible_suit > hnds_suits_per_page and {n = G.UIT.R'''
+match_indent = true
+times = 1
+
+
+# Merge the custom Jack-of-Lanterns rank into vanilla Jack (J) in the left-side
+# rank tally, for both the initial deck preview and page refresh function.
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+			if v.base.value and not v_nr then rank_tallies[v.base.value] = rank_tallies[v.base.value] + 1 end
+			if v.base.value and not v_nr and not v.debuff then mod_rank_tallies[v.base.value] = mod_rank_tallies[v.base.value] + 1 end
+'''
+position = "at"
+payload = '''
+			local hnds_preview_rank = (HNDS and HNDS.jol_preview_rank_key and HNDS.jol_preview_rank_key(v)) or v.base.value
+			if hnds_preview_rank and not v_nr then rank_tallies[hnds_preview_rank] = (rank_tallies[hnds_preview_rank] or 0) + 1 end
+			if hnds_preview_rank and not v_nr and not v.debuff then mod_rank_tallies[hnds_preview_rank] = (mod_rank_tallies[hnds_preview_rank] or 0) + 1 end
+'''
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+			if v.base.value then rank_tallies[v.base.value] = rank_tallies[v.base.value] + 1 end
+			if v.base.value and not v.debuff then mod_rank_tallies[v.base.value] = mod_rank_tallies[v.base.value] + 1 end
+'''
+position = "at"
+payload = '''
+			local hnds_preview_rank = (HNDS and HNDS.jol_preview_rank_key and HNDS.jol_preview_rank_key(v)) or v.base.value
+			if hnds_preview_rank then rank_tallies[hnds_preview_rank] = (rank_tallies[hnds_preview_rank] or 0) + 1 end
+			if hnds_preview_rank and not v.debuff then mod_rank_tallies[hnds_preview_rank] = (mod_rank_tallies[hnds_preview_rank] or 0) + 1 end
+'''
+match_indent = false
+times = 1

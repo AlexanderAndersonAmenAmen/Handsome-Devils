@@ -1,0 +1,221 @@
+HNDS = HNDS or {}
+
+local function shallow_copy(src)
+    local out = {}
+    if type(src) == 'table' then
+        for k, v in pairs(src) do out[k] = v end
+    end
+    return out
+end
+
+local function current_blind_key()
+    local blind = G and G.GAME and G.GAME.blind
+    local cfg = blind and blind.config and blind.config.blind
+    return cfg and cfg.key or nil
+end
+
+local function replay_token(ante, slot, blind_key)
+    return tostring(ante or 0) .. ':' .. tostring(slot or '?') .. ':' .. tostring(blind_key or '?')
+end
+
+function HNDS.capture_time_fcked_blind()
+    if not (G and G.GAME and G.GAME.round_resets and G.GAME.blind) then return false end
+
+    local resets = G.GAME.round_resets
+    local blind_key = current_blind_key()
+    local ante = tonumber(resets.ante) or 0
+    if not blind_key then return false end
+
+    -- End-of-round transitions can advance blind_on_deck before every Joker has
+    -- finished calculating. Prefer the physical slot cached by Blind Raiser,
+    -- then accept blind_on_deck only when its choice still matches this Blind,
+    -- then infer the just-defeated slot from the round's choice table.
+    local slot = G.GAME.blind.hnds_platinum_replacement_slot
+    local choices = resets.blind_choices or {}
+    local on_deck = G.GAME.blind_on_deck
+    if not slot and on_deck and choices[on_deck] == blind_key then slot = on_deck end
+    if not slot then
+        for _, candidate_slot in ipairs({ 'Small', 'Big', 'Boss' }) do
+            if choices[candidate_slot] == blind_key then
+                local state = resets.blind_states and resets.blind_states[candidate_slot]
+                if state == 'Defeated' or state == 'Current' or state == 'Select' then
+                    slot = candidate_slot
+                    break
+                end
+            end
+        end
+    end
+    if not slot and G.GAME.blind.get_type then
+        local ok, kind = pcall(G.GAME.blind.get_type, G.GAME.blind)
+        if ok and (kind == 'Small' or kind == 'Big' or kind == 'Boss') then slot = kind end
+    end
+    if not slot then return false end
+
+    local token = replay_token(ante, slot, blind_key)
+    G.GAME.hnds_time_fcked_candidate = {
+        token = token,
+        ante = ante,
+        blind_ante = tonumber(resets.blind_ante) or ante,
+        slot = slot,
+        blind_key = blind_key,
+        blind_choices = shallow_copy(resets.blind_choices),
+        blind_states = shallow_copy(resets.blind_states),
+    }
+    return true
+end
+
+local function eligible_time_jokers()
+    local found = SMODS.find_card and SMODS.find_card('j_hnds_time_fcked_joker') or {}
+    local eligible = {}
+    for _, c in ipairs(found or {}) do
+        if c and not c.debuff and c.ability and c.ability.extra then
+            eligible[#eligible + 1] = c
+        end
+    end
+    return eligible
+end
+
+local function should_replay(candidate)
+    if not (G and G.GAME and candidate and candidate.token) then return false end
+    G.GAME.hnds_time_fcked_rolled = G.GAME.hnds_time_fcked_rolled or {}
+    if G.GAME.hnds_time_fcked_rolled[candidate.token] then return false end
+
+    -- Mark BEFORE rolling so double-clicks/re-entrant cash-out calls can never
+    -- reroll the same defeated Blind. A replay keeps the same token, hence the
+    -- parenthetical "Once per Blind" is enforced on the replay as well.
+    G.GAME.hnds_time_fcked_rolled[candidate.token] = true
+
+    local jokers = eligible_time_jokers()
+    if #jokers == 0 then return false end
+
+    -- One effect roll per defeated Blind. Multiple physical copies do not turn
+    -- the single once-per-Blind event into an unbounded chain of replay rolls.
+    local card = jokers[1]
+    local odds = tonumber(card.ability.extra.odds) or 2
+    return SMODS.pseudorandom_probability(
+        card, 'hnds_time_fcked_' .. candidate.token, 1, odds, 'hnds_time_fcked'
+    )
+end
+
+local function restore_replay_state(candidate)
+    if not (G and G.GAME and G.GAME.round_resets and candidate) then return end
+    local resets = G.GAME.round_resets
+
+    resets.ante = candidate.ante or resets.ante
+    resets.blind_ante = candidate.blind_ante or candidate.ante or resets.blind_ante
+    resets.blind_choices = shallow_copy(candidate.blind_choices)
+    resets.blind_states = shallow_copy(candidate.blind_states)
+
+    local slot = candidate.slot
+    if slot then
+        resets.blind_choices[slot] = candidate.blind_key
+
+        -- The just-defeated Blind may already have advanced the next slot to
+        -- Select before Joker end-of-round calculations finish. Replaying must
+        -- expose exactly ONE current Blind, so normalize the three vanilla slot
+        -- states back to the progression point immediately before this Blind.
+        if slot == 'Small' then
+            resets.blind_states.Small = 'Select'
+            resets.blind_states.Big = 'Upcoming'
+            resets.blind_states.Boss = 'Upcoming'
+        elseif slot == 'Big' then
+            resets.blind_states.Small = 'Defeated'
+            resets.blind_states.Big = 'Select'
+            resets.blind_states.Boss = 'Upcoming'
+        elseif slot == 'Boss' then
+            resets.blind_states.Small = 'Defeated'
+            resets.blind_states.Big = 'Defeated'
+            resets.blind_states.Boss = 'Select'
+        else
+            resets.blind_states[slot] = 'Select'
+        end
+        G.GAME.blind_on_deck = slot
+    end
+
+    local blind_center = G.P_BLINDS and G.P_BLINDS[candidate.blind_key]
+    if blind_center then resets.blind = blind_center end
+
+    -- Blind Raiser stores upgraded Small/Big replacements separately. We do not
+    -- rewrite those records: restoring the exact choice key above lets the
+    -- existing compatibility layer rebuild the same upgraded Blind normally.
+    G.GAME.hnds_time_fcked_candidate = nil
+end
+
+local function cash_out_to_replay(e, candidate)
+    stop_use()
+    if not G.round_eval then return false end
+
+    -- Balatro's long Negative-edition sting marks the successful timeline
+    -- rewind. Keep it inside the successful replay path so a failed transition
+    -- can never play the proc sound.
+    play_sound('negative', 1, 0.7)
+
+    if e and e.config then e.config.button = nil end
+    G.round_eval.alignment.offset.y = G.ROOM.T.y + 15
+    G.round_eval.alignment.offset.x = 0
+    if G.deck then
+        G.deck:shuffle('cashout' .. tostring(candidate.ante or G.GAME.round_resets.ante))
+        G.deck:hard_set_T()
+    end
+    delay(0.3)
+
+    G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = function()
+            if G.round_eval then
+                G.round_eval:remove()
+                G.round_eval = nil
+            end
+
+            restore_replay_state(candidate)
+
+            G.GAME.current_round.jokers_purchased = 0
+            G.GAME.current_round.discards_left = math.max(
+                0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards
+            )
+            G.GAME.current_round.hands_left = math.max(
+                1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands
+            )
+
+            -- Re-enter the normal Blind Select UI with the just-defeated slot
+            -- restored to Select. No Shop is created on a successful replay.
+            G.STATE = G.STATES.BLIND_SELECT
+            G.STATE_COMPLETE = false
+            return true
+        end,
+    }))
+
+    ease_dollars(G.GAME.current_round.dollars)
+    G.E_MANAGER:add_event(Event({
+        func = function()
+            G.GAME.previous_round.dollars = G.GAME.dollars
+            return true
+        end,
+    }))
+    play_sound('coin7')
+    G.VIBRATION = G.VIBRATION + 1
+    return true
+end
+
+-- Load this after challenge_rules.lua so Time is the outermost cash-out wrapper.
+-- When it does not proc, every existing cash-out behavior is delegated unchanged.
+if G and G.FUNCS and type(G.FUNCS.cash_out) == 'function'
+    and not G.FUNCS._hnds_time_fcked_cash_out_wrapped
+then
+    local cash_out_ref = G.FUNCS.cash_out
+    G.FUNCS._hnds_time_fcked_cash_out_wrapped = true
+
+    function G.FUNCS.cash_out(e, delay_seconds, ...)
+        local candidate = G and G.GAME and G.GAME.hnds_time_fcked_candidate
+        if candidate and should_replay(candidate) then
+            if cash_out_to_replay(e, candidate) then
+                return
+            end
+        end
+
+        -- Candidate is only meaningful for the round-eval screen it came from.
+        -- Clear it before normal cash-out so stale snapshots cannot fire later.
+        if G and G.GAME then G.GAME.hnds_time_fcked_candidate = nil end
+        return cash_out_ref(e, delay_seconds, ...)
+    end
+end

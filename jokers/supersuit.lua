@@ -24,22 +24,29 @@ SMODS.Joker ({
         return HNDS.joker_unlock_condition_met("supersuit", args)
     end,
     loc_vars = function(self, info_queue, card)
-        local current_suit = G.GAME.current_round.supersuit_card and G.GAME.current_round.supersuit_card.suit or "Spades"
-        return {vars = {localize(current_suit, 'suits_singular'), colours = {G.C.SUITS[current_suit]}}}
+        local round = G and G.GAME and G.GAME.current_round
+        local current_suit = round and round.supersuit_card and round.supersuit_card.suit or "Spades"
+        local suit_colour = G and G.C and G.C.SUITS and G.C.SUITS[current_suit]
+        return {vars = {localize(current_suit, 'suits_singular'), colours = {suit_colour}}}
     end,
 
     calculate = function(self, card, context)
+        if type(context) ~= "table" then return end
+        local other = context.other_card
+        local current_round = G and G.GAME and G.GAME.current_round
+        local suit = current_round and current_round.supersuit_card and current_round.supersuit_card.suit
+        if not (other and type(other.is_suit) == "function" and suit) then return end
 
-
-        if context.cardarea == G.play and context.repetition and context.other_card:is_suit(G.GAME.current_round.supersuit_card.suit) then
+        if context.cardarea == G.play and context.repetition and other:is_suit(suit) then
             return {
                 message = localize('k_again_ex'),
                 repetitions = card.ability.extra.reps,
                 card = card
             }
 
-        elseif context.repetition and context.cardarea == G.hand and context.other_card:is_suit(G.GAME.current_round.supersuit_card.suit) then
-            if (next(context.card_effects[1]) or #context.card_effects > 1) then
+        elseif context.repetition and context.cardarea == G.hand and other:is_suit(suit) then
+            local effects = type(context.card_effects) == "table" and context.card_effects or {}
+            if ((type(effects[1]) == "table" and next(effects[1])) or #effects > 1) then
                 return {
                     message = localize('k_again_ex'),
                     repetitions = card.ability.extra.reps,

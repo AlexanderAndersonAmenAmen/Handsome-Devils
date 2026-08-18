@@ -22,10 +22,13 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = true,
     calculate = function (self, card, context)
-        if context.repetition and #G.play.cards == 1 and context.other_card == G.play.cards[1] then
+        if type(context) ~= "table" then return end
+        local play_cards = G and G.play and G.play.cards
+        if type(play_cards) ~= "table" then return end
+        if context.repetition and #play_cards == 1 and context.other_card == play_cards[1] then
             return { repetitions = card.ability.extra.reps }
         end
-        if context.destroy_card and #G.play.cards == 1 and context.destroy_card == G.play.cards[1] and not context.blueprint and SMODS.pseudorandom_probability(card, "hnds_energized", 1, card.ability.extra.odds) then
+        if context.destroy_card and #G.play.cards == 1 and context.destroy_card == play_cards[1] and not context.blueprint and SMODS.pseudorandom_probability(card, "hnds_energized", 1, card.ability.extra.odds) then
             return { remove = true }
         end
     end,

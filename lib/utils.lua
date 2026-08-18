@@ -345,7 +345,9 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 
 			local old_ban_state = G.GAME.banned_keys[new_joker]
 			G.GAME.banned_keys[new_joker] = nil
-			local j = SMODS.add_card{ area = G.hnds_circus_joker, key = new_joker, set = "Joker", no_edition = true, key_append = "hnds_circus" }
+			local ok_add, j = pcall(SMODS.add_card, { area = G.hnds_circus_joker, key = new_joker, set = "Joker", no_edition = true, key_append = "hnds_circus" })
+			G.GAME.banned_keys[new_joker] = old_ban_state
+			if not ok_add then error(j) end
 			if j then
 				j.ignore_base_shader = j.ignore_base_shader or {}
 				j.ignore_base_shader.hnds_circus = true
@@ -353,7 +355,6 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 				j.ignore_shadow.hnds_circus = true
 				j.hnds_circus = true
 			end
-			G.GAME.banned_keys[new_joker] = old_ban_state
 		end
 	elseif G.hnds_circus_joker then
 		G.hnds_circus_joker:remove()

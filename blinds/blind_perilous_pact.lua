@@ -142,8 +142,8 @@ then
     HNDS._perilous_pact_score_hooked = true
     local calculate_round_score_ref = SMODS.calculate_round_score
 
-    SMODS.calculate_round_score = function(flames)
-        local score = calculate_round_score_ref(flames)
+    SMODS.calculate_round_score = function(flames, ...)
+        local score = calculate_round_score_ref(flames, ...)
         if flames or score == nil then return score end
 
         local context = {

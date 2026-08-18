@@ -39,7 +39,8 @@ HNDS.PLATINUM_STACKABLE_BLINDS = VANILLA_TO_HOOK
 HNDS.PLATINUM_HOOK_TO_BLIND = HOOK_TO_VANILLA
 
 local function blind_raiser_active()
-    return G and G.GAME ~= nil
+    return hnds_config and hnds_config.enableBlindUpgradeButton ~= false
+        and G and G.GAME ~= nil
 end
 
 local function current_ante()
@@ -784,9 +785,11 @@ then
     local game_start_run_ref = Game.start_run
     function Game:start_run(...)
         install_blind_raiser_hand_score_hooks()
-        local result = game_start_run_ref(self, ...)
+        local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+        local unpack_values = table.unpack or unpack
+        local result = pack(game_start_run_ref(self, ...))
         install_blind_raiser_hand_score_hooks()
-        return result
+        return unpack_values(result, 1, result.n)
     end
 end
 
@@ -952,8 +955,8 @@ end
 -- and the active Blind HUD. This does not rely on a single UI-definition patch
 -- or on Blind:set_text load order, and append_plus_to_name is idempotent.
 local localize_platinum_ref = localize
-function localize(args, misc_cat, misc_loc, silent)
-    local result = localize_platinum_ref(args, misc_cat, misc_loc, silent)
+function localize(args, misc_cat, misc_loc, silent, ...)
+    local result = localize_platinum_ref(args, misc_cat, misc_loc, silent, ...)
     if type(args) == "table"
         and args.type == "name_text"
         and args.set == "Blind"
@@ -1480,11 +1483,11 @@ local function active_stacked_components_debuff_card(blind, card)
 end
 
 local Blind_debuff_card_ref = Blind.debuff_card
-function Blind:debuff_card(card, from_blind)
+function Blind:debuff_card(card, from_blind, ...)
     -- Let the natural Boss and every other mod resolve first. A stacked card
     -- debuffer then ORs its own result on top; it never replaces the natural
     -- Boss's suit/type and cannot accidentally clear another debuff source.
-    local result = Blind_debuff_card_ref(self, card, from_blind)
+    local result = Blind_debuff_card_ref(self, card, from_blind, ...)
     if active_stacked_components_debuff_card(self, card) then
         card:set_debuff(true)
     end
@@ -1591,7 +1594,7 @@ function HNDS.sync_live_platinum_blind_score(blind, capture_base)
 end
 
 local Blind_set_blind_ref = Blind.set_blind
-function Blind:set_blind(blind, reset, silent)
+function Blind:set_blind(blind, reset, silent, ...)
     local slot_before = G and G.GAME and G.GAME.blind_on_deck
     local ante_before = current_ante()
     local incoming_key = blind and blind.key
@@ -1648,7 +1651,7 @@ function Blind:set_blind(blind, reset, silent)
         self.hnds_platinum_score_key = nil
     end
 
-    local result = Blind_set_blind_ref(self, blind, reset, silent)
+    local result = Blind_set_blind_ref(self, blind, reset, silent, ...)
 
     -- Persist the physical slot on the live Blind. This remains reliable during
     -- end-of-round transitions where blind_on_deck may already be advancing.

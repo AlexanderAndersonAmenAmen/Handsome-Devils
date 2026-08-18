@@ -6,12 +6,12 @@ function HNDS.is_challenge(key)
 end
 
 -- Dark Ritual
-	if not G.FUNCS._hnds_wrapped_cash_out then
+	if G and G.FUNCS and type(G.FUNCS.cash_out) == 'function' and not G.FUNCS._hnds_wrapped_cash_out then
 		G.FUNCS._hnds_wrapped_cash_out = true
 		local cash_out_ref = G.FUNCS.cash_out
-		function G.FUNCS.cash_out(e, delay_seconds)
+		function G.FUNCS.cash_out(e, delay_seconds, ...)
 		if not HNDS.is_challenge('dark_ritual') then
-			return cash_out_ref(e, delay_seconds)
+			return cash_out_ref(e, delay_seconds, ...)
 		end
 
 		stop_use()
@@ -62,10 +62,11 @@ HNDS.GAMBLING_BANNED_EDITIONS = HNDS.GAMBLING_BANNED_EDITIONS or { e_hnds_vintag
 if Card and Card.generate_card_ui and not Card._hnds_wrapped_generate_card_ui then
 	Card._hnds_wrapped_generate_card_ui = true
 	local generate_card_ui_ref = Card.generate_card_ui
-	function Card:generate_card_ui(_dim_table, _scale, _rotate, _hover, _focus, _major)
-		local ret = generate_card_ui_ref(self, _dim_table, _scale, _rotate, _hover, _focus, _major)
+	function Card:generate_card_ui(_dim_table, _scale, _rotate, _hover, _focus, _major, ...)
+		local ret = generate_card_ui_ref(self, _dim_table, _scale, _rotate, _hover, _focus, _major, ...)
 		if HNDS.is_challenge('gambling_opportunity') then
-			if self.config and self.config.center and HNDS.GAMBLING_BANNED_ENHANCEMENTS[self.config.center.key] then
+			if self.config and self.config.center and HNDS.GAMBLING_BANNED_ENHANCEMENTS[self.config.center.key]
+				and G and G.P_CENTERS and G.P_CENTERS.m_base then
 				self:set_ability(G.P_CENTERS.m_base, true)
 			end
 			if self.seal and HNDS.GAMBLING_BANNED_SEALS[self.seal] then
@@ -80,11 +81,12 @@ end
 if Card and Card.set_ability and not Card._hnds_wrapped_set_ability then
 	Card._hnds_wrapped_set_ability = true
 	local set_ability_ref = Card.set_ability
-	function Card:set_ability(center, initial, silent)
-		if HNDS.is_challenge('gambling_opportunity') and center and HNDS.GAMBLING_BANNED_ENHANCEMENTS[center.key] then
+	function Card:set_ability(center, initial, silent, ...)
+		if HNDS.is_challenge('gambling_opportunity') and center and HNDS.GAMBLING_BANNED_ENHANCEMENTS[center.key]
+			and G and G.P_CENTERS and G.P_CENTERS.m_base then
 			center = G.P_CENTERS.m_base
 		end
-		return set_ability_ref(self, center, initial, silent)
+		return set_ability_ref(self, center, initial, silent, ...)
 	end
 end
 
@@ -92,11 +94,11 @@ end
 if Card and Card.set_seal and not Card._hnds_wrapped_set_seal then
 	Card._hnds_wrapped_set_seal = true
 	local set_seal_ref = Card.set_seal
-	function Card:set_seal(seal, silent)
+	function Card:set_seal(seal, silent, ...)
 		if HNDS.is_challenge('gambling_opportunity') and seal and HNDS.GAMBLING_BANNED_SEALS[seal] then
-			return set_seal_ref(self, nil, silent)
+			return set_seal_ref(self, nil, silent, ...)
 		end
-		return set_seal_ref(self, seal, silent)
+		return set_seal_ref(self, seal, silent, ...)
 	end
 end
 
@@ -104,11 +106,11 @@ end
 if Card and Card.set_edition and not Card._hnds_wrapped_set_edition then
 	Card._hnds_wrapped_set_edition = true
 	local set_edition_ref = Card.set_edition
-	function Card:set_edition(edition, immediate, silent)
+	function Card:set_edition(edition, immediate, silent, ...)
 		if HNDS.is_challenge('gambling_opportunity') and edition and HNDS.GAMBLING_BANNED_EDITIONS[edition] then
-			return set_edition_ref(self, nil, immediate, silent)
+			return set_edition_ref(self, nil, immediate, silent, ...)
 		end
-		return set_edition_ref(self, edition, immediate, silent)
+		return set_edition_ref(self, edition, immediate, silent, ...)
 	end
 end
 
@@ -116,8 +118,8 @@ end
 if get_current_pool and not _G._hnds_wrapped_get_current_pool then
 	_G._hnds_wrapped_get_current_pool = true
 	local get_current_pool_ref = get_current_pool
-	function get_current_pool(_type, _rarity, _legendary, _append)
-		local pool, pool_key = get_current_pool_ref(_type, _rarity, _legendary, _append)
+	function get_current_pool(_type, _rarity, _legendary, _append, ...)
+		local pool, pool_key = get_current_pool_ref(_type, _rarity, _legendary, _append, ...)
 		if HNDS.is_challenge('gambling_opportunity') and _type == 'Enhanced' and type(pool) == 'table' then
 			local filtered = {}
 			for i = 1, #pool do

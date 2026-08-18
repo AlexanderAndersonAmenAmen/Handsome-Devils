@@ -28,18 +28,16 @@ local localization = {
 			j_flower_pot = {
 				name = "Flower Pot",
 				text = {
-                    'Gives {X:mult,C:white}X{} Mult equal to the',
-                    'number of {C:attention}unique{} suits',
-                    'in played poker hand',
+                    '{X:mult,C:white}X1{} Mult for each unique',
+                    '{C:attention}suit{} in played poker hand',
                     '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)',
 				},
 			},
 			j_hnds_flower_pot_none = {
 				name = "Flower Pot",
 				text = {
-                    'Gives {X:mult,C:white}X{} Mult equal to the',
-                    'number of {C:attention}unique{} suits',
-                    'in played poker hand',
+                    '{X:mult,C:white}X1{} Mult for each unique',
+                    '{C:attention}suit{} in played poker hand',
 					"{C:inactive}(Currently none)",
 				},
 			},
@@ -395,7 +393,7 @@ local localization = {
 					"When hand is played, destroy",
 					"a random held in hand card",
 					"to gain its {C:chips}Chips{} and {C:mult}Mult",
-					"{C:inactive}(Currently{} {C:chips}+#1#{} {C:inactive}Chips,{} {C:mult}+#2#{} {C:inactive}Mult)",
+					"{C:inactive}(Currently {C:chips}+#1# {C:inactive}Chips, {C:mult}+#2# {C:inactive}Mult)",
 				},
 				unlock = {
 					"Have a deck",
@@ -483,6 +481,98 @@ local localization = {
 					"{C:inactive}(Currently {X:mult,C:white}X#2#{C:inactive} Mult)",
 				},
 			},
+			j_hnds_plague = {
+				name = "Plague",
+				text = {
+					"{C:green}#1# in #2#{} chance for",
+					"scored card to spread",
+					"its {C:attention}Enhancement{} to the",
+					"next scoring card",
+				},
+			},
+			j_hnds_war = {
+				name = "War",
+				text = {
+					"If {C:attention}first hand{} of",
+					"round is a {C:attention}#1#{},",
+					"destroy all scored cards",
+					"and change poker hand",
+				},
+			},
+			j_hnds_famine = {
+				name = "Famine",
+				text = {
+					"{X:mult,C:white}X#1#{} Mult",
+					"Gives {X:mult,C:white}X#2#{} Mult",
+					"less per card in",
+					"played hand",
+				},
+			},
+			j_hnds_death = {
+				name = "Death",
+				text = {
+					"{C:attention}Rightmost{} card",
+					"held in hand converts",
+					"{C:attention}leftmost{} card into its",
+					"copy at end of round",
+				},
+			},
+            j_hnds_spaghettified_joker = {
+                name = "Spaghettified Joker",
+                text = {
+                    "Steals {C:attention}1{} level from final",
+                    "{C:attention}poker hand{} of round to",
+                    "gain its {C:chips}Chips{} and {C:mult}Mult{}",
+                    "{C:inactive}(Currently {C:chips}+#1#{} {C:inactive}Chips, {C:mult}+#2#{} {C:inactive}Mult)",
+                },
+            },
+            j_hnds_ecg = {
+                name = "ECG",
+                text = {
+                    "{C:mult}+#1#{} Mult",
+                    "per {C:attention}consecutive{}",
+                    "hand played with a",
+                    "scoring {C:hearts}Heart{} card",
+                    "{C:inactive}(Currently {C:mult}+#2#{} {C:inactive}Mult)",
+                },
+            },
+            j_hnds_jevil = {
+                name = "Jevil",
+                text = {
+                    "All cards from your",
+                    "starting hand count as",
+                    "{C:attention}Wild cards{} this round",
+                },
+            },
+            j_hnds_headless_joker = {
+                name = "Headless Joker",
+                text = {
+                    "When you get this Joker,",
+                    "add his head to your {C:attention}full{}",
+                    "{C:attention}deck{} as a {C:attention}playing card{}",
+                    "{C:inactive}(Has any rank or suit)",
+                },
+            },
+
+            j_hnds_water_slide = {
+                name = "Water Slide",
+                text = {
+                    "{C:green}#1# in #2#{} chance",
+                    "to gain {C:red}+#3#{} discard",
+                    "this round when you",
+                    "discard an {C:attention}8{}",
+                },
+            },
+
+			j_hnds_time_fcked_joker = {
+				name = "Time Fc@!ked Joker",
+				text = {
+					"{C:green}#1# in #2#{} chance",
+					"to replay {C:attention}Blind{}",
+					"{C:inactive}(Once per Blind)",
+					"{C:inactive,s:0.8}~Déjà vu?~",
+				},
+			},
 			j_hnds_joker_reverse = {
 				name = "Joker Reverse",
 				text = {
@@ -495,7 +585,7 @@ local localization = {
 			j_hnds_wait_what = {
 				name = "Wait, what?",
 				text = {
-					"{X:mult,C:white}X#1#{} Mult",
+					"{X:mult,C:white}X#1#{} Mult?",
 				},
 				unlock = {
 					"?????",
@@ -1246,7 +1336,46 @@ local localization = {
 			},
 		},
 
-		Other = {
+        Other = {
+
+            hnds_jack_of_lanterns_headless = {
+                name = "Jack of Lanterns",
+                text = {
+					"{C:chips}+50{} chips",
+                    "Removed when you",
+                    "lose {C:attention}Headless Joker{}",
+					"Can be used as any",
+                    "rank or suit",
+                },
+            },
+
+			hnds_jack_of_lanterns = {
+                name = "Jack of Lanterns",
+                text = {
+                    "Removed when you",
+                    "lose {C:attention}Headless Joker{}",
+					"Can be used as any",
+                    "rank or suit",
+                },
+            },
+
+            hnds_jevil_wild = {
+                name = "Chaos! Chaos!",
+                text = {
+                    "Counts as a {C:attention}Wild card{}",
+                    "until end of round",
+                },
+            },
+
+            hnds_jack_drivers_license = {
+                name = "Driver's License",
+                text = {
+                    "{X:mult,C:white}X#1#{} Mult if you have",
+                    "at least {C:attention}#2#{} Enhanced",
+                    "cards in your full deck",
+                    "{C:inactive}(Currently {C:attention}#3#{C:inactive})",
+                },
+            },
 
             hnds_jigsaw_progress_empty = {
                 name = "Played Poker Hands",
@@ -2110,6 +2239,11 @@ local localization = {
 	misc = {
 		dictionary = {
 			k_hnds_be_not_afraid = "Holy trinity!",
+		k_hnds_spread = "Spread!",
+		k_hnds_war = "War!",
+		k_hnds_war_changed = "Changed!",
+		k_hnds_copied = "Copied!",
+		k_hnds_head_added = "Head added!",
 			k_hnds_krusty_voucher_tag = "Voucher Tag",
 			k_hnds_krusty_voucher_tags = "Voucher Tags",
 			hnds_upgrade_blind = "Upgrade Blind",
@@ -2119,6 +2253,7 @@ local localization = {
 			hnds_blind_raiser_tooltip_boss_blind = "Boss Blind: #1#",
 			k_hnds_petrified = "Petrified!",
 			k_hnds_goldfish = "Goldfish!",
+			k_hnds_jevil_chaos = "Chaos! Chaos!",
 			k_hnds_jester_negative = "Joker Negatived!",
 			k_hnds_jester_fade = "Faded...",
 			k_hnds_clown_eat = "Consumed!",
@@ -2182,9 +2317,12 @@ local localization = {
 			hnds_config_CursedPack = "Enable Cursed packs spawning",
 			hnds_config_CustomSounds = "Enable custom joker sounds",
 			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
+			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade button",
 			hnds_config_CustomMenu = "Enable custom main menu",
+			k_hnds_water_slide_discard = "+1 Discard",
 		},
 		labels = {
+			hnds_jevil_wild = "Jevil",
 			hnds_exchange_draw = "Bound",
 			hnds_bound = "Bound",
 			hnds_vintage = "Vintage",
@@ -2209,6 +2347,15 @@ local localization = {
 			ch_c_hnds_dark_ritual = { "You can't visit the {C:money}Shop{}", },
 			ch_c_hnds_the_circus = {  "", },
 			ch_c_hnds_gambling_opportunity = {  "Economy {C:attention}Jokers{}, {C:attention}Gold Seal{}, {C:attention}Gold card{} and {C:attention}Lucky Card{} are banned", },
+		},
+		ranks = {
+			hnds_jack_of_lanterns = "Jack",
+		},
+		suits_singular = {
+			hnds_lanterns = "Lanterns",
+		},
+		suits_plural = {
+			hnds_lanterns = "Lanterns",
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Stone Ocean",

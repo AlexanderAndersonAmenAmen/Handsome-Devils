@@ -23,7 +23,12 @@ local function extra_value(card, key, fallback)
 end
 
 local function is_wild(card)
-    return card and SMODS.has_enhancement and SMODS.has_enhancement(card, 'm_wild')
+    if not card then return false end
+    if SMODS.has_enhancement and SMODS.has_enhancement(card, 'm_wild') then return true end
+    -- Jevil grants a temporary virtual Wild state rather than replacing the
+    -- card's Enhancement. Under Vanilla Tweaks it receives the same Wild
+    -- anti-debuff treatment as a real m_wild card.
+    return HNDS.is_jevil_wild and HNDS.is_jevil_wild(card) or false
 end
 
 local function active_splash()
@@ -63,8 +68,33 @@ local function add_dollars(amount)
     }
 end
 
+local function flower_pot_suit_cap()
+    -- Keep the vanilla ceiling at X4 unless another mod has actually
+    -- registered additional suits. Handsome Devils' private Lanterns suit is
+    -- only a Jack of Lanterns implementation detail, so it must not by itself
+    -- unlock Flower Pot's modded-suit scaling.
+    local registered = 0
+    for suit_key, _ in pairs((SMODS and SMODS.Suits) or {}) do
+        if suit_key ~= 'hnds_lanterns' then registered = registered + 1 end
+    end
+    return math.max(4, registered)
+end
+
 local function count_unique_suits(cards)
     if type(cards) ~= 'table' then return 0 end
+
+    -- Use the same dynamic suit helper as Occultist and Color of Madness, but
+    -- cap Flower Pot to the number of public registered suits. In a normal
+    -- four-suit game this preserves the vanilla X4 maximum; if another mod
+    -- adds one or more suits the cap automatically becomes X5, X6, etc.
+    local cap = flower_pot_suit_cap()
+    if HNDS and type(HNDS.get_unique_suits) == 'function' then
+        return math.min(cap, HNDS.get_unique_suits(cards))
+    end
+
+    -- Defensive fallback for unusual load orders where utils.lua has not yet
+    -- exposed the shared helper. Wild cards fill missing suits, but cannot
+    -- push the total above the currently available public-suit cap.
     local suits, wilds = {}, 0
     for _, playing_card in ipairs(cards) do
         if playing_card and not playing_card.debuff
@@ -72,14 +102,16 @@ local function count_unique_suits(cards)
         then
             if is_wild(playing_card) then
                 wilds = wilds + 1
-            elseif playing_card.base and playing_card.base.suit then
+            elseif playing_card.base and playing_card.base.suit
+                and playing_card.base.suit ~= 'hnds_lanterns'
+            then
                 suits[playing_card.base.suit] = true
             end
         end
     end
     local count = 0
     for _ in pairs(suits) do count = count + 1 end
-    return math.min(4, count + wilds)
+    return math.min(cap, count + wilds)
 end
 
 local function highlighted_scoring_hand()
@@ -203,7 +235,7 @@ if SMODS and type(SMODS.poll_object) == 'function'
 then
     SMODS._hnds_enhanced_shop_poll_guard = true
     local poll_object_ref = SMODS.poll_object
-    SMODS.poll_object = function(args)
+    SMODS.poll_object = function(args, ...)
         if type(args) == 'table'
             and not (args.type or args.types or args.attributes or args.pool)
             and args.guaranteed
@@ -217,7 +249,7 @@ then
                 args = fixed
             end
         end
-        return poll_object_ref(args)
+        return poll_object_ref(args, ...)
     end
 end
 
@@ -737,9 +769,11 @@ if Game and type(Game.start_run) == 'function' and not HNDS._blue_stake_start_ru
     HNDS._blue_stake_start_run_hook = true
     local hnds_blue_stake_start_run_ref = Game.start_run
     function Game:start_run(...)
-        local result = hnds_blue_stake_start_run_ref(self, ...)
+        local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+        local unpack_values = table.unpack or unpack
+        local result = pack(hnds_blue_stake_start_run_ref(self, ...))
         HNDS.apply_blue_stake_hand_rework()
-        return result
+        return unpack_values(result, 1, result.n)
     end
 end
 

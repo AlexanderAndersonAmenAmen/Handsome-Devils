@@ -529,9 +529,9 @@ end
 
 local create_UIBox_blind_tag_ref = create_UIBox_blind_tag
 
-function create_UIBox_blind_tag(blind_choice, run_info)
+function create_UIBox_blind_tag(blind_choice, run_info, ...)
     if run_info or not blind_raiser_active() then
-        return create_UIBox_blind_tag_ref(blind_choice, run_info)
+        return create_UIBox_blind_tag_ref(blind_choice, run_info, ...)
     end
 
     G.GAME.round_resets.blind_tags = G.GAME.round_resets.blind_tags or {}

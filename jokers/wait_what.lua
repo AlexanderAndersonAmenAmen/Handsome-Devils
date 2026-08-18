@@ -17,7 +17,7 @@ SMODS.Joker({
 	demicoloncompat = true,
 	eternal_compat = true,
 	perishable_compat = true,
-	config = { extra = { xmult = 4, tag_chance = 10 } },
+	config = { extra = { xmult = 4, tag_chance = 6 } },
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.xmult, card.ability.extra.tag_chance } }
 	end,
@@ -76,7 +76,7 @@ SMODS.Joker({
 					end
 				}))
 				return {
-					message = "3RR0R!",
+					message = "Rare Tag!",
 					colour = G.C.FILTER,
 					card = card
                 }

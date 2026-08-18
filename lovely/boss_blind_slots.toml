@@ -70,7 +70,7 @@ match_indent = true
 target = "functions/button_callbacks.lua"
 pattern = "G.GAME.round_resets.blind_states[e.config.id] == 'Defeated' then"
 position = "before"
-payload = "(G.GAME.hnds_upgraded_blinds or {})[tostring(G.GAME.round_resets.ante)..':'..e.config.id] or"
+payload = "(hnds_config and hnds_config.enableBlindUpgradeButton and (G.GAME.hnds_upgraded_blinds or {})[tostring(G.GAME.round_resets.ante)..':'..e.config.id]) or"
 match_indent = true
 
 # UI disabling is not sufficient protection against stale controller focus

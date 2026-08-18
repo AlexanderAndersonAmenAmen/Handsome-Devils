@@ -108,8 +108,8 @@ end
 -- Duplicate slots intentionally collapse here because this API is a key set;
 -- their effects are still evaluated once per stored fusion slot below.
 local get_enhancements_ref = SMODS.get_enhancements
-function SMODS.get_enhancements(card, extra_only)
-    local enhancements = get_enhancements_ref(card, extra_only) or {}
+function SMODS.get_enhancements(card, extra_only, ...)
+    local enhancements = get_enhancements_ref(card, extra_only, ...) or {}
     if not is_aberrant(card) then return enhancements end
 
     local entries = fusion_entries(card)
@@ -157,12 +157,12 @@ end
 -- replacing Aberrant. Once both slots are occupied, any further attempt
 -- destroys the playing card.
 local set_ability_ref = Card.set_ability
-function Card:set_ability(center, initial, delay_sprites)
+function Card:set_ability(center, initial, delay_sprites, ...)
     local new_center = resolve_center(center)
     local new_key = new_center and new_center.key
 
     if HNDS._aberrant_internal_center_swap then
-        return set_ability_ref(self, center, initial, delay_sprites)
+        return set_ability_ref(self, center, initial, delay_sprites, ...)
     end
 
     -- A permanently Bound card being changed to Obsidian is a visual
@@ -170,7 +170,7 @@ function Card:set_ability(center, initial, delay_sprites)
     if new_key == "m_hnds_obsidian"
         and HNDS.is_bound_card and HNDS.is_bound_card(self)
     then
-        return set_ability_ref(self, center, initial, delay_sprites)
+        return set_ability_ref(self, center, initial, delay_sprites, ...)
     end
 
     if is_aberrant(self)
@@ -191,17 +191,17 @@ function Card:set_ability(center, initial, delay_sprites)
         return self
     end
 
-    return set_ability_ref(self, center, initial, delay_sprites)
+    return set_ability_ref(self, center, initial, delay_sprites, ...)
 end
 
 -- Run every fused enhancement as a full quantum enhancement pass. Iterating the
 -- stored slots (rather than a key set) is what makes Steel/Steel, Gold/Gold,
 -- etc. stack exactly twice without using a card retrigger.
 local calculate_quantum_ref = SMODS.calculate_quantum_enhancements
-function SMODS.calculate_quantum_enhancements(card, effects, context)
+function SMODS.calculate_quantum_enhancements(card, effects, context, ...)
     local fusions = is_aberrant(card) and aberrant_fusions(card) or nil
     if not fusions or #fusions == 0 then
-        if calculate_quantum_ref then return calculate_quantum_ref(card, effects, context) end
+        if calculate_quantum_ref then return calculate_quantum_ref(card, effects, context, ...) end
         return
     end
     if not (SMODS.optional_features and SMODS.optional_features.quantum_enhancements)
@@ -222,8 +222,10 @@ function SMODS.calculate_quantum_enhancements(card, effects, context)
     -- Preserve enhancements granted externally by Jokers while avoiding keys
     -- that are already supplied by Aberrant's own fusion slots.
     HNDS._aberrant_reading_quantum = true
-    local extra = SMODS.get_enhancements(card, true) or {}
+    local ok_extra, extra = pcall(SMODS.get_enhancements, card, true)
     HNDS._aberrant_reading_quantum = nil
+    if not ok_extra then error(extra) end
+    extra = extra or {}
     local external = {}
     for key in pairs(extra) do
         local center = G.P_CENTERS[key]
@@ -277,15 +279,15 @@ end
 
 -- Stone is deliberately dominant over Wild on Aberrant cards.
 local has_no_suit_ref = SMODS.has_no_suit
-function SMODS.has_no_suit(card)
+function SMODS.has_no_suit(card, ...)
     if is_aberrant(card) and has_fusion(card, "m_stone") then return true end
-    return has_no_suit_ref(card)
+    return has_no_suit_ref(card, ...)
 end
 
 local has_any_suit_ref = SMODS.has_any_suit
-function SMODS.has_any_suit(card)
+function SMODS.has_any_suit(card, ...)
     if is_aberrant(card) and has_fusion(card, "m_stone") then return false end
-    return has_any_suit_ref(card)
+    return has_any_suit_ref(card, ...)
 end
 
 -- Stone also removes the normal rank/suit front and its base-rank chip value,
