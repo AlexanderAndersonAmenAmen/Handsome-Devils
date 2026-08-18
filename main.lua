@@ -1,22 +1,14 @@
 HNDS = {}
 
--- Collection layouts for vanilla object pages.
--- The rows argument is a list of per-row card limits, not a {row, column}
--- dimension pair. Handsome Devils currently has 10 Enhancements and 13 Planets,
--- so their bounded layouts are two rows of 5 and rows of 6/7 respectively.
---
--- The old dedicated Handsome Devils Legendary Joker page is intentionally
--- disabled below, but its full implementation is retained inside comments so
--- it can be re-enabled later without reconstructing it. Other collection layout
--- adjustments in this wrapper remain active.
+function HNDS.pack(...)
+    return { n = select('#', ...), ... }
+end
+
 if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
     local hnds_card_collection_UIBox = SMODS.card_collection_UIBox
 
     --[[
     HD LEGENDARY COLLECTION PAGE (TEMPORARILY DISABLED)
-    Remove these long-comment delimiters and restore the Joker branch below to
-    re-enable the dedicated final page. The implementation is intentionally kept
-    intact here for future use.
 
     local hnds_legendary_collection_order = {
         'j_hnds_pennywise',

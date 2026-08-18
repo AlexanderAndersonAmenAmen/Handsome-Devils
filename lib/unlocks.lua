@@ -1035,7 +1035,7 @@ if type(discover_card) == "function" and not HNDS._unlock_discover_card_wrapped 
     HNDS._unlock_discover_card_wrapped = true
     local discover_card_unlock_ref = discover_card
     function discover_card(...)
-        local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+        local pack = HNDS.pack
         local unpack_values = table.unpack or unpack
         local result = pack(discover_card_unlock_ref(...))
         HNDS.request_unlock_check("hnds_discovery")

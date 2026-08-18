@@ -9,9 +9,7 @@
 
 HNDS = HNDS or {}
 
-local pack = table.pack or function(...)
-    return { n = select('#', ...), ... }
-end
+local pack = HNDS.pack
 local unpack_values = table.unpack or unpack
 
 local function normalize_slot(slot)

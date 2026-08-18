@@ -769,7 +769,7 @@ if Game and type(Game.start_run) == 'function' and not HNDS._blue_stake_start_ru
     HNDS._blue_stake_start_run_hook = true
     local hnds_blue_stake_start_run_ref = Game.start_run
     function Game:start_run(...)
-        local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+        local pack = HNDS.pack
         local unpack_values = table.unpack or unpack
         local result = pack(hnds_blue_stake_start_run_ref(self, ...))
         HNDS.apply_blue_stake_hand_rework()

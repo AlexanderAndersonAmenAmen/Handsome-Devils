@@ -785,7 +785,7 @@ then
     local game_start_run_ref = Game.start_run
     function Game:start_run(...)
         install_blind_raiser_hand_score_hooks()
-        local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+        local pack = HNDS.pack
         local unpack_values = table.unpack or unpack
         local result = pack(game_start_run_ref(self, ...))
         install_blind_raiser_hand_score_hooks()

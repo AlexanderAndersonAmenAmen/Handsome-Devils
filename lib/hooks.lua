@@ -1622,7 +1622,7 @@ if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 	local smods_create_card_ref = SMODS.create_card
 	function SMODS.create_card(args, ...)
 		HNDS = HNDS or {}
-        local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+        local pack = HNDS.pack
         local unpack_values = table.unpack or unpack
 		local previous_type = HNDS._creating_smods_card_type
 		HNDS._creating_smods_card_type = type(args) == 'table' and args.type or nil
@@ -1657,7 +1657,7 @@ if not _G._hnds_wrapped_create_card then
 			forced_key = forced_key,
 			key_append = key_append,
 		}
-        local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+        local pack = HNDS.pack
         local unpack_values = table.unpack or unpack
 		local packed = pack(pcall(create_card_ref, _type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append, ...))
 		HNDS._creating_card_source = previous_source
@@ -1804,7 +1804,7 @@ function get_new_boss(...)
         return invoke_boss_ref()
     end
 
-    local pack = table.pack or function(...) return { n = select('#', ...), ... } end
+    local pack = HNDS.pack
     local unpack_values2 = table.unpack or unpack
     local packed = pack(pcall(select_boss))
     G.GAME.win_ante = win_ante
