@@ -1,10 +1,41 @@
-local function hnds_ecg_has_scoring_heart(context)
+local function hnds_ecg_scoring_hearts(context)
+    local hearts = 0
     for _, scoring_card in ipairs((context and context.scoring_hand) or {}) do
         if scoring_card and scoring_card.is_suit and scoring_card:is_suit('Hearts') then
-            return true
+            hearts = hearts + 1
+            if hearts >= 2 then return hearts end
         end
     end
-    return false
+    return hearts
+end
+
+local function hnds_ecg_signed(value)
+    value = tonumber(value) or 0
+    if value >= 0 then return '+' .. tostring(value) end
+    return tostring(value)
+end
+
+local function hnds_ecg_remove_at_zero(card)
+    if not card or card.hnds_ecg_removing then return end
+    card.hnds_ecg_removing = true
+
+    -- Match self-expiring Jokers such as Popcorn: let the Mult change finish
+    -- resolving, then dissolve the actual ECG card.
+    if G and G.E_MANAGER and Event then
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.15,
+            func = function()
+                if card and card.area and card.start_dissolve then
+                    if play_sound then play_sound('tarot1') end
+                    card:start_dissolve()
+                end
+                return true
+            end,
+        }))
+    elseif card.start_dissolve then
+        card:start_dissolve()
+    end
 end
 
 SMODS.Joker {
@@ -16,40 +47,61 @@ SMODS.Joker {
     unlocked = true,
     discovered = true,
     blueprint_compat = true,
-    eternal_compat = true,
+    eternal_compat = false,
     perishable_compat = true,
 
-    config = { extra = { mult = 0, gain = 1 } },
+    config = { extra = { mult = 0, gain = 2, loss = 2 } },
 
     loc_vars = function(self, info_queue, card)
         local extra = card and card.ability and card.ability.extra or self.config.extra
-        return { vars = { tonumber(extra.gain) or 1, tonumber(extra.mult) or 0 } }
+        return {
+            vars = {
+                tonumber(extra.gain) or 2,
+                tonumber(extra.loss) or 2,
+                hnds_ecg_signed(extra.mult),
+            },
+        }
     end,
 
     calculate = function(self, card, context)
         local extra = card.ability.extra
 
+        -- Update once for the played hand. Blueprint/Brainstorm copies use the
+        -- stored value but must not advance ECG's own running Mult a second time.
         if context.before and not context.blueprint then
-            if hnds_ecg_has_scoring_heart(context) then
-                extra.mult = (tonumber(extra.mult) or 0) + (tonumber(extra.gain) or 1)
-                return { message = localize('k_upgrade_ex'), colour = G.C.MULT }
+            local delta
+            if hnds_ecg_scoring_hearts(context) >= 2 then
+                delta = tonumber(extra.gain) or 2
             else
-                extra.mult = 0
+                delta = -(tonumber(extra.loss) or 2)
             end
+            extra.mult = (tonumber(extra.mult) or 0) + delta
+
+            if extra.mult == 0 then
+                hnds_ecg_remove_at_zero(card)
+            end
+
+            return {
+                message = hnds_ecg_signed(delta) .. ' Mult',
+                colour = G.C.MULT,
+            }
         end
 
-        if context.joker_main and (tonumber(extra.mult) or 0) > 0 then
-            return { mult = extra.mult }
+        local current = tonumber(extra.mult) or 0
+        if context.joker_main and current ~= 0 then
+            return { mult = current }
         end
     end,
 
     joker_display_def = function(JokerDisplay)
         return {
             text = {
-                { text = '+' },
-                { ref_table = 'card.ability.extra', ref_value = 'mult', colour = G.C.MULT },
+                { ref_table = 'card.joker_display_values', ref_value = 'mult', colour = G.C.MULT },
             },
             text_config = { colour = G.C.MULT },
+            calc_function = function(card)
+                card.joker_display_values.mult = hnds_ecg_signed(card.ability.extra.mult)
+            end,
         }
     end,
 

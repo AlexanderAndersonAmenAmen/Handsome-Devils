@@ -1,10 +1,10 @@
 SMODS.Joker({
 	key = "dark_humor",
-	rarity = 2,
+	rarity = 3,
 	config = { extra = { chips = 0, mult = 0 } },
 	atlas = "Jokers",
 	pos = { x = 0, y = 0 },
-	cost = 6,
+	cost = 8,
 	unlocked = false,
 	discovered = false,
 	unlock_condition = { type = "hnds_joker_unlock", key = "dark_humor" },

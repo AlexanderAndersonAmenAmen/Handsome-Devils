@@ -631,7 +631,7 @@ local files = {
 			"balloons",
 			"coffee_break",
 			"most_wanted",
-			"jigsaw_joker",
+			"jackpot",
 			"pot_of_greed",
 
 			"dynamic_duos",
@@ -643,24 +643,24 @@ local files = {
 			"spaghettified_joker",
 			"ecg",
 			"jevil",
-			"headless_joker",
-			"water_slide",
-
-			"be_not_afraid",
-			"joker_reverse",
-			"time_fcked_joker",
 			"jodiac",
 			"jack_in_the_box",
+
+			"water_slide",
+			"be_not_afraid",
+			"time_fcked_joker",
+			"joker_reverse",
+			"jigsaw_joker",
 
 			"banana_split",
 			"supersuit",
 			"jokes_aside",
-			"jackpot",
+		    "headless_joker",
 		    "angry_mob",
 	
 		    "seismic_activity",
 	        "creepy",
-			"dark_humor",
+			"imposter",
 			"stone_mask",
 			"head_of_medusa",
 
@@ -675,12 +675,12 @@ local files = {
 			"war",
 			"famine",
 			"death",
-
+			
+			"dark_humor",
 			"demented",
-			"imposter",
-			"ms_fortune",
-			"fregoli",
 			"bizzare_joker",
+			"fregoli",
+			"ms_fortune",
 
 			"jester_in_yellow",
 			"occultist",

@@ -529,19 +529,19 @@ local localization = {
             j_hnds_ecg = {
                 name = "ECG",
                 text = {
-                    "{C:mult}+#1#{} Mult",
-                    "per {C:attention}consecutive{}",
-                    "hand played with a",
-                    "scoring {C:hearts}Heart{} card",
-                    "{C:inactive}(Currently {C:mult}+#2#{} {C:inactive}Mult)",
+                    "{C:mult}+#1#{} Mult if played hand",
+                    "scores at least {C:attention}2{} {C:hearts}Heart{}",
+                    "cards, otherwise, {C:mult}-#2#{} Mult",
+                    "{C:inactive}(Currently {C:mult}#3#{} {C:inactive}Mult)",
                 },
             },
             j_hnds_jevil = {
                 name = "Jevil",
                 text = {
-                    "All cards from your",
-                    "starting hand count as",
-                    "{C:attention}Wild cards{} this round",
+                    "{C:spades}Spade{} and {C:clubs}Club{} cards",
+                    "drawn to starting hand",
+                    "count as {C:attention}Wild cards{}",
+                    "until end of round",
                 },
             },
             j_hnds_headless_joker = {

@@ -43,7 +43,7 @@ SMODS.Joker {
     key = 'headless_joker',
     atlas = 'Jokers',
     pos = { x = 9, y = 6 },
-    rarity = 1,
+    rarity = 2,
     cost = 6,
     unlocked = true,
     discovered = true,

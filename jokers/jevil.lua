@@ -7,6 +7,16 @@ local function hnds_jevil_card_id(card)
     return tostring(card.playing_card or card.sort_id or card.ID or card)
 end
 
+local function hnds_jevil_is_target_suit(card)
+    if not card then return false end
+    -- Jevil only claims cards whose actual printed/base suit is Spades or Clubs.
+    -- Do not use Card:is_suit here: once Jevil's Sticker is active that method
+    -- intentionally reports every suit, which would make load-time cleanup
+    -- unable to distinguish old Hearts/Diamonds markers.
+    local suit = card.base and card.base.suit
+    return suit == 'Spades' or suit == 'Clubs'
+end
+
 local function hnds_jevil_is_stone(card)
     if not card then return false end
     local center = card.config and card.config.center
@@ -68,7 +78,10 @@ function HNDS.jevil_mark_starting_hand(cards)
     local marked = {}
     local visible_cards = {}
     for _, playing_card in ipairs(drawn) do
-        if playing_card and not playing_card.removed and not hnds_jevil_is_stone(playing_card) then
+        if playing_card and not playing_card.removed
+            and hnds_jevil_is_target_suit(playing_card)
+            and not hnds_jevil_is_stone(playing_card)
+        then
             local id = hnds_jevil_card_id(playing_card)
             if id then
                 marked[id] = true
@@ -229,9 +242,10 @@ function HNDS.jevil_rehydrate_round()
     for _, playing_card in ipairs(G.playing_cards) do
         local id = hnds_jevil_card_id(playing_card)
         if id and G.GAME.hnds_jevil_round_cards[id] then
-            if hnds_jevil_is_stone(playing_card) then
-                -- Migrate older mid-round saves that may have marked Stone (or
-                -- Stone-fused Aberrant) cards before this exclusion existed.
+            if hnds_jevil_is_stone(playing_card) or not hnds_jevil_is_target_suit(playing_card) then
+                -- Migrate older mid-round saves that may have marked Stone,
+                -- Stone-fused Aberrant, Heart, Diamond, or other-suit cards
+                -- before Jevil was restricted to Spades and Clubs.
                 G.GAME.hnds_jevil_round_cards[id] = nil
                 hnds_jevil_remove_tooltip(playing_card)
             else
@@ -276,7 +290,7 @@ SMODS.Joker {
     atlas = 'Jokers',
     pos = { x = 3, y = 7 },
     rarity = 1,
-    cost = 6,
+    cost = 4,
     unlocked = true,
     discovered = true,
     blueprint_compat = false,

@@ -19,6 +19,11 @@ end
 
 function HNDS.is_jevil_wild(card)
     if not card then return false end
+    -- Jevil now only affects actual Spade/Club starting-hand cards. Keep this
+    -- restriction at the shared Wild predicate too, so stale markers from an
+    -- older save can never make Hearts, Diamonds, or modded suits Wild.
+    local suit = card.base and card.base.suit
+    if suit ~= 'Spades' and suit ~= 'Clubs' then return false end
     if card.ability and card.ability.hnds_jevil_wild then return true end
     if not (G and G.GAME) then return false end
     local id = hnds_card_identity(card)
@@ -88,7 +93,7 @@ if SMODS and SMODS.Rank and SMODS.Ranks and not SMODS.Ranks[JOL_RANK_KEY] then
     }
 end
 
--- Both Jevil's marked starting-hand cards and Jack of Lanterns count as Wild
+-- Jevil's marked Spade/Club starting-hand cards and Jack of Lanterns count as Wild
 -- for suit checks. Stone/no-suit effects remain dominant.
 if Card and Card.is_suit and not HNDS._special_any_suit_card_hook then
     local is_suit_ref = Card.is_suit

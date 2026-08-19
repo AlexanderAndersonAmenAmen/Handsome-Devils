@@ -724,7 +724,7 @@ local HNDS_BLUE_STAKE_HAND_VALUES = {
     ['Three of a Kind'] = { mult = 3,  chips = 20,  l_mult = 2, l_chips = 15 },
     ['Straight']        = { mult = 4,  chips = 25,  l_mult = 3, l_chips = 25 },
     ['Flush']           = { mult = 4,  chips = 30,  l_mult = 2, l_chips = 10 },
-    ['Full House']      = { mult = 4,  chips = 40,  l_mult = 4, l_chips = 35 },
+    ['Full House']      = { mult = 4,  chips = 30,  l_mult = 4, l_chips = 25 },
     ['Four of a Kind']  = { mult = 6,  chips = 60,  l_mult = 3, l_chips = 25 },
     ['Straight Flush']  = { mult = 7,  chips = 100, l_mult = 6, l_chips = 50 },
     ['Five of a Kind']  = { mult = 11, chips = 110, l_mult = 3, l_chips = 30 },
@@ -811,6 +811,6 @@ take_vanilla_ownership(SMODS.Consumable, 'black_hole', {
     can_use = function() return true end,
 })
 
-take_vanilla_ownership(SMODS.PokerHand, 'Full House', { mult = 4, chips = 45, l_mult = 4, l_chips = 40 })
+take_vanilla_ownership(SMODS.PokerHand, 'Full House', { mult = 4, chips = 45, l_mult = 4, l_chips = 30 })
 take_vanilla_ownership(SMODS.PokerHand, 'Flush House', { l_mult = 5, l_chips = 50 })
 take_vanilla_ownership(SMODS.PokerHand, 'Straight Flush', { l_mult = 6, l_chips = 60 })
