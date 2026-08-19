@@ -50,7 +50,7 @@ SMODS.Joker {
     eternal_compat = false,
     perishable_compat = true,
 
-    config = { extra = { mult = 0, gain = 2, loss = 2 } },
+    config = { extra = { mult = 10, gain = 2, loss = 2 } },
 
     loc_vars = function(self, info_queue, card)
         local extra = card and card.ability and card.ability.extra or self.config.extra
