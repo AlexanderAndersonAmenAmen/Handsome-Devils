@@ -1191,37 +1191,9 @@ end
 
 function HNDS.rebuild_platinum_boss_option()
     if not (G and G.blind_select and G.blind_select_opts and G.blind_select_opts.boss) then return end
-    local current_option = G.blind_select_opts.boss
-    local parent = current_option.parent
     local boss = boss_choice()
-    if not (parent and boss) then return end
-
-    current_option:remove()
-    G.blind_select_opts.boss = UIBox({
-        T = { parent.T.x, 0, 0, 0 },
-        definition = {
-            n = G.UIT.ROOT,
-            config = { align = "cm", colour = G.C.CLEAR },
-            nodes = {
-                UIBox_dyn_container(
-                    { create_UIBox_blind_choice("Boss") },
-                    false,
-                    get_blind_main_colour(boss),
-                    mix_colours(G.C.BLACK, get_blind_main_colour(boss), 0.8)
-                ),
-            },
-        },
-        config = {
-            align = "bmi", offset = { x = 0, y = G.ROOM.T.y + 9 },
-            major = parent, xy_bond = "Weak",
-        },
-    })
-
-    local new_option = G.blind_select_opts.boss
-    parent.config.object = new_option
-    parent.config.object:recalculate()
-    new_option.parent = parent
-    new_option.alignment.offset.y = 0
+    if not boss then return end
+    HNDS.rebuild_platinum_blind_option("Boss", boss, G.blind_select_opts.boss.parent)
 end
 
 -------------------------------------------------------------------

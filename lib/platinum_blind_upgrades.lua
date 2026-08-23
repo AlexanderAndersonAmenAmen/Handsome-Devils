@@ -676,6 +676,44 @@ end
 -- Nightmare Stake automatic upgrade
 -------------------------------------------------------------------
 
+-- Shared Blind Select option rebuild: removes the live option UIBox and
+-- recreates it from the current blind choice, recoloured for `colour_key`.
+-- Returns the new UIBox so callers can run their own follow-up syncs.
+function HNDS.rebuild_platinum_blind_option(blind_choice, colour_key, parent)
+    local current_option = G.blind_select_opts and G.blind_select_opts[blind_choice:lower()]
+    if not (current_option and parent) then return nil end
+
+    current_option:remove()
+    G.blind_select_opts[blind_choice:lower()] = UIBox({
+        T = { parent.T.x, 0, 0, 0 },
+        definition = {
+            n = G.UIT.ROOT,
+            config = { align = 'cm', colour = G.C.CLEAR },
+            nodes = {
+                UIBox_dyn_container(
+                    { create_UIBox_blind_choice(blind_choice) },
+                    false,
+                    get_blind_main_colour(colour_key),
+                    mix_colours(G.C.BLACK, get_blind_main_colour(colour_key), 0.8)
+                ),
+            },
+        },
+        config = {
+            align = 'bmi',
+            offset = { x = 0, y = G.ROOM.T.y + 9 },
+            major = parent,
+            xy_bond = 'Weak',
+        },
+    })
+
+    local new_option = G.blind_select_opts[blind_choice:lower()]
+    parent.config.object = new_option
+    parent.config.object:recalculate()
+    new_option.parent = parent
+    new_option.alignment.offset.y = 0
+    return new_option
+end
+
 local function hnds_rebuild_upgraded_blind_option(blind_choice, boss)
     -- During shop exit G.blind_select_opts can still contain removed objects
     -- from the previous selection screen. Rebuild only a live Blind Select UI.
@@ -686,34 +724,7 @@ local function hnds_rebuild_upgraded_blind_option(blind_choice, boss)
     local current_parent = blind_option_parent(current_option)
     if not (current_option and current_parent) then return end
 
-    current_option:remove()
-    G.blind_select_opts[blind_choice:lower()] = UIBox({
-        T = { current_parent.T.x, 0, 0, 0 },
-        definition = {
-            n = G.UIT.ROOT,
-            config = { align = 'cm', colour = G.C.CLEAR },
-            nodes = {
-                UIBox_dyn_container(
-                    { create_UIBox_blind_choice(blind_choice) },
-                    false,
-                    get_blind_main_colour(boss),
-                    mix_colours(G.C.BLACK, get_blind_main_colour(boss), 0.8)
-                ),
-            },
-        },
-        config = {
-            align = 'bmi',
-            offset = { x = 0, y = G.ROOM.T.y + 9 },
-            major = current_parent,
-            xy_bond = 'Weak',
-        },
-    })
-
-    local new_option = G.blind_select_opts[blind_choice:lower()]
-    current_parent.config.object = new_option
-    current_parent.config.object:recalculate()
-    new_option.parent = current_parent
-    new_option.alignment.offset.y = 0
+    local new_option = HNDS.rebuild_platinum_blind_option(blind_choice, boss, current_parent)
 
     HNDS.sync_platinum_blind_tag_ui({
         config = { id = blind_choice },
@@ -740,34 +751,7 @@ local function hnds_rebuild_remaining_blind_score_option(blind_choice)
     local current_parent = blind_option_parent(current_option)
     if not (current_option and current_parent) then return end
 
-    current_option:remove()
-    G.blind_select_opts[blind_choice:lower()] = UIBox({
-        T = { current_parent.T.x, 0, 0, 0 },
-        definition = {
-            n = G.UIT.ROOT,
-            config = { align = 'cm', colour = G.C.CLEAR },
-            nodes = {
-                UIBox_dyn_container(
-                    { create_UIBox_blind_choice(blind_choice) },
-                    false,
-                    get_blind_main_colour(blind_key),
-                    mix_colours(G.C.BLACK, get_blind_main_colour(blind_key), 0.8)
-                ),
-            },
-        },
-        config = {
-            align = 'bmi',
-            offset = { x = 0, y = G.ROOM.T.y + 9 },
-            major = current_parent,
-            xy_bond = 'Weak',
-        },
-    })
-
-    local new_option = G.blind_select_opts[blind_choice:lower()]
-    current_parent.config.object = new_option
-    current_parent.config.object:recalculate()
-    new_option.parent = current_parent
-    new_option.alignment.offset.y = 0
+    local new_option = HNDS.rebuild_platinum_blind_option(blind_choice, blind_key, current_parent)
 
     HNDS.sync_platinum_blind_tag_ui({
         config = { id = blind_choice },
@@ -1114,34 +1098,7 @@ G.FUNCS.hnds_upgrade_blind = function(e)
             local current_parent = blind_option_parent(current_option)
 
             if current_option and current_parent then
-                current_option:remove()
-                G.blind_select_opts[blind_choice:lower()] = UIBox({
-                    T = { current_parent.T.x, 0, 0, 0 },
-                    definition = {
-                        n = G.UIT.ROOT,
-                        config = { align = 'cm', colour = G.C.CLEAR },
-                        nodes = {
-                            UIBox_dyn_container(
-                                { create_UIBox_blind_choice(blind_choice) },
-                                false,
-                                get_blind_main_colour(boss),
-                                mix_colours(G.C.BLACK, get_blind_main_colour(boss), 0.8)
-                            ),
-                        },
-                    },
-                    config = {
-                        align = 'bmi',
-                        offset = { x = 0, y = G.ROOM.T.y + 9 },
-                        major = current_parent,
-                        xy_bond = 'Weak',
-                    },
-                })
-
-                local new_option = G.blind_select_opts[blind_choice:lower()]
-                current_parent.config.object = new_option
-                current_parent.config.object:recalculate()
-                new_option.parent = current_parent
-                new_option.alignment.offset.y = 0
+                local new_option = HNDS.rebuild_platinum_blind_option(blind_choice, boss, current_parent)
 
                 -- The rebuilt UI starts inactive by construction. Sync once
                 -- more so both Skip and Upgrade stay locked for this slot.
