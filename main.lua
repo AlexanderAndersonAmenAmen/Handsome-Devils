@@ -485,7 +485,6 @@ end
 SMODS.current_mod.calculate = function(self, context)
 	if type(context) ~= 'table' then return end
 	if HNDS.calculate_vanilla_tweaks then HNDS.calculate_vanilla_tweaks(context) end
-	if HNDS.calculate_aberrant then HNDS.calculate_aberrant(context) end
 
 	-- Spectrum is a hidden Spectral that can replace a Base card in Standard
 	-- packs. Standard-pack generation may attach playing-card modifiers before
