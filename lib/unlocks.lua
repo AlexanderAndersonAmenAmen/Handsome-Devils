@@ -137,7 +137,7 @@ local function visible_collection_object(object)
         and object.omit ~= true
 end
 
-function HNDS.collection_discovered_count(set_filter)
+local function collection_discovered_count(set_filter)
     local seen, count = {}, 0
     local function tally(key, object)
         if key and not seen[key]
@@ -196,7 +196,7 @@ end
 
 function HNDS.unlock_progress(key)
     if key == "premiumdeck" then
-        return HNDS.collection_discovered_count(), TARGETS.premiumdeck
+        return collection_discovered_count(), TARGETS.premiumdeck
     elseif key == "top_shelf" then
         return unlock_career_stat(STAT_RARE_JOKERS), TARGETS.top_shelf
     elseif key == "wholesale" then
@@ -213,7 +213,7 @@ end
 
 function HNDS.unlock_condition_met(key, args)
     if key == "premiumdeck" then
-        return HNDS.collection_discovered_count() >= TARGETS.premiumdeck
+        return collection_discovered_count() >= TARGETS.premiumdeck
     elseif key == "crystal" then
         return args and args.type == "win" and current_stake_at_least("stake_gold")
     elseif key == "conjuring" then
