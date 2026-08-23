@@ -864,9 +864,7 @@ HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
     for _, tag in ipairs(G.GAME.tags or {}) do
         preexisting_tags[tag] = true
     end
-    if reward_tag and reward_tag.key then
-        add_tag(reward_tag)
-    end
+    add_tag(reward_tag)
 
     local granted_tags = {}
     for _, tag in ipairs(G.GAME.tags or {}) do
