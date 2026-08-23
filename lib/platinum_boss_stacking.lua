@@ -1291,7 +1291,7 @@ local function live_stack_matches(blind)
         and G.GAME.hnds_platinum_boss_stack_key == key
 end
 
-local function boss_stack_active(blind)
+local function boss_stack_active()
     return blind_raiser_active()
         and G and G.GAME
         and G.GAME.blind_on_deck == "Boss"
@@ -1299,7 +1299,7 @@ local function boss_stack_active(blind)
 end
 
 function HNDS.start_platinum_boss_stack(blind)
-    if not boss_stack_active(blind) then
+    if not boss_stack_active() then
         if G and G.GAME and G.GAME.hnds_platinum_boss_stack_active
             and HNDS.stop_platinum_boss_stack
         then
