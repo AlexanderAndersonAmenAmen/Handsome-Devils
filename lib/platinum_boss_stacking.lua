@@ -35,8 +35,6 @@ for blind_key, hook_key in pairs(VANILLA_TO_HOOK) do
     HOOK_TO_VANILLA[hook_key] = blind_key
 end
 
-HNDS.PLATINUM_STACKABLE_BLINDS = VANILLA_TO_HOOK
-HNDS.PLATINUM_HOOK_TO_BLIND = HOOK_TO_VANILLA
 
 local function blind_raiser_active()
     return hnds_config and hnds_config.enableBlindUpgradeButton ~= false
