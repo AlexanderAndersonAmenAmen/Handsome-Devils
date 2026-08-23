@@ -4,36 +4,9 @@
 
 HNDS = HNDS or {}
 
-local VANILLA_TO_HOOK = {
-    bl_hook = "bl_hook_the_hook",
-    bl_ox = "bl_hook_the_ox",
-    bl_house = "bl_hook_the_house",
-    bl_wall = "bl_hook_the_wall",
-    bl_wheel = "bl_hook_the_wheel",
-    bl_arm = "bl_hook_the_arm",
-    bl_club = "bl_hook_the_club",
-    bl_fish = "bl_hook_the_fish",
-    bl_psychic = "bl_hook_the_psychic",
-    bl_goad = "bl_hook_the_goad",
-    bl_window = "bl_hook_the_window",
-    bl_manacle = "bl_hook_the_manacle",
-    bl_eye = "bl_hook_the_eye",
-    bl_mouth = "bl_hook_the_mouth",
-    bl_plant = "bl_hook_the_plant",
-    bl_serpent = "bl_hook_the_serpent",
-    bl_pillar = "bl_hook_the_pillar",
-    bl_needle = "bl_hook_the_needle",
-    bl_head = "bl_hook_the_head",
-    bl_mark = "bl_hook_the_mark",
-    bl_flint = "bl_hook_the_flint",
-    bl_water = "bl_hook_the_water",
-    bl_tooth = "bl_hook_the_tooth",
-}
-
-local HOOK_TO_VANILLA = {}
-for blind_key, hook_key in pairs(VANILLA_TO_HOOK) do
-    HOOK_TO_VANILLA[hook_key] = blind_key
-end
+-- Canonical vanilla <-> hook maps live in lib/devil_bosses.lua.
+local VANILLA_TO_HOOK = HNDS.DEVIL_VANILLA_TO_HOOK
+local HOOK_TO_VANILLA = HNDS.DEVIL_HOOK_TO_VANILLA
 
 
 local function blind_raiser_active()

@@ -15,27 +15,8 @@ local DEVIL_KEYS = {"bl_hnds_blind_devil", "blind_devil"}
 -- The Devil recreates vanilla Boss Blind effects under internal hook keys.
 -- These map back to Balatro's native Blind localization entries so the hover
 -- popup always uses the player's language and the exact vanilla wording.
-local devil_vanilla_blind_keys = {
-    bl_hook_the_house = "bl_house",
-    bl_hook_the_wall = "bl_wall",
-    bl_hook_the_wheel = "bl_wheel",
-    bl_hook_the_club = "bl_club",
-    bl_hook_the_fish = "bl_fish",
-    bl_hook_the_psychic = "bl_psychic",
-    bl_hook_the_goad = "bl_goad",
-    bl_hook_the_window = "bl_window",
-    bl_hook_the_manacle = "bl_manacle",
-    bl_hook_the_eye = "bl_eye",
-    bl_hook_the_mouth = "bl_mouth",
-    bl_hook_the_plant = "bl_plant",
-    bl_hook_the_serpent = "bl_serpent",
-    bl_hook_the_pillar = "bl_pillar",
-    bl_hook_the_needle = "bl_needle",
-    bl_hook_the_head = "bl_head",
-    bl_hook_the_mark = "bl_mark",
-    bl_hook_the_flint = "bl_flint",
-    bl_hook_the_water = "bl_water",
-}
+-- Canonical map lives in lib/devil_bosses.lua.
+local devil_vanilla_blind_keys = HNDS.DEVIL_HOOK_TO_VANILLA
 
 local function is_devil_key(key)
     for _, devil_key in ipairs(DEVIL_KEYS) do

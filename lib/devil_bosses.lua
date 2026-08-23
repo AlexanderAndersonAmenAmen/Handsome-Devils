@@ -10,6 +10,46 @@ HNDS = HNDS or {}
 
 HNDS.DEVIL_BOSSES = {}
 
+-------------------------------------------------------------------
+-- Canonical vanilla <-> hook key mapping
+--
+-- Single source of truth shared by Platinum boss stacking, the Blind
+-- Raiser UI, and blind_devil.lua localization lookups. The three
+-- bl_hook_the_* components absent from DEVIL_BOSS_POOL (Hook, Ox,
+-- Tooth) are Platinum-stack-only but map here as well.
+-------------------------------------------------------------------
+
+HNDS.DEVIL_VANILLA_TO_HOOK = {
+    bl_hook = "bl_hook_the_hook",
+    bl_ox = "bl_hook_the_ox",
+    bl_house = "bl_hook_the_house",
+    bl_wall = "bl_hook_the_wall",
+    bl_wheel = "bl_hook_the_wheel",
+    bl_arm = "bl_hook_the_arm",
+    bl_club = "bl_hook_the_club",
+    bl_fish = "bl_hook_the_fish",
+    bl_psychic = "bl_hook_the_psychic",
+    bl_goad = "bl_hook_the_goad",
+    bl_window = "bl_hook_the_window",
+    bl_manacle = "bl_hook_the_manacle",
+    bl_eye = "bl_hook_the_eye",
+    bl_mouth = "bl_hook_the_mouth",
+    bl_plant = "bl_hook_the_plant",
+    bl_serpent = "bl_hook_the_serpent",
+    bl_pillar = "bl_hook_the_pillar",
+    bl_needle = "bl_hook_the_needle",
+    bl_head = "bl_hook_the_head",
+    bl_mark = "bl_hook_the_mark",
+    bl_flint = "bl_hook_the_flint",
+    bl_water = "bl_hook_the_water",
+    bl_tooth = "bl_hook_the_tooth",
+}
+
+HNDS.DEVIL_HOOK_TO_VANILLA = {}
+for hnds_vanilla_key, hnds_hook_key in pairs(HNDS.DEVIL_VANILLA_TO_HOOK) do
+    HNDS.DEVIL_HOOK_TO_VANILLA[hnds_hook_key] = hnds_vanilla_key
+end
+
 
 
 -------------------------------------------------------------------
