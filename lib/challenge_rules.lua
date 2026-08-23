@@ -3,6 +3,57 @@ local function is_challenge(key)
 	return G and G.GAME and G.GAME.challenge == 'c_hnds_'..key
 end
 
+-- Shared cash-out teardown used by Dark Ritual and Time Fc#ked Joker: tear
+-- down the round-eval UI, reset round counters, pay out, and re-enter Blind
+-- Select without creating a Shop.
+-- opts.before runs after the round-eval guard passes (e.g. effect sounds);
+-- opts.mid_event runs inside the immediate event after the eval is removed
+-- and before counters reset (e.g. restoring replay state).
+-- Load order note: challenge_rules loads before time_fcked so Time Fc#ked's
+-- own cash-out wrapper sits outermost.
+function HNDS.cash_out_skip_to_blind_select(e, opts)
+	opts = opts or {}
+	stop_use()
+	if not G.round_eval then return false end
+
+	if opts.before then opts.before() end
+
+	if e and e.config then e.config.button = nil end
+	G.round_eval.alignment.offset.y = G.ROOM.T.y + 15
+	G.round_eval.alignment.offset.x = 0
+	if G.deck then
+		G.deck:shuffle('cashout'..G.GAME.round_resets.ante)
+		G.deck:hard_set_T()
+	end
+	delay(0.3)
+	G.E_MANAGER:add_event(Event({
+		trigger = 'immediate',
+		func = function()
+			if G.round_eval then
+				G.round_eval:remove()
+				G.round_eval = nil
+			end
+			if opts.mid_event then opts.mid_event() end
+			G.GAME.current_round.jokers_purchased = 0
+			G.GAME.current_round.discards_left = math.max(0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards)
+			G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))
+			G.STATE = G.STATES.BLIND_SELECT
+			G.STATE_COMPLETE = false
+			return true
+		end
+	}))
+	ease_dollars(G.GAME.current_round.dollars)
+	G.E_MANAGER:add_event(Event({
+		func = function()
+			G.GAME.previous_round.dollars = G.GAME.dollars
+			return true
+		end
+	}))
+	play_sound('coin7')
+	G.VIBRATION = G.VIBRATION + 1
+	return true
+end
+
 -- Dark Ritual
 	if G and G.FUNCS and type(G.FUNCS.cash_out) == 'function' and not G.FUNCS._hnds_wrapped_cash_out then
 		G.FUNCS._hnds_wrapped_cash_out = true
@@ -12,40 +63,7 @@ end
 			return cash_out_ref(e, delay_seconds, ...)
 		end
 
-		stop_use()
-		if G.round_eval then  
-			e.config.button = nil
-			G.round_eval.alignment.offset.y = G.ROOM.T.y + 15
-			G.round_eval.alignment.offset.x = 0
-			G.deck:shuffle('cashout'..G.GAME.round_resets.ante)
-			G.deck:hard_set_T()
-			delay(0.3)
-			G.E_MANAGER:add_event(Event({
-				trigger = 'immediate',
-				func = function()
-					if G.round_eval then 
-						G.round_eval:remove()
-						G.round_eval = nil
-					end
-					G.GAME.current_round.jokers_purchased = 0
-					G.GAME.current_round.discards_left = math.max(0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards)
-					G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))
-					-- KEY CHANGE: Skip shop and go directly to blind select
-					G.STATE = G.STATES.BLIND_SELECT
-					G.STATE_COMPLETE = false
-					return true
-				end
-			}))
-			ease_dollars(G.GAME.current_round.dollars)
-			G.E_MANAGER:add_event(Event({
-				func = function()
-					G.GAME.previous_round.dollars = G.GAME.dollars
-					return true
-				end
-			}))
-			play_sound('coin7')
-			G.VIBRATION = G.VIBRATION + 1
-		end
+		HNDS.cash_out_skip_to_blind_select(e)
 		return
 	end
 end

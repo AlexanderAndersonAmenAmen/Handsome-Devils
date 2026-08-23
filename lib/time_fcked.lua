@@ -142,59 +142,18 @@ local function restore_replay_state(candidate)
 end
 
 local function cash_out_to_replay(e, candidate)
-    stop_use()
-    if not G.round_eval then return false end
-
-    -- Balatro's long Negative-edition sting marks the successful timeline
-    -- rewind. Keep it inside the successful replay path so a failed transition
-    -- can never play the proc sound.
-    play_sound('negative', 1, 0.7)
-
-    if e and e.config then e.config.button = nil end
-    G.round_eval.alignment.offset.y = G.ROOM.T.y + 15
-    G.round_eval.alignment.offset.x = 0
-    if G.deck then
-        G.deck:shuffle('cashout' .. tostring(candidate.ante or G.GAME.round_resets.ante))
-        G.deck:hard_set_T()
-    end
-    delay(0.3)
-
-    G.E_MANAGER:add_event(Event({
-        trigger = 'immediate',
-        func = function()
-            if G.round_eval then
-                G.round_eval:remove()
-                G.round_eval = nil
-            end
-
+    return HNDS.cash_out_skip_to_blind_select(e, {
+        -- Balatro's long Negative-edition sting marks the successful timeline
+        -- rewind. It runs after the round-eval guard so a failed transition
+        -- can never play the proc sound.
+        before = function()
+            play_sound('negative', 1, 0.7)
+        end,
+        -- Restore the just-defeated Blind before the round counters reset.
+        mid_event = function()
             restore_replay_state(candidate)
-
-            G.GAME.current_round.jokers_purchased = 0
-            G.GAME.current_round.discards_left = math.max(
-                0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards
-            )
-            G.GAME.current_round.hands_left = math.max(
-                1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands
-            )
-
-            -- Re-enter the normal Blind Select UI with the just-defeated slot
-            -- restored to Select. No Shop is created on a successful replay.
-            G.STATE = G.STATES.BLIND_SELECT
-            G.STATE_COMPLETE = false
-            return true
         end,
-    }))
-
-    ease_dollars(G.GAME.current_round.dollars)
-    G.E_MANAGER:add_event(Event({
-        func = function()
-            G.GAME.previous_round.dollars = G.GAME.dollars
-            return true
-        end,
-    }))
-    play_sound('coin7')
-    G.VIBRATION = G.VIBRATION + 1
-    return true
+    })
 end
 
 -- Load this after challenge_rules.lua so Time is the outermost cash-out wrapper.
