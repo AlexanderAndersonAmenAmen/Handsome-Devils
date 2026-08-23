@@ -440,29 +440,6 @@ SMODS.current_mod.config_tab = function()
 	}
 end
 
--- Helper: spawns a free booster pack at the center of the play area.
--- Used by tags that queue packs to open at the start of the next shop.
-local function spawn_queued_booster(pack_key, pre_open_func)
-	if not (G and G.E_MANAGER and G.play and G.FUNCS and G.FUNCS.use_card
-		and SMODS and type(SMODS.create_card) == 'function' and Event) then return false end
-	G.E_MANAGER:add_event(Event({
-		func = function()
-			local booster = SMODS.create_card { key = pack_key, area = G.play }
-			booster.T.x = G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2
-			booster.T.y = G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2
-			booster.T.w = G.CARD_W * 1.27
-			booster.T.h = G.CARD_H * 1.27
-			booster.cost = 0
-			booster.from_tag = true
-			if pre_open_func then pre_open_func(booster) end
-			G.FUNCS.use_card({ config = { ref_table = booster } })
-			booster:start_materialize()
-			return true
-		end
-	}))
-	return true
-end
-
 -- Mod-level calculate: handles global context events that aren't tied to a specific card.
 SMODS.current_mod.calculate = function(self, context)
 	if type(context) ~= 'table' then return end
@@ -477,18 +454,6 @@ SMODS.current_mod.calculate = function(self, context)
 	-- Track stone cards scored this ante (used by Stone Ocean hand)
 	if context.individual and SMODS.has_enhancement(context.other_card, "m_stone") then
 		G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
-	end
-	-- Spawn queued booster packs at the start of each shop.  Cursed Deck uses
-	-- this boundary instead of a cash_out polling Event: payout has completed,
-	-- while the queued booster can cleanly return to the Shop after selection.
-	if context.starting_shop then
-		if G.GAME.hnds_crystal_queued then
-			spawn_queued_booster('p_hnds_spectral_ultra')
-			G.GAME.hnds_crystal_queued = nil
-		end
-		if HNDS.open_pending_cursed_pack_at_shop then
-			HNDS.open_pending_cursed_pack_at_shop()
-		end
 	end
 
 	local handler_result

@@ -101,3 +101,13 @@ SMODS.Booster { --putting this in the same file for convenience
         end
     },
 }
+
+-- Drain the queued Ultra Spectral Pack at the start-of-shop boundary.
+-- Both the Crystal Deck and the Crystal Sleeve set hnds_crystal_queued;
+-- packs spawn through the shared queued-booster helper in lib/cursed_pack.lua.
+HNDS.on_context(function(context)
+    if context.starting_shop and G.GAME.hnds_crystal_queued then
+        HNDS.spawn_queued_booster('p_hnds_spectral_ultra')
+        G.GAME.hnds_crystal_queued = nil
+    end
+end)

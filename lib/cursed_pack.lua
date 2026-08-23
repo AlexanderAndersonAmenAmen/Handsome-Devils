@@ -85,3 +85,33 @@ function HNDS.open_pending_cursed_pack_at_shop()
     }))
     return true
 end
+
+-- Helper: spawns a free booster pack at the center of the play area.
+-- Used by tags/decks that queue packs to open at the start of the next shop.
+function HNDS.spawn_queued_booster(pack_key, pre_open_func)
+    if not (G and G.E_MANAGER and G.play and G.FUNCS and G.FUNCS.use_card
+        and SMODS and type(SMODS.create_card) == 'function' and Event) then return false end
+    G.E_MANAGER:add_event(Event({
+        func = function()
+            local booster = SMODS.create_card { key = pack_key, area = G.play }
+            booster.T.x = G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2
+            booster.T.y = G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2
+            booster.T.w = G.CARD_W * 1.27
+            booster.T.h = G.CARD_H * 1.27
+            booster.cost = 0
+            booster.from_tag = true
+            if pre_open_func then pre_open_func(booster) end
+            G.FUNCS.use_card({ config = { ref_table = booster } })
+            booster:start_materialize()
+            return true
+        end
+    }))
+    return true
+end
+
+-- Drain the pending Cursed Pack reward at the start-of-shop boundary.
+HNDS.on_context(function(context)
+    if context.starting_shop then
+        HNDS.open_pending_cursed_pack_at_shop()
+    end
+end)
