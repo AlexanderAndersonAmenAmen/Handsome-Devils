@@ -236,6 +236,14 @@ function HNDS.get_shop_joker_tags()
 	return tag_list
 end
 
+-- Utility: Get key for a given value in a table
+local function get_key_for_value(t, value)
+  for k,v in pairs(t) do
+    if v==value then return k end
+  end
+  return nil
+end
+
 -- Supersuit Joker: Reset the randomly chosen suit for the round
 function reset_supersuit_card()
 	local supersuit_suits = {}
@@ -336,7 +344,7 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 			-- Pick a new joker, excluding the one from last ante
 			local poolcopy = SMODS.shallow_copy(HNDS.circus_joker_pool)
 			if G.GAME.hnds_circus_joker_key then
-				local i = HNDS.get_key_for_value(poolcopy, G.GAME.hnds_circus_joker_key)
+				local i = get_key_for_value(poolcopy, G.GAME.hnds_circus_joker_key)
 				if i then table.remove(poolcopy, i) end
 			end
 
@@ -370,13 +378,6 @@ SMODS.current_mod.custom_card_areas = function (game)
 	end
 end
 
--- Utility: Get key for a given value in a table
-function HNDS.get_key_for_value(t, value)
-  for k,v in pairs(t) do
-    if v==value then return k end
-  end
-  return nil
-end
 
 -- Check if the active deck or sleeve matches the provided key.
 -- Returns the match count (truthy) or nil. Supports CardSleeves mod and Entropy's
