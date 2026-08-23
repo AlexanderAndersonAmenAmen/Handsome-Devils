@@ -228,3 +228,26 @@ HNDS.draw_bound_cards = function()
         end,
     }))
 end
+
+-- Round-boundary triggers for the Obsidian enhancement and its Bound marks.
+-- These contexts fire outside any single card's calculate, so they ride the
+-- mod-level context registry.
+HNDS.on_context(function(context)
+    -- Bound: guarantee every marked, non-debuffed card is present in the
+    -- opening hand. The helper guards against duplicate first_hand_drawn events.
+    if context.first_hand_drawn and HNDS.draw_bound_cards then
+        HNDS.draw_bound_cards()
+    end
+
+    -- Obsidian: each hand starts a fresh candidate set. Commit it during the
+    -- post-scoring context, while the winning cards are still in the play area,
+    -- so progress text is attached to each Obsidian card instead of the deck.
+    if context.before and HNDS.reset_obsidian_hand_marks then
+        HNDS.reset_obsidian_hand_marks()
+    end
+    if context.after and SMODS.last_hand_oneshot
+        and HNDS.complete_obsidian_final_hand
+    then
+        HNDS.complete_obsidian_final_hand()
+    end
+end)
