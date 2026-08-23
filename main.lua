@@ -582,17 +582,6 @@ SMODS.current_mod.calculate = function(self, context)
 			context.card.ability[sticker_key] = nil
 		end
 	end
-	-- Jevil: defer until every start-of-round draw effect has had a chance to
-	-- resolve, then mark the final cards actually present in hand.
-	if context.first_hand_drawn and HNDS.jevil_schedule_starting_hand then
-		HNDS.jevil_schedule_starting_hand()
-	end
-	-- The marked starting hand stays Wild for the whole round, even if Jevil is
-	-- sold afterwards; clear the temporary tooltip marker only at round end.
-	if context.end_of_round and context.main_eval and HNDS.jevil_clear_round then
-		HNDS.jevil_clear_round()
-	end
-
 	-- Bound: guarantee every marked, non-debuffed card is present in the
 	-- opening hand. The helper guards against duplicate first_hand_drawn events.
 	if context.first_hand_drawn and HNDS.draw_bound_cards then

@@ -319,3 +319,18 @@ if Card and Card.generate_UIBox_ability_table and not HNDS._jevil_card_tooltip_h
     end
     HNDS._jevil_card_tooltip_hook = true
 end
+
+-- Round-boundary triggers for Jevil's starting-hand marking. These contexts
+-- fire outside any single card's calculate, so they ride the mod-level
+-- context registry; the marked hand stays Wild even if Jevil is sold.
+HNDS.on_context(function(context)
+    -- Defer until every start-of-round draw effect has had a chance to
+    -- resolve, then mark the final cards actually present in hand.
+    if context.first_hand_drawn and HNDS.jevil_schedule_starting_hand then
+        HNDS.jevil_schedule_starting_hand()
+    end
+    -- The temporary tooltip marker is cleared only at round end.
+    if context.end_of_round and context.main_eval and HNDS.jevil_clear_round then
+        HNDS.jevil_clear_round()
+    end
+end)
