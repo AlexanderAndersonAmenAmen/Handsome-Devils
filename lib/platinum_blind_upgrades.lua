@@ -27,7 +27,7 @@
 
 HNDS = HNDS or {}
 
-local function blind_raiser_active()
+local function ensure_blind_raiser_state()
     if not (G and G.GAME) then return false end
     G.GAME.hnds_upgraded_blinds = G.GAME.hnds_upgraded_blinds or {}
     G.GAME.hnds_platinum_blind_replacements =
@@ -73,7 +73,7 @@ local function blind_is_finished(blind_choice)
 end
 
 local function blind_is_current(blind_choice)
-    if not blind_raiser_active() or blind_is_finished(blind_choice) then
+    if not ensure_blind_raiser_state() or blind_is_finished(blind_choice) then
         return false
     end
 
@@ -205,7 +205,7 @@ end
 -- Run this before create_UIBox_blind_select builds the next Ante's badges,
 -- effects and score requirements.
 HNDS.restore_stale_platinum_blind_slots = function()
-    if not blind_raiser_active() then return end
+    if not ensure_blind_raiser_state() then return end
     if not (G.GAME.round_resets and G.GAME.round_resets.blind_choices) then return end
 
     local ante = current_ante()
@@ -297,7 +297,7 @@ HNDS.restore_stale_platinum_blind_slots = function()
 end
 
 HNDS.platinum_skip_is_locked = function(blind_choice)
-    return blind_raiser_active()
+    return ensure_blind_raiser_state()
         and blind_choice ~= nil
         and blind_was_upgraded(blind_choice)
 end
@@ -419,7 +419,7 @@ end
 -- the current slot was already upgraded, in which case Skip is also
 -- forcibly disabled.
 HNDS.sync_platinum_blind_tag_ui = function(e)
-    if not (blind_raiser_active() and e and e.config) then return end
+    if not (ensure_blind_raiser_state() and e and e.config) then return end
 
     -- Final fallback: if another mod replaced create_UIBox_blind_select after
     -- our wrapper, consume the queued shop effect when vanilla activates the
@@ -595,7 +595,7 @@ end
 local create_UIBox_blind_tag_ref = create_UIBox_blind_tag
 
 function create_UIBox_blind_tag(blind_choice, run_info, ...)
-    if run_info or not blind_raiser_active() then
+    if run_info or not ensure_blind_raiser_state() then
         return create_UIBox_blind_tag_ref(blind_choice, run_info, ...)
     end
 
@@ -838,7 +838,7 @@ end
 HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
     if not (G and G.GAME and G.GAME.round_resets) then return nil end
 
-    if not blind_raiser_active() then
+    if not ensure_blind_raiser_state() then
         return "not_upgradable"
     end
 
@@ -1006,7 +1006,7 @@ G.FUNCS.hnds_upgrade_blind = function(e)
     local slot_is_current = blind_is_current(blind_choice)
         or (G.GAME.blind_on_deck == blind_choice)
         or (e.config.hnds_upgrade_ready == true)
-    if not blind_raiser_active()
+    if not ensure_blind_raiser_state()
         or not blind_choice
         or (blind_choice ~= 'Small' and blind_choice ~= 'Big')
         or blind_is_finished(blind_choice)
