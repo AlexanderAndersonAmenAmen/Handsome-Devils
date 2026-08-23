@@ -1869,7 +1869,6 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 	local calculate_joker_ref = Card.calculate_joker
 	local hnds_unpack = (table and table.unpack) or unpack
 	local hnds_impostor_available = false
-	local hnds_primary_impostor_id = nil
 	local hnds_cached_round = -1
 	local hnds_cached_joker_count = -1
 	local hnds_cached_hand_tick = -1
@@ -1886,7 +1885,6 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 		if not (G and G.STAGE == G.STAGES.RUN) then
 			if hnds_impostor_available then
 				hnds_impostor_available = false
-				hnds_primary_impostor_id = nil
 				hnds_cached_round = -1
 				hnds_cached_joker_count = -1
 				hnds_cached_hand_tick = -1
@@ -1912,7 +1910,6 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 		if joker_count ~= hnds_cached_joker_count then
 			hnds_cached_joker_count = joker_count
 			hnds_impostor_available = false
-			hnds_primary_impostor_id = nil
 			hnds_clear_spoof_cache()
 			hnds_clear_spoof_hints()
 
@@ -1922,7 +1919,6 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 					if jc and jc.config and jc.config.center
 						and jc.config.center.key == 'j_hnds_imposter' then
 						hnds_impostor_available = true
-						hnds_primary_impostor_id = jc.ID or jc.sort_id or ('hnds_spoofer_' .. tostring(i))
 						break
 					end
 				end
