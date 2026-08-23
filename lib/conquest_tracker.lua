@@ -90,7 +90,7 @@ local function is_real_boss_blind(blind)
     return slot == 'Boss'
 end
 
-function HNDS.conquest_blind_counts(blind)
+local function conquest_blind_counts(blind)
     return is_real_boss_blind(blind) or is_upgraded_boss_blind(blind)
 end
 
@@ -125,7 +125,7 @@ function HNDS.install_conquest_defeat_hook()
     local wrapper = function(self, ...)
         -- Snapshot eligibility before inner wrappers/vanilla cleanup mutate the
         -- current slot. Increment only after defeat returns successfully.
-        local qualifies = HNDS.conquest_blind_counts(self)
+        local qualifies = conquest_blind_counts(self)
         local already_counted = self and self.hnds_conquest_defeat_counted == true
         local results = pack(defeat_ref(self, ...))
 
