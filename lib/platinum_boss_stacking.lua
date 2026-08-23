@@ -794,9 +794,7 @@ local function score_from_replacement_record(blind_choice, record)
     record.base_score = base
 
     local step = derive_applied_blind_raiser_step()
-    record.score_multiplier = HNDS.platinum_blind_raiser_multiplier(step)
-    record.score_chips = base * record.score_multiplier
-    return record.score_chips
+    return base * HNDS.platinum_blind_raiser_multiplier(step)
 end
 
 function HNDS.platinum_next_upgrade_score(blind_choice)
