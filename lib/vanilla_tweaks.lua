@@ -544,14 +544,8 @@ take_vanilla_ownership(SMODS.Joker, 'stone', {
     end,
 })
 
+-- Single mapping for the four suit Jokers, keyed by full center key.
 local suit_jokers = {
-    greedy_joker = 'Diamonds',
-    lusty_joker = 'Hearts',
-    wrathful_joker = 'Spades',
-    gluttenous_joker = 'Clubs',
-}
-
-local suit_joker_center_suits = {
     j_greedy_joker = 'Diamonds',
     j_lusty_joker = 'Hearts',
     j_wrathful_joker = 'Spades',
@@ -560,7 +554,7 @@ local suit_joker_center_suits = {
 
 local function normalize_suit_joker_extra(card)
     local center_key = card and card.config and card.config.center and card.config.center.key
-    local suit = suit_joker_center_suits[center_key]
+    local suit = suit_jokers[center_key]
     if not suit or not card.ability then return end
 
     if type(card.ability.extra) ~= 'table' then
@@ -586,20 +580,19 @@ if Card and Card.generate_UIBox_ability_table and not HNDS._suit_joker_tooltip_f
     end
     HNDS._suit_joker_tooltip_fix = true
 end
-for key, suit in pairs(suit_jokers) do
-    local owned_suit = suit
-    take_vanilla_ownership(SMODS.Joker, key, {
+for center_key, suit in pairs(suit_jokers) do
+    take_vanilla_ownership(SMODS.Joker, center_key:sub(3), {
         blueprint_compat = true,
         -- Vanilla Card:generate_UIBox_ability_table indexes
         -- ability.extra.s_mult and ability.extra.suit for these four Jokers.
         -- Keep that native table shape or hovering the card crashes.
-        config = { extra = { s_mult = 4, suit = owned_suit } },
+        config = { extra = { s_mult = 4, suit = suit } },
         loc_vars = function(self, info_queue, card)
             return { vars = { extra_value(card, 's_mult', 4) } }
         end,
         calculate = function(self, card, context)
             if context.individual and context.cardarea == G.play and context.other_card
-                and context.other_card:is_suit(owned_suit)
+                and context.other_card:is_suit(suit)
             then
                 return { mult = extra_value(card, 's_mult', 4) }
             end
