@@ -8,7 +8,7 @@ local function hnds_jol_owner(card)
     return card and card.ability and card.ability[JOL_OWNER_FIELD] or nil
 end
 
-function HNDS.is_jack_of_lanterns(card)
+local function is_jack_of_lanterns(card)
     return hnds_jol_owner(card) ~= nil
 end
 
@@ -98,7 +98,7 @@ end
 if Card and Card.is_suit and not HNDS._special_any_suit_card_hook then
     local is_suit_ref = Card.is_suit
     function Card:is_suit(suit, ...)
-        if (HNDS.is_jack_of_lanterns(self) or HNDS.is_jevil_wild(self)) and not hnds_no_suit(self) then
+        if (is_jack_of_lanterns(self) or HNDS.is_jevil_wild(self)) and not hnds_no_suit(self) then
             return true
         end
         return is_suit_ref(self, suit, ...)
@@ -109,7 +109,7 @@ end
 if SMODS and SMODS.has_any_suit and not HNDS._special_any_suit_smods_hook then
     local has_any_suit_ref = SMODS.has_any_suit
     function SMODS.has_any_suit(card, ...)
-        if (HNDS.is_jack_of_lanterns(card) or HNDS.is_jevil_wild(card)) and not hnds_no_suit(card) then
+        if (is_jack_of_lanterns(card) or HNDS.is_jevil_wild(card)) and not hnds_no_suit(card) then
             return true
         end
         return has_any_suit_ref(card, ...)
@@ -226,7 +226,7 @@ end
 -- Jack (J) tally rather than rendering a separate custom-rank count. Strength-
 -- changed Lanterns cards contribute to their real Queen/King/Ace rank instead.
 function HNDS.jol_preview_rank_key(card)
-    if card and HNDS.is_jack_of_lanterns(card)
+    if card and is_jack_of_lanterns(card)
         and card.base and card.base.value == JOL_RANK_KEY
     then
         return 'Jack'
@@ -289,7 +289,7 @@ if type(evaluate_poker_hand) == 'function' and not HNDS._jol_poker_eval_hook the
         local eval_args = { ... }
         local wilds = {}
         for _, playing_card in ipairs(hand or {}) do
-            if HNDS.is_jack_of_lanterns(playing_card) and not hnds_no_rank(playing_card) then
+            if is_jack_of_lanterns(playing_card) and not hnds_no_rank(playing_card) then
                 wilds[#wilds + 1] = playing_card
             end
         end
