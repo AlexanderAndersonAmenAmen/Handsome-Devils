@@ -1397,50 +1397,47 @@ local function hnds_add_contagion_spectral_info(info_queue, kind)
     end
 end
 
-local function hnds_contagion_proxy_loc_vars(self, info_queue, card)
-    local orig_key = self.key
-    local kind = hnds_contagion_loc_targets[orig_key]
-    hnds_add_contagion_spectral_info(info_queue, kind)
+-- Bonus-aware loc_vars installed on every target center. Ownership reroutes
+-- tooltip rendering away from vanilla's per-key generate_card_ui chain, so
+-- when the Contagion bonus is zero this reproduces the exact vanilla output
+-- (Cryptid/Death placeholders, Aura's edition extras, fixed text otherwise).
+local function hnds_contagion_center_loc_vars(self, info_queue, card)
+    local kind = hnds_contagion_loc_targets[self.key]
     local bonus = hnds_contagion_bonus()
-    if orig_key == 'c_cryptid' then
+
+    if bonus > 0 then
+        hnds_add_contagion_spectral_info(info_queue, kind)
+        if self.key == 'c_cryptid' then
+            local copies = (card and card.ability and tonumber(card.ability.extra))
+                or (self.config and tonumber(self.config.extra))
+                or 2
+            return { key = 'c_hnds_contagion_cryptid', vars = { copies, 1 + bonus } }
+        end
+        return { key = 'c_hnds_contagion_' .. self.key:sub(3), vars = { 1 + bonus } }
+    end
+
+    if self.key == 'c_cryptid' then
         local copies = (card and card.ability and tonumber(card.ability.extra))
             or (self.config and tonumber(self.config.extra))
             or 2
-        return {
-            key = 'c_hnds_contagion_cryptid',
-            vars = { copies, 1 + bonus },
-        }
+        return { vars = { copies } }
+    elseif self.key == 'c_death' then
+        return { vars = { self.config.max_highlighted } }
+    elseif self.key == 'c_aura' then
+        info_queue[#info_queue + 1] = G.P_CENTERS.e_foil
+        info_queue[#info_queue + 1] = G.P_CENTERS.e_holo
+        info_queue[#info_queue + 1] = G.P_CENTERS.e_polychrome
     end
-    return {
-        key = 'c_hnds_contagion_' .. orig_key:sub(3),
-        vars = { 1 + bonus },
-    }
 end
 
--- Build a one-shot SMODS.Center-backed center that mirrors a vanilla Spectral
--- but routes description rendering through our contagion loc_vars.
-local function hnds_contagion_make_proxy(orig_center)
-    return setmetatable({
-        key = orig_center.key,
-        set = orig_center.set or 'Spectral',
-        config = orig_center.config or {},
-        loc_vars = hnds_contagion_proxy_loc_vars,
-    }, { __index = SMODS.Center })
-end
-
-if not _G._hnds_contagion_generate_card_ui_wrapped then
-    _G._hnds_contagion_generate_card_ui_wrapped = true
-    local generate_card_ui_ref = generate_card_ui
-
-    function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card, ...)
-        if _c and (_c.set == 'Spectral' or _c.key == 'c_death') and _c.key
-            and not _c.generate_ui
-            and hnds_contagion_bonus() > 0
-            and hnds_contagion_loc_targets[_c.key]
-        then
-            _c = hnds_contagion_make_proxy(_c)
-        end
-        return generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card, ...)
+for hnds_contagion_target_key in pairs(hnds_contagion_loc_targets) do
+    local center = G.P_CENTERS and G.P_CENTERS[hnds_contagion_target_key]
+    if center then
+        -- Silent ownership keeps these vanilla cards out of the mod's
+        -- Additions tab; c_death is a Tarot, the rest are Spectrals.
+        local cls = center.set == 'Tarot' and SMODS.Tarot or SMODS.Spectral
+        cls:take_ownership(hnds_contagion_target_key,
+            { loc_vars = hnds_contagion_center_loc_vars }, true)
     end
 end
 
