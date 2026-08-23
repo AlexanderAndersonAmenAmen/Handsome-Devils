@@ -769,7 +769,6 @@ local function install_blind_raiser_hand_score_hooks()
     return installed
 end
 
-HNDS.install_blind_raiser_hand_score_hooks = install_blind_raiser_hand_score_hooks
 install_blind_raiser_hand_score_hooks()
 
 if Game and type(Game.start_run) == "function"
