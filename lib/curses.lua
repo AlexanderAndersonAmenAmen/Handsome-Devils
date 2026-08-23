@@ -539,8 +539,6 @@ SMODS.Sticker {
         end
     end,
 }
--- Setup hook to capture card reference during loc_vars evaluation
-HNDS_setup_cursed_sticker_hook(SMODS.Stickers['hnds_cursed'])
 
 
 if not _G.HNDS_curse_collections then

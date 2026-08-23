@@ -2177,25 +2177,10 @@ end
 -- SMODS doesn't support generate_ui for stickers, only loc_vars.
 -- We dynamically modify the localization entry for hnds_cursed
 -- based on the current card being evaluated.
+-- The card reference itself is captured by the sticker's own loc_vars
+-- in lib/curses.lua (_G.HNDS_CURRENT_CURSE_CARD).
 
--- Store reference to current card during loc_vars evaluation
 _G.HNDS_CURRENT_CURSE_CARD = nil
-
--- Hook into the sticker's loc_vars to capture the card reference
-local original_loc_vars = nil
-
--- We'll set this up after the sticker is defined in curses.lua
-function HNDS_setup_cursed_sticker_hook(sticker)
-	if not sticker then return end
-	original_loc_vars = sticker.loc_vars
-	sticker.loc_vars = function(self, info_queue, card)
-		_G.HNDS_CURRENT_CURSE_CARD = card
-		if original_loc_vars then
-			return original_loc_vars(self, info_queue, card)
-		end
-		return { vars = {} }
-	end
-end
 
 -------------------------------------------------------------------
 -- CURSE: BASE BLIND INCREASE (price_ante_scaling)
