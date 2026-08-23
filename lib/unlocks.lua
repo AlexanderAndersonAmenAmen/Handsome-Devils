@@ -93,7 +93,7 @@ local function run_state()
     return state
 end
 
-function HNDS.unlock_career_stat(stat_name)
+local function unlock_career_stat(stat_name)
     local profile = current_profile()
     local stats = profile and profile.career_stats
     return math.max(0, tonumber(stats and stats[stat_name]) or 0)
@@ -198,15 +198,15 @@ function HNDS.unlock_progress(key)
     if key == "premiumdeck" then
         return HNDS.collection_discovered_count(), TARGETS.premiumdeck
     elseif key == "top_shelf" then
-        return HNDS.unlock_career_stat(STAT_RARE_JOKERS), TARGETS.top_shelf
+        return unlock_career_stat(STAT_RARE_JOKERS), TARGETS.top_shelf
     elseif key == "wholesale" then
         return math.max(0, tonumber(G and G.GAME and G.GAME.hnds_boosters_bought_run) or 0), TARGETS.wholesale
     elseif key == "hashtag_skip" then
-        return HNDS.unlock_career_stat(STAT_BLINDS_SKIPPED), TARGETS.hashtag_skip
+        return unlock_career_stat(STAT_BLINDS_SKIPPED), TARGETS.hashtag_skip
     elseif key == "beyond" then
-        return HNDS.unlock_career_stat(STAT_HELD_EFFECTS), TARGETS.beyond
+        return unlock_career_stat(STAT_HELD_EFFECTS), TARGETS.beyond
     elseif key == "ol_reliable" then
-        return HNDS.unlock_career_stat(STAT_LUCKY_TRIGGERS), TARGETS.ol_reliable
+        return unlock_career_stat(STAT_LUCKY_TRIGGERS), TARGETS.ol_reliable
     end
     return 0, 0
 end
@@ -223,15 +223,15 @@ function HNDS.unlock_condition_met(key, args)
     elseif key == "circus" then
         return all_registered_centers_discovered("Joker")
     elseif key == "ol_reliable" then
-        return HNDS.unlock_career_stat(STAT_LUCKY_TRIGGERS) >= TARGETS.ol_reliable
+        return unlock_career_stat(STAT_LUCKY_TRIGGERS) >= TARGETS.ol_reliable
     elseif key == "top_shelf" then
-        return HNDS.unlock_career_stat(STAT_RARE_JOKERS) >= TARGETS.top_shelf
+        return unlock_career_stat(STAT_RARE_JOKERS) >= TARGETS.top_shelf
     elseif key == "wholesale" then
         return math.max(0, tonumber(G and G.GAME and G.GAME.hnds_boosters_bought_run) or 0) >= TARGETS.wholesale
     elseif key == "hashtag_skip" then
-        return HNDS.unlock_career_stat(STAT_BLINDS_SKIPPED) >= TARGETS.hashtag_skip
+        return unlock_career_stat(STAT_BLINDS_SKIPPED) >= TARGETS.hashtag_skip
     elseif key == "beyond" then
-        return HNDS.unlock_career_stat(STAT_HELD_EFFECTS) >= TARGETS.beyond
+        return unlock_career_stat(STAT_HELD_EFFECTS) >= TARGETS.beyond
     end
     return false
 end
@@ -479,27 +479,27 @@ end
 function HNDS.joker_unlock_progress(key)
     local state = run_state()
     if key == "jigsaw_joker" then return state and state.jigsaw_count or 0, TARGETS[key]
-    elseif key == "wait_what" then return HNDS.unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT), TARGETS[key]
-    elseif key == "jester_in_yellow" then return HNDS.unlock_career_stat(STAT_NEGATIVE_JOKERS), TARGETS[key]
-    elseif key == "demented" then return HNDS.unlock_career_stat(STAT_CARD_IDENTITY_CHANGES), TARGETS[key]
+    elseif key == "wait_what" then return unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT), TARGETS[key]
+    elseif key == "jester_in_yellow" then return unlock_career_stat(STAT_NEGATIVE_JOKERS), TARGETS[key]
+    elseif key == "demented" then return unlock_career_stat(STAT_CARD_IDENTITY_CHANGES), TARGETS[key]
     elseif key == "imposter" then return state and state.imposter_streak or 0, TARGETS[key]
     elseif key == "fregoli" then
         local best = 0
         for _, count in pairs(state and state.fregoli_buys or {}) do best = math.max(best, tonumber(count) or 0) end
         return best, TARGETS[key]
-    elseif key == "excommunicado" then return HNDS.unlock_career_stat(STAT_BOSSES_DEFEATED), TARGETS[key]
+    elseif key == "excommunicado" then return unlock_career_stat(STAT_BOSSES_DEFEATED), TARGETS[key]
     elseif key == "one_punchline_man" then return state and state.boss_one_hand_streak or 0, TARGETS[key]
-    elseif key == "perfectionist" then return HNDS.unlock_career_stat(STAT_ENHANCEMENT_CHANGES), TARGETS[key]
-    elseif key == "dark_idol" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED), TARGETS[key]
+    elseif key == "perfectionist" then return unlock_career_stat(STAT_ENHANCEMENT_CHANGES), TARGETS[key]
+    elseif key == "dark_idol" then return unlock_career_stat(STAT_CARDS_DESTROYED), TARGETS[key]
     elseif key == "deep_pockets" then return state and state.consumables_created_round or 0, TARGETS[key]
-    elseif key == "ms_fortune" then return HNDS.unlock_career_stat(STAT_PROBABILITY_FAILURES), TARGETS[key]
+    elseif key == "ms_fortune" then return unlock_career_stat(STAT_PROBABILITY_FAILURES), TARGETS[key]
     elseif key == "occultist" or key == "clown_devil" or key == "balloons" then
-        return HNDS.unlock_career_stat(STAT_TAGS_CREATED), TARGETS[key]
+        return unlock_career_stat(STAT_TAGS_CREATED), TARGETS[key]
     elseif key == "seismic_activity" then return state and state.stone_scored or 0, TARGETS[key]
     elseif key == "angry_mob" then return state and state.no_joker_buy_streak or 0, TARGETS[key]
     elseif key == "jokes_aside" then return state and state.jokers_sold or 0, TARGETS[key]
     elseif key == "jackpot" then return state and state.money_gained_round or 0, TARGETS[key]
-    elseif key == "energized" or key == "last_laugh" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED), TARGETS[key]
+    elseif key == "energized" or key == "last_laugh" then return unlock_career_stat(STAT_CARDS_DESTROYED), TARGETS[key]
     end
     return 0, TARGETS[key] or 0
 end
@@ -514,30 +514,30 @@ function HNDS.joker_unlock_condition_met(key, args)
     if key == "coffee_break" then return coffee_break_complete(state)
     elseif key == "jigsaw_joker" then return state and state.jigsaw_count >= TARGETS[key] or false
     elseif key == "most_wanted" then return rare_joker_count() >= TARGETS[key]
-    elseif key == "wait_what" then return HNDS.unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT) >= TARGETS[key]
+    elseif key == "wait_what" then return unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT) >= TARGETS[key]
     elseif key == "dark_humor" then return state and state.has_selected_blind and deck_size() > 0 and deck_size() <= 25 or false
     elseif key == "public_nuisance" then return state and state.flags.public_nuisance or false
     elseif key == "pot_of_greed" then return state and state.flags.pot_of_greed or false
-    elseif key == "jester_in_yellow" then return HNDS.unlock_career_stat(STAT_NEGATIVE_JOKERS) >= TARGETS[key]
-    elseif key == "demented" then return HNDS.unlock_career_stat(STAT_CARD_IDENTITY_CHANGES) >= TARGETS[key]
+    elseif key == "jester_in_yellow" then return unlock_career_stat(STAT_NEGATIVE_JOKERS) >= TARGETS[key]
+    elseif key == "demented" then return unlock_career_stat(STAT_CARD_IDENTITY_CHANGES) >= TARGETS[key]
     elseif key == "imposter" then return state and state.imposter_streak >= TARGETS[key] or false
     elseif key == "contagion" then return deck_full_of_enhanced_cards()
     elseif key == "fregoli" then
         for _, count in pairs(state and state.fregoli_buys or {}) do if count >= TARGETS[key] then return true end end
         return false
-    elseif key == "excommunicado" then return HNDS.unlock_career_stat(STAT_BOSSES_DEFEATED) >= TARGETS[key]
+    elseif key == "excommunicado" then return unlock_career_stat(STAT_BOSSES_DEFEATED) >= TARGETS[key]
     elseif key == "meme" then return state and state.flags.meme or false
     elseif key == "one_punchline_man" then return state and state.boss_one_hand_streak >= TARGETS[key] or false
     elseif key == "digital_circus" then return distinct_joker_rarity_count() >= 4
     elseif key == "handsome" then return distinct_joker_edition_count() >= 4
-    elseif key == "perfectionist" then return HNDS.unlock_career_stat(STAT_ENHANCEMENT_CHANGES) >= TARGETS[key]
-    elseif key == "dark_idol" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED) >= TARGETS[key]
+    elseif key == "perfectionist" then return unlock_career_stat(STAT_ENHANCEMENT_CHANGES) >= TARGETS[key]
+    elseif key == "dark_idol" then return unlock_career_stat(STAT_CARDS_DESTROYED) >= TARGETS[key]
     elseif key == "color_of_madness" then return deck_enhancement_count("m_wild") >= 10
     elseif key == "deep_pockets" then return state and state.consumables_created_round >= TARGETS[key] or false
     elseif key == "head_of_medusa" then return deck_enhancement_count("m_stone") >= 10
-    elseif key == "ms_fortune" then return HNDS.unlock_career_stat(STAT_PROBABILITY_FAILURES) >= TARGETS[key]
+    elseif key == "ms_fortune" then return unlock_career_stat(STAT_PROBABILITY_FAILURES) >= TARGETS[key]
     elseif key == "occultist" or key == "clown_devil" or key == "balloons" then
-        return HNDS.unlock_career_stat(STAT_TAGS_CREATED) >= TARGETS[key]
+        return unlock_career_stat(STAT_TAGS_CREATED) >= TARGETS[key]
     elseif key == "creepy" then return have_three_copies_of_same_joker()
     elseif key == "seismic_activity" then return state and state.stone_scored >= TARGETS[key] or false
     elseif key == "angry_mob" then return state and state.no_joker_buy_streak >= TARGETS[key] or false
@@ -546,7 +546,7 @@ function HNDS.joker_unlock_condition_met(key, args)
     elseif key == "jackpot" then return state and state.money_gained_round >= TARGETS[key] or false
     elseif key == "banana_split" then return have_both_bananas()
     elseif key == "dynamic_duos" then return state and state.flags.dynamic_duos or false
-    elseif key == "energized" or key == "last_laugh" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED) >= TARGETS[key]
+    elseif key == "energized" or key == "last_laugh" then return unlock_career_stat(STAT_CARDS_DESTROYED) >= TARGETS[key]
     end
     return false
 end
