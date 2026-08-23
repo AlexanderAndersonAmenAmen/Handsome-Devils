@@ -103,9 +103,10 @@ return {
 			j_hnds_stone_mask = {
 				name = "Kamienna maska",
 				text = {
-					"Jeżeli {C:attention}pierwsza ręka{} rundy",
-					"to pojedyńcza ulepszona karta,",
-					"dodaj losową {C:attention}wersję{} do niej",
+					"Gdy dobierasz {C:attention}Kamienną kartę{},",
+					"otrzymuje losową {C:dark_edition}Wersję{}",
+					"i losową {C:attention}Pieczęć{}",
+					"do końca rundy",
 				},
 			},
 			j_hnds_jokestone = {

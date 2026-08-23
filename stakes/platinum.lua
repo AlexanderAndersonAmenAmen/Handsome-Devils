@@ -19,6 +19,5 @@ SMODS.Stake({
     modifiers = function(self)
         G.GAME.win_ante = 10
         G.GAME.hnds_platinum_active = true
-        sendDebugMessage("HNDS: Platinum modifiers() fired -- win_ante set to " .. tostring(G.GAME.win_ante))
     end
 })

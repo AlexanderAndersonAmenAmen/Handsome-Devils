@@ -24,7 +24,12 @@ end
 
 local function is_wild(card)
     if not card then return false end
-    if SMODS.has_enhancement and SMODS.has_enhancement(card, 'm_wild') then return true end
+    local center = card.config and card.config.center
+    if center and center.key == 'm_wild' then return true end
+    if HNDS.aberrant_has_fusion then
+        local ok, result = pcall(HNDS.aberrant_has_fusion, card, 'm_wild')
+        if ok and result then return true end
+    end
     -- Jevil grants a temporary virtual Wild state rather than replacing the
     -- card's Enhancement. Under Vanilla Tweaks it receives the same Wild
     -- anti-debuff treatment as a real m_wild card.
@@ -109,7 +114,7 @@ end
 local function stone_card_tally()
     local tally = 0
     for _, playing_card in ipairs((G and G.playing_cards) or {}) do
-        if SMODS.has_enhancement and SMODS.has_enhancement(playing_card, 'm_stone') then
+        if HNDS.card_has_stone and HNDS.card_has_stone(playing_card) then
             tally = tally + 1
         end
     end
@@ -528,6 +533,10 @@ take_vanilla_ownership(SMODS.Joker, 'mail', {
 
 take_vanilla_ownership(SMODS.Joker, 'stone', {
     blueprint_compat = true,
+    in_pool = function(self, args)
+        if HNDS.stone_joker_in_pool then return HNDS.stone_joker_in_pool(args) end
+		return true
+    end,
     config = { extra = 30 },
     loc_vars = function(self, info_queue, card)
         if G and G.P_CENTERS and G.P_CENTERS.m_stone then

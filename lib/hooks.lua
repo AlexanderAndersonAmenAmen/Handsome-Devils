@@ -2234,6 +2234,82 @@ end
 _G.HNDS_CURRENT_CURSE_CARD = nil
 
 -------------------------------------------------------------------
+-- PERFECTIONIST: REPLACE RE-ENHANCING WITH PERMANENT STATS
+-------------------------------------------------------------------
+-- This lives in the post-content hook layer instead of the Joker file so it
+-- wraps Aberrant/Obsidian after their enhancement machinery is registered.
+-- It also preserves the Ortalab bottle guard used by the previous implementation.
+if Card and Card.set_ability and not Card._hnds_perfectionist_reenhance then
+    Card._hnds_perfectionist_reenhance = true
+    local hnds_perfectionist_set_ability_ref = Card.set_ability
+
+    local function hnds_resolve_center(center)
+        if type(center) == 'string' then
+            return G and G.P_CENTERS and G.P_CENTERS[center] or nil
+        end
+        return center
+    end
+
+    local function hnds_perfectionists()
+        if not (SMODS and type(SMODS.find_card) == 'function') then return {} end
+        local ok, cards = pcall(SMODS.find_card, 'j_hnds_perfectionist')
+        return ok and type(cards) == 'table' and cards or {}
+    end
+
+    -- Preserve arithmetic objects supplied by big-number/modpack frameworks.
+    -- Native runs use plain numbers; compatible objects can provide __add.
+    local function hnds_add_permanent_stat(current, amount)
+        if current == nil then return amount end
+        local ok, result = pcall(function() return current + amount end)
+        if ok then return result end
+        return (tonumber(current) or 0) + amount
+    end
+
+    function Card:set_ability(center, initial, delay_sprites, ...)
+        local old_center = self and self.config and self.config.center
+        local new_center = hnds_resolve_center(center)
+        local internal_swap = HNDS and HNDS._aberrant_internal_center_swap
+        local ortalab_rolling = G and G._ortalab_bottle_rolling
+
+        if not initial and not internal_swap and not ortalab_rolling
+            and old_center and old_center.set == 'Enhanced'
+            and new_center and new_center.set == 'Enhanced'
+            and old_center.key ~= new_center.key
+        then
+            local owners = hnds_perfectionists()
+            if #owners > 0 and self.ability then
+                local total_mult, total_chips = 0, 0
+                for _, joker in ipairs(owners) do
+                    if joker and not joker.debuff and joker.ability and joker.ability.extra then
+                        total_mult = total_mult + (tonumber(joker.ability.extra.mult) or 4)
+                        total_chips = total_chips + (tonumber(joker.ability.extra.chips) or 30)
+                    end
+                end
+
+                if total_mult ~= 0 or total_chips ~= 0 then
+                    self.ability.perma_mult = hnds_add_permanent_stat(self.ability.perma_mult, total_mult)
+                    self.ability.perma_bonus = hnds_add_permanent_stat(self.ability.perma_bonus, total_chips)
+                    if self.juice_up then self:juice_up(0.3, 0.25) end
+                    for _, joker in ipairs(owners) do
+                        if joker and not joker.debuff and type(card_eval_status_text) == 'function' then
+                            card_eval_status_text(joker, 'extra', nil, nil, nil, {
+                                message = localize('k_upgrade_ex'),
+                                colour = G.C.FILTER,
+                            })
+                        end
+                    end
+                    -- Do not call the wrapped setter: the original enhancement
+                    -- remains exactly as-is; only the permanent stats change.
+                    return self
+                end
+            end
+        end
+
+        return hnds_perfectionist_set_ability_ref(self, center, initial, delay_sprites, ...)
+    end
+end
+
+-------------------------------------------------------------------
 -- CURSE: BASE BLIND INCREASE (price_ante_scaling)
 -------------------------------------------------------------------
 

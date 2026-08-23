@@ -46,6 +46,10 @@ SMODS.Joker({
 	check_for_unlock = function(self, args)
 	    return HNDS.joker_unlock_condition_met("head_of_medusa", args)
 	end,
+	in_pool = function(self, args)
+		if HNDS.stone_joker_in_pool then return HNDS.stone_joker_in_pool(args) end
+		return true
+	end,
 	blueprint_compat = true,
 	demicoloncompat = true,
 	eternal_compat = true,
@@ -55,8 +59,11 @@ SMODS.Joker({
 			and context.other_card:is_face() and context.other_card.area == G.hand then
 			local face_cards = {}
 			for _, c in ipairs(G.hand.cards) do
-				if c:is_face() and not c.hnds_medusa_petrified then
-					c.hnds_medusa_petrified = true
+				-- set_ability immediately removes the face rank by turning the card
+				-- into Stone, so a persistent per-card guard is unnecessary. Keeping
+				-- one would make a card permanently immune if another mod later
+				-- restores/re-enhances it into a face card.
+				if c:is_face() then
 					face_cards[#face_cards + 1] = c
 				end
 			end

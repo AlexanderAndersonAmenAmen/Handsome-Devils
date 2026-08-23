@@ -40,8 +40,9 @@ return {
 			j_hnds_perfectionist = {
 				name = "Perfeccionista",
 				text = {
-					"Al mejorar una carta",
-					"{C:attention}Mejorada{} obtiene adicionalmente",
+					"Cuando mejoras una carta",
+					"ya {C:attention}Mejorada{}, en su lugar",
+					"gana permanentemente",
 					"{C:mult}+#1#{} Multi y {C:chips}+#2#{} Fichas",
 				},
 			},
@@ -125,10 +126,10 @@ return {
 			j_hnds_stone_mask = {
 				name = "Máscara de Piedra",
 				text = {
-					"Si la {C:attention}primera mano{} es una",
-					"sola carta, esta obtiene",
-					"una {C:attention}Mejora{}, {C:dark_edition}Edición{}",
-					"o {C:attention}Sello{}",
+					"Cuando robas una",
+					"{C:attention}Carta de Piedra{}, obtiene una",
+					"{C:dark_edition}Edición{} y un {C:attention}Sello{} aleatorios",
+					"hasta el final de la ronda",
 				},
 				unlock = {
 					"Alcanza {X:mult,C:white}X5{} Multi",

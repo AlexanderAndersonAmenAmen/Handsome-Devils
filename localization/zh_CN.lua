@@ -100,9 +100,10 @@ return {
 			j_hnds_stone_mask = {
 				name = "石鬼面",
 				text = {
-					"如果{C:attention}第一次出牌{}",
-					"只有一张{C:attention}增强牌{}",
-					"为其添加随机的{C:attention}版本{}",
+					"抽到{C:attention}石头牌{}时",
+					"使其获得随机的{C:dark_edition}版本{}",
+					"和随机的{C:attention}蜡封{}",
+					"直到回合结束",
 				},
 			},
 			j_hnds_jokestone = {

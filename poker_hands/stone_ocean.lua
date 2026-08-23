@@ -32,7 +32,9 @@ SMODS.PokerHandPart({
 			local v = hand[i].base.value
 			-- Skip anything we can't interpret (for whatever reason)
 			if v then
-				if hand[i].ability.name == "Stone Card" and not hand[i]:is_face() and stones < 5 then
+				if HNDS.card_has_stone and HNDS.card_has_stone(hand[i])
+					and not hand[i]:is_face() and stones < 5
+				then
 					stones = stones + 1
 					table.insert(ret, hand[i])
 				end
