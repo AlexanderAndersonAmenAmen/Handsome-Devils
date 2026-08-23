@@ -1,4 +1,6 @@
-function bizzare_suit()
+-- Bizarre Joker: re-roll its ancient suit every round. Registered here so
+-- lib/utils.lua does not need to know about this Joker.
+HNDS.on_round_reset(function()
     local ancient_suits = {}
     for _, v in ipairs({'Spades', 'Hearts', 'Clubs', 'Diamonds'}) do
         if v ~= G.GAME.hnds_bizzare_suit then
@@ -7,7 +9,7 @@ function bizzare_suit()
     end
     local ancient_card = pseudorandom_element(ancient_suits, pseudoseed("this_is_so_bizzare"))
     G.GAME.hnds_bizzare_suit = ancient_card
-end
+end)
 
 SMODS.Joker({
     key = "bizzare_joker",

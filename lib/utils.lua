@@ -290,7 +290,6 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	end
 
 	-- Re-roll per-round joker state (suit/card changes every round)
-	bizzare_suit()
 	for _, round_reset in ipairs(HNDS._round_reset_handlers) do
 		round_reset()
 	end
