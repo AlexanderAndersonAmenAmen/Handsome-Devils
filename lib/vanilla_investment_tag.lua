@@ -75,6 +75,9 @@ local function pay_investment_tag(tag)
         if type(tag.remove) == 'function' then pcall(tag.remove, tag) end
     end
 
+    -- Counts a Tag pop on the direct Investment payout path (this payout
+    -- bypasses Tag:apply_to_run, which has its own counter in hooks.lua).
+    -- The shared hnds_pop_counted guard keeps the two sites mutually exclusive.
     if G and G.GAME and not tag.hnds_pop_counted then
         tag.hnds_pop_counted = true
         G.GAME.hnds_tags_popped = (G.GAME.hnds_tags_popped or 0) + 1

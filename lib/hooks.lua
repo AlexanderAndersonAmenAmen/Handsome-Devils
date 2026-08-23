@@ -760,6 +760,10 @@ if Tag and type(Tag.apply_to_run) == "function" and not HNDS._tag_pop_hooked the
             result = tag_apply_to_run_ref(self, context, ...)
         end
 
+        -- Counts a Tag pop on the apply_to_run path. The direct Investment
+        -- payout in lib/vanilla_investment_tag.lua counts its own path; the
+        -- per-tag hnds_pop_counted guard makes the two sites mutually
+        -- exclusive, so one physical Tag is never counted twice.
         if not was_triggered
             and self.triggered == true
             and not self.hnds_pop_counted
