@@ -971,8 +971,6 @@ if Card and Card.add_sticker and not _G._hnds_wrapped_add_sticker_cursed then
 	end
 end
 
-HNDS.strip_other_stickers = hnds_strip_other_stickers
-
 -------------------------------------------------------------------
 -- CONTAGION CONSUMABLE SELECTION + RUNTIME STICKER SAFETY NET
 -------------------------------------------------------------------
