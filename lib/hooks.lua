@@ -1,6 +1,11 @@
 --[[
 We have a lot of hooks here, they do global stuff and helps with specifit effects from Jokers, Blinds and more
 
+Wraps policy: raw function wraps are kept only where Steamodded offers no
+covering API (boss selection, blind lifecycle, rank spoofing, sticker
+exclusivity, cost mods, UI stability). When an SMODS API exists, prefer it:
+see the Contagion tooltip section for a take_ownership example.
+
 Sections:
   Ante-10 showdown boss pool & global boss support (get_new_boss)
   Wasted Wish state machine (Card:redeem)
