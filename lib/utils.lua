@@ -523,3 +523,65 @@ function replace_jokers_keep_rarity(jokers, sticker_removal_chance)
 		end
 	end
 end
+-- Random effects owned by Handsome Devils must not roll Vintage. Vintage stays
+-- in the natural edition pool and remains available from the Vintage Tag.
+function HNDS.poll_non_vintage_edition(...)
+    local args = { ... }
+    local unpack_fn = table.unpack or unpack
+    local vintage = G and G.P_CENTERS and G.P_CENTERS.e_hnds_vintage
+    if not vintage then
+        if type(args[1]) == "table" and SMODS.poll_edition then
+            return SMODS.poll_edition(args[1])
+        end
+        return poll_edition(unpack_fn(args))
+    end
+
+    local old_weight, old_in_shop = vintage.weight, vintage.in_shop
+    vintage.weight, vintage.in_shop = 0, false
+    local result = { pcall(function()
+        if type(args[1]) == "table" and SMODS.poll_edition then
+            return SMODS.poll_edition(args[1])
+        end
+        return poll_edition(unpack_fn(args))
+    end) }
+    vintage.weight, vintage.in_shop = old_weight, old_in_shop
+    if not result[1] then error(result[2]) end
+    table.remove(result, 1)
+    return unpack_fn(result)
+end
+
+-- Digital Circus and Most Wanted use a guaranteed weighted Edition pool.
+-- These are relative weights, matching the requested Edition weighting:
+-- Foil 20, Holographic 14, Vintage 7, Polychrome 3, Negative 3.
+local HNDS_FEATURED_EDITION_WEIGHTS = {
+    { key = 'e_foil',         weight = 20 },
+    { key = 'e_holo',         weight = 14 },
+    { key = 'e_hnds_vintage', weight = 7  },
+    { key = 'e_polychrome',   weight = 3  },
+    { key = 'e_negative',     weight = 3  },
+}
+
+function HNDS.poll_featured_edition(seed)
+    local available = {}
+    local total_weight = 0
+
+    for _, entry in ipairs(HNDS_FEATURED_EDITION_WEIGHTS) do
+        -- Vintage can be disabled by config, so only include Editions that
+        -- actually exist in the current center registry.
+        if G and G.P_CENTERS and G.P_CENTERS[entry.key] then
+            available[#available + 1] = entry
+            total_weight = total_weight + entry.weight
+        end
+    end
+
+    if total_weight <= 0 then return nil end
+
+    local roll = pseudorandom(seed or 'hnds_featured_edition') * total_weight
+    local cumulative = 0
+    for _, entry in ipairs(available) do
+        cumulative = cumulative + entry.weight
+        if roll < cumulative then return entry.key end
+    end
+
+    return available[#available] and available[#available].key or nil
+end
