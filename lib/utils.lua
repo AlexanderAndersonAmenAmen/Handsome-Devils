@@ -79,6 +79,16 @@ function HNDS.poll_tag(seed, options, exclusions)
 	-- This part is basically a copy of how the base game does it
 	-- Look at get_next_tag_key in common_events.lua
 	local pool = options or get_current_pool("Tag")
+	-- Explicit option lists (e.g. modded tag keys) may contain keys that are
+	-- not registered; adding such a tag crashes. Drop them before rolling.
+	if options then
+		local registered = {}
+		for _, key in ipairs(pool) do
+			if G.P_CENTERS[key] then registered[#registered + 1] = key end
+		end
+		pool = registered
+		if #pool == 0 then pool = get_current_pool("Tag") end
+	end
 	if exclusions then
 		for excluded_index = 1, #exclusions do
 			for pool_index = 1, #pool do
@@ -204,7 +214,7 @@ function HNDS.get_shop_joker_tags()
 
 	if next(SMODS.find_mod("Bunco")) then --bunco tags
 		table.insert(tag_list, "tag_bunc_glitter")
-		table.insert(tag_list, "tag_bunc_fuorescent")
+		table.insert(tag_list, "tag_bunc_fluorescent")
 	end
 
 	if next(SMODS.find_mod("JoyousSpring")) then --joyousspring tags

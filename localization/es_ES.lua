@@ -448,8 +448,9 @@ return {
 			j_hnds_imposter = {
 				name = "Impostor",
 				text = {
-					"Las cartas de {C:attention}figura{} anotadas",
-					"actúan como cartas enumeradas",
+					"Las cartas de {C:attention}figura{} actúan",
+					"como cartas enumeradas",
+					"para efectos de Comodines",
 				},
 			},
 			j_hnds_contagion = {

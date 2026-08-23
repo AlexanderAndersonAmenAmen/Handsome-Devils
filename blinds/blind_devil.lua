@@ -211,11 +211,17 @@ HNDS.attach_devil_blind_tooltip = function(sprite, blind_config)
 end
 
 
--- Called by the boss-selection hook so the nickname exists before the
+-- Rolls the three component bosses once per run (or after a disable).
+local function ensure_devil_roll()
+    if G and G.GAME and not G.GAME.hnds_devil_bosses then
+        G.GAME.hnds_devil_bosses = HNDS.roll_devil_bosses()
+    end
+end
+
+-- Called by the boss-selection hook so the roll exists before the
 -- blind-select UI is constructed.
 HNDS.prepare_devil_encounter = function()
     ensure_devil_roll()
-    return ensure_devil_name()
 end
 
 local function devil_get_names()
@@ -260,7 +266,6 @@ SMODS.Blind {
 
     loc_vars = function(self)
         ensure_devil_roll()
-        ensure_devil_name()
 
         return {
             vars = devil_get_names(),
@@ -291,7 +296,6 @@ SMODS.Blind {
 
     set_blind = function(self)
         ensure_devil_roll()
-        ensure_devil_name()
         G.GAME.hnds_devil_active = true
         G.GAME.hnds_devil_soul_bosses = {}
         for i, key in ipairs(G.GAME.hnds_devil_bosses or {}) do
@@ -396,10 +400,5 @@ SMODS.Blind {
 
         G.GAME.hnds_devil_bosses = nil
         G.GAME.hnds_devil_active = nil
-        G.GAME.hnds_devil_name_key = nil
-
-        -- Restore the default localization after the encounter. The next
-        -- selection will apply its newly rolled nickname before rendering.
-        apply_devil_name("hnds_devil_name_default")
     end,
 }

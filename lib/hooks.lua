@@ -1739,7 +1739,9 @@ if not Card._hnds_wrapped_add_to_deck then
 
 
 			-- Play sound when cursed jokers are added (general, not just Devil's Round)
-			if self.ability and (self.ability.hnds_curse_offer or self.ability.hnds_curse_price) then
+			-- Suppressed for internal remove/add cycles like Joker Reverse flips.
+			if self.ability and (self.ability.hnds_curse_offer or self.ability.hnds_curse_price)
+				and not (HNDS and HNDS._suppress_curse_sound) then
 				play_sound("hnds_curse_used", 1, 0.75)
 			end
 		end
@@ -1869,6 +1871,11 @@ end
 -- (J/Q/K, ids 11-13) are treated like any rank for any scoring purpose.
 -- This works by temporarily faking the rank for each Jokers so
 -- `card:get_id()` and `calculate_joker` always works for face cards
+-- Covers three dispatch shapes:
+--   - scoring/individual contexts presenting a single target card,
+--   - held-in-hand contexts (also single target),
+--   - end-of-round contexts (Cloud 9 etc.) which carry no target card;
+--     there every face card in the deck is spoofed together per attempt.
 -- Is bit heavy on performance
 if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_imposter then
 	Card._hnds_wrapped_calculate_joker_imposter = true
@@ -1951,6 +1958,7 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 		if context.discard then sig = sig .. 'd' end
 		if context.destroying_card then sig = sig .. 'D' end
 		if context.setting_blind then sig = sig .. 'B' end
+		if context.end_of_round then sig = sig .. 'e' end
 		if context.other_joker and context.other_joker.config and context.other_joker.config.center then
 			sig = sig .. '|oj:' .. (context.other_joker.config.center.key or '')
 		end
@@ -1982,7 +1990,8 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 		end
 		if not (context.individual or context.repetition or context.other_joker or context.before
 				or context.after or context.cardarea or context.joker_main or context.joker_act
-				or context.joker_post or context.destroying_card or context.setting_blind) then
+				or context.joker_post or context.destroying_card or context.setting_blind
+				or context.end_of_round) then
 			return calculate_joker_ref(self, context, ...)
 		end
 
@@ -1991,28 +2000,37 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 
 		if not hnds_impostor_is_active() then return eff, post end
 
-		-- Don't spoof the impostor jokers themselves, or Cloud 9 (special case)
+		-- Don't spoof the impostor joker itself
 		local joker_key = self.config and self.config.center and self.config.center.key
-		if joker_key == 'j_hnds_imposter' or joker_key == 'j_cloud_9' then
+		if joker_key == 'j_hnds_imposter' then
 			return eff, post
 		end
 
-		-- Only spoof for playing cards (not consumables/vouchers)
-		local target = context.other_card or context.card or context.cardarea or nil
-		if not target or not target.get_id or not target.ability then return eff, post end
-		if target.ability.set == 'Tarot' or target.ability.set == 'Planet'
-			or target.ability.set == 'Spectral' or target.ability.set == 'Voucher'
-			or target.ability.consumeable then
+		-- Only spoof for playing cards (not consumables/vouchers). End-of-round
+		-- effects (Cloud 9 etc.) present no target card at all; for those every
+		-- face card in the deck is spoofed together per attempt instead.
+		local target = context.other_card or context.card or nil
+		if target then
+			if not target.get_id or not target.ability then return eff, post end
+			if target.ability.set == 'Tarot' or target.ability.set == 'Planet'
+				or target.ability.set == 'Spectral' or target.ability.set == 'Voucher'
+				or target.ability.consumeable then
+				return eff, post
+			end
+			if target.ability.set ~= 'Default' and target.ability.set ~= 'Enhanced' then return eff, post end
+			if SMODS and SMODS.has_no_rank and SMODS.has_no_rank(target) then return eff, post end
+
+			-- Only spoof face cards (J=11, Q=12, K=13)
+			local target_id = target:get_id()
+			if not target_id or target_id < 11 or target_id > 13 then return eff, post end
+		elseif not context.end_of_round then
 			return eff, post
 		end
-		if target.ability.set ~= 'Default' and target.ability.set ~= 'Enhanced' then return eff, post end
-		if SMODS and SMODS.has_no_rank and SMODS.has_no_rank(target) then return eff, post end
 
-		-- Only spoof face cards (J=11, Q=12, K=13)
-		local target_id = target:get_id()
-		if not target_id or target_id < 11 or target_id > 13 then return eff, post end
-
-		-- If the original calc already produced a result, use it
+		-- If the original calc already produced a result, use it. Rerunning an
+		-- already-triggering Joker risks double-applying state mutations (Egg
+		-- sell value etc.), so face cards only extend effects that did not
+		-- fire on their own.
 		if eff or post then
 			if type(eff) == 'table' and next(eff) then return eff, post end
 			if type(post) == 'table' and #post > 0 then return eff, post end
@@ -2027,15 +2045,42 @@ if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_impo
 		spoof_cache[cache_key] = spoof_cache[cache_key] or {}
 		local cached_spoof = spoof_cache[cache_key][sig]
 		local hint_spoof = spoof_hints[hint_key]
-		local original_get_id = target.get_id
+		local original_get_id = target and target.get_id or nil
 		-- Only the actual brute-force spoof path needs to replay varargs. Packing
 		-- here avoids one temporary table for every ordinary Joker evaluation.
 		local hnds_args = { ... }
 
+		-- Spoofs every eligible face card in the deck to one rank (end-of-round
+		-- mode). Returns a restore closure so pcall paths can never leave the
+		-- spoofed get_id behind.
+		local function hnds_apply_spoof(spoof_id)
+			if target then
+				target.get_id = function() return spoof_id end
+				return function() target.get_id = original_get_id end
+			end
+
+			local originals = {}
+			for _, c in ipairs(G.playing_cards or {}) do
+				if c.get_id and c.ability
+					and (c.ability.set == 'Default' or c.ability.set == 'Enhanced')
+					and not (SMODS and SMODS.has_no_rank and SMODS.has_no_rank(c))
+				then
+					local cid = c:get_id()
+					if cid and cid >= 11 and cid <= 13 then
+						originals[c] = c.get_id
+						c.get_id = function() return spoof_id end
+					end
+				end
+			end
+			return function()
+				for c, fn in pairs(originals) do c.get_id = fn end
+			end
+		end
+
 		local function hnds_try_spoof(spoof_id)
-			target.get_id = function() return spoof_id end
+			local restore = hnds_apply_spoof(spoof_id)
 			local ok, e, p = pcall(calculate_joker_ref, self, context, hnds_unpack(hnds_args))
-			target.get_id = original_get_id
+			restore()
 			if not ok then error(e) end
 			local has_e = e and (type(e) ~= 'table' or next(e))
 			local has_p = p and (type(p) ~= 'table' or #p > 0)

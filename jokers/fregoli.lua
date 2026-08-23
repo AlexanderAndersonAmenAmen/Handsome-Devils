@@ -56,11 +56,11 @@ SMODS.Joker {
     attributes = { "copying" }
 }
 
--- Fregoli copies the last purchased card. Purchases can happen before Fregoli
+-- Fregoli copies the last purchased Joker. Purchases can happen before Fregoli
 -- is owned, so tracking rides the mod-level context registry instead of this
 -- joker's own calculate.
 HNDS.on_context(function(context)
-    if context.buying_card then
+    if context.buying_card and context.card.ability.set == "Joker" then
         G.GAME.hnds_fregoli_copy = context.card.sort_id
     end
 end)

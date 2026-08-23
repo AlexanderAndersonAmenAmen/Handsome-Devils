@@ -825,8 +825,8 @@ local localization = {
 			j_hnds_imposter = {
 				name = "Imposter",
 				text = {
-					"Scored {C:attention}face cards{}",
-					"count as any rank",
+					"{C:attention}face cards{} count",
+					"as any rank",
 					"for Joker effects",
 				},
 				unlock = {

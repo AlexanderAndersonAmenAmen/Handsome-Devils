@@ -34,9 +34,17 @@ SMODS.Joker({
 		end
 	end,
 	remove_from_deck = function(self, card, from_debuff)
+		if from_debuff then return end
+		-- Only finish the round while still inside the PN-extended blind.
+		-- Selling during cash-out/shop already ended the round; calling
+		-- end_round() again corrupts the game state.
+		if not (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.DRAW_TO_HAND) then return end
 		if not (G.GAME.blind and G.GAME.blind.in_blind) then return end
 		if G.GAME.chips >= G.GAME.blind.chips then
+			if not G.GAME.hnds_public_nuisance_end_round_queued then
+				G.GAME.hnds_public_nuisance_end_round_queued = true
 				end_round()
+			end
 		end
 	end,
 	attributes = { "passive", "hands" }

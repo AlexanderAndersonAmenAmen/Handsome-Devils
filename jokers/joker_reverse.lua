@@ -545,9 +545,12 @@ local function restore_side(card, pair, side_name, desired_index)
     end
     pair.active = side_name
 
+    -- Suppress the Cursed-sticker sting: flipping is not a new acquisition.
+    HNDS._suppress_curse_sound = true
     if card.add_to_deck and type(card.add_to_deck) == 'function' then
         card:add_to_deck()
     end
+    HNDS._suppress_curse_sound = nil
     restore_joker_slot(card, desired_index)
     if card.set_sticker_display then pcall(card.set_sticker_display, card) end
     return true
