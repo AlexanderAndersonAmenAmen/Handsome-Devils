@@ -2,22 +2,32 @@
 We have a lot of hooks here, they do global stuff and helps with specifit effects from Jokers, Blinds and more
 
 Sections:
-  Badge colour
-  Cursed Sticker exclusivity
-  Platinum Stake
-  Career stats & card destruction unlocks (Energized, Last Laugh)
+  Ante-10 showdown boss pool & global boss support (get_new_boss)
+  Wasted Wish state machine (Card:redeem)
+  Nightmare Stake: cursed-joker shop exit (G.FUNCS.toggle_shop + Lovely fallback)
+  Tag pop counter (Forbidden Fruit, Tag:apply_to_run)
+  Badge colour + localize tooltip workaround (Carcosa, Cursed Sticker)
+  Cursed Sticker exclusivity (Card:add_sticker)
+  Contagion selection sync + runtime safety net (Card:update)
+  Contagion multi-target use (Card:use_consumeable)
+  Contagion can-use validation (Card:can_use_consumeable)
+  Spectral Seal progress reset (Card:set_seal)
+  Contagion tooltip swap (generate_card_ui)
+  Platinum Stake (no-op here; see stakes/platinum.lua modifiers())
+  Card destruction unlocks (SMODS.destroy_cards; Energized, Last Laugh)
   Black Seal & voucher card destruction / scoring
   Card cost modifications (Coffee Break, Art, Premium Deck, Curses)
-  Shop card creation (Most Wanted, Blood Stake curses)
-  Krusty food negative edition
-  DNA Tag joker copy
+  Joker creation safety nets (Blood Stake curses via SMODS.create_card,
+    Devil's Round via create_card, DNA Tag copy + Devil's Round via add_to_deck)
   Circus Deck (find_joker extension)
   Crystal Deck (double-showdown boss selection)
-  Challenge description tab edition patch
-  Impostor rank-spoofing system
-  Base blind increase curse (price_ante_scaling)
-  end_round dispatcher (calls per-subsystem functions)
-  Blind.set_blind dispatcher (calls per-subsystem functions)
+  Gambling Opportunity challenge tab edition patch
+  Impostor rank-spoofing system (Card:calculate_joker)
+  Excommunicado boss-blind replacement (Blind:get_type)
+  Cursed Sticker tooltip workaround setup (sticker loc_vars capture)
+  Base blind increase curse (get_blind_amount, price_ante_scaling)
+  Main-menu locked hint suppression (CardArea:emplace)
+  Tooltip position stability (Card:align_h_popup)
 ]]
 
 
