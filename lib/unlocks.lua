@@ -452,13 +452,6 @@ function HNDS.record_coffee_break_skip(ante, slot)
     return true
 end
 
-local function record_coffee_break_skip(state, context)
-    local ante = current_ante()
-    local slot = normalize_blind_slot(context and (context.blind_on_deck or context.blind or context.blind_type))
-        or normalize_blind_slot(G and G.GAME and G.GAME.blind_on_deck)
-    return HNDS.record_coffee_break_skip(ante, slot)
-end
-
 local function coffee_break_complete(state)
     return state and state.coffee_break_skips["8:Small"] and state.coffee_break_skips["8:Big"] or false
 end
