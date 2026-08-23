@@ -157,16 +157,10 @@ function HNDS.cap_perilous_pact_score(score)
     return score
 end
 
-local function hnds_copy_table_shallow(source)
-    local copy = {}
-    for key, value in pairs(source or {}) do copy[key] = value end
-    return copy
-end
-
 local function hnds_wasted_wish_fake_voucher(center, key)
     local config = center and center.config or {}
-    local ability = type(copy_table) == "function" and copy_table(config)
-        or hnds_copy_table_shallow(config)
+    -- Vanilla global; always present at runtime.
+    local ability = copy_table(config)
     return {
         ability = ability,
         config = { center = center, center_key = key },
@@ -473,7 +467,7 @@ function HNDS.set_wasted_wish_active(active)
 
     if active then
         if not G.GAME.hnds_wasted_wish_active then
-            local vouchers = hnds_copy_table_shallow(G.GAME.used_vouchers)
+            local vouchers = copy_table(G.GAME.used_vouchers)
             G.GAME.hnds_wasted_wish_used_vouchers = vouchers
             G.GAME.hnds_wasted_wish_adjustments =
                 hnds_wasted_wish_build_adjustments(vouchers)
