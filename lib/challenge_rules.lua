@@ -1,5 +1,5 @@
 -- Check if the current challenge matches the given key (SMODS format: c_hnds_<key>)
-function HNDS.is_challenge(key)
+local function is_challenge(key)
 	return G and G.GAME and G.GAME.challenge == 'c_hnds_'..key
 end
 
@@ -8,7 +8,7 @@ end
 		G.FUNCS._hnds_wrapped_cash_out = true
 		local cash_out_ref = G.FUNCS.cash_out
 		function G.FUNCS.cash_out(e, delay_seconds, ...)
-		if not HNDS.is_challenge('dark_ritual') then
+		if not is_challenge('dark_ritual') then
 			return cash_out_ref(e, delay_seconds, ...)
 		end
 
@@ -62,7 +62,7 @@ if Card and Card.generate_card_ui and not Card._hnds_wrapped_generate_card_ui th
 	local generate_card_ui_ref = Card.generate_card_ui
 	function Card:generate_card_ui(_dim_table, _scale, _rotate, _hover, _focus, _major, ...)
 		local ret = generate_card_ui_ref(self, _dim_table, _scale, _rotate, _hover, _focus, _major, ...)
-		if HNDS.is_challenge('gambling_opportunity') then
+		if is_challenge('gambling_opportunity') then
 			if self.config and self.config.center and HNDS.GAMBLING_BANNED_ENHANCEMENTS[self.config.center.key]
 				and G and G.P_CENTERS and G.P_CENTERS.m_base then
 				self:set_ability(G.P_CENTERS.m_base, true)
@@ -80,7 +80,7 @@ if Card and Card.set_ability and not Card._hnds_wrapped_set_ability then
 	Card._hnds_wrapped_set_ability = true
 	local set_ability_ref = Card.set_ability
 	function Card:set_ability(center, initial, silent, ...)
-		if HNDS.is_challenge('gambling_opportunity') and center and HNDS.GAMBLING_BANNED_ENHANCEMENTS[center.key]
+		if is_challenge('gambling_opportunity') and center and HNDS.GAMBLING_BANNED_ENHANCEMENTS[center.key]
 			and G and G.P_CENTERS and G.P_CENTERS.m_base then
 			center = G.P_CENTERS.m_base
 		end
@@ -93,7 +93,7 @@ if Card and Card.set_seal and not Card._hnds_wrapped_set_seal then
 	Card._hnds_wrapped_set_seal = true
 	local set_seal_ref = Card.set_seal
 	function Card:set_seal(seal, silent, ...)
-		if HNDS.is_challenge('gambling_opportunity') and seal and HNDS.GAMBLING_BANNED_SEALS[seal] then
+		if is_challenge('gambling_opportunity') and seal and HNDS.GAMBLING_BANNED_SEALS[seal] then
 			return set_seal_ref(self, nil, silent, ...)
 		end
 		return set_seal_ref(self, seal, silent, ...)
@@ -105,7 +105,7 @@ if Card and Card.set_edition and not Card._hnds_wrapped_set_edition then
 	Card._hnds_wrapped_set_edition = true
 	local set_edition_ref = Card.set_edition
 	function Card:set_edition(edition, immediate, silent, ...)
-		if HNDS.is_challenge('gambling_opportunity') and edition and HNDS.GAMBLING_BANNED_EDITIONS[edition] then
+		if is_challenge('gambling_opportunity') and edition and HNDS.GAMBLING_BANNED_EDITIONS[edition] then
 			return set_edition_ref(self, nil, immediate, silent, ...)
 		end
 		return set_edition_ref(self, edition, immediate, silent, ...)
@@ -118,7 +118,7 @@ if get_current_pool and not _G._hnds_wrapped_get_current_pool then
 	local get_current_pool_ref = get_current_pool
 	function get_current_pool(_type, _rarity, _legendary, _append, ...)
 		local pool, pool_key = get_current_pool_ref(_type, _rarity, _legendary, _append, ...)
-		if HNDS.is_challenge('gambling_opportunity') and _type == 'Enhanced' and type(pool) == 'table' then
+		if is_challenge('gambling_opportunity') and _type == 'Enhanced' and type(pool) == 'table' then
 			local filtered = {}
 			for i = 1, #pool do
 				if not HNDS.GAMBLING_BANNED_ENHANCEMENTS[pool[i]] then
@@ -134,7 +134,7 @@ end
 -- Devil's Round: all jokers get cursed on creation.
 -- Shared helper: apply curse to a joker if it's eligible and the challenge is active.
 function HNDS.try_devils_round_curse(card)
-	if not HNDS.is_challenge('devils_round') then return end
+	if not is_challenge('devils_round') then return end
 	if not (card and card.config and card.config.center and card.config.center.set == 'Joker') then return end
 	if card.ability and card.ability.hnds_eternal_copy_created then return end
 	if not (apply_curse and type(apply_curse) == 'function') then return end
