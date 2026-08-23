@@ -496,40 +496,6 @@ SMODS.current_mod.calculate = function(self, context)
 	if type(context) ~= 'table' then return end
 	if HNDS.calculate_vanilla_tweaks then HNDS.calculate_vanilla_tweaks(context) end
 
-	-- Spectrum is a hidden Spectral that can replace a Base card in Standard
-	-- packs. Standard-pack generation may attach playing-card modifiers before
-	-- the forced center is installed; strip those modifiers from Spectrum only.
-	if context.modify_booster_card and context.card
-		and context.card.config and context.card.config.center
-		and context.card.config.center.key == "c_hnds_spectrum"
-	then
-		local spectrum = context.card
-		if spectrum.set_edition then spectrum:set_edition(nil, true, true) end
-		if spectrum.set_seal then spectrum:set_seal(nil, true, true) end
-		-- A Spectrum rolled from a Base Standard-pack slot can retain the
-		-- playing-card front sprite even after its center becomes Spectral.
-		-- Remove that child so it renders and behaves as a consumable only.
-		if spectrum.children and spectrum.children.front then
-			local old_front = spectrum.children.front
-			if old_front.remove then old_front:remove() end
-			spectrum.children.front = nil
-		end
-		if spectrum.ability then
-			spectrum.ability.perishable = nil
-			spectrum.ability.eternal = nil
-			spectrum.ability.rental = nil
-			spectrum.ability.perish_tally = nil
-			spectrum.ability.perma_bonus = 0
-			spectrum.ability.perma_mult = 0
-			spectrum.ability.perma_x_mult = 0
-			spectrum.ability.perma_h_x_mult = 0
-			spectrum.ability.perma_p_dollars = 0
-			for _, sticker_key in ipairs((SMODS.Sticker and SMODS.Sticker.obj_buffer) or {}) do
-				spectrum.ability[sticker_key] = nil
-			end
-		end
-		spectrum.hnds_spectrum_booster_cleanup = true
-	end
 	local boss_stack_result = HNDS.calculate_platinum_boss_stack
 		and HNDS.calculate_platinum_boss_stack(context)
 		or nil
