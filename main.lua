@@ -751,18 +751,6 @@ SMODS.ObjectType({
 	},
 })
 
--- Imposter Joker: allows face cards (J/Q/K) to match any required rank
--- when the Imposter joker is in the player's joker slots.
-HNDS.imposter_rank_match = function(card, required_id)
-	if not (card and type(card.get_id) == 'function') then return false end
-	local id = card:get_id()
-	if id == nil then return false end
-	local found = SMODS and type(SMODS.find_card) == 'function' and SMODS.find_card('j_hnds_imposter') or {}
-	if type(found) ~= 'table' then found = {} end
-	if #found > 0 and id >= 11 and id <= 13 then return true end
-	return id == required_id
-end
-
 -- Extend the game object with mod-specific state variables
 local _init_game_object = Game.init_game_object
 function Game:init_game_object(...)
