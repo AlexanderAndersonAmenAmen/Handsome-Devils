@@ -220,12 +220,10 @@ local function invalid_combo(result, candidate)
 
 end
 
--- Public compatibility helpers used by Platinum Blind upgrades. Keeping the
+-- Public compatibility helper used by Platinum Blind upgrades. Keeping the
 -- validator here guarantees both systems use the same debuffer/flipper limits
 -- and forbidden-pair rules.
 HNDS.devil_combo_invalid = invalid_combo
-HNDS.DEVIL_CARD_DEBUFFERS = card_debuffers
-HNDS.DEVIL_CARD_FLIPPERS = card_flippers
 
 -------------------------------------------------------------------
 -- THE HOOK
