@@ -321,7 +321,6 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	-- Re-roll per-round joker state (suit/card changes every round)
 	reset_supersuit_card()
 	reset_dark_idol()
-	bizzare_suit()
 
 	-- Circus Deck: assign a random joker from the pool each ante.
 	-- The joker lives in an offscreen CardArea and is found by find_joker().

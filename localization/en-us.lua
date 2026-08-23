@@ -182,10 +182,10 @@ local localization = {
 			j_hnds_perfectionist = {
 				name = "Perfectionist",
 				text = {
-					"When you enhance",
-					"an Enhanced card,",
+					"When you enhance an",
+					"{C:attention}Enhanced{} card, instead",
 					"it permanently gains",
-					"{C:mult}+#1#{} Mult and {C:chips}+#2#{} Chips",
+					"{C:mult}+#1#{} Mult, {C:chips}+#2#{} Chips",
 				},
 				unlock = {
 					"Enhance {C:attention}10{}",
@@ -308,10 +308,10 @@ local localization = {
 			j_hnds_stone_mask = {
 				name = "Stone Mask",
 				text = {
-					"{C:green}#1# in #2#{} chance for first",
-					"scored {C:attention}face{} card to steal",
-					"{C:attention}Enhancements{}, {C:dark_edition}Editions{} or",
-					"{C:attention}Seals{} of adjacent cards",
+					"When you draw",
+					"a {C:attention}Stone card{}, give it a",
+					"random {C:dark_edition}Edition{} and {C:attention}Seal{}",
+					"until end of round",
 				},
 				unlock = {
 					"Reach {X:mult,C:white}X5{} Mult",
@@ -423,6 +423,19 @@ local localization = {
 					"{C:inactive}(#1#)",
 				},
 			},
+			j_hnds_ancestor = {
+				name = "The Ancestor",
+				text = {
+					"First Joker each",
+					"shop becomes {C:red}Cursed{}",
+					"{C:green}#1# in 4{} chance to",
+					"ignore its {C:red}price{}",
+				},
+				unlock = {
+					"Discover every",
+					"{C:spectral}Spectral{} card",
+				},
+			},
 			j_hnds_pennywise = {
 				name = "Pennywise",
 				text = {
@@ -480,7 +493,12 @@ local localization = {
 					"{C:attention}Boss Blind{} defeated this run",
 					"{C:inactive}(Currently {X:mult,C:white}X#2#{C:inactive} Mult)",
 				},
+			unlock = {
+				"Beat a total of",
+				"{C:attention}50 Boss Blinds{}",
+				"{C:inactive}(#1#){}",
 			},
+		},
 			j_hnds_plague = {
 				name = "Plague",
 				text = {
@@ -489,7 +507,13 @@ local localization = {
 					"its {C:attention}Enhancement{} to the",
 					"next scoring card",
 				},
+			unlock = {
+				"Have {C:attention}10{} cards in",
+				"your deck with the",
+				"same {C:attention}Enhancement{}",
+				"{C:inactive}(#1#){}",
 			},
+		},
 			j_hnds_war = {
 				name = "War",
 				text = {
@@ -498,7 +522,12 @@ local localization = {
 					"destroy all scored cards",
 					"and change poker hand",
 				},
+			unlock = {
+				"Destroy a total",
+				"of {C:attention}25{} cards",
+				"{C:inactive}(#1#){}",
 			},
+		},
 			j_hnds_famine = {
 				name = "Famine",
 				text = {
@@ -507,7 +536,13 @@ local localization = {
 					"less per card in",
 					"played hand",
 				},
+			unlock = {
+				"Win {C:attention}3{} rounds in a row",
+				"while only playing",
+				"a {C:attention}High Card{}",
+				"{C:inactive}(#1#){}",
 			},
+		},
 			j_hnds_death = {
 				name = "Death",
 				text = {
@@ -516,7 +551,13 @@ local localization = {
 					"{C:attention}leftmost{} card into its",
 					"copy at end of round",
 				},
+			unlock = {
+				"Win a round with all",
+				"held in hand cards",
+				"being of the same",
+				"{C:attention}Rank and Suit{}"
 			},
+		},
             j_hnds_spaghettified_joker = {
                 name = "Spaghettified Joker",
                 text = {
@@ -525,6 +566,10 @@ local localization = {
                     "gain its {C:chips}Chips{} and {C:mult}Mult{}",
                     "{C:inactive}(Currently {C:chips}+#1#{} {C:inactive}Chips, {C:mult}+#2#{} {C:inactive}Mult)",
                 },
+            unlock = {
+                "Reach level {C:attention}25{} on",
+                "any poker hand",
+            },
             },
             j_hnds_ecg = {
                 name = "ECG",
@@ -534,7 +579,13 @@ local localization = {
                     "cards, otherwise, {C:mult}-#2#{} Mult",
                     "{C:inactive}(Currently {C:mult}#3#{} {C:inactive}Mult)",
                 },
-            },
+            
+			unlock = {
+				"Play {C:attention}10{} consecutive",
+				"hands with a scoring",
+				"{C:hearts}Heart{} card {C:inactive}(#1#){}",
+			},
+		},
             j_hnds_jevil = {
                 name = "Jevil",
                 text = {
@@ -543,15 +594,24 @@ local localization = {
                     "count as {C:attention}Wild cards{}",
                     "until end of round",
                 },
+            unlock = {
+                "Play a hand of",
+                "{C:attention}5 Wild{} cards with",
+                "the same suit",
+            },
             },
             j_hnds_headless_joker = {
                 name = "Headless Joker",
                 text = {
-                    "When you get this Joker,",
-                    "add his head to your {C:attention}full{}",
-                    "{C:attention}deck{} as a {C:attention}playing card{}",
-                    "{C:inactive}(Has any rank or suit)",
+                    "When you get this,",
+                    "add {C:attention}Jack of Lanterns{}",
+                    "to your deck",
                 },
+            unlock = {
+                "Destroy a total",
+                "of {C:attention}30{} face cards",
+                "{C:inactive}(#1#){}",
+            },
             },
 
             j_hnds_water_slide = {
@@ -562,7 +622,12 @@ local localization = {
                     "this round when you",
                     "discard an {C:attention}8{}",
                 },
-            },
+			unlock = {
+				"Discard a total",
+				"of {C:attention}88 8s{}",
+				"{C:inactive}(#1#){}",
+			},
+		},
 
 			j_hnds_time_fcked_joker = {
 				name = "Time Fc@!ked Joker",
@@ -572,6 +637,11 @@ local localization = {
 					"{C:inactive}(Once per Blind)",
 					"{C:inactive,s:0.8}~Déjà vu?~",
 				},
+			unlock = {
+			    "Restart run",
+			    "{C:attention}10{} times",
+			    "{C:inactive}(#1#){}",
+			},
 			},
 			j_hnds_joker_reverse = {
 				name = "Joker Reverse",
@@ -581,7 +651,12 @@ local localization = {
 					"{C:attention}unique counterparts{}",
 					"at end of round",
 				},
+			unlock = {
+				"Sell a {C:rare}Rare{} Joker",
+				"and buy a {C:common}Common{}",
+				"one in the same shop"
 			},
+		},
 			j_hnds_wait_what = {
 				name = "Wait, what?",
 				text = {
@@ -639,55 +714,76 @@ local localization = {
 					"{C:attention}Boss Blind{}",
 				},
 			},
+			j_hnds_dallas = {
+				name = "Dallas",
+				text = {
+					"{C:green}#1# in #2#{} chance to",
+					"gain {X:mult,C:white}X#3#{} Mult per",
+					"{C:hearts}Heart{} card scored",
+					"{C:inactive}(Currently {X:mult,C:white}X#4#{C:inactive} Mult)",
+				},
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} cards",
+			    "with {C:hearts}Heart{} suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+			j_hnds_hoxton = {
+			    name = "Hoxton",
+			    text = {
+			        "Gains {C:money}$#1#{} of sell value",
+			        "per {C:attention}#2#{} {C:inactive}[#3#]{} {C:diamonds}Diamond{}",
+			        "cards scored",
+			    },
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} {C:diamonds}Diamond{} cards",
+			    "with Diamond suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+			j_hnds_wolf = {
+			    name = "Wolf",
+			    text = {
+			        "{C:mult}+#1#{} Mult per {C:attention}#2#{} {C:inactive}[#4#]{}",
+			        "{C:clubs}Club{} cards scored",
+			        "{C:inactive}(Currently {C:mult}+#3#{C:inactive} Mult)",
+			    },
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} {C:clubs}Club{} cards",
+			    "with Club suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+			j_hnds_chains = {
+			    name = "Chains",
+			    text = {
+			        "{C:chips}+#1#{} Chips per {C:attention}#2#{} {C:inactive}[#4#]{}",
+			        "{C:spades}Spade{} cards scored",
+			        "{C:inactive}(Currently {C:chips}+#3#{C:inactive} Chips)",
+			    },
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} {C:spades}Spade{} cards",
+			    "with Spade suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
 			j_hnds_bizzare_joker = {
 				name = "Bizarre Joker",
 				text = {
-					"Gains {X:mult,C:white}XMult{}, {C:mult}+Mult{}, {C:chips}+Chips{}",
-					"or {C:attention}sell value{} based on",
-					"the suit chosen that",
-					"changes every round"
+					"When you get this,",
+					"create a {C:red}Rare Joker{}",
+					"Remove it when you",
+					"lose {C:attention}Bizzare Joker{}",
 				},
 				unlock = {
 					"Have all cards",
 					"in your deck be",
 					"of the {C:attention}same suit{}",
 				}
-			},
-			j_hnds_bizzare_joker_spades = {
-				name = "Bizarre Joker",
-				text = {
-					"{C:chips}+#2#{} Chips per played {C:spades}Spade{} card",
-					"{s:0.8}Effect changes every round",
-					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
-					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
-				},
-			},
-			j_hnds_bizzare_joker_clubs = {
-				name = "Bizarre Joker",
-				text = {
-					"{C:mult}+#4#{} Mult per played {C:clubs}Club{} card",
-					"{s:0.8}Effect changes every round",
-					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
-					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
-				},
-			},
-			j_hnds_bizzare_joker_diamonds = {
-				name = "Bizarre Joker",
-				text = {
-					"{C:money}+$#7#{} sell value per played {C:diamonds}Diamond{} card",
-					"{s:0.8}Effect changes every round",
-					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
-					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
-				},
-			},
-			j_hnds_bizzare_joker_hearts = {
-				name = "Bizarre Joker",
-				text = {
-					"{X:mult,C:white}X#6#{} Mult per played {C:hearts}Heart{} card",
-					"{s:0.8}Effect changes every round",
-					"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult,",
-					"{C:mult}+#3#{C:inactive} Mult, {C:chips}+#1#{C:inactive} Chips)",
-				},
 			},
 			j_hnds_one_punchline_man = {
 				name = "One Punchline Man",
@@ -951,6 +1047,10 @@ local localization = {
 					"random {C:red}Rare Joker{}",
 					"{C:inactive}(Currently {C:attention}#1#{C:inactive}){}",
 				},
+			unlock = {
+			    "Win a run with",
+			    "{C:attention}5{} {C:red}Rare Jokers{}",
+			},
 			},
 			j_hnds_be_not_afraid = {
 				name = "Be not Afraid",
@@ -960,7 +1060,12 @@ local localization = {
 					"card permanently gains",
 					"{C:mult}+#1#{} Mult when scoring",
 				},
+			unlock = {
+				"Play a {C:attention}Three of a Kind{}",
+				"hand that contains {C:attention}3{}",
+				"{C:attention}enhanced Aces{}",
 			},
+		},
 			j_hnds_jodiac = {
 				name = "Jodiac",
 				text = {
@@ -970,6 +1075,11 @@ local localization = {
 					"ranks at end of Ante",
 					"{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult){}",
 				},
+			unlock = {
+			    "Score a card of",
+			    "each {C:attention}rank{} during",
+			    "the same Ante",
+			},
 			},
 },
 		Back = {

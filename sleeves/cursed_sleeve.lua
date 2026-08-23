@@ -17,7 +17,6 @@ CardSleeves.Sleeve({
         if self.get_current_deck_key() == "b_hnds_cursed" then
             G.GAME.modifiers.cursed_sleeve_active = true
             G.GAME.hnds_first_cursed_pack = true
-            G.GAME.hnds_first_cursed_pack_count = 0
         end
     end,
     calculate = function(self, sleeve, context)
@@ -35,21 +34,3 @@ CardSleeves.Sleeve({
         end
     end,
 })
-
--- Hook create_card to force rare jokers for first cursed pack
-local orig_create_card = create_card
-function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
-    -- Check if this is for the cursed pack and should be rare-only
-    if _type == "Joker" and key_append == "cur" and G.GAME.modifiers.cursed_sleeve_active and G.GAME.hnds_first_cursed_pack then
-        -- Force rare rarity (3)
-        _rarity = 3
-        -- Track count and disable after enough cards to cover pack size + modifiers
-        G.GAME.hnds_first_cursed_pack_count = (G.GAME.hnds_first_cursed_pack_count or 0) + 1
-        -- Using 50 to cover any pack size increases from vouchers/effects
-        if G.GAME.hnds_first_cursed_pack_count >= 50 then
-            G.GAME.hnds_first_cursed_pack = false
-        end
-    end
-    local card = orig_create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
-    return card
-end

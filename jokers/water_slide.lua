@@ -4,8 +4,15 @@ SMODS.Joker {
     pos = { x = 4, y = 7 },
     rarity = 2,
     cost = 5,
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    discovered = false,
+    unlock_condition = { type = "hnds_joker_unlock", key = "water_slide" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("water_slide")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("water_slide", args)
+    end,
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,

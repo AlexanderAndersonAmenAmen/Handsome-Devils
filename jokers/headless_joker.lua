@@ -45,8 +45,15 @@ SMODS.Joker {
     pos = { x = 9, y = 6 },
     rarity = 2,
     cost = 6,
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    discovered = false,
+    unlock_condition = { type = "hnds_joker_unlock", key = "headless_joker" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("headless_joker")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("headless_joker", args)
+    end,
     blueprint_compat = false,
     eternal_compat = true,
     perishable_compat = true,

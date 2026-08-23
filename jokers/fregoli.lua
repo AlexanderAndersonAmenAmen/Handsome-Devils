@@ -3,7 +3,7 @@ SMODS.Joker {
     rarity = 2,
     loc_vars = function(self, info_queue, card)
         local main_end = nil
-        if G.jokers and G.jokers.cards[1] then
+        if G and G.GAME and G.jokers and G.jokers.cards and G.jokers.cards[1] then
             local copied
             for _, c in ipairs(G.jokers.cards) do
                 if c.sort_id == G.GAME.hnds_fregoli_copy then
@@ -47,6 +47,7 @@ SMODS.Joker {
     end,
     blueprint_compat = true,
     calculate = function(self, card, context)
+        if not (G and G.GAME and G.jokers and G.jokers.cards) then return end
         for _, c in ipairs(G.jokers.cards) do
             if c.sort_id == G.GAME.hnds_fregoli_copy and c ~= card then
                 return SMODS.blueprint_effect(card, c, context)

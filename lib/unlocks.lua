@@ -16,6 +16,13 @@ local STAT_PROBABILITY_FAILURES = "c_hnds_probability_failures"
 local STAT_TAGS_CREATED = "c_hnds_tags_created"
 local STAT_CARDS_DESTROYED = "c_hnds_playing_cards_destroyed"
 local STAT_BASIC_JOKERS_BOUGHT = "c_hnds_basic_jokers_bought"
+local STAT_HEART_CARDS_SCORED = "c_hnds_heart_cards_scored"
+local STAT_DIAMOND_CARDS_SCORED = "c_hnds_diamond_cards_scored"
+local STAT_CLUB_CARDS_SCORED = "c_hnds_club_cards_scored"
+local STAT_SPADE_CARDS_SCORED = "c_hnds_spade_cards_scored"
+local STAT_HEADLESS_FACE_CARDS = "c_hnds_headless_face_cards_destroyed"
+local STAT_RUN_RESTARTS = "c_hnds_run_restarts"
+local STAT_WATER_SLIDE_EIGHTS = "c_hnds_water_slide_eights_discarded"
 
 local TARGETS = {
     premiumdeck = 150,
@@ -49,7 +56,19 @@ local TARGETS = {
     jigsaw_joker = 8,
     most_wanted = 5,
     wait_what = 4,
+
+    dallas = 1000,
+    hoxton = 1000,
+    wolf = 1000,
+    chains = 1000,
+    spaghettified_joker = 25,
+    headless_joker = 30,
+    time_fcked_joker = 10,
+    conquest = 50,
+    war = 25,
+    water_slide = 88,
 }
+
 
 local COLLECTION_CENTER_SETS = {
     Joker = true,
@@ -90,6 +109,24 @@ local function run_state()
     state.coffee_break_skips = state.coffee_break_skips or {}
     state.jigsaw_hands = state.jigsaw_hands or {}
     state.jigsaw_count = math.max(0, tonumber(state.jigsaw_count) or 0)
+    state.ecg_heart_round_streak = math.max(0, tonumber(state.ecg_heart_round_streak) or 0)
+    state.ecg_run_heart_every_round = state.ecg_run_heart_every_round == true
+    state.ecg_heart_round_current = state.ecg_heart_round_current == true
+    state.ecg_last_finalized_round = tonumber(state.ecg_last_finalized_round) or 0
+    state.jodiac_ante = tonumber(state.jodiac_ante) or 0
+    state.jodiac_ranks = state.jodiac_ranks or {}
+    state.jodiac_complete = state.jodiac_complete == true
+    state.jack_in_box_showdown_ready = state.jack_in_box_showdown_ready == true
+    state.jack_in_box_showdown_won = state.jack_in_box_showdown_won == true
+    state.jevil_wild_flush = state.jevil_wild_flush == true
+    state.spaghettified_max_level = math.max(0, tonumber(state.spaghettified_max_level) or 0)
+    state.ecg_heart_hand_streak = math.max(0, tonumber(state.ecg_heart_hand_streak) or 0)
+    state.famine_high_card_round_streak = math.max(0, tonumber(state.famine_high_card_round_streak) or 0)
+    state.famine_round_high_card_only = state.famine_round_high_card_only == true
+    state.death_unlock = state.death_unlock == true
+    state.be_not_afraid_unlock = state.be_not_afraid_unlock == true
+    state.joker_reverse_rare_sold = state.joker_reverse_rare_sold == true
+    state.joker_reverse_common_bought = state.joker_reverse_common_bought == true
     return state
 end
 
@@ -127,6 +164,16 @@ function HNDS.count_destroyed_playing_card(card)
     if not is_real_playing_card(card) or card.hnds_unlock_destroy_counted then return false end
     card.hnds_unlock_destroy_counted = true
     increment_career_stat(STAT_CARDS_DESTROYED, 1)
+
+    if HNDS.unlock_career_stat(STAT_CARDS_DESTROYED) >= TARGETS.war then
+        HNDS.joker_unlock_condition_met("war", {type = "hnds_playing_card_destroyed"})
+    end
+
+    local rank_id = card.base and (card.base.id or card.base.value)
+    if rank_id == 11 or rank_id == 12 or rank_id == 13 then
+        increment_career_stat(STAT_HEADLESS_FACE_CARDS, 1)
+    end
+
     HNDS.request_unlock_check("hnds_playing_card_destroyed")
     return true
 end
@@ -277,10 +324,17 @@ end
 
 local function card_has_enhancement(card, key)
     if not card then return false end
-    if SMODS and type(SMODS.has_enhancement) == "function" then
-        return SMODS.has_enhancement(card, key)
+    if key == 'm_stone' and HNDS.card_has_stone then
+        return HNDS.card_has_stone(card)
     end
-    return card_center_key(card) == key
+    if card_center_key(card) == key then return true end
+    -- Recognise Handsome Devils' real multi-enhancement state without asking
+    -- Steamodded to calculate arbitrary quantum enhancements from a UI/deck scan.
+    if HNDS.aberrant_has_fusion then
+        local ok, result = pcall(HNDS.aberrant_has_fusion, card, key)
+        if ok and result then return true end
+    end
+    return false
 end
 
 local function deck_full_of_enhanced_cards()
@@ -298,6 +352,24 @@ local function deck_enhancement_count(key)
         if card_has_enhancement(card, key) then count = count + 1 end
     end
     return count
+end
+
+-- Highest number of cards in the current deck that share one actual
+-- Enhancement. Base cards do not count. This is used by Plague's unlock and
+-- intentionally supports modded Enhancements as long as they register as the
+-- Enhanced set.
+local function max_same_enhancement_count()
+    local counts = {}
+    local best = 0
+    for _, card in ipairs((G and G.playing_cards) or {}) do
+        local center = card and card.config and card.config.center
+        local key = center and center.key
+        if key and key ~= "c_base" and card_set(card) == "Enhanced" then
+            counts[key] = (counts[key] or 0) + 1
+            if counts[key] > best then best = counts[key] end
+        end
+    end
+    return best
 end
 
 local function normalize_rarity(rarity)
@@ -483,8 +555,28 @@ local function four_distinct_flush_suits(state)
     return count >= 4
 end
 
+function HNDS.mark_jevil_unlock()
+    local state = run_state()
+    if not state or state.jevil_wild_flush then return false end
+
+    state.jevil_wild_flush = true
+
+    local center = G and G.P_CENTERS and G.P_CENTERS.j_hnds_jevil
+    if center then
+        if type(unlock_card) == "function" then
+            unlock_card(center)
+        else
+            center.unlocked = true
+        end
+    end
+
+    HNDS.request_unlock_check("hnds_jevil_wild_flush")
+    return true
+end
+
 function HNDS.joker_unlock_progress(key)
     local state = run_state()
+
     if key == "jigsaw_joker" then return state and state.jigsaw_count or 0, TARGETS[key]
     elseif key == "wait_what" then return HNDS.unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT), TARGETS[key]
     elseif key == "jester_in_yellow" then return HNDS.unlock_career_stat(STAT_NEGATIVE_JOKERS), TARGETS[key]
@@ -492,9 +584,20 @@ function HNDS.joker_unlock_progress(key)
     elseif key == "imposter" then return state and state.imposter_streak or 0, TARGETS[key]
     elseif key == "fregoli" then
         local best = 0
-        for _, count in pairs(state and state.fregoli_buys or {}) do best = math.max(best, tonumber(count) or 0) end
+        for _, count in pairs(state and state.fregoli_buys or {}) do
+            best = math.max(best, tonumber(count) or 0)
+        end
         return best, TARGETS[key]
-    elseif key == "excommunicado" then return HNDS.unlock_career_stat(STAT_BOSSES_DEFEATED), TARGETS[key]
+    elseif key == "excommunicado" or key == "conquest" then
+        return HNDS.unlock_career_stat(STAT_BOSSES_DEFEATED), TARGETS[key]
+    elseif key == "most_wanted" then
+        return rare_joker_count(), TARGETS[key]
+    elseif key == "energized" or key == "last_laugh" then
+        return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED), TARGETS[key]
+    elseif key == "war" then
+        return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED), TARGETS[key]
+    elseif key == "water_slide" then
+        return HNDS.unlock_career_stat(STAT_WATER_SLIDE_EIGHTS), TARGETS[key]
     elseif key == "one_punchline_man" then return state and state.boss_one_hand_streak or 0, TARGETS[key]
     elseif key == "perfectionist" then return HNDS.unlock_career_stat(STAT_ENHANCEMENT_CHANGES), TARGETS[key]
     elseif key == "dark_idol" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED), TARGETS[key]
@@ -506,18 +609,48 @@ function HNDS.joker_unlock_progress(key)
     elseif key == "angry_mob" then return state and state.no_joker_buy_streak or 0, TARGETS[key]
     elseif key == "jokes_aside" then return state and state.jokers_sold or 0, TARGETS[key]
     elseif key == "jackpot" then return state and state.money_gained_round or 0, TARGETS[key]
-    elseif key == "energized" or key == "last_laugh" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED), TARGETS[key]
+    elseif key == "dallas" then return HNDS.unlock_career_stat(STAT_HEART_CARDS_SCORED), TARGETS[key]
+    elseif key == "hoxton" then return HNDS.unlock_career_stat(STAT_DIAMOND_CARDS_SCORED), TARGETS[key]
+    elseif key == "wolf" then return HNDS.unlock_career_stat(STAT_CLUB_CARDS_SCORED), TARGETS[key]
+    elseif key == "chains" then return HNDS.unlock_career_stat(STAT_SPADE_CARDS_SCORED), TARGETS[key]
+    elseif key == "headless_joker" then return HNDS.unlock_career_stat(STAT_HEADLESS_FACE_CARDS), TARGETS[key]
+    elseif key == "time_fcked_joker" then return HNDS.unlock_career_stat(STAT_RUN_RESTARTS), TARGETS[key]
+    elseif key == "ecg" then return state and state.ecg_heart_hand_streak or 0, 10
+    elseif key == "plague" then return max_same_enhancement_count(), 10
+    elseif key == "famine" then return state and state.famine_high_card_round_streak or 0, 3
+    elseif key == "jodiac" then
+        local count = 0
+        for _ in pairs(state and state.jodiac_ranks or {}) do count = count + 1 end
+        return count, 13
+    elseif key == "jack_in_the_box" then return state and state.jack_in_box_showdown_ready and 1 or 0, 1
+    elseif key == "jevil" then return state and state.jevil_wild_flush and 1 or 0, 1
+    elseif key == "spaghettified_joker" then return state and state.spaghettified_max_level or 0, TARGETS.spaghettified_joker
     end
+
     return 0, TARGETS[key] or 0
 end
 
 function HNDS.joker_locked_loc_vars(key)
-    local current = HNDS.joker_unlock_progress(key)
-    return { vars = { current } }
+    local current, target = HNDS.joker_unlock_progress(key)
+    return { vars = { tonumber(current) or 0, tonumber(target) or 0 } }
 end
 
 function HNDS.joker_unlock_condition_met(key, args)
     local state = run_state()
+
+    local function finish_unlock(center_key, condition)
+        if not condition then return false end
+        local center = G and G.P_CENTERS and G.P_CENTERS[center_key]
+        if center then
+            if type(unlock_card) == "function" then
+                unlock_card(center)
+            else
+                center.unlocked = true
+            end
+        end
+        return true
+    end
+
     if key == "coffee_break" then return coffee_break_complete(state)
     elseif key == "jigsaw_joker" then return state and state.jigsaw_count >= TARGETS[key] or false
     elseif key == "most_wanted" then return rare_joker_count() >= TARGETS[key]
@@ -530,7 +663,9 @@ function HNDS.joker_unlock_condition_met(key, args)
     elseif key == "imposter" then return state and state.imposter_streak >= TARGETS[key] or false
     elseif key == "contagion" then return deck_full_of_enhanced_cards()
     elseif key == "fregoli" then
-        for _, count in pairs(state and state.fregoli_buys or {}) do if count >= TARGETS[key] then return true end end
+        for _, count in pairs(state and state.fregoli_buys or {}) do
+            if count >= TARGETS[key] then return true end
+        end
         return false
     elseif key == "excommunicado" then return HNDS.unlock_career_stat(STAT_BOSSES_DEFEATED) >= TARGETS[key]
     elseif key == "meme" then return state and state.flags.meme or false
@@ -551,10 +686,44 @@ function HNDS.joker_unlock_condition_met(key, args)
     elseif key == "supersuit" then return state and state.flags.supersuit or false
     elseif key == "jokes_aside" then return state and state.jokers_sold >= TARGETS[key] or false
     elseif key == "jackpot" then return state and state.money_gained_round >= TARGETS[key] or false
+    elseif key == "dallas" then return HNDS.unlock_career_stat(STAT_HEART_CARDS_SCORED) >= TARGETS[key]
+    elseif key == "hoxton" then return HNDS.unlock_career_stat(STAT_DIAMOND_CARDS_SCORED) >= TARGETS[key]
+    elseif key == "wolf" then return HNDS.unlock_career_stat(STAT_CLUB_CARDS_SCORED) >= TARGETS[key]
+    elseif key == "chains" then return HNDS.unlock_career_stat(STAT_SPADE_CARDS_SCORED) >= TARGETS[key]
+    elseif key == "conquest" then
+        return finish_unlock("j_hnds_conquest", HNDS.unlock_career_stat(STAT_BOSSES_DEFEATED) >= TARGETS[key])
+    elseif key == "war" then
+        return finish_unlock("j_hnds_war", HNDS.unlock_career_stat(STAT_CARDS_DESTROYED) >= TARGETS[key])
+    elseif key == "water_slide" then
+        return finish_unlock("j_hnds_water_slide", HNDS.unlock_career_stat(STAT_WATER_SLIDE_EIGHTS) >= TARGETS[key])
+    elseif key == "ecg" then
+        return finish_unlock("j_hnds_ecg", state and state.ecg_heart_hand_streak >= 10)
+    elseif key == "plague" then
+        return finish_unlock("j_hnds_plague", max_same_enhancement_count() >= 10)
+    elseif key == "famine" then
+        return finish_unlock("j_hnds_famine", state and state.famine_high_card_round_streak >= 3 or false)
+    elseif key == "death" then
+        return finish_unlock("j_hnds_death", state and state.death_unlock or false)
+    elseif key == "be_not_afraid" then
+        return finish_unlock("j_hnds_be_not_afraid", state and state.be_not_afraid_unlock or false)
+    elseif key == "joker_reverse" then
+        return finish_unlock("j_hnds_joker_reverse", state and state.joker_reverse_rare_sold and state.joker_reverse_common_bought or false)
+    elseif key == "spaghettified_joker" then
+        if state and state.spaghettified_max_level >= TARGETS[key] then return true end
+        for _, hand in pairs((G and G.GAME and G.GAME.hands) or {}) do
+            if tonumber(hand.level) and hand.level >= TARGETS[key] then return true end
+        end
+        return false
+    elseif key == "jodiac" then return state and state.jodiac_complete or false
+    elseif key == "jack_in_the_box" then return args and args.type == "win" and state and state.jack_in_box_showdown_ready == true or false
+    elseif key == "jevil" then return state and state.jevil_wild_flush or false
+    elseif key == "headless_joker" then return HNDS.unlock_career_stat(STAT_HEADLESS_FACE_CARDS) >= TARGETS[key]
+    elseif key == "time_fcked_joker" then return HNDS.unlock_career_stat(STAT_RUN_RESTARTS) >= TARGETS[key]
     elseif key == "banana_split" then return have_both_bananas()
     elseif key == "dynamic_duos" then return state and state.flags.dynamic_duos or false
     elseif key == "energized" or key == "last_laugh" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED) >= TARGETS[key]
     end
+
     return false
 end
 
@@ -572,6 +741,9 @@ local function reset_round_tracking(state)
     state.money_gained_round = 0
     state.round_end_serial = nil
     state.boss_counted_serial = nil
+    -- Famine: a round starts eligible and is invalidated by any played hand
+    -- whose primary poker hand is not High Card.
+    state.famine_round_high_card_only = true
 end
 
 local function schedule_imposter_round_check(state)
@@ -607,6 +779,138 @@ function HNDS.track_unlock_context(context)
     if not state then return end
     local changed = false
 
+    -- ECG: one point for each consecutive played hand containing at least
+    -- one Heart among the scoring cards. Any hand without a scoring Heart
+    -- resets the streak to zero.
+    if context.before and not context.blueprint and not context.retrigger_joker then
+        local scoring = context.scoring_hand
+
+        if type(scoring) == "table" then
+            local heart = false
+            for _, card in ipairs(scoring) do
+                if card and card.is_suit and card:is_suit("Hearts") then
+                    heart = true
+                    break
+                end
+            end
+
+            if heart then
+                state.ecg_heart_hand_streak = state.ecg_heart_hand_streak + 1
+            else
+                state.ecg_heart_hand_streak = 0
+            end
+
+            changed = true
+
+            if state.ecg_heart_hand_streak >= 10 then
+                HNDS.joker_unlock_condition_met("ecg", { type = "hnds_ecg_10_hands" })
+            end
+        end
+
+        -- Be Not Afraid: play a Three of a Kind whose scoring cards include
+        -- three enhanced Aces. The three Aces may share the same Enhancement;
+        -- only being enhanced matters.
+        if not state.be_not_afraid_unlock
+            and context.scoring_name == "Three of a Kind"
+            and type(scoring) == "table"
+        then
+            local enhanced_aces = 0
+            for _, scored_card in ipairs(scoring) do
+                local rank = scored_card and scored_card.get_id and scored_card:get_id()
+                    or (scored_card and scored_card.base and scored_card.base.id)
+                if rank == 14 and card_set(scored_card) == "Enhanced" then
+                    enhanced_aces = enhanced_aces + 1
+                end
+            end
+
+            if enhanced_aces >= 3 then
+                state.be_not_afraid_unlock = true
+                changed = true
+                HNDS.joker_unlock_condition_met("be_not_afraid", { type = "hnds_be_not_afraid" })
+            end
+        end
+
+    end
+
+    -- Famine: every hand played during each qualifying round must evaluate
+    -- primarily as High Card. A single different poker hand invalidates that
+    -- round, even if the player later wins it with a High Card.
+    if context.before and not context.blueprint and not context.retrigger_joker
+        and state.round_serial > 0 and context.scoring_name
+        and context.scoring_name ~= "High Card"
+    then
+        if state.famine_round_high_card_only then
+            state.famine_round_high_card_only = false
+            changed = true
+        end
+    end
+
+    -- Water Slide: discard context is explicitly per discarded card and exposes
+    -- that card as context.other_card.
+    if context.discard and context.other_card and not context.repetition then
+        local discarded = context.other_card
+        local rank = discarded.get_id and discarded:get_id()
+            or (discarded.base and discarded.base.id)
+
+        if rank == 8 then
+            increment_career_stat(STAT_WATER_SLIDE_EIGHTS, 1)
+            changed = true
+        end
+    end
+
+    if context.individual and context.cardarea == G.play
+        and context.other_card and not context.repetition and not context.repetition_only
+        and not context.blueprint
+    then
+        local card = context.other_card
+        local suit = card.base and card.base.suit
+        if suit == "Hearts" then
+            increment_career_stat(STAT_HEART_CARDS_SCORED, 1)
+            state.ecg_heart_round_current = true
+            changed = true
+        elseif suit == "Diamonds" then
+            increment_career_stat(STAT_DIAMOND_CARDS_SCORED, 1)
+            changed = true
+        elseif suit == "Clubs" then
+            increment_career_stat(STAT_CLUB_CARDS_SCORED, 1)
+            changed = true
+        elseif suit == "Spades" then
+            increment_career_stat(STAT_SPADE_CARDS_SCORED, 1)
+            changed = true
+        end
+
+        -- Jodiac unlock: one card of every rank during the same Ante.
+        local ante = current_ante()
+        if state.jodiac_ante ~= ante then
+            state.jodiac_ante = ante
+            state.jodiac_ranks = {}
+            state.jodiac_complete = false
+        end
+        local rank = card.get_id and card:get_id() or (card.base and card.base.id)
+        if rank and rank >= 2 and rank <= 14 then
+            state.jodiac_ranks[rank] = true
+            local rank_count = 0
+            for _ in pairs(state.jodiac_ranks) do rank_count = rank_count + 1 end
+            if rank_count >= 13 then
+                state.jodiac_complete = true
+            end
+            changed = true
+        end
+
+    end
+
+    if context.before and not context.blueprint then
+        local max_level = state.spaghettified_max_level
+        for _, hand in pairs((G and G.GAME and G.GAME.hands) or {}) do
+            local level = tonumber(hand.level) or 1
+            if level > max_level then
+                state.spaghettified_max_level = level
+                max_level = level
+                changed = true
+            end
+        end
+    end
+
     if context.setting_blind and not context.blueprint then
         -- A Joker can only be bought in the shop between two Blind selections.
         -- Evaluate that completed shop window before resetting it for the newly
@@ -618,6 +922,8 @@ function HNDS.track_unlock_context(context)
             state.has_selected_blind = true
         end
         state.joker_bought_round = false
+        state.joker_reverse_rare_sold = false
+        state.joker_reverse_common_bought = false
         reset_round_tracking(state)
         reset_ante_tracking(state, current_ante())
         changed = true
@@ -642,6 +948,16 @@ function HNDS.track_unlock_context(context)
                 increment_career_stat(STAT_BASIC_JOKERS_BOUGHT, 1)
                 card.hnds_wait_what_purchase_counted = true
             end
+
+            -- Joker Reverse: rare sale + common purchase in the same shop.
+            local rarity = center and normalize_rarity(center.rarity)
+            if rarity == 1 then
+                state.joker_reverse_common_bought = true
+            end
+            if state.joker_reverse_rare_sold and state.joker_reverse_common_bought then
+                HNDS.joker_unlock_condition_met("joker_reverse", { type = "hnds_joker_reverse" })
+            end
+
             changed = true
         end
     end
@@ -651,6 +967,16 @@ function HNDS.track_unlock_context(context)
     then
         context.card.hnds_unlock_sale_counted = true
         state.jokers_sold = state.jokers_sold + 1
+
+        local sold_center = context.card.config and context.card.config.center
+        local sold_rarity = sold_center and normalize_rarity(sold_center.rarity)
+        if sold_rarity == 3 then
+            state.joker_reverse_rare_sold = true
+        end
+        if state.joker_reverse_rare_sold and state.joker_reverse_common_bought then
+            HNDS.joker_unlock_condition_met("joker_reverse", { type = "hnds_joker_reverse" })
+        end
+
         changed = true
     end
 
@@ -689,6 +1015,35 @@ function HNDS.track_unlock_context(context)
         if context.scoring_name == "Two Pair" and is_even_odd_two_pair(context.scoring_hand or cards) then
             state.flags.dynamic_duos = true
             changed = true
+        end
+
+        -- JEvil unlock condition:
+        -- Play exactly 5 cards, every one actually enhanced to Wild, and all
+        -- 5 cards retain the same underlying/base suit. Any suit is valid.
+        local played_hand = context.scoring_hand
+        if not state.jevil_wild_flush and type(played_hand) == "table" and #played_hand == 5 then
+            local common_suit = nil
+            local valid = true
+
+            for _, played_card in ipairs(played_hand) do
+                local printed_suit = played_card.base and played_card.base.suit
+                if not printed_suit or not card_has_enhancement(played_card, "m_wild") then
+                    valid = false
+                    break
+                end
+
+                if common_suit == nil then
+                    common_suit = printed_suit
+                elseif common_suit ~= printed_suit then
+                    valid = false
+                    break
+                end
+            end
+
+            if valid and common_suit then
+                HNDS.mark_jevil_unlock()
+                changed = true
+            end
         end
 
         local ante = current_ante()
@@ -736,20 +1091,71 @@ function HNDS.track_unlock_context(context)
     end
 
     if context.end_of_round and context.main_eval and not context.individual and not context.repetition then
-        local serial = state.round_serial
+        local blind = G and G.GAME and G.GAME.blind
+        local round_won = context.game_over ~= true
+            and blind
+            and G.GAME.chips ~= nil
+            and blind.chips ~= nil
+            and G.GAME.chips >= blind.chips
+
+        if round_won then
+            local hands_played = math.max(0, tonumber(G.GAME.current_round and G.GAME.current_round.hands_played) or 0)
+            if state.famine_round_high_card_only and hands_played > 0 then
+                state.famine_high_card_round_streak = state.famine_high_card_round_streak + 1
+                if state.famine_high_card_round_streak >= 3 then
+                    HNDS.joker_unlock_condition_met("famine", { type = "hnds_famine_high_card_rounds" })
+                end
+            else
+                state.famine_high_card_round_streak = 0
+            end
+
+            -- Death: win a round while every card still held in hand shares
+            -- the same printed rank and suit.
+            local held = (G and G.hand and G.hand.cards) or {}
+            local death_valid = #held > 0
+            local rank, suit = nil, nil
+            if death_valid then
+                for _, card in ipairs(held) do
+                    local card_rank = card and card.base and (card.base.value or card.base.id)
+                    local card_suit = card and card.base and card.base.suit
+                    if not card_rank or not card_suit then
+                        death_valid = false
+                        break
+                    end
+                    if rank == nil then
+                        rank, suit = card_rank, card_suit
+                    elseif rank ~= card_rank or suit ~= card_suit then
+                        death_valid = false
+                        break
+                    end
+                end
+            end
+            if death_valid then
+                state.death_unlock = true
+                HNDS.joker_unlock_condition_met("death", { type = "hnds_death" })
+            end
+        else
+            state.famine_high_card_round_streak = 0
+        end
+
+        -- ECG uses the consecutive played-hand streak above; no per-round reset here.
         -- A Boss definition can occupy the Small/Big slot after a Platinum
         -- upgrade. Only the real Boss slot counts as a defeated Boss Blind for
         -- career progress and Boss-win streak unlocks.
         local active_blind = G.GAME.blind
         local upgraded_slot = active_blind and active_blind.hnds_platinum_replacement_slot
-        local live_slot = normalize_blind_slot(G.GAME.blind_on_deck)
-        local is_boss = not upgraded_slot and live_slot == "Boss"
-        if not upgraded_slot and not live_slot then
-            is_boss = context.beat_boss or (active_blind and active_blind.boss)
-        end
-        if is_boss and state.boss_counted_serial ~= serial then
-            state.boss_counted_serial = serial
+        -- The end-of-round context already tells us whether the defeated Blind
+        -- was a Boss. Do not depend on blind_on_deck, which can be advanced
+        -- before this context fires.
+        local is_boss = not upgraded_slot
+            and ((context.beat_boss == true) or (active_blind and active_blind.boss == true))
+        local round_serial = state.round_serial
+        if is_boss and state.boss_counted_serial ~= round_serial then
+            state.boss_counted_serial = round_serial
             increment_career_stat(STAT_BOSSES_DEFEATED, 1)
+            if HNDS.unlock_career_stat(STAT_BOSSES_DEFEATED) >= TARGETS.conquest then
+                HNDS.joker_unlock_condition_met("conquest", {type = "hnds_boss_defeated"})
+            end
             if G.GAME.current_round and G.GAME.current_round.hands_played == 1 then
                 state.boss_one_hand_streak = state.boss_one_hand_streak + 1
             else
@@ -761,6 +1167,30 @@ function HNDS.track_unlock_context(context)
         end
         schedule_imposter_round_check(state)
         changed = true
+        HNDS.request_unlock_check("hnds_boss_defeated")
+    end
+
+    -- Jack-in-the-Box: snapshot the Rare-Joker lineup when entering a real
+    -- showdown Blind. Selling Jokers afterward is allowed; the snapshot is what
+    -- makes the condition "enter showdown with 5 Rare Jokers".
+    if context.setting_blind and not context.blueprint then
+        local blind = G and G.GAME and G.GAME.blind
+        local center = blind and blind.config and blind.config.blind
+        local is_showdown = false
+        if center and type(center.boss) == "table" then
+            is_showdown = center.boss.showdown == true
+        end
+        if is_showdown then
+            local rares = 0
+            for _, joker in ipairs((G and G.jokers and G.jokers.cards) or {}) do
+                local rarity = joker.config and joker.config.center and joker.config.center.rarity
+                if normalize_rarity(rarity) == 3 then rares = rares + 1 end
+            end
+            if rares >= 5 then
+                state.jack_in_box_showdown_ready = true
+                changed = true
+            end
+        end
     end
 
     if changed then HNDS.request_unlock_check("hnds_joker_progress") end
@@ -791,7 +1221,11 @@ local function is_lucky_card(card)
     if not card then return false end
     local center = card.config and card.config.center
     if center and center.key == "m_lucky" then return true end
-    return SMODS and type(SMODS.has_enhancement) == "function" and SMODS.has_enhancement(card, "m_lucky") or false
+    if HNDS.aberrant_has_fusion then
+        local ok, result = pcall(HNDS.aberrant_has_fusion, card, "m_lucky")
+        if ok and result then return true end
+    end
+    return false
 end
 
 local function lucky_success_count(ret)
@@ -1043,7 +1477,33 @@ if type(discover_card) == "function" and not HNDS._unlock_discover_card_wrapped 
     end
 end
 
-local LOCK_SCHEMA = 5
+-- Count explicit "start a new run" restarts. Game:start_run receives
+-- args.savetext when loading an existing save, so those loads are not counted.
+if Game and type(Game.start_run) == "function" and not HNDS._restart_unlock_wrapped then
+    HNDS._restart_unlock_wrapped = true
+    local start_run_unlock_ref = Game.start_run
+    function Game:start_run(args, ...)
+        local was_running = G and G.STAGE and G.STAGES and G.STAGE == G.STAGES.RUN
+        local is_new_run = type(args) == "table" and args.savetext == nil
+        if was_running and is_new_run then
+            increment_career_stat(STAT_RUN_RESTARTS, 1)
+            HNDS.request_unlock_check("hnds_run_restart")
+        end
+        return start_run_unlock_ref(self, args, ...)
+    end
+end
+
+if not HNDS._hnds_wrapped_level_up_unlock and type(level_up_hand) == "function" then
+    HNDS._hnds_wrapped_level_up_unlock = true
+    local level_up_hand_ref = level_up_hand
+    function level_up_hand(card, hand, instant, ...)
+        local ret = level_up_hand_ref(card, hand, instant, ...)
+        HNDS.request_unlock_check("hnds_hand_level")
+        return ret
+    end
+end
+
+local LOCK_SCHEMA = 7
 local DESTROY_STAT_SCHEMA = 1
 local CONDITION_LOCK_KEYS = {
     "b_hnds_premiumdeck", "b_hnds_crystal", "b_hnds_conjuring",
@@ -1059,8 +1519,15 @@ local JOKER_CONDITION_LOCK_KEYS = {
     "j_hnds_seismic_activity", "j_hnds_angry_mob", "j_hnds_supersuit", "j_hnds_jokes_aside",
     "j_hnds_jackpot", "j_hnds_banana_split", "j_hnds_dynamic_duos", "j_hnds_energized",
     "j_hnds_last_laugh", "j_hnds_coffee_break", "j_hnds_jigsaw_joker",
+    "j_hnds_dallas", "j_hnds_hoxton", "j_hnds_wolf", "j_hnds_chains",
+    "j_hnds_ecg", "j_hnds_spaghettified_joker", "j_hnds_jodiac",
+    "j_hnds_jack_in_the_box", "j_hnds_jevil", "j_hnds_headless_joker",
+    "j_hnds_time_fcked_joker",
     "j_hnds_most_wanted", "j_hnds_wait_what", "j_hnds_dark_humor",
-    "j_hnds_public_nuisance", "j_hnds_pot_of_greed",
+    "j_hnds_public_nuisance", "j_hnds_pot_of_greed", "j_hnds_ancestor",
+    "j_hnds_conquest", "j_hnds_war", "j_hnds_water_slide", "j_hnds_ecg",
+    "j_hnds_plague", "j_hnds_famine", "j_hnds_death", "j_hnds_be_not_afraid",
+    "j_hnds_joker_reverse",
 }
 local LEGENDARY_LOCK_KEYS = {
     "j_hnds_pennywise", "j_hnds_art", "j_hnds_krusty", "j_hnds_sarmenti", "j_hnds_arthur",

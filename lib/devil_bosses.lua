@@ -5,8 +5,6 @@
 -- These are NOT SMODS.Blind objects.
 -- They are modules used by blind_devil.lua
 -------------------------------------------------------------------
-print("DEVIL_BOSSES LUA STARTED")
-
 HNDS = HNDS or {}
 
 HNDS.DEVIL_BOSSES = {}
@@ -1302,4 +1300,3 @@ HNDS.roll_devil_bosses = function(seed_suffix, ante_override)
 end
 
 
-print("DEVIL ROLLER LOADED:", HNDS.roll_devil_bosses)

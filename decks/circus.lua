@@ -23,7 +23,7 @@ SMODS.Back({
 		return HNDS.unlock_condition_met("circus", args)
 	end,
 	loc_vars = function(self, info_queue, back)
-		if G.GAME and G.GAME.hnds_circus_joker_key then
+		if G and G.GAME and G.GAME.hnds_circus_joker_key then
 			return { vars = { localize({type = 'name_text', key = G.GAME.hnds_circus_joker_key, set = 'Joker'}), colours = {G.C.ORANGE} }}
 		else
 			return { vars = { localize('k_none'), colours = {G.C.RED} }}

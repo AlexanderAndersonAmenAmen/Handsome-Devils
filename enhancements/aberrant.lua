@@ -109,8 +109,13 @@ end
 -- their effects are still evaluated once per stored fusion slot below.
 local get_enhancements_ref = SMODS.get_enhancements
 function SMODS.get_enhancements(card, extra_only, ...)
-    local enhancements = get_enhancements_ref(card, extra_only, ...) or {}
-    if not is_aberrant(card) then return enhancements end
+    local base = get_enhancements_ref(card, extra_only, ...) or {}
+    if not is_aberrant(card) then return base end
+
+    -- Some mod loaders/cache layers return a shared table here. Never append
+    -- Aberrant state directly to that table or another mod/card may observe it.
+    local enhancements = {}
+    for key, value in pairs(base) do enhancements[key] = value end
 
     local entries = fusion_entries(card)
     for _, key in ipairs(entries) do enhancements[key] = true end
@@ -160,6 +165,8 @@ local set_ability_ref = Card.set_ability
 function Card:set_ability(center, initial, delay_sprites, ...)
     local new_center = resolve_center(center)
     local new_key = new_center and new_center.key
+    local old_center = self and self.config and self.config.center
+    local old_key = old_center and old_center.key
 
     if HNDS._aberrant_internal_center_swap then
         return set_ability_ref(self, center, initial, delay_sprites, ...)
@@ -171,6 +178,27 @@ function Card:set_ability(center, initial, delay_sprites, ...)
         and HNDS.is_bound_card and HNDS.is_bound_card(self)
     then
         return set_ability_ref(self, center, initial, delay_sprites, ...)
+    end
+
+    -- Applying Aberrant to a card that is already Enhanced now preserves that
+    -- existing enhancement as Aberrant's first fusion instead of deleting it.
+    -- Delegate the actual center change through the full wrapper chain first,
+    -- then attach only the previous real enhancement to the resulting card.
+    if not initial
+        and new_key == ABERRANT_KEY
+        and old_center
+        and old_center.set == "Enhanced"
+        and old_key ~= ABERRANT_KEY
+    then
+        local result = set_ability_ref(self, center, initial, delay_sprites, ...)
+        if is_aberrant(self) and old_key then
+            local fusions = aberrant_fusions(self)
+            if #fusions < MAX_FUSIONS then
+                fusions[#fusions + 1] = old_key
+                refresh_aberrant_visuals(self)
+            end
+        end
+        return result
     end
 
     if is_aberrant(self)

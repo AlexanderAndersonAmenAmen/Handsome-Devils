@@ -7,7 +7,7 @@ CardSleeves.Sleeve({
     unlock_condition = {deck = "b_hnds_circus", stake = "stake_green"},
     loc_vars = function(self)
         local joker_name = "None"
-        if G.GAME and G.GAME.hnds_circus_joker_key and type(G.GAME.hnds_circus_joker_key) == "string" then
+        if G and G.GAME and G.GAME.hnds_circus_joker_key and type(G.GAME.hnds_circus_joker_key) == "string" then
             joker_name = localize({type = 'name_text', key = G.GAME.hnds_circus_joker_key, set = 'Joker'}) or "None"
         end
         return HNDS.sleeve_loc(self, "b_hnds_circus", {joker_name, colours = {G.C.ORANGE}})

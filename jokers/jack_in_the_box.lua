@@ -593,11 +593,18 @@ SMODS.Joker {
 
     rarity = 1,
     cost = 4,
-    unlocked = true,
+    unlocked = false,
     discovered = false,
     -- Mechanically compatible while closed or while borrowing a compatible
     -- Rare. calculate() suppresses Blueprint/Brainstorm when the borrowed Rare
     -- itself has blueprint_compat = false.
+    unlock_condition = { type = "hnds_joker_unlock", key = "jack_in_the_box" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("jack_in_the_box")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("jack_in_the_box", args)
+    end,
     blueprint_compat = true,
     demicoloncompat = false,
     eternal_compat = true,

@@ -30,14 +30,8 @@ SMODS.Joker({
 		end
 	end,
 	in_pool = function(self, args)
-		-- The main-menu title-card randomizer can query Joker pools before a
-		-- run exists, so G.playing_cards may legitimately be nil here.
-		for _, card in pairs((G and G.playing_cards) or {}) do
-			if SMODS.has_enhancement(card, "m_stone") then
-				return true
-			end
-		end
-		return false
+		if HNDS.stone_joker_in_pool then return HNDS.stone_joker_in_pool(args) end
+		return true
 	end,
 	attributes = { "enhancements", "retrigger" }
 })

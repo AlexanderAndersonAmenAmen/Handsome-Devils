@@ -1,5 +1,48 @@
 HNDS = {}
 
+-- Shared Stone-card predicate used by shop-pool checks.  Prefer cheap direct
+-- state inspection, then fall back to Steamodded behind pcall so a third-party
+-- quantum-enhancement implementation cannot turn a shop poll into a crash.
+function HNDS.card_has_stone(card, allow_quantum)
+    if not card then return false end
+    local center = card.config and card.config.center
+    if center and center.key == 'm_stone' then return true end
+
+    local fusions = card.ability and card.ability.hnds_aberrant_fusions
+    if type(fusions) == 'table' then
+        for _, key in ipairs(fusions) do
+            if key == 'm_stone' then return true end
+        end
+    end
+
+    -- Quantum-enhancement calculation is intentionally opt-in. Steamodded
+    -- warns that SMODS.has_enhancement may crash outside a strict calculate
+    -- context, so deck/UI/pool scans never invoke it.
+    if allow_quantum and SMODS and type(SMODS.has_enhancement) == 'function' then
+        local ok, result = pcall(SMODS.has_enhancement, card, 'm_stone')
+        if ok and result then return true end
+    end
+    return false
+end
+
+function HNDS.deck_has_stone()
+    for _, playing_card in ipairs((G and G.playing_cards) or {}) do
+        if HNDS.card_has_stone(playing_card) then return true end
+    end
+    return false
+end
+
+-- Shop-only pool restriction for Stone-themed Jokers. Steamodded forwards
+-- create_card/get_current_pool's key_append as args.source; vanilla shop Joker
+-- rolls use "sho". Other sources are intentionally left alone so booster
+-- packs, tags, challenge setup and explicit mod-created Jokers remain compatible.
+function HNDS.stone_joker_in_pool(args)
+    if args and args.source == 'sho' then
+        return HNDS.deck_has_stone()
+    end
+    return true
+end
+
 function HNDS.pack(...)
     return { n = select('#', ...), ... }
 end
@@ -7,8 +50,7 @@ end
 if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
     local hnds_card_collection_UIBox = SMODS.card_collection_UIBox
 
-    --[[
-    HD LEGENDARY COLLECTION PAGE (TEMPORARILY DISABLED)
+    -- HD LEGENDARY COLLECTION PAGE
 
     local hnds_legendary_collection_order = {
         'j_hnds_pennywise',
@@ -174,7 +216,6 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
         })
     end
 
-    ]]
 
     SMODS.card_collection_UIBox = function(pool, rows, args)
         local pools = G and G.P_CENTER_POOLS
@@ -191,13 +232,11 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
             rows = { 4, 4 }
         elseif pools then
             if pool == pools.Joker then
-                --[[ HD LEGENDARY COLLECTION PAGE (TEMPORARILY DISABLED)
                 local ok, result = pcall(hnds_legendary_joker_collection_UIBox, pool, args)
                 if ok and result then return result end
                 if sendDebugMessage and not ok then
                     sendDebugMessage('Legendary collection layout fallback: '..tostring(result), 'HandsomeDevils')
                 end
-                ]]
                 return hnds_card_collection_UIBox(pool, rows, args)
             elseif pool == pools.Seal then
                 rows = { 3, 3, 3 }
@@ -528,8 +567,16 @@ SMODS.current_mod.calculate = function(self, context)
 	if HNDS.track_unlock_context then HNDS.track_unlock_context(context) end
 
 	-- Track stone cards scored this ante (used by Stone Ocean hand)
-	if context.individual and SMODS.has_enhancement(context.other_card, "m_stone") then
-		G.GAME.ante_stones_scored = G.GAME.ante_stones_scored + 1
+	if context.individual and context.cardarea == G.play and context.other_card and G and G.GAME
+		and HNDS.card_has_stone(context.other_card, true)
+	then
+		G.GAME.ante_stones_scored = (tonumber(G.GAME.ante_stones_scored) or 0) + 1
+	end
+	-- Reset the per-Ante Stone Ocean tracker only when defeating the Ante's
+	-- closing Boss actually changes the Ante. Some decks/mods can insert extra
+	-- Boss Blinds within an Ante, so `beat_boss` alone would reset too early.
+	if context.ante_change and context.ante_end and G and G.GAME then
+		G.GAME.ante_stones_scored = 0
 	end
 	-- Spawn queued booster packs at the start of each shop.  Cursed Deck uses
 	-- this boundary instead of a cash_out polling Event: payout has completed,
@@ -591,6 +638,28 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.end_of_round and context.main_eval and HNDS.jevil_clear_round then
 		HNDS.jevil_clear_round()
 	end
+	-- Stone Mask modifiers belong to the playing card, not the Joker instance.
+	-- Restore them globally so selling/destroying Stone Mask mid-round cannot
+	-- leave a temporary Edition or Seal stuck on a card permanently.
+	if context.setting_blind and HNDS.restore_stone_mask_cards then
+		-- Save/load or an interrupted end-of-round should never leak last round's
+		-- temporary modifiers into a newly selected Blind.
+		HNDS.restore_stone_mask_cards()
+	elseif context.end_of_round and context.main_eval and HNDS.restore_stone_mask_cards then
+		-- Defer until the current calculation batch is finished so every Joker
+		-- that checks end-of-round modifiers still sees Stone Mask's temporary state.
+		if G and G.E_MANAGER and Event then
+			G.E_MANAGER:add_event(Event({
+				trigger = 'after', delay = 0, blockable = false,
+				func = function()
+					if HNDS.restore_stone_mask_cards then HNDS.restore_stone_mask_cards() end
+					return true
+				end,
+			}))
+		else
+			HNDS.restore_stone_mask_cards()
+		end
+	end
 
 	-- Bound: guarantee every marked, non-debuffed card is present in the
 	-- opening hand. The helper guards against duplicate first_hand_drawn events.
@@ -640,6 +709,12 @@ local files = {
 			"clown_devil",
 			"public_nuisance",
 
+			"dallas",
+			"hoxton",
+			"bizzare_joker",
+			"wolf",
+			"chains",
+
 			"spaghettified_joker",
 			"ecg",
 			"jevil",
@@ -678,7 +753,7 @@ local files = {
 			
 			"dark_humor",
 			"demented",
-			"bizzare_joker",
+			"ancestor",
 			"fregoli",
 			"ms_fortune",
 
@@ -940,10 +1015,20 @@ end
 assert(SMODS.load_file("lib/devil_bosses.lua"))()
 assert(SMODS.load_file("lib/unlocks.lua"))()
 
-for _, set in pairs(files) do
-	for _, name in ipairs(set.list) do
-		assert(SMODS.load_file(set.directory .. name .. ".lua"))()
-	end
+-- Never iterate the content registry with pairs(): Lua table iteration order is
+-- unspecified, and object files install a few carefully chained compatibility
+-- hooks. A fixed order makes startup deterministic across Lua builds/modpacks.
+local hnds_content_load_order = {
+    'enhancements', 'seals', 'editions', 'jokers', 'spectrals', 'planets',
+    'vouchers', 'tags', 'decks', 'stakes', 'challenges', 'blinds', 'poker_hands',
+}
+for _, set_key in ipairs(hnds_content_load_order) do
+    local set = files[set_key]
+    if set then
+        for _, name in ipairs(set.list) do
+            assert(SMODS.load_file(set.directory .. name .. ".lua"))()
+        end
+    end
 end
 assert(SMODS.load_file("lib/hooks.lua"))()
 if hnds_config.enableVanillaTweaks then assert(SMODS.load_file("lib/vanilla_tweaks.lua"))() end

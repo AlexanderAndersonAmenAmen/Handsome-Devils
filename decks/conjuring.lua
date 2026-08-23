@@ -6,7 +6,6 @@ SMODS.Back({
     check_for_unlock = function(self, args)
         return HNDS.unlock_condition_met("conjuring", args)
     end,
-    discovered = true,
     pos = { x = 0, y = 2 },
     atlas = "Extras",
     apply = function(self,card)

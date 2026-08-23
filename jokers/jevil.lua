@@ -151,6 +151,7 @@ function HNDS.jevil_schedule_starting_hand()
     if type(owned) ~= 'table' or #owned == 0 then return false end
     G.GAME.hnds_jevil_pending_start = true
 
+    local pending_draw_waits = 0
     G.E_MANAGER:add_event(Event({
         blocking = false,
         blockable = true,
@@ -165,7 +166,12 @@ function HNDS.jevil_schedule_starting_hand()
                         blocking = false,
                         blockable = true,
                         func = function()
-                            if hnds_jevil_any_pending_draws() then return false end
+                            if hnds_jevil_any_pending_draws() then
+                                pending_draw_waits = pending_draw_waits + 1
+                                -- Never leave an Event resident forever if a draw
+                                -- marker is stranded by another mod or a bad save.
+                                if pending_draw_waits < 240 then return false end
+                            end
                             if not (G and G.GAME) then return true end
                             G.GAME.hnds_jevil_pending_start = nil
                             HNDS.jevil_mark_starting_hand((G.hand and G.hand.cards) or {})
@@ -266,13 +272,18 @@ if Game and type(Game.start_run) == 'function' and not HNDS._jevil_start_run_res
         local result = pack(hnds_jevil_start_run_ref(self, ...))
         if G and G.GAME and type(G.GAME.hnds_jevil_round_cards) == 'table' then
             if G.E_MANAGER and Event then
+                local rehydrate_waits = 0
                 G.E_MANAGER:add_event(Event({
                     trigger = 'after',
                     delay = 0.05,
                     blocking = false,
                     blockable = true,
                     func = function()
-                        if not (G and type(G.playing_cards) == 'table') then return false end
+                        if not (G and type(G.playing_cards) == 'table') then
+                            rehydrate_waits = rehydrate_waits + 1
+                            if rehydrate_waits < 240 then return false end
+                            return true
+                        end
                         HNDS.jevil_rehydrate_round()
                         return true
                     end,
@@ -291,8 +302,15 @@ SMODS.Joker {
     pos = { x = 3, y = 7 },
     rarity = 1,
     cost = 4,
-    unlocked = true,
-    discovered = true,
+    unlocked = false,
+    discovered = false,
+    unlock_condition = { type = "hnds_joker_unlock", key = "jevil" },
+    locked_loc_vars = function(self)
+        return HNDS.joker_locked_loc_vars("jevil")
+    end,
+    check_for_unlock = function(self, args)
+        return HNDS.joker_unlock_condition_met("jevil", args)
+    end,
     blueprint_compat = false,
     eternal_compat = true,
     perishable_compat = true,

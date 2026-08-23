@@ -736,7 +736,31 @@ SMODS.Booster{
         ease_background_colour { new_colour = cursed_col, special_colour = darken(G.C.BLACK, 0.2), contrast = 2.5 }
     end,
     create_card = function(self, card)
-        local c = create_card("Joker", G.pack_cards, nil, nil, true, true, nil, 'cur')
+        local game = G and G.GAME
+        local rare_only = false
+
+        -- Cursed Sleeve's stacked effect applies to exactly the first physical
+        -- Cursed Pack opened. Store that decision on the booster itself so all
+        -- cards in this pack agree, then consume the run-level one-shot flag.
+        -- Keeping this inside the Booster API avoids globally wrapping create_card.
+        if card and game and game.modifiers and game.modifiers.cursed_sleeve_active then
+            if card.hnds_cursed_sleeve_rare_pack == nil then
+                card.hnds_cursed_sleeve_rare_pack = game.hnds_first_cursed_pack == true
+                if card.hnds_cursed_sleeve_rare_pack then
+                    game.hnds_first_cursed_pack = false
+                end
+            end
+            rare_only = card.hnds_cursed_sleeve_rare_pack == true
+        end
+
+        local c = SMODS.create_card({
+            set = 'Joker',
+            area = G.pack_cards,
+            rarity = rare_only and 3 or nil,
+            skip_materialize = true,
+            soulable = true,
+            key_append = 'cur',
+        })
         apply_curse(c)
         return c
     end,
@@ -772,6 +796,25 @@ end
 -- Run the offer and price funcs under pcall, log failures, return the combined effect.
 local function hnds_run_defs(card, ctx, offer_def, price_def)
     local offer_ret, price_ret
+
+    -- The Ancestor: the first Joker it curses in each shop has a 1-in-4
+    -- chance to ignore only its Curse price when that specific Joker is bought.
+    -- The beneficial Curse offer still resolves normally. Cache the roll so the
+    -- add_to_deck and shop callback paths can never disagree or roll twice.
+    if price_def and ctx and ctx.buying_card and card and card.ability
+        and card.ability.hnds_ancestor_cursed
+    then
+        if card.ability.hnds_ancestor_ignore_price == nil then
+            local token = tostring(card.ID or card.sort_id or
+                (card.config and card.config.center and card.config.center.key) or 'joker')
+            card.ability.hnds_ancestor_ignore_price =
+                pseudorandom('hnds_ancestor_ignore_price_' .. token) < 0.25
+        end
+        if card.ability.hnds_ancestor_ignore_price then
+            price_def = nil
+        end
+    end
+
     if offer_def and offer_def.func then
         local ok, ret = pcall(offer_def.func, card, ctx)
         if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse_offer)..' -> '..tostring(ret)) end

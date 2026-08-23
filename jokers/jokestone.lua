@@ -1,7 +1,9 @@
 local jokestone_draw = function(self, card, context)
+	if not (G and G.E_MANAGER and G.deck and G.deck.cards and G.hand) then return false end
 	G.E_MANAGER:add_event(Event({
 		trigger = "before",
 		func = function()
+			if not (G and G.deck and G.deck.cards and G.hand) then return true end
 			local _cards = {}
 			for i = 1, #G.deck.cards do
 				local _card = G.deck.cards[i]
@@ -45,6 +47,7 @@ local jokestone_draw = function(self, card, context)
 			return true
 		end,
 	}))
+	return true
 end
 
 SMODS.Joker({
@@ -85,8 +88,10 @@ SMODS.Joker({
 		end
 	end,
 	calculate = function(self, card, context)
-		if (context.first_hand_drawn or context.forcetrigger) and #G.deck.cards > 0 then
-			jokestone_draw(self, card, context)
+		if (context.first_hand_drawn or context.forcetrigger)
+			and G and G.deck and G.deck.cards and #G.deck.cards > 0
+			and jokestone_draw(self, card, context)
+		then
 			return nil, true
 		end
 	end,

@@ -15,25 +15,29 @@ if hnds_config.enableStoneOcean then
 			badges[1] = create_badge("Dwarf Planet", get_type_colour(self or card.config, card), nil, 1.2)
 		end,
 		loc_vars = function(self, info_queue, card)
+			local hand_type = card and card.ability and card.ability.hand_type or "hnds_stone_ocean"
+			local game = G and G.GAME
+			local hand = game and game.hands and game.hands[hand_type] or {}
+			local level = tonumber(hand.level) or 1
+			local level_chips = tonumber(hand.l_chips) or 50
+			local scaling = tonumber(hand.l_chips_scaling) or 5
+			local stones = tonumber(game and game.ante_stones_scored) or 0
+			local level_colour = (G and G.C and level == 1 and G.C.UI and G.C.UI.TEXT_DARK)
+				or (G and G.C and G.C.HAND_LEVELS and G.C.HAND_LEVELS[math.min(7, level)])
 			return {
 				vars = {
-					G.GAME.hands[card.ability.hand_type].level,
-					localize(card.ability.hand_type, "poker_hands"),
-					G.GAME.hands[card.ability.hand_type].l_chips
-						+ (G.GAME.ante_stones_scored or 0) * G.GAME.hands[card.ability.hand_type].l_chips_scaling,
-					G.GAME.hands[card.ability.hand_type].l_chips_scaling,
-					G.GAME.ante_stones_scored or 0,
-					colours = {
-						(
-							G.GAME.hands[card.ability.hand_type].level == 1 and G.C.UI.TEXT_DARK
-							or G.C.HAND_LEVELS[math.min(7, G.GAME.hands[card.ability.hand_type].level)]
-						),
-					},
+					level,
+					localize(hand_type, "poker_hands"),
+					level_chips + stones * scaling,
+					scaling,
+					stones,
+					colours = { level_colour },
 				},
 			}
 		end,
 		use = function(self, card, area, copier)
 			SMODS.upgrade_poker_hands{
+				from = card,
 				hands = card.ability.hand_type,
 				parameters = { "chips" },
 				level_up = true,
@@ -48,6 +52,7 @@ if hnds_config.enableStoneOcean then
 		demicoloncompat = true,
 		bulk_use = function (self, card, area, copier, number)
 			SMODS.upgrade_poker_hands{
+				from = card,
 				hands = card.ability.hand_type,
 				parameters = { "chips" },
 				level_up = number,
