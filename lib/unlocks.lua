@@ -440,7 +440,7 @@ local function normalize_blind_slot(value)
     return nil
 end
 
-function HNDS.record_coffee_break_skip(ante, slot)
+local function record_coffee_break_skip(ante, slot)
     local state = run_state()
     ante = math.max(0, tonumber(ante) or current_ante())
     slot = normalize_blind_slot(slot)
@@ -859,7 +859,7 @@ if G and G.FUNCS and type(G.FUNCS.skip_blind) == "function" and not HNDS._unlock
         local ante = current_ante()
         local slot = normalize_blind_slot(G and G.GAME and G.GAME.blind_on_deck)
             or normalize_blind_slot(e and e.config and e.config.id)
-        HNDS.record_coffee_break_skip(ante, slot)
+        record_coffee_break_skip(ante, slot)
         return skip_blind_unlock_ref(e, ...)
     end
 end
