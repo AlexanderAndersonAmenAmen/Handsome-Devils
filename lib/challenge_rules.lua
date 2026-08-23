@@ -1,5 +1,3 @@
-_G.HNDS_CHALLENGE_RULES_LOADED = true
-
 -- Check if the current challenge matches the given key (SMODS format: c_hnds_<key>)
 function HNDS.is_challenge(key)
 	return G and G.GAME and G.GAME.challenge == 'c_hnds_'..key
