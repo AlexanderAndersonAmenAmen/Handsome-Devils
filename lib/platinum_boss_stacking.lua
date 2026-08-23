@@ -500,10 +500,6 @@ local function derive_applied_blind_raiser_step()
     return applied
 end
 
-function HNDS.platinum_blind_raiser_applied_step()
-    return derive_applied_blind_raiser_step()
-end
-
 function HNDS.set_platinum_blind_raiser_applied_step(step)
     if not (G and G.GAME) then return end
     G.GAME.hnds_blind_raiser_applied_step = math.max(
