@@ -83,3 +83,19 @@ SMODS.Joker ({
     end,
     attributes = { "retrigger", "suit", }
 })
+-- Supersuit Joker: reset the randomly chosen suit for the round.
+-- Registered here so lib/utils.lua does not need to know about this Joker.
+HNDS.on_round_reset(function()
+    local supersuit_suits = {}
+    G.GAME.current_round.supersuit_card = G.GAME.current_round.supersuit_card or {}
+    for k, suit in pairs(SMODS.Suits) do
+        if
+            k ~= G.GAME.current_round.supersuit_card.suit
+            and (type(suit.in_pool) ~= "function" or suit:in_pool({ rank = "" }))
+        then
+            supersuit_suits[#supersuit_suits + 1] = k
+        end
+    end
+    local supersuit_card = pseudorandom_element(supersuit_suits, pseudoseed("sup" .. G.GAME.round_resets.ante))
+    G.GAME.current_round.supersuit_card.suit = supersuit_card
+end)

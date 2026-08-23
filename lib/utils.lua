@@ -241,22 +241,6 @@ local function get_key_for_value(t, value)
   return nil
 end
 
--- Supersuit Joker: Reset the randomly chosen suit for the round
-function reset_supersuit_card()
-	local supersuit_suits = {}
-	G.GAME.current_round.supersuit_card = G.GAME.current_round.supersuit_card or {}
-	for k, suit in pairs(SMODS.Suits) do
-		if
-			k ~= G.GAME.current_round.supersuit_card.suit
-			and (type(suit.in_pool) ~= "function" or suit:in_pool({ rank = "" }))
-		then
-			supersuit_suits[#supersuit_suits + 1] = k
-		end
-	end
-	local supersuit_card = pseudorandom_element(supersuit_suits, pseudoseed("sup" .. G.GAME.round_resets.ante))
-	G.GAME.current_round.supersuit_card.suit = supersuit_card
-end
-
 -- Dark Idol Joker: Reset the randomly chosen card for the round
 function reset_dark_idol()
 	G.GAME.current_round.dark_idol = { suit = 'Spades', rank = 'Ace' }
@@ -324,9 +308,11 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	end
 
 	-- Re-roll per-round joker state (suit/card changes every round)
-	reset_supersuit_card()
 	reset_dark_idol()
 	bizzare_suit()
+	for _, round_reset in ipairs(HNDS._round_reset_handlers) do
+		round_reset()
+	end
 
 	-- Circus Deck: assign a random joker from the pool each ante.
 	-- The joker lives in an offscreen CardArea and is found by find_joker().
