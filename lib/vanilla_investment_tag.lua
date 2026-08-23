@@ -82,22 +82,10 @@ local function pay_investment_tag(tag)
     return true
 end
 
-function HNDS.trigger_real_boss_investment_tags(blind)
-    if not real_boss_slot(blind) then return false end
-
-    local tags = collect_investment_tags()
-    local triggered = false
-    for _, tag in ipairs(tags) do
-        triggered = pay_investment_tag(tag) or triggered
-    end
-    return triggered
-end
-
-HNDS.investment_tag_can_trigger = function()
+function HNDS.active_blind_is_real_ante_boss()
     local blind = G and G.GAME and G.GAME.blind
     return real_boss_slot(blind)
 end
-HNDS.active_blind_is_real_ante_boss = HNDS.investment_tag_can_trigger
 
 function HNDS.install_investment_blind_hooks()
     if not Blind then return false end
