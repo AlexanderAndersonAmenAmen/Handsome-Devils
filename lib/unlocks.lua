@@ -476,7 +476,7 @@ local function four_distinct_flush_suits(state)
     return count >= 4
 end
 
-function HNDS.joker_unlock_progress(key)
+local function joker_unlock_progress(key)
     local state = run_state()
     if key == "jigsaw_joker" then return state and state.jigsaw_count or 0, TARGETS[key]
     elseif key == "wait_what" then return unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT), TARGETS[key]
@@ -505,7 +505,7 @@ function HNDS.joker_unlock_progress(key)
 end
 
 function HNDS.joker_locked_loc_vars(key)
-    local current = HNDS.joker_unlock_progress(key)
+    local current = joker_unlock_progress(key)
     return { vars = { current } }
 end
 
