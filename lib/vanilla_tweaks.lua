@@ -87,31 +87,9 @@ local function count_unique_suits(cards)
     -- cap Flower Pot to the number of public registered suits. In a normal
     -- four-suit game this preserves the vanilla X4 maximum; if another mod
     -- adds one or more suits the cap automatically becomes X5, X6, etc.
+    -- (main.lua loads lib/utils.lua before this file, so the helper exists.)
     local cap = flower_pot_suit_cap()
-    if HNDS and type(HNDS.get_unique_suits) == 'function' then
-        return math.min(cap, HNDS.get_unique_suits(cards))
-    end
-
-    -- Defensive fallback for unusual load orders where utils.lua has not yet
-    -- exposed the shared helper. Wild cards fill missing suits, but cannot
-    -- push the total above the currently available public-suit cap.
-    local suits, wilds = {}, 0
-    for _, playing_card in ipairs(cards) do
-        if playing_card and not playing_card.debuff
-            and not (SMODS.has_no_suit and SMODS.has_no_suit(playing_card))
-        then
-            if is_wild(playing_card) then
-                wilds = wilds + 1
-            elseif playing_card.base and playing_card.base.suit
-                and playing_card.base.suit ~= 'hnds_lanterns'
-            then
-                suits[playing_card.base.suit] = true
-            end
-        end
-    end
-    local count = 0
-    for _ in pairs(suits) do count = count + 1 end
-    return math.min(cap, count + wilds)
+    return math.min(cap, HNDS.get_unique_suits(cards))
 end
 
 local function highlighted_scoring_hand()

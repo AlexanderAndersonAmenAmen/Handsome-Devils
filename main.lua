@@ -731,6 +731,9 @@ for _, set in pairs(files) do
 	end
 end
 assert(SMODS.load_file("lib/hooks.lua"))()
+-- Shared helpers must exist before vanilla_tweaks (its Flower Pot suit count
+-- relies on HNDS.get_unique_suits at load time).
+assert(SMODS.load_file("lib/utils.lua"))()
 if hnds_config.enableVanillaTweaks then assert(SMODS.load_file("lib/vanilla_tweaks.lua"))() end
 if hnds_config.enableBlindUpgradeButton then
 	assert(SMODS.load_file("lib/platinum_blind_upgrades.lua"))()
@@ -740,7 +743,6 @@ assert(SMODS.load_file("lib/platinum_boss_stacking.lua"))()
 assert(SMODS.load_file("lib/vanilla_investment_tag.lua"))()
 assert(SMODS.load_file("lib/conquest_tracker.lua"))()
 assert(SMODS.load_file("lib/blind_souls.lua"))()
-assert(SMODS.load_file("lib/utils.lua"))()
 assert(SMODS.load_file("lib/headless_jack.lua"))()
 assert(SMODS.load_file("lib/cursed_pack.lua"))()
 
