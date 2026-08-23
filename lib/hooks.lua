@@ -1581,7 +1581,6 @@ end
 local set_cost_ref = Card.set_cost
 function Card.set_cost(self, ...)
 	local ret = set_cost_ref(self, ...)
-	if not self then return ret end
 	local key = self.config and self.config.center and self.config.center.key
 	local set = self.config and self.config.center and self.config.center.set
 
