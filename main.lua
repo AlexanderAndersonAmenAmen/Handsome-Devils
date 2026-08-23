@@ -4,6 +4,16 @@ function HNDS.pack(...)
     return { n = select('#', ...), ... }
 end
 
+-- Context handler registry: content files register handlers for global
+-- contexts that never reach an individual card's calculate (pack generation,
+-- purchases, shop boundaries). Handlers must be order-independent with
+-- respect to each other; registration order follows file load order.
+HNDS._context_handlers = {}
+function HNDS.on_context(fn)
+	HNDS._context_handlers[#HNDS._context_handlers + 1] = fn
+	return fn
+end
+
 if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
     local hnds_card_collection_UIBox = SMODS.card_collection_UIBox
 
@@ -604,6 +614,10 @@ SMODS.current_mod.calculate = function(self, context)
 		and HNDS.complete_obsidian_final_hand
 	then
 		HNDS.complete_obsidian_final_hand()
+	end
+
+	for _, handler in ipairs(HNDS._context_handlers) do
+		handler(context)
 	end
 
 	return boss_stack_result
