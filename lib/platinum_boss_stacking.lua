@@ -915,9 +915,14 @@ function HNDS.platinum_blind_display_name(blind_choice, loc_name)
     return loc_name
 end
 
--- Apply the plus at the localization source used by both the Blind-select badge
--- and the active Blind HUD. This does not rely on a single UI-definition patch
--- or on Blind:set_text load order, and append_plus_to_name is idempotent.
+-- Apply the plus at the localization source. This is NOT redundant with the
+-- other two "+" mechanisms: vanilla localizes Boss names in four places --
+--   * blind-select badge (UI_definitions.lua:1545, covered by the Lovely patch)
+--   * active-blind HUD via Blind:set_text -> loc_name (covered by that wrap)
+--   * round-eval blind panel (UI_definitions round-scores row)
+--   * blind hover popup (create_UIBox_blind_popup)
+-- Only this override covers the last two, and append_plus_to_name is
+-- idempotent when several mechanisms fire on the same string.
 local localize_platinum_ref = localize
 function localize(args, misc_cat, misc_loc, silent, ...)
     local result = localize_platinum_ref(args, misc_cat, misc_loc, silent, ...)
