@@ -1429,14 +1429,11 @@ local function component_debuffs_card(component, blind, card)
     if not (component and blind and card) then return false end
     if G and G.jokers and card.area == G.jokers then return false end
 
-    -- Declarative fallbacks cover components that use only a vanilla-style
+    -- Declarative fallback covers suit-debuff components that use a vanilla-style
     -- debuff table. The calculate call covers Plant/Pillar and all suit Bosses.
     local debuff = component.debuff
     if debuff then
         if debuff.suit and card.is_suit and card:is_suit(debuff.suit, true) then return true end
-        if debuff.is_face and card.is_face and card:is_face(true) then return true end
-        if debuff.value and card.base and card.base.value == debuff.value then return true end
-        if debuff.nominal and card.base and card.base.nominal == debuff.nominal then return true end
     end
 
     if component.calculate then
