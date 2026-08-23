@@ -120,6 +120,71 @@ local function replacement_records()
     return G.GAME.hnds_platinum_blind_replacements
 end
 
+-- Shared upgrade commit used by the manual Upgrade Blind callback and the
+-- automatic Nightmare Stake upgrade: persist the replacement record, bump
+-- run counters/exponents, swap the Blind choice, and record the stacked
+-- Boss effect. All mutations are synchronous table writes, so callers may
+-- interleave UI work freely around this call.
+function HNDS.commit_platinum_upgrade(blind_choice, boss)
+    local choices = G.GAME.round_resets.blind_choices
+    local key = upgrade_key(blind_choice)
+    local actual_upgrade_count = (G.GAME.hnds_blind_upgrades or 0) + 1
+    local upgrade_index = HNDS.platinum_next_upgrade_exponent
+        and HNDS.platinum_next_upgrade_exponent() or actual_upgrade_count
+    replacement_records()[key] = {
+        ante = current_ante(),
+        blind_choice = blind_choice,
+        original = choices[blind_choice],
+        boss = boss,
+        upgrade_index = upgrade_index,
+    }
+
+    upgraded_blinds()[key] = true
+    G.GAME.hnds_blind_upgrades = actual_upgrade_count
+    if HNDS.set_platinum_blind_raiser_applied_step then
+        HNDS.set_platinum_blind_raiser_applied_step(upgrade_index)
+    end
+    if HNDS.set_platinum_next_upgrade_exponent then
+        HNDS.set_platinum_next_upgrade_exponent(upgrade_index + 1)
+    end
+    choices[blind_choice] = boss
+    if HNDS.record_platinum_boss_effect then
+        HNDS.record_platinum_boss_effect(boss, current_ante())
+    end
+end
+
+-- Grant the Skip Tag reward and return only the newly granted Tags,
+-- including copies produced synchronously by Double Tags.
+function HNDS.grant_platinum_reward_tags(reward_tag)
+    local preexisting_tags = {}
+    for _, tag in ipairs(G.GAME.tags or {}) do
+        preexisting_tags[tag] = true
+    end
+
+    add_tag(reward_tag)
+
+    local granted_tags = {}
+    for _, tag in ipairs(G.GAME.tags or {}) do
+        if not preexisting_tags[tag] then
+            granted_tags[#granted_tags + 1] = tag
+        end
+    end
+    return granted_tags
+end
+
+-- Trigger immediate effects for every granted Tag, then let exactly one
+-- Tag consume the new-blind-choice event.
+function HNDS.apply_platinum_reward_tags(granted_tags)
+    for _, tag in ipairs(granted_tags) do
+        tag:apply_to_run({ type = 'immediate' })
+    end
+    for _, tag in ipairs(granted_tags) do
+        if tag:apply_to_run({ type = 'new_blind_choice' }) then
+            break
+        end
+    end
+end
+
 local function parse_upgrade_key(key)
     if type(key) ~= 'string' then return nil, nil end
     local ante, blind_choice = key:match('^(-?%d+):([%a_]+)$')
@@ -825,6 +890,9 @@ HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
     -- Automatic Nightmare Stake upgrades grant exactly the same Skip Tag reward
     -- as pressing Upgrade Blind manually. Build the reward before mutating the
     -- slot so an unusually early call can retry instead of upgrading tagless.
+    -- Automatic Nightmare Stake upgrades grant exactly the same Skip Tag reward
+    -- as pressing Upgrade Blind manually. Build the reward before mutating the
+    -- slot so an unusually early call can retry instead of upgrading tagless.
     local blind_tags = G.GAME.round_resets.blind_tags or {}
     local reward_tag_key = blind_tags[blind_choice]
     if not reward_tag_key then return nil end
@@ -842,45 +910,9 @@ HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
     -- selector returns nil; aborting is safer than creating a duplicate Boss.
     if not (boss and G.P_BLINDS and G.P_BLINDS[boss]) then return nil end
 
-    -- Record the tags that already existed, then add the displayed reward.
-    -- This also captures any copies created synchronously by Double Tags.
-    local preexisting_tags = {}
-    for _, tag in ipairs(G.GAME.tags or {}) do
-        preexisting_tags[tag] = true
-    end
-    add_tag(reward_tag)
+    local granted_tags = HNDS.grant_platinum_reward_tags(reward_tag)
 
-    local granted_tags = {}
-    for _, tag in ipairs(G.GAME.tags or {}) do
-        if not preexisting_tags[tag] then
-            granted_tags[#granted_tags + 1] = tag
-        end
-    end
-
-    local current_upgrade_key = upgrade_key(blind_choice)
-    local actual_upgrade_count = (G.GAME.hnds_blind_upgrades or 0) + 1
-    local upgrade_index = HNDS.platinum_next_upgrade_exponent
-        and HNDS.platinum_next_upgrade_exponent() or actual_upgrade_count
-    replacement_records()[current_upgrade_key] = {
-        ante = current_ante(),
-        blind_choice = blind_choice,
-        original = choices[blind_choice],
-        boss = boss,
-        upgrade_index = upgrade_index,
-    }
-
-    upgraded_blinds()[current_upgrade_key] = true
-    G.GAME.hnds_blind_upgrades = actual_upgrade_count
-    if HNDS.set_platinum_blind_raiser_applied_step then
-        HNDS.set_platinum_blind_raiser_applied_step(upgrade_index)
-    end
-    if HNDS.set_platinum_next_upgrade_exponent then
-        HNDS.set_platinum_next_upgrade_exponent(upgrade_index + 1)
-    end
-    choices[blind_choice] = boss
-    if HNDS.record_platinum_boss_effect then
-        HNDS.record_platinum_boss_effect(boss, current_ante())
-    end
+    HNDS.commit_platinum_upgrade(blind_choice, boss)
 
     hnds_rebuild_upgraded_blind_option(blind_choice, boss)
     hnds_refresh_undefeated_blind_scores(blind_choice)
@@ -896,14 +928,7 @@ HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
 
     -- Match the manual Upgrade Blind callback: trigger immediate tag effects,
     -- then the first new-blind-choice effect that consumes a granted tag.
-    for _, tag in ipairs(granted_tags) do
-        tag:apply_to_run({ type = 'immediate' })
-    end
-    for _, tag in ipairs(granted_tags) do
-        if tag:apply_to_run({ type = 'new_blind_choice' }) then
-            break
-        end
-    end
+    HNDS.apply_platinum_reward_tags(granted_tags)
 
     save_run()
     return true
@@ -1017,37 +1042,13 @@ G.FUNCS.hnds_upgrade_blind = function(e)
     -- fallback roll. If no legal Boss exists, leave the Blind unchanged.
     if not (boss and G.P_BLINDS and G.P_BLINDS[boss]) then return end
 
-    local current_upgrade_key = upgrade_key(blind_choice)
-    local actual_upgrade_count = (G.GAME.hnds_blind_upgrades or 0) + 1
-    local upgrade_index = HNDS.platinum_next_upgrade_exponent
-        and HNDS.platinum_next_upgrade_exponent() or actual_upgrade_count
-    replacement_records()[current_upgrade_key] = {
-        ante = current_ante(),
-        blind_choice = blind_choice,
-        original = G.GAME.round_resets.blind_choices[blind_choice],
-        boss = boss,
-        upgrade_index = upgrade_index,
-    }
-
     -- Commit the replacement before the animation. Previously the choice was
     -- changed only inside the delayed UI rebuild; if the Big Blind UIBox was
     -- reparented after playing the upgraded Small Blind, that event returned
     -- early and left a recorded upgrade that appeared to do nothing.
-    G.GAME.round_resets.blind_choices[blind_choice] = boss
+    HNDS.commit_platinum_upgrade(blind_choice, boss)
 
     stop_use()
-
-    upgraded_blinds()[current_upgrade_key] = true
-    G.GAME.hnds_blind_upgrades = actual_upgrade_count
-    if HNDS.set_platinum_blind_raiser_applied_step then
-        HNDS.set_platinum_blind_raiser_applied_step(upgrade_index)
-    end
-    if HNDS.set_platinum_next_upgrade_exponent then
-        HNDS.set_platinum_next_upgrade_exponent(upgrade_index + 1)
-    end
-    if HNDS.record_platinum_boss_effect then
-        HNDS.record_platinum_boss_effect(boss, current_ante())
-    end
 
     -- Disable both actions before any animation/event begins. The skip
     -- callback also has a handler-level Lovely guard for stale inputs.
@@ -1059,21 +1060,9 @@ G.FUNCS.hnds_upgrade_blind = function(e)
     )
     set_runtime_button(skip_button, false, 'skip_blind')
 
-    -- Record which tags existed before the reward is granted. Process
-    -- only newly granted tags, including copies produced by Double Tags.
-    local preexisting_tags = {}
-    for _, tag in ipairs(G.GAME.tags or {}) do
-        preexisting_tags[tag] = true
-    end
-
-    add_tag(reward_tag)
-
-    local granted_tags = {}
-    for _, tag in ipairs(G.GAME.tags or {}) do
-        if not preexisting_tags[tag] then
-            granted_tags[#granted_tags + 1] = tag
-        end
-    end
+    -- Grant the reward and process only newly granted tags, including copies
+    -- produced by Double Tags.
+    local granted_tags = HNDS.grant_platinum_reward_tags(reward_tag)
 
     G.E_MANAGER:add_event(Event({
         trigger = 'immediate',
@@ -1122,14 +1111,7 @@ G.FUNCS.hnds_upgrade_blind = function(e)
                 })
             end
 
-            for _, tag in ipairs(granted_tags) do
-                tag:apply_to_run({ type = 'immediate' })
-            end
-            for _, tag in ipairs(granted_tags) do
-                if tag:apply_to_run({ type = 'new_blind_choice' }) then
-                    break
-                end
-            end
+            HNDS.apply_platinum_reward_tags(granted_tags)
 
             save_run()
             return true
