@@ -582,11 +582,6 @@ SMODS.current_mod.calculate = function(self, context)
 			context.card.ability[sticker_key] = nil
 		end
 	end
-	-- Fregoli Joker: track the last purchased card's sort_id
-	if context.buying_card then
-		G.GAME.hnds_fregoli_copy = context.card.sort_id
-	end
-
 	-- Jevil: defer until every start-of-round draw effect has had a chance to
 	-- resolve, then mark the final cards actually present in hand.
 	if context.first_hand_drawn and HNDS.jevil_schedule_starting_hand then
