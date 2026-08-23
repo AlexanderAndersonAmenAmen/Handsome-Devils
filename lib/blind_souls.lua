@@ -65,7 +65,7 @@ HNDS.blind_souls = {
     bl_final_bell = { "j_sixth_sense", "j_sixth_sense", "j_dna", "j_dna", "j_dna", "j_idol", "j_idol", "j_idol" },
 }
 
---[[
+--[[ 
 if next(SMODS.find_mod("GrabBag")) then
     local gb_souls = {
         bl_hook    = "j_gb_hook",

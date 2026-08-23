@@ -1613,8 +1613,6 @@ local function hnds_finalize_generated_curse(card)
 	if hnds_card_has_cursed(card) then hnds_strip_other_stickers(card) end
 end
 
-HNDS.finalize_generated_curse = hnds_finalize_generated_curse
-
 if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 	SMODS._hnds_wrapped_create_card_shop = true
 	local smods_create_card_ref = SMODS.create_card
