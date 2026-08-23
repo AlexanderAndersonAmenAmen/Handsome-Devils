@@ -773,12 +773,12 @@ local function hnds_run_defs(card, ctx, offer_def, price_def)
     local offer_ret, price_ret
     if offer_def and offer_def.func then
         local ok, ret = pcall(offer_def.func, card, ctx)
-        if not ok then print('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse_offer)..' -> '..tostring(ret)) end
+        if not ok then sendDebugMessage('HNDS CURSE offer error: '..tostring(card.ability.hnds_curse_offer)..' -> '..tostring(ret), 'HandsomeDevils') end
         if ok then offer_ret = ret end
     end
     if price_def and price_def.func then
         local ok, ret = pcall(price_def.func, card, ctx)
-        if not ok then print('HNDS CURSE price error: '..tostring(card.ability.hnds_curse_price)..' -> '..tostring(ret)) end
+        if not ok then sendDebugMessage('HNDS CURSE price error: '..tostring(card.ability.hnds_curse_price)..' -> '..tostring(ret), 'HandsomeDevils') end
         if ok then price_ret = ret end
     end
     return offer_ret or price_ret
