@@ -1,3 +1,20 @@
+-- Apply an enhancement to a card, with the flip animation when it is in hand.
+local function set_enhancement(card, key)
+    if card.area == G.hand then
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.05, func = function() card:highlight(true); card:flip(); play_sound('generic1', 0.7, 0.35); card:juice_up(0.3,0.3); return true; end}))
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.15,
+            func = function()
+                card:set_ability(G.P_CENTERS[key])
+                card:juice_up()
+                return true
+            end
+        }))
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.05, func = function() card:highlight(false); card:flip(); play_sound('tarot2', 0.85, 0.6); card:juice_up(0.3,0.3); return true; end}))
+    else
+        card:set_ability(G.P_CENTERS[key])
+    end
+end
+
 G.CURSE_OFFERS = {
     -- Offers are benefits
     -- They technically work like a Jokers
@@ -605,22 +622,6 @@ if not _G.HNDS_curse_collections then
         G.FUNCS.overlay_menu{
             definition = create_UIBox_your_collection_hnds_curse_prices(),
         }
-    end
-end
-
-function set_enhancement(card, key)
-    if card.area == G.hand then
-        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.05, func = function() card:highlight(true); card:flip(); play_sound('generic1', 0.7, 0.35); card:juice_up(0.3,0.3); return true; end}))
-        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.15,
-            func = function()
-                card:set_ability(G.P_CENTERS[key])
-                card:juice_up()
-                return true
-            end
-        }))
-        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.05, func = function() card:highlight(false); card:flip(); play_sound('tarot2', 0.85, 0.6); card:juice_up(0.3,0.3); return true; end}))
-    else
-        card:set_ability(G.P_CENTERS[key])
     end
 end
 
