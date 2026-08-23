@@ -130,8 +130,9 @@ end
 -- ANTE 10 GLOBAL BOSS SUPPORT
 -------------------------------------------------------------------
 
--- Perilous Pact calls this from a narrow Lovely patch at the final hand-score
--- addition. Keeping the cap here makes it compatible with ordinary numbers
+-- Perilous Pact calls this from blinds/blind_perilous_pact.lua (both the
+-- modify_hand and final hand-score paths). Keeping the cap here makes it
+-- compatible with ordinary numbers
 -- and with Big-number mods that overload comparison/arithmetic operators.
 function HNDS.cap_perilous_pact_score(score)
     if not (G and G.GAME and G.GAME.blind and not G.GAME.blind.disabled) then
