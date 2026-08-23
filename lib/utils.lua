@@ -23,9 +23,6 @@ Notable helpers
 - `HNDS.get_shop_joker_tags()`
   - Returns a list of tag keys that can create shop jokers (extended when other mods are installed).
 
-- `HNDS.get_key_for_value`
-  - Small utility helper used by deck/stake effects.
-
 Notes / invariants
 - Some functions consult `SMODS.find_mod(...)` to include optional compatibility behavior.
 - This file should avoid hooking globals; that work belongs in `hooks.lua` / `challenge_rules.lua`.
