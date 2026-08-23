@@ -14,6 +14,15 @@ function HNDS.on_context(fn)
 	return fn
 end
 
+-- Round-reset handler registry: joker files register per-round state resets
+-- (random suits/cards re-rolled every ante) without lib/utils.lua needing to
+-- know about individual Jokers. Handlers run inside reset_game_globals.
+HNDS._round_reset_handlers = {}
+function HNDS.on_round_reset(fn)
+	HNDS._round_reset_handlers[#HNDS._round_reset_handlers + 1] = fn
+	return fn
+end
+
 if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
     local hnds_card_collection_UIBox = SMODS.card_collection_UIBox
 
