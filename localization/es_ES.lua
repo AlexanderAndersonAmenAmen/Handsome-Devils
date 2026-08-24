@@ -435,7 +435,6 @@ return {
 					"de póquer {C:attention}únicas{}, vende esta",
 					"carta para subir {C:attention}#3#{} niveles",
 					"todas las {C:attention}manos de póquer{}",
-					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive}/8){}",
 				},
 			},
 			j_hnds_dynamic_duos = {

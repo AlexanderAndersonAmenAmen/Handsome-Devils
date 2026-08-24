@@ -43,6 +43,9 @@ SMODS.Joker({
 		badges[#badges + 1] = create_badge(localize('k_common'), G.C.CHIPS, G.C.WHITE, 1.2)
 	end,
 	update = function(self, card, dt)
+		-- Collection cards are static previews. Avoid running shop-disguise sprite
+		-- maintenance every frame while the collection screen is left open.
+		if card.area and card.area.config and card.area.config.collection then return end
 		local dominated_by_shop = card.area and card.area.config and card.area.config.type == 'shop'
 		local revealed = card.ability and card.ability.hnds_wait_what_revealed
 		local should_disguise = dominated_by_shop and not revealed

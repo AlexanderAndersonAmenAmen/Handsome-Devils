@@ -77,6 +77,8 @@ SMODS.Sticker {
 		end
 	end,
 	update = function(self, card, dt)
+		-- Sticker previews in the collection have no gameplay sell value to maintain.
+		if card.area and card.area.config and card.area.config.collection then return end
 		if card.sell_cost ~= 0 then
 			card.sell_cost = 0
 			card.sell_cost_label = 0

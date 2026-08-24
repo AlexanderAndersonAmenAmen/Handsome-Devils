@@ -206,9 +206,15 @@ SMODS.Sticker {
     pos = { x = 3, y = 4 },
     badge_colour = G.C.PURPLE,
     rate = 0,
+    no_collection = true,
     default_compat = true,
     sets = { Default = true, Enhanced = true },
     hide_badge = true,
+    draw = function(self, card, layer)
+        if HNDS.draw_flat_sticker then
+            HNDS.draw_flat_sticker(self, card, layer)
+        end
+    end,
     apply = function(self, card, val)
         SMODS.Sticker.apply(self, card, val)
         card.ability = card.ability or {}

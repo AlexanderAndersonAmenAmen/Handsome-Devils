@@ -7,7 +7,7 @@ SMODS.Joker({
 		if G.hand and G.hand.highlighted then
 			local _, _, _, cards = G.FUNCS.get_poker_hand_info(G.hand.highlighted)
 			for _, c in ipairs(cards or {}) do
-				if c:get_id() == 7 and c.facing == "front" then seven = seven + 1 end
+				if HNDS.imposter_rank_match(c, 7, { scoring_hand = cards }) and c.facing == "front" then seven = seven + 1 end
 			end
 		end
 		local numerator, denominator =
@@ -34,7 +34,7 @@ SMODS.Joker({
 		if context.joker_main then
 			local seven = 0
 			for _, c in ipairs(context.scoring_hand) do
-				if c:get_id() == 7 then seven = seven+1 end
+				if HNDS.imposter_rank_match(c, 7, context) then seven = seven+1 end
 			end
 			if SMODS.pseudorandom_probability(card, "hnds_jackpot", 2^seven, card.ability.extra.base_chance) then
 				return {
@@ -61,7 +61,7 @@ SMODS.Joker({
                 local seven = 0
                 if G.hand and G.hand.highlighted then
                     for _, c in ipairs(G.hand.highlighted) do
-                        if c:get_id() == 7 then seven = seven + 1 end
+                        if HNDS.imposter_rank_match(c, 7, { scoring_hand = G.hand.highlighted }) then seven = seven + 1 end
                     end
                 end
                 card.joker_display_values.mult = card.ability.extra.mult

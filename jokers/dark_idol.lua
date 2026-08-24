@@ -38,7 +38,7 @@ SMODS.Joker{
         local other = context.other_card
         if context.individual and G and context.cardarea == G.play and not context.blueprint
             and other and type(other.get_id) == "function" and type(other.is_suit) == "function" then
-            if other:get_id() == idol.id and
+            if HNDS.imposter_rank_match(other, idol.id, context) and
             other:is_suit(idol.suit) then
                 SMODS.scale_card(card, {
                     ref_table = card.ability.extra,

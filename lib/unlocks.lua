@@ -1329,16 +1329,19 @@ if Card and type(Card.calculate_joker) == "function" and not Card._hnds_unlock_t
             and (type(value) ~= "table" or next(value) ~= nil)
     end
     function Card:calculate_joker(...)
-        local a, b, c, d = calculate_joker_unlock_ref(self, ...)
-        local triggered = hnds_unlock_effect_triggered(a)
-            or hnds_unlock_effect_triggered(b)
-            or hnds_unlock_effect_triggered(c)
-            or hnds_unlock_effect_triggered(d)
+        local results = HNDS.pack(calculate_joker_unlock_ref(self, ...))
+        local triggered = false
+        for i = 1, results.n do
+            if hnds_unlock_effect_triggered(results[i]) then
+                triggered = true
+                break
+            end
+        end
         if triggered and card_set(self) == "Joker" then
             local state = run_state()
             if state then self.hnds_unlock_trigger_round = state.round_serial end
         end
-        return a, b, c, d
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1347,7 +1350,7 @@ if Card and type(Card.set_edition) == "function" and not Card._hnds_unlock_editi
     local set_edition_unlock_ref = Card.set_edition
     function Card:set_edition(edition, immediate, silent, ...)
         local was_negative = self.edition and (self.edition.negative or self.edition.key == "e_negative")
-        local ret = set_edition_unlock_ref(self, edition, immediate, silent, ...)
+        local results = HNDS.pack(set_edition_unlock_ref(self, edition, immediate, silent, ...))
         local is_negative = self.edition and (self.edition.negative or self.edition.key == "e_negative")
         if in_run() and card_set(self) == "Joker" and not was_negative and is_negative then
             increment_career_stat(STAT_NEGATIVE_JOKERS, 1)
@@ -1355,7 +1358,7 @@ if Card and type(Card.set_edition) == "function" and not Card._hnds_unlock_editi
         else
             HNDS.request_unlock_check("hnds_edition_state")
         end
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1365,7 +1368,7 @@ if Card and type(Card.set_base) == "function" and not Card._hnds_unlock_base_wra
     function Card:set_base(card, initial, ...)
         local old_suit = self.base and self.base.suit
         local old_rank = self.base and (self.base.value or self.base.id)
-        local ret = set_base_unlock_ref(self, card, initial, ...)
+        local results = HNDS.pack(set_base_unlock_ref(self, card, initial, ...))
         if in_run() and not initial and old_suit and old_rank and self.base then
             local changes = 0
             local new_rank = self.base.value or self.base.id
@@ -1376,7 +1379,7 @@ if Card and type(Card.set_base) == "function" and not Card._hnds_unlock_base_wra
                 HNDS.request_unlock_check("hnds_card_identity")
             end
         end
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1384,9 +1387,9 @@ if Card and type(Card.set_ability) == "function" and not Card._hnds_unlock_abili
     Card._hnds_unlock_ability_wrapped = true
     local set_ability_unlock_ref = Card.set_ability
     function Card:set_ability(...)
-        local ret = set_ability_unlock_ref(self, ...)
+        local results = HNDS.pack(set_ability_unlock_ref(self, ...))
         HNDS.request_unlock_check("hnds_enhancement_state")
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1394,13 +1397,13 @@ if type(add_tag) == "function" and not HNDS._unlock_add_tag_wrapped then
     HNDS._unlock_add_tag_wrapped = true
     local add_tag_unlock_ref = add_tag
     function add_tag(tag, ...)
-        local ret = add_tag_unlock_ref(tag, ...)
+        local results = HNDS.pack(add_tag_unlock_ref(tag, ...))
         if in_run() and (type(tag) ~= "table" or not tag.hnds_unlock_tag_counted) then
             if type(tag) == "table" then tag.hnds_unlock_tag_counted = true end
             increment_career_stat(STAT_TAGS_CREATED, 1)
             HNDS.request_unlock_check("hnds_tag_created")
         end
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1408,12 +1411,13 @@ if SMODS and type(SMODS.pseudorandom_probability) == "function" and not SMODS._h
     SMODS._hnds_unlock_probability_wrapped = true
     local probability_unlock_ref = SMODS.pseudorandom_probability
     function SMODS.pseudorandom_probability(...)
-        local result = probability_unlock_ref(...)
+        local results = HNDS.pack(probability_unlock_ref(...))
+        local result = results[1]
         if in_run() and result == false then
             increment_career_stat(STAT_PROBABILITY_FAILURES, 1)
             HNDS.request_unlock_check("hnds_probability_failed")
         end
-        return result
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1435,10 +1439,11 @@ if SMODS and type(SMODS.add_card) == "function" and not SMODS._hnds_unlock_add_c
     SMODS._hnds_unlock_add_card_wrapped = true
     local add_card_unlock_ref = SMODS.add_card
     function SMODS.add_card(args, ...)
-        local card = add_card_unlock_ref(args, ...)
+        local results = HNDS.pack(add_card_unlock_ref(args, ...))
+        local card = results[1]
         if card_is_consumable(card) then record_consumable_created(card) end
         HNDS.request_unlock_check("hnds_card_added")
-        return card
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1446,11 +1451,12 @@ if type(create_card) == "function" and not HNDS._unlock_create_card_wrapped then
     HNDS._unlock_create_card_wrapped = true
     local create_card_unlock_ref = create_card
     function create_card(_type, area, ...)
-        local card = create_card_unlock_ref(_type, area, ...)
+        local results = HNDS.pack(create_card_unlock_ref(_type, area, ...))
+        local card = results[1]
         if card and G and G.consumeables and area == G.consumeables and card_is_consumable(card) then
             card.hnds_unlock_created_consumable = true
         end
-        return card
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1458,10 +1464,10 @@ if Card and type(Card.add_to_deck) == "function" and not Card._hnds_unlock_add_t
     Card._hnds_unlock_add_to_deck_wrapped = true
     local add_to_deck_unlock_ref = Card.add_to_deck
     function Card:add_to_deck(...)
-        local ret = add_to_deck_unlock_ref(self, ...)
+        local results = HNDS.pack(add_to_deck_unlock_ref(self, ...))
         if self.hnds_unlock_created_consumable then record_consumable_created(self) end
         HNDS.request_unlock_check("hnds_card_added")
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1497,9 +1503,9 @@ if not HNDS._hnds_wrapped_level_up_unlock and type(level_up_hand) == "function" 
     HNDS._hnds_wrapped_level_up_unlock = true
     local level_up_hand_ref = level_up_hand
     function level_up_hand(card, hand, instant, ...)
-        local ret = level_up_hand_ref(card, hand, instant, ...)
+        local results = HNDS.pack(level_up_hand_ref(card, hand, instant, ...))
         HNDS.request_unlock_check("hnds_hand_level")
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1583,9 +1589,9 @@ if type(set_discover_tallies) == "function" and not HNDS._unlock_tallies_wrapped
     HNDS._unlock_tallies_wrapped = true
     local set_discover_tallies_unlock_ref = set_discover_tallies
     function set_discover_tallies(...)
-        local result = { set_discover_tallies_unlock_ref(...) }
+        local result = HNDS.pack(set_discover_tallies_unlock_ref(...))
         HNDS.apply_unlock_state_migration()
         HNDS.request_unlock_check("hnds_discovery_refresh")
-        return unpack(result)
+        return ((table and table.unpack) or unpack)(result, 1, result.n)
     end
 end

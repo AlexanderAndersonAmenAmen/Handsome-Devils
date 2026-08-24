@@ -386,8 +386,13 @@ G.CURSE_PRICES = {
     }
 }
 
--- Shared helper: strip every sticker except hnds_cursed from all of a
--- card's data structures. Used by apply_curse and the sticker safety-net.
+-- Shared helper: strip foreign stickers from a Cursed card. Fighting Spirit
+-- is an ownership marker rather than an independent Joker modifier, so it is
+-- allowed to coexist when Bizarre Joker creates a Cursed Ms. Fortune.
+local function hnds_curse_keeps_sticker(key)
+    return key == 'hnds_cursed' or key == 'hnds_fighting_spirit'
+end
+
 local function hnds_strip_foreign_stickers(card)
     if not card then return false end
     local to_remove = {}
@@ -401,19 +406,19 @@ local function hnds_strip_foreign_stickers(card)
     end
     if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
         for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-            if k ~= 'hnds_cursed' and card.ability and card.ability[k] then
+            if not hnds_curse_keeps_sticker(k) and card.ability and card.ability[k] then
                 to_remove[k] = true
             end
         end
     end
     if card.stickers and type(card.stickers) == 'table' then
         for k, _ in pairs(card.stickers) do
-            if k ~= 'hnds_cursed' then to_remove[k] = true end
+            if not hnds_curse_keeps_sticker(k) then to_remove[k] = true end
         end
     end
     if card.ability and card.ability.stickers and type(card.ability.stickers) == 'table' then
         for k, _ in pairs(card.ability.stickers) do
-            if k ~= 'hnds_cursed' then to_remove[k] = true end
+            if not hnds_curse_keeps_sticker(k) then to_remove[k] = true end
         end
     end
     local any_removed = false

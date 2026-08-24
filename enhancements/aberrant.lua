@@ -109,8 +109,9 @@ end
 -- their effects are still evaluated once per stored fusion slot below.
 local get_enhancements_ref = SMODS.get_enhancements
 function SMODS.get_enhancements(card, extra_only, ...)
-    local base = get_enhancements_ref(card, extra_only, ...) or {}
-    if not is_aberrant(card) then return base end
+    local base = get_enhancements_ref(card, extra_only, ...)
+    if base == nil then base = {} end
+    if not is_aberrant(card) or type(base) ~= 'table' then return base end
 
     -- Some mod loaders/cache layers return a shared table here. Never append
     -- Aberrant state directly to that table or another mod/card may observe it.
@@ -190,7 +191,7 @@ function Card:set_ability(center, initial, delay_sprites, ...)
         and old_center.set == "Enhanced"
         and old_key ~= ABERRANT_KEY
     then
-        local result = set_ability_ref(self, center, initial, delay_sprites, ...)
+        local results = HNDS.pack(set_ability_ref(self, center, initial, delay_sprites, ...))
         if is_aberrant(self) and old_key then
             local fusions = aberrant_fusions(self)
             if #fusions < MAX_FUSIONS then
@@ -198,7 +199,7 @@ function Card:set_ability(center, initial, delay_sprites, ...)
                 refresh_aberrant_visuals(self)
             end
         end
-        return result
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 
     if is_aberrant(self)
@@ -222,87 +223,89 @@ function Card:set_ability(center, initial, delay_sprites, ...)
     return set_ability_ref(self, center, initial, delay_sprites, ...)
 end
 
--- Run every fused enhancement as a full quantum enhancement pass. Iterating the
--- stored slots (rather than a key set) is what makes Steel/Steel, Gold/Gold,
--- etc. stack exactly twice without using a card retrigger.
+-- Let Steamodded (and any compatibility wrapper installed before Handsome
+-- Devils) calculate every UNIQUE quantum enhancement normally. Aberrant's
+-- get_enhancements hook above exposes its fused types through that standard API.
+-- We only add evaluations for duplicate fusion slots (Steel/Steel, Gold/Gold,
+-- etc.), because a key-set API necessarily collapses duplicates.
 local calculate_quantum_ref = SMODS.calculate_quantum_enhancements
 function SMODS.calculate_quantum_enhancements(card, effects, context, ...)
+    local downstream_results
+    if calculate_quantum_ref then
+        downstream_results = HNDS.pack(calculate_quantum_ref(card, effects, context, ...))
+    else
+        downstream_results = HNDS.pack()
+    end
+
     local fusions = is_aberrant(card) and aberrant_fusions(card) or nil
-    if not fusions or #fusions == 0 then
-        if calculate_quantum_ref then return calculate_quantum_ref(card, effects, context, ...) end
-        return
+    if not fusions or #fusions < 2 then
+        return ((table and table.unpack) or unpack)(downstream_results, 1, downstream_results.n)
     end
     if not (SMODS.optional_features and SMODS.optional_features.quantum_enhancements)
+        or not context
         or context.extra_enhancement
         or context.check_enhancement
         or SMODS.extra_enhancement_calc_in_progress
     then
-        return
+        return ((table and table.unpack) or unpack)(downstream_results, 1, downstream_results.n)
     end
 
-    local evaluation_keys = {}
-    local fused_set = {}
+    -- Build only the duplicate occurrences after the first copy of each key.
+    -- The first occurrence has already been evaluated by the normal quantum
+    -- pipeline above, together with enhancements granted by other mods/Jokers.
+    local seen, duplicate_keys = {}, {}
     for _, key in ipairs(fusions) do
-        evaluation_keys[#evaluation_keys + 1] = key
-        fused_set[key] = true
+        if seen[key] then duplicate_keys[#duplicate_keys + 1] = key
+        else seen[key] = true end
+    end
+    if #duplicate_keys == 0 then
+        return ((table and table.unpack) or unpack)(downstream_results, 1, downstream_results.n)
     end
 
-    -- Preserve enhancements granted externally by Jokers while avoiding keys
-    -- that are already supplied by Aberrant's own fusion slots.
-    HNDS._aberrant_reading_quantum = true
-    local ok_extra, extra = pcall(SMODS.get_enhancements, card, true)
-    HNDS._aberrant_reading_quantum = nil
-    if not ok_extra then error(extra) end
-    extra = extra or {}
-    local external = {}
-    for key in pairs(extra) do
-        local center = G.P_CENTERS[key]
-        if center and not fused_set[key] then
-            external[#external + 1] = key
-        end
-    end
-    table.sort(external, function(a, b)
-        return (tonumber(G.P_CENTERS[a].order) or 0) < (tonumber(G.P_CENTERS[b].order) or 0)
-    end)
-    for _, key in ipairs(external) do evaluation_keys[#evaluation_keys + 1] = key end
-
+    effects = type(effects) == 'table' and effects or {}
     local old_ability = clone_table(card.ability)
-    local old_center = card.config.center
-    local old_center_key = card.config.center_key
+    local old_center = card.config and card.config.center
+    local old_center_key = card.config and card.config.center_key
     local old_front_hidden = card.front_hidden
     local old_context_extra = context.extra_enhancement
     local old_progress = SMODS.extra_enhancement_calc_in_progress
+    local old_internal_swap = HNDS._aberrant_internal_center_swap
 
     context.extra_enhancement = true
     SMODS.extra_enhancement_calc_in_progress = true
 
-    local ok, err = pcall(function()
-        for _, key in ipairs(evaluation_keys) do
-            local fusion_center = G.P_CENTERS[key]
+    local ok, err = xpcall(function()
+        for _, key in ipairs(duplicate_keys) do
+            local fusion_center = G and G.P_CENTERS and G.P_CENTERS[key]
             if fusion_center then
                 if card.quantum_set_ability then
                     card:quantum_set_ability(fusion_center)
                 else
                     HNDS._aberrant_internal_center_swap = true
                     card:set_ability(fusion_center, nil, true)
-                    HNDS._aberrant_internal_center_swap = nil
                 end
                 card.ability.extra_enhancement = key
                 effects[#effects + 1] = eval_card(card, context)
             end
         end
-    end)
+    end, function(e) return e end)
 
     card.ability = old_ability
-    card.config.center = old_center
-    card.config.center_key = old_center_key
+    if card.config then
+        card.config.center = old_center
+        card.config.center_key = old_center_key
+    end
     card.front_hidden = old_front_hidden
-    if not card.quantum_set_ability and card.set_sprites then card:set_sprites(old_center) end
+    if not card.quantum_set_ability and card.set_sprites and old_center then
+        card:set_sprites(old_center)
+    end
     context.extra_enhancement = old_context_extra
     SMODS.extra_enhancement_calc_in_progress = old_progress
-    HNDS._aberrant_internal_center_swap = nil
+    HNDS._aberrant_internal_center_swap = old_internal_swap
+    invalidate_enhancement_cache(card)
 
-    if not ok then error(err) end
+    if not ok then error(err, 0) end
+    return ((table and table.unpack) or unpack)(downstream_results, 1, downstream_results.n)
 end
 
 -- Stone is deliberately dominant over Wild on Aberrant cards.

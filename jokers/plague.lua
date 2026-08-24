@@ -180,17 +180,34 @@ HNDS = HNDS or {}
 if SMODS and type(SMODS.score_card) == 'function' and not HNDS._plague_score_card_wrapped then
     HNDS._plague_score_card_wrapped = true
     local hnds_plague_score_card_ref = SMODS.score_card
+    local unpack_values = (table and table.unpack) or unpack
 
-    function SMODS.score_card(scored_card, context)
+    function SMODS.score_card(scored_card, context, ...)
+        local trailing = HNDS.pack(...)
         local pending = scored_card and scored_card.hnds_plague_pending
         local old_ability, old_center, old_center_key
+        local prepared = false
 
-        if pending and pending.center then
-            old_ability = copy_table(scored_card.ability or {})
-            old_center = scored_card.config and scored_card.config.center
-            old_center_key = scored_card.config and scored_card.config.center_key
+        local function restore_real_card()
+            if not prepared then return end
+            scored_card.ability = old_ability
+            if scored_card.config then
+                scored_card.config.center = old_center
+                scored_card.config.center_key = old_center_key
+            end
+            hnds_plague_write_enh_cache(scored_card)
+            prepared = false
+        end
 
-            local ok_prepare, prepare_err = pcall(function()
+        local traceback = (debug and debug.traceback) or function(err) return err end
+        local results
+        local ok, err = xpcall(function()
+            if pending and pending.center then
+                old_ability = copy_table(scored_card.ability or {})
+                old_center = scored_card.config and scored_card.config.center
+                old_center_key = scored_card.config and scored_card.config.center_key
+                prepared = true
+
                 if scored_card.quantum_set_ability then
                     scored_card:quantum_set_ability(pending.center)
                 else
@@ -205,28 +222,18 @@ if SMODS and type(SMODS.score_card) == 'function' and not HNDS._plague_score_car
                     end
                 end
                 hnds_plague_write_enh_cache(scored_card)
-            end)
-            if not ok_prepare then error(prepare_err) end
-        end
-
-        local ok_score, score_err = pcall(hnds_plague_score_card_ref, scored_card, context)
-
-        if pending and pending.center then
-            -- Restore the real card without refreshing sprites. The permanent
-            -- set_ability happens only when the queued Spread event is shown.
-            scored_card.ability = old_ability
-            if scored_card.config then
-                scored_card.config.center = old_center
-                scored_card.config.center_key = old_center_key
             end
-            hnds_plague_write_enh_cache(scored_card)
-        end
 
-        if not ok_score then error(score_err) end
+            results = HNDS.pack(hnds_plague_score_card_ref(scored_card, context, unpack_values(trailing, 1, trailing.n)))
+        end, traceback)
+
+        restore_real_card()
+        if not ok then error(err, 0) end
 
         -- This is the critical timing boundary. Do not queue Spread from
         -- Joker:calculate(); doing so batches it into pre-animation hand calc.
         hnds_plague_drain_source_procs(scored_card)
+        return unpack_values(results, 1, results.n)
     end
 end
 

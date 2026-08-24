@@ -49,7 +49,7 @@ if Card and Card.add_to_deck and not Card._hnds_walking_joke_hook then
 	Card._hnds_walking_joke_hook = true
 	local add_to_deck_ref = Card.add_to_deck
 	function Card:add_to_deck(from_debuff, ...)
-		local ret = add_to_deck_ref(self, from_debuff, ...)
+		local results = HNDS.pack(add_to_deck_ref(self, from_debuff, ...))
 		if not from_debuff
 			and self and self.config and self.config.center
 			and self.config.center.set == 'Joker'
@@ -57,6 +57,6 @@ if Card and Card.add_to_deck and not Card._hnds_walking_joke_hook then
 			and G and G.GAME then
 			G.GAME.hnds_walking_joke_non_common = true
 		end
-		return ret
+		return ((table and table.unpack) or unpack)(results, 1, results.n)
 	end
 end

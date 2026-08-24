@@ -41,8 +41,8 @@ function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
 	end
 
 	-- First we cover all the non Wild Cards in the hand
-	for _, card in ipairs(scoring_hand) do
-		if not SMODS.has_any_suit(card) then
+	for _, card in ipairs(scoring_hand or {}) do
+		if not (HNDS.safe_has_any_suit and HNDS.safe_has_any_suit(card) or false) then
 			for suit, count in pairs(suits) do
 				if card:is_suit(suit, bypass_debuff, flush_calc) and count == 0 then
 					suits[suit] = count + 1
@@ -53,8 +53,8 @@ function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
 	end
 
 	-- Then we cover Wild Cards, filling the missing suits
-	for _, card in ipairs(scoring_hand) do
-		if SMODS.has_any_suit(card) then
+	for _, card in ipairs(scoring_hand or {}) do
+		if HNDS.safe_has_any_suit and HNDS.safe_has_any_suit(card) then
 			for suit, count in pairs(suits) do
 				if card:is_suit(suit, bypass_debuff, flush_calc) and count == 0 then
 					suits[suit] = count + 1
@@ -78,40 +78,48 @@ end
 
 ---Gets a pseudorandom tag from the Tag pool - Also from Paperback. Go play it!!!!!
 function HNDS.poll_tag(seed, options, exclusions)
-	if not exclusions and not options then exclusions = { "tag_boss", "tag_top_up", "tag_speed" } end
-	-- This part is basically a copy of how the base game does it
-	-- Look at get_next_tag_key in common_events.lua
-	local pool = options or get_current_pool("Tag")
-	if exclusions then
-		for excluded_index = 1, #exclusions do
-			for pool_index = 1, #pool do
-				if exclusions[excluded_index] == pool[pool_index] then
-					table.remove(pool, pool_index)
-					break
-				end
-			end
+	if not exclusions and not options then exclusions = { 'tag_boss', 'tag_top_up', 'tag_speed' } end
+
+	-- Never mutate get_current_pool()'s returned table in place. Steamodded and
+	-- other mods may cache/share that pool; removing entries from it can poison
+	-- later rolls globally. Also filter UNAVAILABLE up front so an all-unavailable
+	-- pool cannot trap the game in an infinite reroll loop.
+	local source_pool = options or get_current_pool('Tag') or {}
+	local excluded = {}
+	for _, key in ipairs(exclusions or {}) do excluded[key] = true end
+	local pool = {}
+	for _, key in ipairs(type(source_pool) == 'table' and source_pool or {}) do
+		if key ~= 'UNAVAILABLE' and not excluded[key]
+			and (not G or not G.P_TAGS or G.P_TAGS[key])
+		then
+			pool[#pool + 1] = key
 		end
 	end
+
+	-- A heavily modded challenge can legitimately ban every Tag. Return the
+	-- harmless vanilla Handy Tag when available instead of hanging forever.
+	if #pool == 0 then
+		local fallback = G and G.P_TAGS and (G.P_TAGS.tag_handy and 'tag_handy' or G.P_TAGS.tag_double and 'tag_double')
+		-- Handy Tag is a vanilla object and therefore remains a safe last-resort
+		-- constructor even if another mod temporarily replaced the visible pool.
+		return Tag(fallback or 'tag_handy')
+	end
+
 	local tag_key = pseudorandom_element(pool, pseudoseed(seed))
-
-	while tag_key == "UNAVAILABLE" do
-		tag_key = pseudorandom_element(pool, pseudoseed(seed))
-	end
-
+	if not tag_key then return nil end
 	local tag = Tag(tag_key)
+	if not tag then return nil end
 
-	-- The way the hand for an orbital tag in the base game is selected could cause issues
-	-- with mods that modify blinds, so we randomly pick one from all visible hands
-	if tag_key == "tag_orbital" then
+	-- The base Orbital selection can miss modded hands. Choose from all visible
+	-- live hands, but guard the empty-list case used by unusual challenges.
+	if tag_key == 'tag_orbital' then
 		local available_hands = {}
-
-		for k, hand in pairs(G.GAME.hands) do
-			if hand.visible then
-				available_hands[#available_hands + 1] = k
-			end
+		for k, hand in pairs((G and G.GAME and G.GAME.hands) or {}) do
+			if hand and hand.visible then available_hands[#available_hands + 1] = k end
 		end
-
-		tag.ability.orbital_hand = pseudorandom_element(available_hands, pseudoseed(seed .. "_orbital"))
+		if #available_hands > 0 and tag.ability then
+			tag.ability.orbital_hand = pseudorandom_element(available_hands, pseudoseed(seed .. '_orbital'))
+		end
 	end
 
 	return tag
@@ -146,17 +154,17 @@ function HNDS.get_shop_joker_tags()
 	}
 
 	--Add tags from other mods
-	if next(SMODS.find_mod("paperback")) then --paperback tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('paperback') then --paperback tags
 		table.insert(tag_list, "tag_paperback_dichrome")
 	end
 
-	if next(SMODS.find_mod("Pokermon")) then --pokermon tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('Pokermon') then --pokermon tags
 		table.insert(tag_list, "tag_poke_shiny_tag")
 		table.insert(tag_list, "tag_poke_stage_one_tag")
 		table.insert(tag_list, "tag_poke_safari_tag")
 	end
 
-	if next(SMODS.find_mod("Cryptid")) then --cryptid tags (why are there so fucking many)
+	if HNDS.mod_loaded and HNDS.mod_loaded('Cryptid') then --cryptid tags (why are there so fucking many)
 		table.insert(tag_list, "tag_cry_epic")
 		table.insert(tag_list, "tag_cry_glitched")
 		table.insert(tag_list, "tag_cry_mosaic")
@@ -175,7 +183,7 @@ function HNDS.get_shop_joker_tags()
 		table.insert(tag_list, "tag_cry_loss")
 	end
 
-	if next(SMODS.find_mod("entr")) then --entropy tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('entr') then --entropy tags
 		table.insert(tag_list, "tag_entr_sunny")
 		table.insert(tag_list, "tag_entr_solar")
 		table.insert(tag_list, "tag_entr_fractured")
@@ -185,11 +193,11 @@ function HNDS.get_shop_joker_tags()
 		table.insert(tag_list, "tag_entr_kaleidoscopic")
 	end
 
-	if next(SMODS.find_mod("GARBPACK")) then --garbshit tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('GARBPACK') then --garbshit tags
 		table.insert(tag_list, "tag_garb_carnival")
 	end
 
-	if next(SMODS.find_mod("ortalab")) then --ortalab patches
+	if HNDS.mod_loaded and HNDS.mod_loaded('ortalab') then --ortalab patches
 		table.insert(tag_list, "tag_ortalab_common")
 		table.insert(tag_list, "tag_ortalab_anaglyphic")
 		table.insert(tag_list, "tag_ortalab_fluorescent")
@@ -198,37 +206,37 @@ function HNDS.get_shop_joker_tags()
 		table.insert(tag_list, "tag_ortalab_soul")
 	end
 
-	if next(SMODS.find_mod("MoreFluff")) then --morefluff tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('MoreFluff') then --morefluff tags
 		table.insert(tag_list, "tag_mf_moddedpack")
 		if Entropy then
 			table.insert(tag_list, "tag_mf_absolute")
 		end
 	end
 
-	if next(SMODS.find_mod("Bunco")) then --bunco tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('Bunco') then --bunco tags
 		table.insert(tag_list, "tag_bunc_glitter")
 		table.insert(tag_list, "tag_bunc_fuorescent")
 	end
 
-	if next(SMODS.find_mod("JoyousSpring")) then --joyousspring tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('JoyousSpring') then --joyousspring tags
 		table.insert(tag_list, "tag_joy_monster")
 	end
 
-	if next(SMODS.find_mod("allinjest")) then --all in jest
+	if HNDS.mod_loaded and HNDS.mod_loaded('allinjest') then --all in jest
 		table.insert(tag_list, "tag_aij_soulbound")
 		table.insert(tag_list, "tag_aij_glimmer")
 		table.insert(tag_list, "tag_aij_stellar")
 	end
 
-	if next(SMODS.find_mod("Yahimod")) then --yahimod
+	if HNDS.mod_loaded and HNDS.mod_loaded('Yahimod') then --yahimod
 		table.insert(tag_list, "tag_yahimod_tag_yahimodrare")
 	end
 
-	if next(SMODS.find_mod("Bakery")) then
+	if HNDS.mod_loaded and HNDS.mod_loaded('Bakery') then
 		table.insert(tag_list, "tag_Bakery_RetriggerTag")
 	end
 
-	if next(SMODS.find_mod("RevosVault")) then
+	if HNDS.mod_loaded and HNDS.mod_loaded('RevosVault') then
 		table.insert(tag_list, "tag_crv_pst")
 		table.insert(tag_list, "tag_crv_reintag")
 	end
@@ -248,16 +256,21 @@ function reset_supersuit_card()
 			supersuit_suits[#supersuit_suits + 1] = k
 		end
 	end
-	local supersuit_card = pseudorandom_element(supersuit_suits, pseudoseed("sup" .. G.GAME.round_resets.ante))
-	G.GAME.current_round.supersuit_card.suit = supersuit_card
+	local supersuit_card = #supersuit_suits > 0
+		and pseudorandom_element(supersuit_suits, pseudoseed("sup" .. G.GAME.round_resets.ante)) or nil
+	-- Do not erase the previous suit if an unusual mod/challenge temporarily
+	-- exposes no eligible suits. This keeps downstream Joker UI/effects valid.
+	if supersuit_card then G.GAME.current_round.supersuit_card.suit = supersuit_card end
 end
 
 -- Dark Idol Joker: Reset the randomly chosen card for the round
 function reset_dark_idol()
 	G.GAME.current_round.dark_idol = { suit = 'Spades', rank = 'Ace' }
 	local valid_dark_idol_cards = {}
-	for _, v in ipairs(G.playing_cards) do
-		if not SMODS.has_no_suit(v) and not SMODS.has_no_rank(v) then -- Abstracted enhancement check for jokers being able to give cards additional enhancements
+	for _, v in ipairs((G and G.playing_cards) or {}) do
+		local no_suit = HNDS.safe_has_no_suit and HNDS.safe_has_no_suit(v) or false
+		local no_rank = HNDS.safe_has_no_rank and HNDS.safe_has_no_rank(v) or false
+		if not no_suit and not no_rank then -- Guarded for quantum/custom enhancements.
 			valid_dark_idol_cards[#valid_dark_idol_cards + 1] = v
 		end
 	end

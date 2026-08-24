@@ -519,7 +519,7 @@ if Card and Card.redeem and not Card._hnds_wasted_wish_redeem then
             and G.GAME.hnds_wasted_wish_active
             and self.ability and self.ability.set == "Voucher"
 
-        local result = hnds_wasted_wish_redeem_ref(self, ...)
+        local results = HNDS.pack(hnds_wasted_wish_redeem_ref(self, ...))
 
         if refresh_after and G and G.E_MANAGER then
             G.E_MANAGER:add_event(Event({
@@ -535,7 +535,7 @@ if Card and Card.redeem and not Card._hnds_wasted_wish_redeem then
             }))
         end
 
-        return result
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -785,87 +785,81 @@ end
 if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 	_G._hnds_wrapped_localize_colours = true
 	local localize_ref = localize
-	function localize(args, misc_cat, misc_loc, silent)
+	local unpack_values = (table and table.unpack) or unpack
+
+	function localize(args, misc_cat, misc_loc, silent, ...)
 		HNDS_ensure_loc_colours()
-		
-		-- Cursed sticker tooltip workaround: dynamically modify localization entry
+		local trailing = HNDS.pack(...)
+
+		-- Cursed sticker tooltip workaround. Dynamic localization is kept scoped
+		-- to this one call and restored even if another mod's localization wrapper
+		-- throws. Never leave a stale Card in a global after tooltip generation.
 		if type(args) == 'table' and args.key == 'hnds_cursed' and args.type == 'other' then
 			local card = _G.HNDS_CURRENT_CURSE_CARD
-			if card and card.ability then
+			if card and card.ability and G and G.localization and G.localization.descriptions then
 				local offer = card.ability.hnds_curse_offer
 				local price = card.ability.hnds_curse_price
 				local display_mode = card.ability.hnds_curse_display_mode
-				
-				if offer or price then
-					-- Build dynamic description
-					local desc_lines = {}
-					local offer_lines_count = 0
-					
+				local other = G.localization.descriptions.Other
+				local loc_entry = other and other.hnds_cursed
+
+				-- text_parsed is mandatory for localize(type='other'). If the parser is
+				-- unavailable, fall back to the static Cursed entry rather than creating
+				-- the same nil/ipairs crash path that dynamic tooltips can trigger.
+				if (offer or price) and type(loc_entry) == 'table' and type(loc_parse_string) == 'function' then
+					local desc_lines, offer_lines_count = {}, 0
+					local function append_entry(key, count_offer)
+						local source = key and other and other[key]
+						if type(source) == 'table' and type(source.text) == 'table' then
+							for _, line in ipairs(source.text) do
+								desc_lines[#desc_lines + 1] = line
+								if count_offer then offer_lines_count = offer_lines_count + 1 end
+							end
+						end
+					end
+
 					if display_mode == 'offer' and offer then
-						local offer_loc = G.localization.descriptions.Other[offer]
-						if offer_loc and offer_loc.text then
-							for _, line in ipairs(offer_loc.text) do
-								table.insert(desc_lines, line)
-							end
-						end
+						append_entry(offer, false)
 					elseif display_mode == 'price' and price then
-						local price_loc = G.localization.descriptions.Other[price]
-						if price_loc and price_loc.text then
-							for _, line in ipairs(price_loc.text) do
-								table.insert(desc_lines, line)
-							end
-						end
+						append_entry(price, false)
 					else
-						local offer_loc = offer and G.localization.descriptions.Other[offer]
-						if offer_loc and offer_loc.text then
-							for _, line in ipairs(offer_loc.text) do
-								table.insert(desc_lines, line)
-								offer_lines_count = offer_lines_count + 1
-							end
-						end
-						local price_loc = price and G.localization.descriptions.Other[price]
-						if price_loc and price_loc.text then
-							for _, line in ipairs(price_loc.text) do
-								table.insert(desc_lines, line)
-							end
-						end
+						append_entry(offer, true)
+						append_entry(price, false)
 					end
-					-- Temporarily modify the localization entry
-					local loc_entry = G.localization.descriptions.Other.hnds_cursed
-					local original_text = loc_entry and loc_entry.text
-					local original_text_parsed = loc_entry and loc_entry.text_parsed
-					if loc_entry then
+
+					if #desc_lines > 0 then
+						local original_text = loc_entry.text
+						local original_text_parsed = loc_entry.text_parsed
 						loc_entry.text = desc_lines
-						-- Regenerate text_parsed for the new text
-						loc_entry.text_parsed = nil
-						if loc_parse_string then
-							loc_entry.text_parsed = {}
-							for _, line in ipairs(desc_lines) do
-								table.insert(loc_entry.text_parsed, loc_parse_string(line))
-							end
+						loc_entry.text_parsed = {}
+						for _, line in ipairs(desc_lines) do
+							loc_entry.text_parsed[#loc_entry.text_parsed + 1] = loc_parse_string(line)
 						end
-					end
-					-- Call original localize
-					local result = localize_ref(args, misc_cat, misc_loc, silent)
-					
-					-- Insert a native UI separator line between offer and price
-					if offer_lines_count > 0 and args.nodes then
-						local separator_line = {
-							{n=G.UIT.C, config={align = "cm", minh = 0.03, minw = 2.4, colour = G.C.UI.TEXT_INACTIVE}}
-						}
-						table.insert(args.nodes, offer_lines_count + 1, separator_line)
-					end
-					
-					-- Restore original entry
-					if loc_entry then
+
+						local packed = HNDS.pack(pcall(function()
+							return localize_ref(args, misc_cat, misc_loc, silent, unpack_values(trailing, 1, trailing.n))
+						end))
+
 						loc_entry.text = original_text
 						loc_entry.text_parsed = original_text_parsed
+						if _G.HNDS_CURRENT_CURSE_CARD == card then _G.HNDS_CURRENT_CURSE_CARD = nil end
+
+						if not packed[1] then error(packed[2], 0) end
+						if offer_lines_count > 0 and type(args.nodes) == 'table'
+							and G.UIT and G.C and G.C.UI and G.C.UI.TEXT_INACTIVE
+						then
+							local separator_line = {
+								{ n = G.UIT.C, config = { align = 'cm', minh = 0.03, minw = 2.4, colour = G.C.UI.TEXT_INACTIVE } }
+							}
+							table.insert(args.nodes, math.min(offer_lines_count + 1, #args.nodes + 1), separator_line)
+						end
+						return unpack_values(packed, 2, packed.n)
 					end
-					return result
 				end
 			end
+			if _G.HNDS_CURRENT_CURSE_CARD == card then _G.HNDS_CURRENT_CURSE_CARD = nil end
 		end
-		return localize_ref(args, misc_cat, misc_loc, silent)
+		return localize_ref(args, misc_cat, misc_loc, silent, unpack_values(trailing, 1, trailing.n))
 	end
 end
 
@@ -962,12 +956,20 @@ if Card and Card.add_sticker and not _G._hnds_wrapped_add_sticker_cursed then
 	_G._hnds_wrapped_add_sticker_cursed = true
 	local add_sticker_ref = Card.add_sticker
 	function Card:add_sticker(key, ...)
+		-- Bizarre-created Jokers are temporary linked cards whose only allowed
+		-- sticker is Fighting Spirit. This also blocks stickers applied later by
+		-- stakes, Jokers, consumables, or other mods while the child is linked.
+		if self.ability and self.ability.hnds_bizarre_owner
+			and key ~= 'hnds_fighting_spirit'
+		then
+			return
+		end
 		if key ~= 'hnds_cursed' and hnds_card_has_cursed(self) then return end
-		local ret = add_sticker_ref(self, key, ...)
+		local results = HNDS.pack(add_sticker_ref(self, key, ...))
 		if key == 'hnds_cursed' then
 			hnds_strip_other_stickers(self)
 		end
-		return ret
+		return ((table and table.unpack) or unpack)(results, 1, results.n)
 	end
 end
 
@@ -1109,13 +1111,45 @@ local function hnds_card_needs_contagion_sync(card)
         or card.ability.hnds_contagion_bonus ~= nil
 end
 
+local function hnds_runtime_maintenance_due(card, field, interval)
+    local timers = G and G.TIMERS
+    local now = timers and (timers.REAL or timers.TOTAL)
+    if type(now) ~= 'number' then return true end
+    local next_time = card and card[field]
+    if type(next_time) == 'number' and now < next_time then return false end
+    if card then card[field] = now + (interval or 0.25) end
+    return true
+end
+
 if Card and Card.update and not Card._hnds_wrapped_update_runtime then
     Card._hnds_wrapped_update_runtime = true
     local card_update_ref = Card.update
     function Card:update(dt, ...)
         local ret = card_update_ref(self, dt, ...)
-        if hnds_card_has_cursed(self) and hnds_cursed_needs_strip(self) then
+
+        -- Collection cards are display-only. Do not run gameplay sticker
+        -- maintenance or Contagion selection synchronization on them every
+        -- frame; the base Card:update has already handled their visuals.
+        local area_config = self.area and self.area.config
+        if area_config and area_config.collection then
+            return ret
+        end
+
+        if hnds_card_has_cursed(self)
+            and hnds_runtime_maintenance_due(self, '_hnds_next_cursed_sticker_scan', 0.25)
+            and hnds_cursed_needs_strip(self)
+        then
             hnds_strip_other_stickers(self)
+        end
+        -- Bizarre children must keep Fighting Spirit as their only sticker,
+        -- even if another mod bypasses Card:add_sticker and mutates flags
+        -- directly. This branch is O(1) for normal cards and only does the
+        -- sticker scan on the one linked child.
+        if self.ability and self.ability.hnds_bizarre_owner
+            and HNDS and HNDS.strip_bizarre_child_stickers
+            and hnds_runtime_maintenance_due(self, '_hnds_next_bizarre_sticker_scan', 0.25)
+        then
+            HNDS.strip_bizarre_child_stickers(self)
         end
         -- Previously every Card scanned the complete Joker area every frame.
         -- Restrict synchronization to actual consumables/targeting cards.
@@ -1216,9 +1250,10 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
         local selected = (bonus > 0 and supported) and hnds_copy_highlighted_cards() or nil
         local death_source = center_key == 'c_death' and selected and hnds_rightmost_selected_card(selected) or nil
 
-        local ret = use_consumeable_contagion_ref(self, area, copier, ...)
+        local results = HNDS.pack(use_consumeable_contagion_ref(self, area, copier, ...))
+        local unpack_values = (table and table.unpack) or unpack
 
-        if not selected or #selected <= 1 then return ret end
+        if not selected or #selected <= 1 then return unpack_values(results, 1, results.n) end
 
         local seal = hnds_contagion_seal_spectrals[center_key]
         if seal then
@@ -1228,7 +1263,7 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
                 func = function()
                     for i = 2, #selected do
                         local target = selected[i]
-                        if target then target:set_seal(seal, nil, true) end
+                        if target and not target.removed and target.set_seal then target:set_seal(seal, nil, true) end
                     end
                     return true
                 end,
@@ -1240,7 +1275,7 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
                 func = function()
                     for i = 2, #selected do
                         local target = selected[i]
-                        if target and not target.edition then
+                        if target and not target.removed and not target.edition and target.set_edition then
                             target:set_edition(HNDS.poll_non_vintage_edition('hnds_contagion_aura_' .. tostring(i), nil, true, true), true)
                         end
                     end
@@ -1253,7 +1288,9 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
                 delay = 0.15,
                 func = function()
                     for _, target in ipairs(selected) do
-                        if target and target ~= death_source then
+                        if target and not target.removed and target ~= death_source
+                            and death_source and not death_source.removed
+                        then
                             copy_card(death_source, target)
                         end
                     end
@@ -1268,17 +1305,19 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
                     local new_cards = {}
                     for target_index = 2, #selected do
                         local target = selected[target_index]
-                        if target then
+                        if target and not target.removed then
                             for _ = 1, copies_per_card do
                                 G.playing_card = (G.playing_card and G.playing_card + 1) or 1
                                 local copied = copy_card(target, nil, nil, G.playing_card)
-                                copied:add_to_deck()
-                                G.deck.config.card_limit = G.deck.config.card_limit + 1
-                                table.insert(G.playing_cards, copied)
-                                G.hand:emplace(copied)
-                                copied:start_materialize(nil, first_materialize)
-                                first_materialize = true
-                                new_cards[#new_cards + 1] = copied
+                                if copied then
+                                    copied:add_to_deck()
+                                    G.deck.config.card_limit = G.deck.config.card_limit + 1
+                                    table.insert(G.playing_cards, copied)
+                                    G.hand:emplace(copied)
+                                    copied:start_materialize(nil, first_materialize)
+                                    first_materialize = true
+                                    new_cards[#new_cards + 1] = copied
+                                end
                             end
                         end
                     end
@@ -1288,7 +1327,7 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
             }))
         end
 
-        return ret
+        return unpack_values(results, 1, results.n)
     end
 end
 
@@ -1348,12 +1387,12 @@ if Card and Card.set_seal and not Card._hnds_wrapped_spectral_progress then
     local set_seal_spectral_ref = Card.set_seal
     function Card:set_seal(seal, silent, ...)
         local old_seal = self.seal
-        local ret = set_seal_spectral_ref(self, seal, silent, ...)
+        local results = HNDS.pack(set_seal_spectral_ref(self, seal, silent, ...))
         if old_seal == 'hnds_spectralseal' and self.seal ~= 'hnds_spectralseal' and self.ability then
             self.ability.hnds_spectral_hands = nil
             self.ability.hnds_spectral_last_token = nil
         end
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1577,8 +1616,9 @@ end
 -- Card cost modifications: Coffee Break, Art, Premium Deck, and curse multiplier.
 local set_cost_ref = Card.set_cost
 function Card.set_cost(self, ...)
-	local ret = set_cost_ref(self, ...)
-	if not self then return ret end
+	local results = HNDS.pack(set_cost_ref(self, ...))
+	local unpack_values = (table and table.unpack) or unpack
+	if not self then return unpack_values(results, 1, results.n) end
 	local key = self.config and self.config.center and self.config.center.key
 	local set = self.config and self.config.center and self.config.center.set
 
@@ -1601,7 +1641,7 @@ function Card.set_cost(self, ...)
 			self.cost = math.max(0, math.floor(self.cost * G.GAME.hnds_price_multiplier))
 		end
 	end
-	return ret
+	return unpack_values(results, 1, results.n)
 end
 
 -------------------------------------------------------------------
@@ -1687,7 +1727,8 @@ if not Card._hnds_wrapped_add_to_deck then
 	Card._hnds_wrapped_add_to_deck = true
 	local add_to_deck_ref = Card.add_to_deck
 	function Card:add_to_deck(from_debuff, ...)
-		local ret = add_to_deck_ref(self, from_debuff, ...)
+		local results = HNDS.pack(add_to_deck_ref(self, from_debuff, ...))
+		local unpack_values = (table and table.unpack) or unpack
 
 		if not from_debuff then
 			-- Feature: DNA Tag - create copies when hnds_copies_to_create is set.
@@ -1710,11 +1751,14 @@ if not Card._hnds_wrapped_add_to_deck then
 								G.GAME.joker_buffer = math.max(0, (G.GAME.joker_buffer or 1) - 1)
 								if G.jokers and G.jokers.cards and G.jokers.config
 									and #G.jokers.cards < G.jokers.config.card_limit
+									and c and not c.removed
 								then
 									local copy = copy_card(c)
-									copy.ability.hnds_copies_to_create = nil
-									copy:add_to_deck()
-									G.jokers:emplace(copy)
+									if copy then
+										copy.ability.hnds_copies_to_create = nil
+										copy:add_to_deck()
+										G.jokers:emplace(copy)
+									end
 								end
 								return true
 							end
@@ -1738,7 +1782,7 @@ if not Card._hnds_wrapped_add_to_deck then
 			end
 		end
 
-		return ret
+		return unpack_values(results, 1, results.n)
 	end
 end
 
@@ -1856,224 +1900,9 @@ if G and G.UIDEF and G.UIDEF.challenge_description_tab and not G.UIDEF._hnds_wra
 end
 
 -------------------------------------------------------------------
--- IMPOSTOR MULTI RANK CODE
--------------------------------------------------------------------
-
--- When the Impostor is owned by the player, face cards
--- (J/Q/K, ids 11-13) are treated like any rank for any scoring purpose.
--- This works by temporarily faking the rank for each Jokers so
--- `card:get_id()` and `calculate_joker` always works for face cards
--- Is bit heavy on performance
-if Card and Card.calculate_joker and not Card._hnds_wrapped_calculate_joker_imposter then
-	Card._hnds_wrapped_calculate_joker_imposter = true
-	local calculate_joker_ref = Card.calculate_joker
-	local hnds_unpack = (table and table.unpack) or unpack
-	local hnds_impostor_available = false
-	local hnds_primary_impostor_id = nil
-	local hnds_cached_round = -1
-	local hnds_cached_joker_count = -1
-	local hnds_cached_hand_tick = -1
-
-	local spoof_cache = {}
-	local spoof_hints = {}
-
-	local function hnds_clear_spoof_cache() spoof_cache = {} end
-	local function hnds_clear_spoof_hints() spoof_hints = {} end
-
-	-- Check whether the Impostor system should be active this evaluation.
-	-- Caches the result and invalidates when the joker lineup or hand state changes.
-	local function hnds_impostor_is_active()
-		if not (G and G.STAGE == G.STAGES.RUN) then
-			if hnds_impostor_available then
-				hnds_impostor_available = false
-				hnds_primary_impostor_id = nil
-				hnds_cached_round = -1
-				hnds_cached_joker_count = -1
-				hnds_cached_hand_tick = -1
-				hnds_clear_spoof_cache()
-				hnds_clear_spoof_hints()
-			end
-			return false
-		end
-		local cr = G.GAME and G.GAME.current_round
-		local current_round = cr and cr.round or 0
-		local joker_count = G.jokers and G.jokers.cards and #G.jokers.cards or 0
-		local hand_tick = (cr and cr.hands_played or 0) * 1024 + (cr and cr.discards_used or 0)
-
-		if hand_tick ~= hnds_cached_hand_tick then
-			hnds_cached_hand_tick = hand_tick
-			hnds_clear_spoof_cache()
-		end
-		if current_round ~= hnds_cached_round then
-			hnds_cached_round = current_round
-			hnds_clear_spoof_hints()
-		end
-
-		if joker_count ~= hnds_cached_joker_count then
-			hnds_cached_joker_count = joker_count
-			hnds_impostor_available = false
-			hnds_primary_impostor_id = nil
-			hnds_clear_spoof_cache()
-			hnds_clear_spoof_hints()
-
-			if G.jokers and G.jokers.cards then
-				for i = 1, #G.jokers.cards do
-					local jc = G.jokers.cards[i]
-					if jc and jc.config and jc.config.center
-						and jc.config.center.key == 'j_hnds_imposter' then
-						hnds_impostor_available = true
-						hnds_primary_impostor_id = jc.ID or jc.sort_id or ('hnds_spoofer_' .. tostring(i))
-						break
-					end
-				end
-			end
-			hnds_impostor_available = hnds_impostor_available and HNDS and HNDS.imposter_rank_match
-		end
-		return hnds_impostor_available
-	end
-
-	-- Build a compact string signature for a context + target combination.
-	-- Used as cache key to avoid redundant spoof attempts.
-	local function hnds_context_signature(context, target)
-		local sig = ''
-		if context.individual then sig = sig .. 'i' end
-		if context.repetition then sig = sig .. 'r' end
-		if context.other_joker then sig = sig .. 'o' end
-		if context.before then sig = sig .. 'b' end
-		if context.after then sig = sig .. 'a' end
-		if context.cardarea then sig = sig .. 'c' end
-		if context.joker_main then sig = sig .. 'm' end
-		if context.joker_act then sig = sig .. 'x' end
-		if context.joker_post then sig = sig .. 'p' end
-		if context.scoring_hand then sig = sig .. 's' end
-		if context.discard then sig = sig .. 'd' end
-		if context.destroying_card then sig = sig .. 'D' end
-		if context.setting_blind then sig = sig .. 'B' end
-		if context.other_joker and context.other_joker.config and context.other_joker.config.center then
-			sig = sig .. '|oj:' .. (context.other_joker.config.center.key or '')
-		end
-		if context.blind and context.blind.config and context.blind.config.blind then
-			sig = sig .. '|blind:' .. (context.blind.config.blind.key or '')
-		end
-		if target then
-			local target_key = target.ID or target.sort_id or (target.base and target.base.id) or tostring(target)
-			sig = sig .. '|t:' .. tostring(target_key)
-		end
-		return sig
-	end
-
-	function Card:calculate_joker(context, ...)
-		-- Skip spoofing in collection view or outside a run. Do not pack varargs
-		-- here: this function is called extremely often while playing/discarding.
-		if (self.area and self.area.config and self.area.config.collection)
-			or not (G and G.STAGE == G.STAGES.RUN) then
-			hnds_impostor_is_active()
-			return calculate_joker_ref(self, context, ...)
-		end
-
-		-- Only spoof for active jokers during relevant contexts
-		if not (self.ability and self.ability.set == 'Joker' and self.added_to_deck) then
-			return calculate_joker_ref(self, context, ...)
-		end
-		if type(context) ~= 'table' then
-			return calculate_joker_ref(self, context, ...)
-		end
-		if not (context.individual or context.repetition or context.other_joker or context.before
-				or context.after or context.cardarea or context.joker_main or context.joker_act
-				or context.joker_post or context.destroying_card or context.setting_blind) then
-			return calculate_joker_ref(self, context, ...)
-		end
-
-		-- Run the original calculation first
-		local eff, post = calculate_joker_ref(self, context, ...)
-
-		if not hnds_impostor_is_active() then return eff, post end
-
-		-- Don't spoof the impostor jokers themselves, or Cloud 9 (special case)
-		local joker_key = self.config and self.config.center and self.config.center.key
-		if joker_key == 'j_hnds_imposter' or joker_key == 'j_cloud_9' then
-			return eff, post
-		end
-
-		-- Only spoof for playing cards (not consumables/vouchers)
-		local target = context.other_card or context.card or context.cardarea or nil
-		if not target or not target.get_id or not target.ability then return eff, post end
-		if target.ability.set == 'Tarot' or target.ability.set == 'Planet'
-			or target.ability.set == 'Spectral' or target.ability.set == 'Voucher'
-			or target.ability.consumeable then
-			return eff, post
-		end
-		if target.ability.set ~= 'Default' and target.ability.set ~= 'Enhanced' then return eff, post end
-		if SMODS and SMODS.has_no_rank and SMODS.has_no_rank(target) then return eff, post end
-
-		-- Only spoof face cards (J=11, Q=12, K=13)
-		local target_id = target:get_id()
-		if not target_id or target_id < 11 or target_id > 13 then return eff, post end
-
-		-- If the original calc already produced a result, use it
-		if eff or post then
-			if type(eff) == 'table' and next(eff) then return eff, post end
-			if type(post) == 'table' and #post > 0 then return eff, post end
-		end
-		if not joker_key then return eff, post end
-
-		-- Try spoofing: temporarily replace target:get_id() with each rank 2-14
-		local cache_key = self.ID or self.sort_id or joker_key or 'unknown'
-		local sig = hnds_context_signature(context, target)
-		local round_index = G.GAME and G.GAME.current_round and G.GAME.current_round.round or 0
-		local hint_key = joker_key .. '|r:' .. tostring(round_index) .. '|' .. hnds_context_signature(context, nil)
-		spoof_cache[cache_key] = spoof_cache[cache_key] or {}
-		local cached_spoof = spoof_cache[cache_key][sig]
-		local hint_spoof = spoof_hints[hint_key]
-		local original_get_id = target.get_id
-		-- Only the actual brute-force spoof path needs to replay varargs. Packing
-		-- here avoids one temporary table for every ordinary Joker evaluation.
-		local hnds_args = { ... }
-
-		local function hnds_try_spoof(spoof_id)
-			target.get_id = function() return spoof_id end
-			local ok, e, p = pcall(calculate_joker_ref, self, context, hnds_unpack(hnds_args))
-			target.get_id = original_get_id
-			if not ok then error(e) end
-			local has_e = e and (type(e) ~= 'table' or next(e))
-			local has_p = p and (type(p) ~= 'table' or #p > 0)
-			if has_e or has_p then return e, p, true end
-			return e, p, false
-		end
-
-		-- Check cached spoof result first
-		if type(cached_spoof) == 'number' then
-			local e, p, ok = hnds_try_spoof(cached_spoof)
-			if ok then return e, p end
-		elseif cached_spoof == false then
-			return eff, post
-		end
-
-		-- Check hint from same joker in a previous hand this round
-		if type(hint_spoof) == 'number' then
-			local e, p, ok = hnds_try_spoof(hint_spoof)
-			if ok then
-				spoof_cache[cache_key][sig] = hint_spoof
-				return e, p
-			end
-			spoof_cache[cache_key][sig] = false
-			return eff, post
-		end
-
-		-- Brute-force: try all ranks 2-14 (Ace)
-		for spoof_id = 2, 14 do
-			local e, p, ok = hnds_try_spoof(spoof_id)
-			if ok then
-				spoof_cache[cache_key][sig] = spoof_id
-				spoof_hints[hint_key] = spoof_id
-				return e, p
-			end
-		end
-
-		spoof_cache[cache_key][sig] = false
-		return eff, post
-	end
-end
+-- Imposter rank handling lives in jokers/imposter.lua.
+-- Keeping it with the Joker prevents unrelated global hook code from owning
+-- its state and avoids the old multi-evaluation implementation.
 
 -------------------------------------------------------------------
 -- EXCOMMUNICADO: Boss Blind Replacement
@@ -2103,6 +1932,96 @@ end
 
 local function hnds_excommunicado_active()
 	return HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active() or false
+end
+
+local function hnds_is_showdown_boss(blind_key)
+	local blind = G and G.P_BLINDS and G.P_BLINDS[blind_key]
+	return blind and blind.boss and blind.boss.showdown == true
+end
+
+local function hnds_excommunicado_fallback_boss(seed_key)
+	if not (G and G.GAME and G.P_BLINDS) then return nil end
+
+	local ante = G.GAME.round_resets and G.GAME.round_resets.ante or 1
+	local eligible = {}
+	for key, blind in pairs(G.P_BLINDS) do
+		local boss = blind and blind.boss
+		local min_ante = boss and tonumber(boss.min)
+		local max_ante = boss and tonumber(boss.max)
+		local banned = G.GAME.banned_keys and G.GAME.banned_keys[key]
+		if boss
+			and boss.showdown ~= true
+			and not banned
+			and (not min_ante or ante >= min_ante)
+			and (not max_ante or ante <= max_ante)
+		then
+			eligible[key] = (G.GAME.bosses_used and G.GAME.bosses_used[key]) or 0
+		end
+	end
+
+	local min_use
+	for _, uses in pairs(eligible) do
+		if type(uses) == 'number' and (min_use == nil or uses < min_use) then
+			min_use = uses
+		end
+	end
+	if min_use ~= nil then
+		for key, uses in pairs(eligible) do
+			if type(uses) ~= 'number' or uses ~= min_use then eligible[key] = nil end
+		end
+	end
+
+	local _, picked = pseudorandom_element(eligible, pseudoseed(seed_key or 'hnds_excommunicado_boss'))
+	return picked
+end
+
+-- Excommunicado's Small/Big replacements must always be ordinary Boss Blinds,
+-- including on the final Ante. Vanilla get_new_boss() intentionally switches
+-- to the Showdown pool when ante == win_ante, and Handsome Devils also has
+-- final-Ante/Crystal showdown wrappers. Temporarily move the winning Ante away
+-- and enable the existing bypass flag only for this poll, then validate the
+-- result in case another mod still forces a Showdown.
+function HNDS.get_excommunicado_boss(seed_key)
+	if not (G and G.GAME and G.GAME.round_resets) then
+		return get_new_boss()
+	end
+
+	local old_win_ante = G.GAME.win_ante
+	local old_bypass = G.GAME.hnds_bypass_ante_10_force
+	local ante = tonumber(G.GAME.round_resets.ante) or 1
+	local win_ante = tonumber(old_win_ante) or 8
+
+	G.GAME.hnds_bypass_ante_10_force = true
+	G.GAME.win_ante = math.max(win_ante, ante + 1000)
+	local ok, picked = pcall(get_new_boss)
+	G.GAME.win_ante = old_win_ante
+	G.GAME.hnds_bypass_ante_10_force = old_bypass
+
+	if ok and picked and not hnds_is_showdown_boss(picked) then
+		return picked
+	end
+
+	-- If an external hook still returned a Showdown, undo its usage bump before
+	-- falling back to a filtered non-Showdown pool.
+	if ok and picked and hnds_is_showdown_boss(picked)
+		and G.GAME.bosses_used and type(G.GAME.bosses_used[picked]) == 'number'
+	then
+		G.GAME.bosses_used[picked] = math.max(0, G.GAME.bosses_used[picked] - 1)
+	end
+
+	local fallback = hnds_excommunicado_fallback_boss(
+		(seed_key or 'hnds_excommunicado_boss') .. '_' .. tostring(ante)
+	)
+	if fallback then
+		if G.GAME.bosses_used then
+			local uses = G.GAME.bosses_used[fallback]
+			G.GAME.bosses_used[fallback] = (type(uses) == 'number' and uses or 0) + 1
+		end
+		return fallback
+	end
+
+	if not ok then error(picked) end
+	return picked
 end
 
 -- Ensure Blind:get_type() returns Small/Big for replaced blinds

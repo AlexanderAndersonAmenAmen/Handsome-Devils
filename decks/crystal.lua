@@ -24,10 +24,19 @@ SMODS.Back {
 -- Pick a random hidden (soul-type) Consumeable key.
 local function random_hidden_consumeable(seed)
     local options = {}
-    for _, center in ipairs(G.P_CENTER_POOLS.Consumeables) do
-        if center.hidden then options[#options + 1] = center.key end
+    local pool = G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Consumeables or {}
+    for _, center in ipairs(type(pool) == 'table' and pool or {}) do
+        if center and center.hidden and center.key then options[#options + 1] = center.key end
     end
-    return pseudorandom_element(options, seed)
+    local chosen = #options > 0 and pseudorandom_element(options, seed) or nil
+    if chosen then return chosen end
+    -- Challenges/modpacks may replace or empty the Consumeables pool. Prefer a
+    -- registered vanilla hidden consumable, but never hand SMODS a nil key.
+    if G and G.P_CENTERS then
+        if G.P_CENTERS.c_soul then return 'c_soul' end
+        if G.P_CENTERS.c_black_hole then return 'c_black_hole' end
+    end
+    return nil
 end
 
 SMODS.Booster { --putting this in the same file for convenience
@@ -64,7 +73,13 @@ SMODS.Booster { --putting this in the same file for convenience
     end,
     create_card = function(self, card, i)
         if i == 1 then
-            return { key = random_hidden_consumeable("spe"), key_append = "spe", area = G.pack_cards, skip_materialize = true }
+            local hidden_key = random_hidden_consumeable("spe")
+            if hidden_key then
+                return { key = hidden_key, key_append = "spe", area = G.pack_cards, skip_materialize = true }
+            end
+            -- Last-resort compatibility fallback when another mod removes every
+            -- hidden consumable center: generate a normal Spectral instead.
+            return { set = "Spectral", area = G.pack_cards, skip_materialize = true, soulable = true, key_append = "spe" }
         else
             return {
                 set = "Spectral",
@@ -84,8 +99,11 @@ SMODS.Booster { --putting this in the same file for convenience
         loc_key = "k_plus_spectral",
         create = function ()
             if pseudorandom("diha_ultraspec") < 0.2 then
+                local hidden_key = random_hidden_consumeable("diha_spe")
                 SMODS.add_card({
-                    key = random_hidden_consumeable("diha_spe"),
+                    key = hidden_key,
+                    set = hidden_key and nil or "Spectral",
+                    soulable = hidden_key and nil or true,
                     key_append = "diha",
                     area = G.consumeables,
                     edition = "e_negative"

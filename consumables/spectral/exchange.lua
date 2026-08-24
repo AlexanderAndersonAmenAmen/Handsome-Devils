@@ -67,7 +67,11 @@ SMODS.Consumable({
         apply_exchange(card, exchange_selected_cards(card))
     end,
     can_use = function(self, card)
-        if G.STATE ~= G.STATES.SELECTING_HAND then return false end
+        -- Do not hard-code game-state names here. Steamodded/Card:can_use_consumeable
+        -- already owns the global state/lock rules, including modded booster-open
+        -- states. Exchange only needs to validate its own target and hand-cost
+        -- requirements. This keeps it usable when drawn directly inside a pack.
+        if not (G and G.GAME and G.hand) then return false end
         if not (G.GAME.current_round and G.GAME.current_round.hands_left > 1) then return false end
         if not (G.GAME.round_resets and (G.GAME.round_resets.hands or 0) > 1) then return false end
         if not (G.hand and #G.hand.highlighted > 0
@@ -76,9 +80,11 @@ SMODS.Consumable({
             return false
         end
 
-        -- Do not consume Exchange on a selection that is already fully Negative.
+        -- Existing Editions are valid Exchange targets. Only cards that are
+        -- already Negative are rejected, so an Editioned card can be selected
+        -- and converted to Negative normally.
         for _, target in ipairs(G.hand.highlighted) do
-            if not is_negative(target) then return true end
+            if target and not is_negative(target) then return true end
         end
         return false
     end,

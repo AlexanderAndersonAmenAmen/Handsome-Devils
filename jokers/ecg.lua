@@ -43,7 +43,7 @@ SMODS.Joker {
     atlas = 'Jokers',
     pos = { x = 2, y = 7 },
     rarity = 1,
-    cost = 5,
+    cost = 6,
     unlocked = false,
     discovered = false,
     unlock_condition = { type = "hnds_joker_unlock", key = "ecg" },

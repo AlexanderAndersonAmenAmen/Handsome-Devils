@@ -29,12 +29,15 @@ SMODS.Joker({
 	calculate = function(self, card, context)
 		if context.other_consumeable and not context.other_consumeable.debuff then
 			local mult = 1
-			if SMODS.find_mod("Overflow") and context.other_consumeable.ability.immutable then
+			if HNDS.mod_loaded and HNDS.mod_loaded("Overflow") and context.other_consumeable.ability and context.other_consumeable.ability.immutable then
 				mult = context.other_consumeable.ability.immutable.overflow_amount or mult
 			end
+			local target_consumeable = context.other_consumeable
 			G.E_MANAGER:add_event(Event({
 				func = function()
-					context.other_consumeable:juice_up(0.5, 0.5)
+					if target_consumeable and not target_consumeable.removed and target_consumeable.juice_up then
+						target_consumeable:juice_up(0.5, 0.5)
+					end
 					return true
 				end,
 			}))
@@ -63,7 +66,7 @@ SMODS.Joker({
 					for _, c in ipairs(G.consumeables.cards) do
 						if not c.debuff then
 							local c_mult = 1
-							if next(SMODS.find_mod("Overflow")) then
+							if HNDS.mod_loaded and HNDS.mod_loaded("Overflow") then
 								c_mult = c.ability.immutable and c.ability.immutable.overflow_amount or c_mult
 							end
 							mult = mult + card.ability.extra.consumeable_mult * c_mult

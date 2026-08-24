@@ -1,5 +1,21 @@
 HNDS = {}
 
+-- Draw a Sticker without Steamodded's normal voucher shader. This keeps the
+-- sticker art visible while removing the animated shine requested by several
+-- temporary playing-card markers.
+function HNDS.draw_flat_sticker(sticker, card, layer)
+    local key = sticker and sticker.key
+    local sprite = G and G.shared_stickers and key and G.shared_stickers[key]
+    if not sprite and G and G.shared_stickers and key and not key:match('^hnds_') then
+        sprite = G.shared_stickers['hnds_' .. key]
+    end
+    if not (sprite and card) then return end
+    if sprite.role then sprite.role.draw_major = card end
+    if sprite.draw_shader then
+        sprite:draw_shader('dissolve', nil, nil, nil, card.children and card.children.center)
+    end
+end
+
 -- Shared Stone-card predicate used by shop-pool checks.  Prefer cheap direct
 -- state inspection, then fall back to Steamodded behind pcall so a third-party
 -- quantum-enhancement implementation cannot turn a shop poll into a crash.
@@ -45,6 +61,54 @@ end
 
 function HNDS.pack(...)
     return { n = select('#', ...), ... }
+end
+
+-- Compatibility-safe Steamodded registry queries. Quantum enhancement helpers
+-- are allowed to call Joker calculations, so invoking them from another Joker
+-- wrapper can otherwise recurse forever when large content mods add virtual
+-- enhancements. The weak-key guards prevent recursion without retaining Cards.
+local hnds_query_guards = {
+    no_rank = setmetatable({}, { __mode = 'k' }),
+    no_suit = setmetatable({}, { __mode = 'k' }),
+    any_suit = setmetatable({}, { __mode = 'k' }),
+}
+
+local function hnds_safe_card_query(kind, fn_name, card, fallback)
+    if not card then return fallback or false end
+    local guard = hnds_query_guards[kind]
+    if guard and guard[card] then return fallback or false end
+    local fn = SMODS and SMODS[fn_name]
+    if type(fn) ~= 'function' then return fallback or false end
+
+    if guard then guard[card] = true end
+    local ok, value = pcall(fn, card)
+    if guard then guard[card] = nil end
+    if ok then return value == true end
+    return fallback or false
+end
+
+function HNDS.safe_has_no_rank(card)
+    -- Faceless is a Handsome Devils rankless state, not an Enhancement, and can
+    -- be answered without entering Steamodded's quantum-enhancement machinery.
+    if HNDS.is_faceless and HNDS.is_faceless(card) then return true end
+    return hnds_safe_card_query('no_rank', 'has_no_rank', card, false)
+end
+
+function HNDS.safe_has_no_suit(card)
+    -- Faceless deliberately KEEPS its suit; do not special-case it here.
+    return hnds_safe_card_query('no_suit', 'has_no_suit', card, false)
+end
+
+function HNDS.safe_has_any_suit(card)
+    return hnds_safe_card_query('any_suit', 'has_any_suit', card, false)
+end
+
+function HNDS.mod_loaded(id)
+    if not (SMODS and type(SMODS.find_mod) == 'function' and type(id) == 'string') then
+        return false
+    end
+    local ok, found = pcall(SMODS.find_mod, id)
+    return ok and type(found) == 'table' and next(found) ~= nil
 end
 
 if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
@@ -115,6 +179,25 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
             end
         end
         for _ = 1, 5 do pool[#pool + 1] = hnds_collection_blank end
+
+        -- The collection screen can be rebuilt repeatedly without a full game
+        -- reload. Explicitly retire the previous HD collection CardAreas first,
+        -- otherwise their Card objects can remain registered in G.I and slowly
+        -- increase update/draw work while browsing the collection.
+        if type(G.your_collection) == 'table' then
+            for _, old_area in ipairs(G.your_collection) do
+                if old_area and old_area.cards then
+                    for i = #old_area.cards, 1, -1 do
+                        local old_card = old_area.cards[i]
+                        if old_card then
+                            if old_area.remove_card then old_area:remove_card(old_card) end
+                            if old_card.remove then old_card:remove() end
+                        end
+                    end
+                end
+                if old_area and old_area.remove then old_area:remove() end
+            end
+        end
 
         local deck_tables = {}
         local row_totals = {}
@@ -525,6 +608,30 @@ SMODS.current_mod.calculate = function(self, context)
 	if type(context) ~= 'table' then return end
 	if HNDS.calculate_vanilla_tweaks then HNDS.calculate_vanilla_tweaks(context) end
 	if HNDS.calculate_aberrant then HNDS.calculate_aberrant(context) end
+
+	-- Ms. Fortune's hidden shop effect resolves while the shop has selected the
+	-- Joker set but before a specific Joker is created.
+	if context.create_shop_card and HNDS.ms_fortune_shop_create_flags then
+		local flags = HNDS.ms_fortune_shop_create_flags(context)
+		if flags then return { shop_create_flags = flags } end
+	end
+
+	-- Buying (not merely creating/obtaining) Ms. Fortune permanently enables
+	-- her 1-in-6 shop-generation effect for this run.
+	if context.buying_card and HNDS.ms_fortune_on_buy then
+		HNDS.ms_fortune_on_buy(context.card)
+	end
+
+	-- Reinforce Ms. Fortune's intrinsic Cursed sticker and current run sell
+	-- bonus after shop/booster generation modifiers have had a chance to run.
+	if (context.modify_shop_card or context.modify_booster_card) and context.card
+		and HNDS.ms_fortune_ensure_cursed
+	then
+		HNDS.ms_fortune_ensure_cursed(context.card)
+		if HNDS.ms_fortune_sync_sell_value then
+			HNDS.ms_fortune_sync_sell_value(context.card)
+		end
+	end
 
 	-- Spectrum is a hidden Spectral that can replace a Base card in Standard
 	-- packs. Standard-pack generation may attach playing-card modifiers before
@@ -975,17 +1082,7 @@ SMODS.ObjectType({
 	},
 })
 
--- Imposter Joker: allows face cards (J/Q/K) to match any required rank
--- when the Imposter joker is in the player's joker slots.
-HNDS.imposter_rank_match = function(card, required_id)
-	if not (card and type(card.get_id) == 'function') then return false end
-	local id = card:get_id()
-	if id == nil then return false end
-	local found = SMODS and type(SMODS.find_card) == 'function' and SMODS.find_card('j_hnds_imposter') or {}
-	if type(found) ~= 'table' then found = {} end
-	if #found > 0 and id >= 11 and id <= 13 then return true end
-	return id == required_id
-end
+-- Imposter runtime helpers are defined in jokers/imposter.lua.
 
 -- Extend the game object with mod-specific state variables
 local _init_game_object = Game.init_game_object
@@ -1004,6 +1101,8 @@ function Game:init_game_object(...)
 	-- Conquest tracks Boss-equivalent Blind defeats for the entire run, even
 	-- before the Joker is owned.
 	ret.hnds_conquest_bosses_defeated = ret.hnds_conquest_bosses_defeated or 0
+	ret.hnds_ms_fortune_sell_bonus = ret.hnds_ms_fortune_sell_bonus or 0
+	ret.hnds_ms_fortune_shop_active = ret.hnds_ms_fortune_shop_active or false
 	return ret
 end
 

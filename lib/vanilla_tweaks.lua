@@ -103,7 +103,7 @@ local function count_unique_suits(cards)
     local suits, wilds = {}, 0
     for _, playing_card in ipairs(cards) do
         if playing_card and not playing_card.debuff
-            and not (SMODS.has_no_suit and SMODS.has_no_suit(playing_card))
+            and not (HNDS.safe_has_no_suit and HNDS.safe_has_no_suit(playing_card) or false)
         then
             if is_wild(playing_card) then
                 wilds = wilds + 1
@@ -487,7 +487,7 @@ take_vanilla_ownership(SMODS.Joker, 'superposition', {
         then
             local has_ace = false
             for _, scoring_card in ipairs(context.scoring_hand or {}) do
-                if scoring_card:get_id() == 14 then has_ace = true break end
+                if HNDS.imposter_rank_match(scoring_card, 14, context) then has_ace = true break end
             end
             if has_ace then
                 G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
@@ -662,7 +662,7 @@ take_vanilla_ownership(SMODS.Joker, 'seeing_double', {
     calculate = function(self, card, context)
         if context.repetition
             and (context.cardarea == G.play or context.cardarea == G.hand)
-            and context.other_card and context.other_card:get_id() == 7
+            and context.other_card and HNDS.imposter_rank_match(context.other_card, 7, context)
             and not context.other_card.debuff
         then
             local repetitions = extra_value(card, 'repetitions', 1)
@@ -763,13 +763,18 @@ function HNDS.apply_blue_stake_hand_rework()
     end
 end
 
-take_vanilla_ownership(SMODS.Stake, 'blue', {
-    modifiers = function(self)
-        G.GAME.modifiers = G.GAME.modifiers or {}
-        G.GAME.modifiers.hnds_blue_stake_rework = true
-        HNDS.apply_blue_stake_hand_rework()
-    end,
-})
+-- All in Jest ships its own Blue Stake rework. Do not make two mods fight
+-- over the same vanilla Stake object; when AIJ is installed, its Stake owns the
+-- rule and Handsome Devils simply leaves its hnds_blue_stake_rework flag unset.
+if not (HNDS.mod_loaded and HNDS.mod_loaded('allinjest')) then
+    take_vanilla_ownership(SMODS.Stake, 'blue', {
+        modifiers = function(self)
+            G.GAME.modifiers = G.GAME.modifiers or {}
+            G.GAME.modifiers.hnds_blue_stake_rework = true
+            HNDS.apply_blue_stake_hand_rework()
+        end,
+    })
+end
 
 -- Stake modifiers normally run after the hand table exists, but keep a
 -- post-start sync as a compatibility fallback for load orders that initialise

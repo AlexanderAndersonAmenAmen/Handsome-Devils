@@ -13,36 +13,131 @@ local HNDS_VANILLA_HAND_HIERARCHY = {
     'High Card',
 }
 
-local function hnds_order_tracked_hands(tracked)
+local function hnds_all_hand_keys()
     local ordered = {}
     local added = {}
-    if type(tracked) ~= 'table' then return ordered end
+    local hands = G and G.GAME and G.GAME.hands
 
-    -- First use Balatro's fixed poker-hand hierarchy (strongest to weakest).
+    local function add(hand_key)
+        if type(hand_key) ~= 'string' or added[hand_key] then return end
+        -- When a run exists, only list real poker hands present in that run.
+        if hands and not hands[hand_key] then return end
+        ordered[#ordered + 1] = hand_key
+        added[hand_key] = true
+    end
+
+    -- Preserve Balatro's normal strongest-to-weakest hierarchy first.
     for _, hand_key in ipairs(HNDS_VANILLA_HAND_HIERARCHY) do
-        if tracked[hand_key] then
-            ordered[#ordered + 1] = hand_key
-            added[hand_key] = true
-        end
+        add(hand_key)
     end
 
-    -- Keep modded hands deterministic too: follow the live hand list after all
-    -- vanilla hierarchy entries, then alphabetically append any unknown keys.
+    -- Then include custom hands in Steamodded's live ordering.
     for _, hand_key in ipairs((G and G.handlist) or {}) do
-        if tracked[hand_key] and not added[hand_key] then
-            ordered[#ordered + 1] = hand_key
-            added[hand_key] = true
-        end
+        add(hand_key)
     end
 
-    local remaining = {}
-    for hand_key in pairs(tracked) do
-        if not added[hand_key] then remaining[#remaining + 1] = hand_key end
+    -- Compatibility fallback for custom hands missing from G.handlist.
+    if hands then
+        local remaining = {}
+        for hand_key, hand_data in pairs(hands) do
+            if not added[hand_key] then
+                remaining[#remaining + 1] = {
+                    key = hand_key,
+                    order = tonumber(hand_data and hand_data.order) or math.huge,
+                }
+            end
+        end
+        table.sort(remaining, function(a, b)
+            if a.order == b.order then return a.key < b.key end
+            return a.order < b.order
+        end)
+        for _, entry in ipairs(remaining) do add(entry.key) end
     end
-    table.sort(remaining)
-    for _, hand_key in ipairs(remaining) do ordered[#ordered + 1] = hand_key end
 
     return ordered
+end
+
+local function hnds_jigsaw_should_show_hand(hand_key, tracked)
+    local hand_data = G and G.GAME and G.GAME.hands and G.GAME.hands[hand_key]
+    if hand_data then
+        -- Secret poker hands are hidden until they have actually been played in
+        -- this run. `played` is run-scoped, so a secret discovered in an older
+        -- run does not leak into this checklist.
+        if hand_data.visible == false then
+            return (tonumber(hand_data.played) or 0) > 0
+                or (type(tracked) == 'table' and tracked[hand_key] == true)
+        end
+        return true
+    end
+
+    -- Collection/title-screen fallback where the live run hand table may not
+    -- exist. Ask Steamodded for the hand's current visibility if possible.
+    if SMODS and type(SMODS.is_poker_hand_visible) == 'function' then
+        local ok, visible = pcall(SMODS.is_poker_hand_visible, hand_key)
+        if ok then
+            return visible == true
+                or (type(tracked) == 'table' and tracked[hand_key] == true)
+        end
+    end
+
+    -- Vanilla secret hands are the only hidden hands we can identify safely
+    -- without a live run/Steamodded visibility result.
+    if hand_key == 'Flush Five'
+        or hand_key == 'Flush House'
+        or hand_key == 'Five of a Kind'
+    then
+        return type(tracked) == 'table' and tracked[hand_key] == true
+    end
+
+    return true
+end
+
+local function hnds_jigsaw_checklist_text(tracked)
+    local lines = {}
+    local parsed_lines = {}
+
+    for _, hand_key in ipairs(hnds_all_hand_keys()) do
+        if hnds_jigsaw_should_show_hand(hand_key, tracked) then
+            local hand_name = localize(hand_key, 'poker_hands') or hand_key
+            local completed = type(tracked) == 'table' and tracked[hand_key] == true
+            local colour = completed and 'attention' or 'inactive'
+
+            -- Keep both the raw localization text and the already-parsed form
+            -- in sync. Localization is initialized before a run begins, so
+            -- replacing this entry at hover time leaves text_parsed nil and
+            -- crashes localize(type = 'other'). Building the parsed line here
+            -- lets the normal info_queue renderer remain fully dynamic.
+            lines[#lines + 1] = '{C:' .. colour .. '}' .. hand_name .. '{}'
+            parsed_lines[#parsed_lines + 1] = {
+                { strings = { hand_name }, control = { C = colour } },
+            }
+        end
+    end
+
+    return lines, parsed_lines
+end
+
+local function hnds_jigsaw_queue_checklist(info_queue, tracked)
+    if not info_queue or not G or not G.localization then return end
+
+    local descriptions = G.localization.descriptions
+    local other = descriptions and descriptions.Other
+    local entry = other and other.hnds_jigsaw_checklist
+    if type(entry) ~= 'table' then return end
+
+    local lines, parsed_lines = hnds_jigsaw_checklist_text(tracked)
+    entry.text = lines
+    entry.text_parsed = parsed_lines
+
+    -- Use Balatro's normal auxiliary-tooltip path. The localization object
+    -- itself stays intact (including its parsed name), so this works with
+    -- 1.0.1o/Steamodded BETA-1620a instead of creating a transient broken
+    -- localization entry.
+    info_queue[#info_queue + 1] = {
+        key = 'hnds_jigsaw_checklist',
+        set = 'Other',
+        vars = {},
+    }
 end
 
 SMODS.Joker {
@@ -73,33 +168,19 @@ SMODS.Joker {
     },
     loc_vars = function(self, info_queue, card)
         local extra = card and card.ability and card.ability.extra or self.config.extra
-        local tracked = extra and extra.unique_hands
-        local ordered_keys = hnds_order_tracked_hands(tracked)
+        extra.unique_hands = extra.unique_hands or {}
 
+        local tracked_count = 0
+        for _ in pairs(extra.unique_hands) do tracked_count = tracked_count + 1 end
         local required = extra.required_hands or 8
-        local progress = math.min(#ordered_keys, required)
+        local progress = math.min(tracked_count, required)
 
-        if info_queue and card then
-            if progress == 0 then
-                info_queue[#info_queue + 1] = {
-                    set = "Other",
-                    key = "hnds_jigsaw_progress_empty",
-                    vars = { "none", 0, required },
-                }
-            else
-                local vars = {}
-                for i = 1, progress do
-                    vars[#vars + 1] = localize(ordered_keys[i], "poker_hands")
-                end
-                vars[#vars + 1] = progress
-                vars[#vars + 1] = required
-
-                info_queue[#info_queue + 1] = {
-                    set = "Other",
-                    key = "hnds_jigsaw_progress_" .. tostring(progress),
-                    vars = vars,
-                }
-            end
+        -- Keep the poker-hand checklist in its own tooltip. Collection cards
+        -- intentionally show only Jigsaw's normal description, with no list.
+        local in_collection = card and card.area and card.area.config
+            and card.area.config.collection
+        if info_queue and card and not in_collection then
+            hnds_jigsaw_queue_checklist(info_queue, extra.unique_hands)
         end
 
         return {
@@ -107,7 +188,7 @@ SMODS.Joker {
                 extra.hands_played or progress,
                 required,
                 extra.upgrade_levels or 2,
-            }
+            },
         }
     end,
     calculate = function(self, card, context)

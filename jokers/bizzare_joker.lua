@@ -1,3 +1,98 @@
+HNDS = HNDS or {}
+
+local BIZARRE_BANNED_KEYS = {
+    j_hnds_bizzare_joker = true,
+    j_hnds_ms_fortune = true,
+}
+
+local function hnds_bizarre_key_allowed(key)
+    return key and key ~= "UNAVAILABLE" and not BIZARRE_BANNED_KEYS[key]
+end
+
+SMODS.Sticker {
+    key = 'fighting_spirit',
+    atlas = 'Stickers',
+    pos = { x = 5, y = 4 },
+    badge_colour = (G.C and G.C.RED) or G.C.PURPLE,
+    rate = 0,
+    no_collection = true,
+    default_compat = true,
+    sets = { Joker = true },
+}
+
+local function hnds_bizarre_strip_child_stickers(child)
+    if not child then return end
+    child.ability = child.ability or {}
+
+    local keys = {
+        perishable = true,
+        eternal = true,
+        rental = true,
+    }
+    if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
+        for _, key in ipairs(SMODS.Sticker.obj_buffer) do keys[key] = true end
+    end
+    if type(child.stickers) == 'table' then
+        for key in pairs(child.stickers) do keys[key] = true end
+    end
+    if type(child.ability.stickers) == 'table' then
+        for key in pairs(child.ability.stickers) do keys[key] = true end
+    end
+
+    -- Fighting Spirit is the sole sticker Bizarre's linked Joker may keep.
+    keys.hnds_fighting_spirit = nil
+    local any_removed = false
+    for key in pairs(keys) do
+        local present = child.ability[key]
+            or (child.stickers and child.stickers[key])
+            or (child.ability.stickers and child.ability.stickers[key])
+        if present then
+            any_removed = true
+            if child.remove_sticker then
+                pcall(child.remove_sticker, child, key)
+            end
+            if child.stickers then child.stickers[key] = nil end
+            child.ability[key] = nil
+            if child.ability.stickers then child.ability.stickers[key] = nil end
+        end
+    end
+
+    child.ability.perishable = nil
+    child.ability.eternal = nil
+    child.ability.rental = nil
+    child.ability.perish_tally = nil
+    if any_removed and child.set_sticker_display then
+        pcall(child.set_sticker_display, child)
+    end
+end
+
+-- Runtime safety net for mods/effects that bypass Card:add_sticker and write
+-- sticker flags directly. Hooks.lua only calls this for the single linked
+-- Bizarre child, so it does not add another all-Joker collection scan.
+HNDS.strip_bizarre_child_stickers = hnds_bizarre_strip_child_stickers
+
+local function hnds_bizarre_mark_child(child, owner_token)
+    if not child then return nil end
+    child.ability = child.ability or {}
+
+    -- SMODS.add_card may already have assigned stake/mod stickers by the time
+    -- it returns. Fighting Spirit is the only sticker Bizarre's linked Joker
+    -- may keep. Editions are only suppressed during the initial spawn roll;
+    -- effects may apply an Edition to the child normally afterward.
+    hnds_bizarre_strip_child_stickers(child)
+    child.ability.hnds_bizarre_owner = owner_token
+
+    if not child.ability.hnds_fighting_spirit then
+        if child.add_sticker then
+            child:add_sticker('hnds_fighting_spirit', true)
+        else
+            child.ability.hnds_fighting_spirit = true
+        end
+    end
+    if child.set_sticker_display then pcall(child.set_sticker_display, child) end
+    return child
+end
+
 local function hnds_bizarre_rarity(center)
     local rarity = center and center.rarity
     if type(rarity) == "table" then rarity = rarity.id or rarity.key or rarity.name end
@@ -17,7 +112,7 @@ local function hnds_bizarre_pool(rarity)
             for _, entry in ipairs(current) do
                 local key = type(entry) == "table" and entry.key or entry
                 local center = key and G and G.P_CENTERS and G.P_CENTERS[key]
-                if key and key ~= "UNAVAILABLE" and key ~= "j_hnds_bizzare_joker"
+                if hnds_bizarre_key_allowed(key)
                     and center and hnds_bizarre_rarity(center) == rarity
                     and center.unlocked ~= false and not center.hidden and not seen[key]
                 then
@@ -35,7 +130,7 @@ local function hnds_bizarre_pool(rarity)
             local center = type(entry) == "table" and entry
                 or (G and G.P_CENTERS and G.P_CENTERS[entry])
             local key = center and center.key
-            if key and key ~= "j_hnds_bizzare_joker"
+            if hnds_bizarre_key_allowed(key)
                 and hnds_bizarre_rarity(center) == rarity
                 and center.unlocked ~= false and not center.hidden and not seen[key]
             then
@@ -85,8 +180,24 @@ local function hnds_bizarre_create_child(card)
     local owner_token = hnds_bizarre_owner_token(card)
     local existing = hnds_bizarre_find_child(owner_token)
     if existing then
-        extra.child_id = existing.sort_id or existing.ID
-        return existing
+        local existing_key = existing.config and existing.config.center and existing.config.center.key
+        if hnds_bizarre_key_allowed(existing_key) then
+            hnds_bizarre_mark_child(existing, owner_token)
+            extra.child_id = existing.sort_id or existing.ID
+            return existing
+        end
+
+        -- Defensive migration for saves made before Ms. Fortune was banned
+        -- from Bizarre Joker: remove the invalid linked child and roll a legal
+        -- Rare replacement instead of preserving it forever.
+        if SMODS and type(SMODS.destroy_cards) == "function" then
+            SMODS.destroy_cards(existing, { immediate = true, bypass_eternal = true })
+        elseif existing.start_dissolve then
+            existing:start_dissolve()
+        elseif existing.remove then
+            existing:remove()
+        end
+        extra.child_id = nil
     end
 
     extra.rolls = (tonumber(extra.rolls) or 0) + 1
@@ -105,10 +216,10 @@ local function hnds_bizarre_create_child(card)
         area = G.jokers,
         key = key,
         key_append = "hnds_bizarre_spawn",
+        no_edition = true,
     })
     if child then
-        child.ability = child.ability or {}
-        child.ability.hnds_bizarre_owner = owner_token
+        hnds_bizarre_mark_child(child, owner_token)
         extra.child_id = child.sort_id or child.ID
     end
     return child

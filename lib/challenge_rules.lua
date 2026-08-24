@@ -119,7 +119,8 @@ if get_current_pool and not _G._hnds_wrapped_get_current_pool then
 	_G._hnds_wrapped_get_current_pool = true
 	local get_current_pool_ref = get_current_pool
 	function get_current_pool(_type, _rarity, _legendary, _append, ...)
-		local pool, pool_key = get_current_pool_ref(_type, _rarity, _legendary, _append, ...)
+		local results = HNDS.pack(get_current_pool_ref(_type, _rarity, _legendary, _append, ...))
+		local pool = results[1]
 		if HNDS.is_challenge('gambling_opportunity') and _type == 'Enhanced' and type(pool) == 'table' then
 			local filtered = {}
 			for i = 1, #pool do
@@ -127,9 +128,10 @@ if get_current_pool and not _G._hnds_wrapped_get_current_pool then
 					filtered[#filtered + 1] = pool[i]
 				end
 			end
-			pool = filtered
+			results[1] = filtered
 		end
-		return pool, pool_key
+		local unpack_values = (table and table.unpack) or unpack
+		return unpack_values(results, 1, results.n)
 	end
 end
 

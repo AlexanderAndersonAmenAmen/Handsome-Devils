@@ -140,7 +140,7 @@ if Card and Card.set_ability and not Card._hnds_obsidian_ability_wrapped then
             if self.ability then self.ability.hnds_obsidian_scored_last_hand = nil end
         end
 
-        local ret = set_ability_obsidian_ref(self, center, initial, delay_sprites, ...)
+        local results = HNDS.pack(set_ability_obsidian_ref(self, center, initial, delay_sprites, ...))
 
         -- Bound is permanent even after changing to another enhancement.
         if was_bound and not is_bound(self) then make_bound(self, true) end
@@ -155,7 +155,7 @@ if Card and Card.set_ability and not Card._hnds_obsidian_ability_wrapped then
             if self.ability then self.ability.hnds_obsidian_scored_last_hand = nil end
         end
 
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 

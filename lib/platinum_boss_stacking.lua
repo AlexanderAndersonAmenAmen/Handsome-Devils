@@ -956,7 +956,7 @@ end
 -- or on Blind:set_text load order, and append_plus_to_name is idempotent.
 local localize_platinum_ref = localize
 function localize(args, misc_cat, misc_loc, silent, ...)
-    local result = localize_platinum_ref(args, misc_cat, misc_loc, silent, ...)
+    local results = HNDS.pack(localize_platinum_ref(args, misc_cat, misc_loc, silent, ...))
     if type(args) == "table"
         and args.type == "name_text"
         and args.set == "Blind"
@@ -964,9 +964,10 @@ function localize(args, misc_cat, misc_loc, silent, ...)
         and args.key == boss_choice()
         and HNDS.platinum_boss_upgrade_count_for_ante(current_ante()) > 0
     then
-        return append_plus_to_name(result)
+        results[1] = append_plus_to_name(results[1])
     end
-    return result
+    local unpack_values = (table and table.unpack) or unpack
+    return unpack_values(results, 1, results.n)
 end
 
 -------------------------------------------------------------------

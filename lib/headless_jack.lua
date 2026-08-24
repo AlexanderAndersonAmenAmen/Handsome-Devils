@@ -41,10 +41,15 @@ function HNDS.is_jevil_wild(card)
 end
 
 local function hnds_no_suit(card)
+    -- Faceless cards KEEP their suit. Use the guarded helper so quantum
+    -- enhancements supplied by other mods cannot recurse through suit checks.
+    if HNDS.safe_has_no_suit then return HNDS.safe_has_no_suit(card) end
     return SMODS and SMODS.has_no_suit and SMODS.has_no_suit(card) or false
 end
 
 local function hnds_no_rank(card)
+    if HNDS.safe_has_no_rank then return HNDS.safe_has_no_rank(card) end
+    if HNDS.is_faceless and HNDS.is_faceless(card) then return true end
     return SMODS and SMODS.has_no_rank and SMODS.has_no_rank(card) or false
 end
 
@@ -124,9 +129,9 @@ if Card and Card.set_ability and not HNDS._jol_set_ability_hook then
     local set_ability_ref = Card.set_ability
     function Card:set_ability(...)
         local owner = hnds_jol_owner(self)
-        local results = { set_ability_ref(self, ...) }
+        local results = HNDS.pack(set_ability_ref(self, ...))
         if owner and self.ability then self.ability[JOL_OWNER_FIELD] = owner end
-        return unpack(results)
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
     HNDS._jol_set_ability_hook = true
 end
@@ -272,6 +277,10 @@ if type(evaluate_poker_hand) == 'function' and not HNDS._jol_poker_eval_hook the
         rec(1, 2)
     end
 
+    -- Cache only the immediately repeated hand evaluation. Balatro can ask for
+    -- the same highlighted hand many times while drawing/updating UI, so this
+    -- avoids replaying thousands of wildcard assignments without retaining
+    -- results across unrelated game states or other mods' dynamic hand rules.
     local last_signature, last_result
 
     local function hand_signature(hand)
@@ -280,20 +289,31 @@ if type(evaluate_poker_hand) == 'function' and not HNDS._jol_poker_eval_hook the
             local owner = hnds_jol_owner(c) or ''
             local id = c and (c.playing_card or c.sort_id or c.ID) or i
             local base = c and c.base or {}
-            parts[#parts + 1] = table.concat({ tostring(id), tostring(owner), tostring(base.id), tostring(base.suit), tostring(c and c.config and c.config.center_key) }, ':')
+            local fusions = c and c.ability and c.ability.hnds_aberrant_fusions
+            local fusion_sig = type(fusions) == 'table' and table.concat(fusions, ',') or ''
+            parts[#parts + 1] = table.concat({
+                tostring(id), tostring(owner), tostring(base.id), tostring(base.suit),
+                tostring(c and c.config and c.config.center_key), tostring(c and c.debuff == true),
+                tostring(c and c.seal or ''), fusion_sig,
+            }, ':')
         end
         return table.concat(parts, '|')
     end
 
+    local function cache_store(signature, result)
+        last_signature, last_result = signature, result
+    end
+
     function evaluate_poker_hand(hand, ...)
-        local eval_args = { ... }
+        local eval_args = HNDS.pack(...)
+        local unpack_values = (table and table.unpack) or unpack
         local wilds = {}
         for _, playing_card in ipairs(hand or {}) do
             if HNDS.is_jack_of_lanterns(playing_card) and not hnds_no_rank(playing_card) then
                 wilds[#wilds + 1] = playing_card
             end
         end
-        if #wilds == 0 then return evaluate_poker_hand_ref(hand, unpack(eval_args)) end
+        if #wilds == 0 then return evaluate_poker_hand_ref(hand, unpack_values(eval_args, 1, eval_args.n)) end
 
         local signature = hand_signature(hand)
         if signature == last_signature and last_result then return last_result end
@@ -306,13 +326,46 @@ if type(evaluate_poker_hand) == 'function' and not HNDS._jol_poker_eval_hook the
             for i, playing_card in ipairs(wilds) do playing_card.get_id = original_get_id[i] end
         end
 
+        -- Fast path for the expensive 4/5-wild cases: if all real ranked
+        -- cards share one rank (or there are no real ranked cards), assigning
+        -- every Lantern to that same rank often already produces the strongest
+        -- hand in G.handlist. Only accept the shortcut when the evaluator itself
+        -- confirms priority #1, so custom poker hands remain correct.
+        local common_rank, common_rank_ok = nil, true
+        for _, playing_card in ipairs(hand or {}) do
+            if not HNDS.is_jack_of_lanterns(playing_card) and not hnds_no_rank(playing_card) then
+                local id = playing_card.get_id and playing_card:get_id() or (playing_card.base and playing_card.base.id)
+                if type(id) == 'number' then
+                    if common_rank == nil then common_rank = id
+                    elseif common_rank ~= id then common_rank_ok = false break end
+                end
+            end
+        end
+        local fast_rank = common_rank_ok and (common_rank or 14) or nil
+        if fast_rank and fast_rank >= 2 and fast_rank <= 14 then
+            for _, playing_card in ipairs(wilds) do
+                playing_card.get_id = function() return fast_rank end
+            end
+            local fast_ok, candidate = pcall(evaluate_poker_hand_ref, hand, unpack_values(eval_args, 1, eval_args.n))
+            if not fast_ok then
+                restore()
+                error(candidate, 0)
+            end
+            local priority = result_priority(candidate)
+            if priority == 1 then
+                restore()
+                cache_store(signature, candidate)
+                return candidate
+            end
+        end
+
         local ok, err = pcall(function()
             enumerate_assignments(#wilds, function(values)
                 for i, playing_card in ipairs(wilds) do
                     local assigned = values[i]
                     playing_card.get_id = function() return assigned end
                 end
-                local candidate = evaluate_poker_hand_ref(hand, unpack(eval_args))
+                local candidate = evaluate_poker_hand_ref(hand, unpack_values(eval_args, 1, eval_args.n))
                 local priority = result_priority(candidate)
                 if not best or priority < best_priority then
                     best, best_priority = candidate, priority
@@ -321,8 +374,8 @@ if type(evaluate_poker_hand) == 'function' and not HNDS._jol_poker_eval_hook the
         end)
         restore()
         if not ok then error(err) end
-        best = best or evaluate_poker_hand_ref(hand, unpack(eval_args))
-        last_signature, last_result = signature, best
+        best = best or evaluate_poker_hand_ref(hand, unpack_values(eval_args, 1, eval_args.n))
+        cache_store(signature, best)
         return best
     end
     HNDS._jol_poker_eval_hook = true

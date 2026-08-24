@@ -375,11 +375,10 @@ local localization = {
 			j_hnds_ms_fortune = {
 				name = "Ms. Fortune",
 				text = {
-					"Quadruples all",
-					"{C:attention}listed{} {C:green,E:1}probabilities{}",
-					"Set your money to {C:red}$0",
-					"when {C:attention}Blind{} is selected",
-					"{C:inactive}(e.x. {}{C:green}1 in 3{} {C:inactive}->{} {C:green}#1# in 3{}{C:inactive}){}",
+					"{C:red}Cursed{}",
+					"When obtained,",
+					"gains {C:money}$#1#{} of base",
+					"{C:attention}sell value{} this run",
 				},
 				unlock = {
 					"Fail a {C:green}probability{}",
@@ -603,8 +602,8 @@ local localization = {
             j_hnds_headless_joker = {
                 name = "Headless Joker",
                 text = {
-                    "When you get this,",
-                    "add {C:attention}Jack of Lanterns{}",
+                    "When obtained, add",
+                    "{C:attention}Jack of Lanterns{}",
                     "to your deck",
                 },
             unlock = {
@@ -719,7 +718,8 @@ local localization = {
 				text = {
 					"{C:green}#1# in #2#{} chance to",
 					"gain {X:mult,C:white}X#3#{} Mult per",
-					"{C:hearts}Heart{} card scored",
+					"{C:hearts}Heart{} card scored,",
+					"reset each {C:attention}Ante{}",
 					"{C:inactive}(Currently {X:mult,C:white}X#4#{C:inactive} Mult)",
 				},
 			unlock = {
@@ -774,10 +774,10 @@ local localization = {
 			j_hnds_bizzare_joker = {
 				name = "Bizarre Joker",
 				text = {
-					"When you get this,",
+					"When obtained,",
 					"create a {C:red}Rare Joker{}",
 					"Remove it when you",
-					"lose {C:attention}Bizzare Joker{}",
+					"lose {C:attention}Bizarre Joker{}",
 				},
 				unlock = {
 					"Have all cards",
@@ -921,7 +921,7 @@ local localization = {
 			j_hnds_imposter = {
 				name = "Imposter",
 				text = {
-					"Scored {C:attention}face cards{}",
+					"{C:attention}Face{} cards",
 					"count as any rank",
 					"for Joker effects",
 				},
@@ -1028,10 +1028,9 @@ local localization = {
 			j_hnds_creepy = {
 				name = "Creepy Joker",
 				text = {
-					"{X:mult,C:white}X#1#{} Mult",
-					"{C:green}#2# in #3#{} chance adjacent",
-					"Jokers become a copy of",
-					"this at end of round",
+					"{C:green}#1# in #2#{} chance",
+					"to steal face from",
+					"scored {C:attention}face{} cards",
 				},
 				unlock = {
 					"Have {C:attention}3{} copies of",
@@ -1469,6 +1468,44 @@ local localization = {
                 },
             },
 
+            hnds_faceless = {
+                name = "Faceless",
+                text = {
+                    "{X:mult,C:white}X2{} Mult",
+                    "no rank",
+                },
+            },
+
+            hnds_faceless_card = {
+                name = "Faceless",
+                text = {
+                    "{X:mult,C:white}X#1#{} Mult",
+                    "no rank",
+                },
+            },
+
+            hnds_faceless_no_rank = {
+                name = "Faceless",
+                text = {
+                    "no rank",
+                },
+            },
+
+            hnds_faceless_xmult_only = {
+                name = "Faceless",
+                text = {
+                    "{X:mult,C:white}X#1#{} Mult",
+                },
+            },
+
+            hnds_fighting_spirit = {
+                name = "Fighting Spirit",
+                text = {
+                    "Removed when you",
+                    "lose {C:attention}Bizarre Joker{}",
+                },
+            },
+
             hnds_jevil_wild = {
                 name = "Chaos! Chaos!",
                 text = {
@@ -1485,6 +1522,11 @@ local localization = {
                     "cards in your full deck",
                     "{C:inactive}(Currently {C:attention}#3#{C:inactive})",
                 },
+            },
+
+            hnds_jigsaw_checklist = {
+                name = "Poker Hands",
+                text = {},
             },
 
             hnds_jigsaw_progress_empty = {
@@ -2348,6 +2390,7 @@ local localization = {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_jigsaw_poker_hands = "Poker Hands",
 			k_hnds_be_not_afraid = "Holy trinity!",
 		k_hnds_spread = "Spread!",
 		k_hnds_war = "War!",
@@ -2433,6 +2476,8 @@ local localization = {
 		},
 		labels = {
 			hnds_jevil_wild = "Jevil",
+			hnds_faceless = "Faceless",
+			hnds_fighting_spirit = "Fighting Spirit",
 			hnds_exchange_draw = "Bound",
 			hnds_bound = "Bound",
 			hnds_vintage = "Vintage",
