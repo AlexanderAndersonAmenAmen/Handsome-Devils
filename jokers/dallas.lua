@@ -41,8 +41,7 @@ SMODS.Joker({
     calculate = function(self, card, context)
         local extra = card.ability.extra
 
-        -- Dallas scales during an Ante, then returns to its base X1 Mult when
-        -- that Ante is completed by defeating its Boss Blind.
+
         if context.end_of_round and context.main_eval and context.beat_boss then
             extra.xmult = 1
             return {

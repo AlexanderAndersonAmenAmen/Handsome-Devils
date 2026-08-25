@@ -12,9 +12,8 @@ SMODS.Tag {
             local lock = tag.ID
             G.CONTROLLER.locks[lock] = true
             tag:yep('+', G.C.SECONDARY_SET.Planet, function()
-                -- Only choose Magic Pack centers that are actually registered.
-                -- There are currently six variants; the old math.random(7)
-                -- could select p_hnds_magic_7, passing a nil center into Card().
+
+
                 local magic_keys = {}
                 for i = 1, 6 do
                     local candidate = 'p_hnds_magic_' .. i

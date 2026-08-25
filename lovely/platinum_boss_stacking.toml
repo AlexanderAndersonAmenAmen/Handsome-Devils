@@ -3,8 +3,7 @@ version = "1.0.0"
 dump_lua = true
 priority = 0
 
-# Blind-select score preview for upgraded Small/Big slots and the strengthened
-# real Boss Blind.
+
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
@@ -17,8 +16,7 @@ if HNDS and HNDS.adjust_platinum_blind_preview_amount then
 end
 '''
 
-# Display Name+ for the real Boss when one or more Small/Big upgrades have
-# contributed effects to it this Ante.
+
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"

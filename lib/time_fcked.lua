@@ -26,10 +26,7 @@ function HNDS.capture_time_fcked_blind()
     local ante = tonumber(resets.ante) or 0
     if not blind_key then return false end
 
-    -- End-of-round transitions can advance blind_on_deck before every Joker has
-    -- finished calculating. Prefer the physical slot cached by Blind Raiser,
-    -- then accept blind_on_deck only when its choice still matches this Blind,
-    -- then infer the just-defeated slot from the round's choice table.
+
     local slot = G.GAME.blind.hnds_platinum_replacement_slot
     local choices = resets.blind_choices or {}
     local on_deck = G.GAME.blind_on_deck
@@ -80,16 +77,13 @@ local function should_replay(candidate)
     G.GAME.hnds_time_fcked_rolled = G.GAME.hnds_time_fcked_rolled or {}
     if G.GAME.hnds_time_fcked_rolled[candidate.token] then return false end
 
-    -- Mark BEFORE rolling so double-clicks/re-entrant cash-out calls can never
-    -- reroll the same defeated Blind. A replay keeps the same token, hence the
-    -- parenthetical "Once per Blind" is enforced on the replay as well.
+
     G.GAME.hnds_time_fcked_rolled[candidate.token] = true
 
     local jokers = eligible_time_jokers()
     if #jokers == 0 then return false end
 
-    -- One effect roll per defeated Blind. Multiple physical copies do not turn
-    -- the single once-per-Blind event into an unbounded chain of replay rolls.
+
     local card = jokers[1]
     local odds = tonumber(card.ability.extra.odds) or 2
     return SMODS.pseudorandom_probability(
@@ -110,10 +104,7 @@ local function restore_replay_state(candidate)
     if slot then
         resets.blind_choices[slot] = candidate.blind_key
 
-        -- The just-defeated Blind may already have advanced the next slot to
-        -- Select before Joker end-of-round calculations finish. Replaying must
-        -- expose exactly ONE current Blind, so normalize the three vanilla slot
-        -- states back to the progression point immediately before this Blind.
+
         if slot == 'Small' then
             resets.blind_states.Small = 'Select'
             resets.blind_states.Big = 'Upcoming'
@@ -135,9 +126,7 @@ local function restore_replay_state(candidate)
     local blind_center = G.P_BLINDS and G.P_BLINDS[candidate.blind_key]
     if blind_center then resets.blind = blind_center end
 
-    -- Blind Raiser stores upgraded Small/Big replacements separately. We do not
-    -- rewrite those records: restoring the exact choice key above lets the
-    -- existing compatibility layer rebuild the same upgraded Blind normally.
+
     G.GAME.hnds_time_fcked_candidate = nil
 end
 
@@ -145,9 +134,7 @@ local function cash_out_to_replay(e, candidate)
     stop_use()
     if not G.round_eval then return false end
 
-    -- Balatro's long Negative-edition sting marks the successful timeline
-    -- rewind. Keep it inside the successful replay path so a failed transition
-    -- can never play the proc sound.
+
     play_sound('negative', 1, 0.7)
 
     if e and e.config then e.config.button = nil end
@@ -177,8 +164,7 @@ local function cash_out_to_replay(e, candidate)
                 1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands
             )
 
-            -- Re-enter the normal Blind Select UI with the just-defeated slot
-            -- restored to Select. No Shop is created on a successful replay.
+
             G.STATE = G.STATES.BLIND_SELECT
             G.STATE_COMPLETE = false
             return true
@@ -197,8 +183,7 @@ local function cash_out_to_replay(e, candidate)
     return true
 end
 
--- Load this after challenge_rules.lua so Time is the outermost cash-out wrapper.
--- When it does not proc, every existing cash-out behavior is delegated unchanged.
+
 if G and G.FUNCS and type(G.FUNCS.cash_out) == 'function'
     and not G.FUNCS._hnds_time_fcked_cash_out_wrapped
 then
@@ -213,8 +198,7 @@ then
             end
         end
 
-        -- Candidate is only meaningful for the round-eval screen it came from.
-        -- Clear it before normal cash-out so stale snapshots cannot fire later.
+
         if G and G.GAME then G.GAME.hnds_time_fcked_candidate = nil end
         return cash_out_ref(e, delay_seconds, ...)
     end

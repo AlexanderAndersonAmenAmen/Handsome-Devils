@@ -3,10 +3,6 @@ version = "1.0.0"
 dump_lua = true
 priority = 20
 
-# Handsome Devils collection density.
-# Seals, Editions, Enhancements, and Planets are handled by the runtime
-# SMODS.card_collection_UIBox wrapper in main.lua because beta-1620a no longer
-# uses stable literal calls in functions/UI_definitions.lua for those pages.
 
 [[patches]]
 [patches.pattern]
@@ -38,9 +34,7 @@ local cols = 5
 match_indent = false
 times = 1
 
-# Sticker collection: Steamodded beta-1620a defines this page in src/ui.lua
-# as SMODS.card_collection_UIBox(SMODS.Stickers, {5,5}, ...). Patch that exact
-# call instead of the unrelated 4x6 Tag collection in src/overrides.lua.
+
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/ui.lua"]'

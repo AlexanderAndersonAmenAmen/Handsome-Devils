@@ -16,9 +16,8 @@ SMODS.Joker {
     blueprint_compat = true,
     perishable_compat = true,
     in_pool = function(self, args)
-        -- Pool checks also run for title-screen/demo-card randomization, where
-        -- no gameplay Joker area or playing-card deck exists yet. Treat that
-        -- state as simply ineligible instead of indexing nil menu globals.
+
+
         local jokers = G and G.jokers and G.jokers.cards or {}
         local playing_cards = G and G.playing_cards or {}
 
@@ -34,7 +33,7 @@ SMODS.Joker {
         if type(context) ~= "table" then return end
         local other = context.other_card
         if (context.repetition or (context.retrigger_joker_check and not context.retrigger_joker))
-            and other and other ~= card and other.edition then -- should this also retrigger jokers
+            and other and other ~= card and other.edition then
             return { repetitions = 1 }
         end
     end,

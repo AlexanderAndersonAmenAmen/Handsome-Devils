@@ -10,13 +10,13 @@ SMODS.Consumable({
 	pos = { x = 0, y = 0 },
 	config = { max_highlighted = 1 },
 	loc_vars = function(self, info_queue, card)
-		-- Handle creating a tooltip with set args.
+
 		info_queue[#info_queue + 1] = G.P_SEALS["hnds_black"]
 		return {
 			vars = { card.ability.max_highlighted },
 		}
 	end,
-	use = function(self, card, area, copier) --Good enough
+	use = function(self, card, area, copier)
 		for i = 1, #G.hand.highlighted do
 			local highlighted = G.hand.highlighted[i]
 			G.E_MANAGER:add_event(Event({

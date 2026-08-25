@@ -21,9 +21,8 @@ SMODS.Joker {
         return { vars = { card.ability.extra.Xmult } }
     end,
     calculate = function(self, card, context)
-        -- Remember that this is the round's first played hand. The flag lets
-        -- the post-scoring check refer to the same hand without depending on
-        -- exactly when hands_played is incremented by the base game.
+
+
         if context.before and context.cardarea == G.jokers and not context.blueprint then
             card.ability.extra.first_hand_active = G.GAME.current_round.hands_played == 0
         end
@@ -35,9 +34,7 @@ SMODS.Joker {
             }
         end
 
-        -- Once the first hand finishes scoring, One Punchline Man survives
-        -- only if that hand defeated the Blind. Blueprint copies can receive
-        -- the XMult above but never destroy the original Joker.
+
         if context.after and card.ability.extra.first_hand_active and not context.blueprint then
             card.ability.extra.first_hand_active = false
 

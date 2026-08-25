@@ -114,11 +114,7 @@ SMODS.Joker {
                     extra.scored_ranks[rank_id] = true
                     extra.mult = (tonumber(extra.mult) or 0) + (tonumber(extra.mult_gain) or 1)
 
-                    -- Return the feedback through the normal individual-card
-                    -- scoring pipeline. `message_card` anchors the popup/juice to
-                    -- Jodiac instead of the playing card, while keeping Balatro's
-                    -- native timing: after this eligible card reaches its scoring
-                    -- step and before the Joker main-scoring phase begins.
+
                     return {
                         message = localize('k_upgrade_ex'),
                         colour = G.C.MULT,

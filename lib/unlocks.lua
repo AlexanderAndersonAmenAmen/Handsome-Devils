@@ -1,6 +1,5 @@
--------------------------------------------------------------------
--- HANDSOME DEVILS: UNLOCK CONDITIONS AND PERSISTENT PROGRESS
--------------------------------------------------------------------
+
+
 
 HNDS = HNDS or {}
 
@@ -150,9 +149,7 @@ local function increment_career_stat(stat_name, amount)
     end
 end
 
--- Count a playing card only after a real destruction path has accepted it.
--- This deliberately does not hook set_ability/start_dissolve because those are
--- also used by enhancement changes and visual transformations.
+
 local function is_real_playing_card(card)
     if type(card) ~= "table" or type(card.base) ~= "table" then return false end
     if card.base.suit == nil or card.base.value == nil then return false end
@@ -328,8 +325,8 @@ local function card_has_enhancement(card, key)
         return HNDS.card_has_stone(card)
     end
     if card_center_key(card) == key then return true end
-    -- Recognise Handsome Devils' real multi-enhancement state without asking
-    -- Steamodded to calculate arbitrary quantum enhancements from a UI/deck scan.
+
+
     if HNDS.aberrant_has_fusion then
         local ok, result = pcall(HNDS.aberrant_has_fusion, card, key)
         if ok and result then return true end
@@ -354,10 +351,7 @@ local function deck_enhancement_count(key)
     return count
 end
 
--- Highest number of cards in the current deck that share one actual
--- Enhancement. Base cards do not count. This is used by Plague's unlock and
--- intentionally supports modded Enhancements as long as they register as the
--- Enhanced set.
+
 local function max_same_enhancement_count()
     local counts = {}
     local best = 0
@@ -741,8 +735,8 @@ local function reset_round_tracking(state)
     state.money_gained_round = 0
     state.round_end_serial = nil
     state.boss_counted_serial = nil
-    -- Famine: a round starts eligible and is invalidated by any played hand
-    -- whose primary poker hand is not High Card.
+
+
     state.famine_round_high_card_only = true
 end
 
@@ -779,9 +773,7 @@ function HNDS.track_unlock_context(context)
     if not state then return end
     local changed = false
 
-    -- ECG: one point for each consecutive played hand containing at least
-    -- one Heart among the scoring cards. Any hand without a scoring Heart
-    -- resets the streak to zero.
+
     if context.before and not context.blueprint and not context.retrigger_joker then
         local scoring = context.scoring_hand
 
@@ -807,9 +799,7 @@ function HNDS.track_unlock_context(context)
             end
         end
 
-        -- Be Not Afraid: play a Three of a Kind whose scoring cards include
-        -- three enhanced Aces. The three Aces may share the same Enhancement;
-        -- only being enhanced matters.
+
         if not state.be_not_afraid_unlock
             and context.scoring_name == "Three of a Kind"
             and type(scoring) == "table"
@@ -832,9 +822,7 @@ function HNDS.track_unlock_context(context)
 
     end
 
-    -- Famine: every hand played during each qualifying round must evaluate
-    -- primarily as High Card. A single different poker hand invalidates that
-    -- round, even if the player later wins it with a High Card.
+
     if context.before and not context.blueprint and not context.retrigger_joker
         and state.round_serial > 0 and context.scoring_name
         and context.scoring_name ~= "High Card"
@@ -845,8 +833,7 @@ function HNDS.track_unlock_context(context)
         end
     end
 
-    -- Water Slide: discard context is explicitly per discarded card and exposes
-    -- that card as context.other_card.
+
     if context.discard and context.other_card and not context.repetition then
         local discarded = context.other_card
         local rank = discarded.get_id and discarded:get_id()
@@ -879,7 +866,7 @@ function HNDS.track_unlock_context(context)
             changed = true
         end
 
-        -- Jodiac unlock: one card of every rank during the same Ante.
+
         local ante = current_ante()
         if state.jodiac_ante ~= ante then
             state.jodiac_ante = ante
@@ -912,9 +899,8 @@ function HNDS.track_unlock_context(context)
     end
 
     if context.setting_blind and not context.blueprint then
-        -- A Joker can only be bought in the shop between two Blind selections.
-        -- Evaluate that completed shop window before resetting it for the newly
-        -- selected round; the first Blind has no preceding shop and is ignored.
+
+
         if state.has_selected_blind then
             if state.joker_bought_round then state.no_joker_buy_streak = 0
             else state.no_joker_buy_streak = state.no_joker_buy_streak + 1 end
@@ -949,7 +935,7 @@ function HNDS.track_unlock_context(context)
                 card.hnds_wait_what_purchase_counted = true
             end
 
-            -- Joker Reverse: rare sale + common purchase in the same shop.
+
             local rarity = center and normalize_rarity(center.rarity)
             if rarity == 1 then
                 state.joker_reverse_common_bought = true
@@ -981,9 +967,8 @@ function HNDS.track_unlock_context(context)
     end
 
     if context.skip_blind then
-        -- Coffee Break is recorded by the G.FUNCS.skip_blind wrapper before
-        -- vanilla advances blind_on_deck. Recording here as well would see
-        -- the next Blind and incorrectly count both Small and Big at once.
+
+
         increment_career_stat(STAT_BLINDS_SKIPPED, 1)
         changed = true
     end
@@ -995,9 +980,7 @@ function HNDS.track_unlock_context(context)
         changed = true
     end
 
-    -- Steamodded emits this only for playing cards that have actually entered
-    -- its removal/destruction pipeline. It covers scoring destruction (Glass,
-    -- destroy-card Jokers, seals, etc.) without counting enhancement changes.
+
     if context.remove_playing_cards and type(context.removed) == "table" then
         for _, removed_card in ipairs(context.removed) do
             if HNDS.count_destroyed_playing_card(removed_card) then changed = true end
@@ -1017,9 +1000,7 @@ function HNDS.track_unlock_context(context)
             changed = true
         end
 
-        -- JEvil unlock condition:
-        -- Play exactly 5 cards, every one actually enhanced to Wild, and all
-        -- 5 cards retain the same underlying/base suit. Any suit is valid.
+
         local played_hand = context.scoring_hand
         if not state.jevil_wild_flush and type(played_hand) == "table" and #played_hand == 5 then
             local common_suit = nil
@@ -1081,9 +1062,8 @@ function HNDS.track_unlock_context(context)
         and state.round_serial > 0
         and G.deck and G.deck.cards and #G.deck.cards == 0
     then
-        -- hand_drawn fires after Steamodded's queued draw events
-        -- have actually moved the cards. This avoids re-entering unlock checks
-        -- in the middle of Blind:drawn_to_hand (notably The Bell).
+
+
         if not state.flags.pot_of_greed then
             state.flags.pot_of_greed = true
             changed = true
@@ -1109,8 +1089,7 @@ function HNDS.track_unlock_context(context)
                 state.famine_high_card_round_streak = 0
             end
 
-            -- Death: win a round while every card still held in hand shares
-            -- the same printed rank and suit.
+
             local held = (G and G.hand and G.hand.cards) or {}
             local death_valid = #held > 0
             local rank, suit = nil, nil
@@ -1138,15 +1117,11 @@ function HNDS.track_unlock_context(context)
             state.famine_high_card_round_streak = 0
         end
 
-        -- ECG uses the consecutive played-hand streak above; no per-round reset here.
-        -- A Boss definition can occupy the Small/Big slot after a Platinum
-        -- upgrade. Only the real Boss slot counts as a defeated Boss Blind for
-        -- career progress and Boss-win streak unlocks.
+
         local active_blind = G.GAME.blind
         local upgraded_slot = active_blind and active_blind.hnds_platinum_replacement_slot
-        -- The end-of-round context already tells us whether the defeated Blind
-        -- was a Boss. Do not depend on blind_on_deck, which can be advanced
-        -- before this context fires.
+
+
         local is_boss = not upgraded_slot
             and ((context.beat_boss == true) or (active_blind and active_blind.boss == true))
         local round_serial = state.round_serial
@@ -1170,9 +1145,7 @@ function HNDS.track_unlock_context(context)
         HNDS.request_unlock_check("hnds_boss_defeated")
     end
 
-    -- Jack-in-the-Box: snapshot the Rare-Joker lineup when entering a real
-    -- showdown Blind. Selling Jokers afterward is allowed; the snapshot is what
-    -- makes the condition "enter showdown with 5 Rare Jokers".
+
     if context.setting_blind and not context.blueprint then
         local blind = G and G.GAME and G.GAME.blind
         local center = blind and blind.config and blind.config.blind
@@ -1254,9 +1227,8 @@ if CardArea and type(CardArea.draw_card_from) == "function" and not CardArea._hn
                     HNDS.request_unlock_check("hnds_full_deck_drawn")
                     return true
                 end
-                -- The card has already been moved into the hand. Queue the
-                -- unlock check after this draw event so Blind:drawn_to_hand
-                -- never sees an empty hand because of re-entrant unlock work.
+
+
                 if G.E_MANAGER and Event then
                     G.E_MANAGER:add_event(Event({
                         trigger = "after",
@@ -1483,8 +1455,7 @@ if type(discover_card) == "function" and not HNDS._unlock_discover_card_wrapped 
     end
 end
 
--- Count explicit "start a new run" restarts. Game:start_run receives
--- args.savetext when loading an existing save, so those loads are not counted.
+
 if Game and type(Game.start_run) == "function" and not HNDS._restart_unlock_wrapped then
     HNDS._restart_unlock_wrapped = true
     local start_run_unlock_ref = Game.start_run
@@ -1573,9 +1544,8 @@ function HNDS.apply_unlock_state_migration()
     end
 
     if not destroy_schema_current then
-        -- Earlier builds counted enhancement/dissolve animations as destroyed
-        -- playing cards. The stored total is therefore not recoverable; reset
-        -- it once when upgrading to the corrected counter.
+
+
         profile.career_stats = profile.career_stats or {}
         profile.career_stats[STAT_CARDS_DESTROYED] = 0
         profile.hnds_destroy_stat_schema = DESTROY_STAT_SCHEMA

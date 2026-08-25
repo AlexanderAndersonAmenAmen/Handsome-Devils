@@ -39,7 +39,7 @@ local function hnds_bizarre_strip_child_stickers(child)
         for key in pairs(child.ability.stickers) do keys[key] = true end
     end
 
-    -- Fighting Spirit is the sole sticker Bizarre's linked Joker may keep.
+
     keys.hnds_fighting_spirit = nil
     local any_removed = false
     for key in pairs(keys) do
@@ -66,19 +66,14 @@ local function hnds_bizarre_strip_child_stickers(child)
     end
 end
 
--- Runtime safety net for mods/effects that bypass Card:add_sticker and write
--- sticker flags directly. Hooks.lua only calls this for the single linked
--- Bizarre child, so it does not add another all-Joker collection scan.
+
 HNDS.strip_bizarre_child_stickers = hnds_bizarre_strip_child_stickers
 
 local function hnds_bizarre_mark_child(child, owner_token)
     if not child then return nil end
     child.ability = child.ability or {}
 
-    -- SMODS.add_card may already have assigned stake/mod stickers by the time
-    -- it returns. Fighting Spirit is the only sticker Bizarre's linked Joker
-    -- may keep. Editions are only suppressed during the initial spawn roll;
-    -- effects may apply an Edition to the child normally afterward.
+
     hnds_bizarre_strip_child_stickers(child)
     child.ability.hnds_bizarre_owner = owner_token
 
@@ -104,8 +99,7 @@ end
 local function hnds_bizarre_pool(rarity)
     local pool, seen = {}, {}
 
-    -- Prefer the live Steamodded pool so bans, unlocks and other pool rules are
-    -- respected. Fall back to registered rarity pools for compatibility.
+
     if get_current_pool then
         local ok, current = pcall(get_current_pool, "Joker", rarity, nil, "hnds_bizarre_spawn")
         if ok and type(current) == "table" then
@@ -187,9 +181,7 @@ local function hnds_bizarre_create_child(card)
             return existing
         end
 
-        -- Defensive migration for saves made before Ms. Fortune was banned
-        -- from Bizarre Joker: remove the invalid linked child and roll a legal
-        -- Rare replacement instead of preserving it forever.
+
         if SMODS and type(SMODS.destroy_cards) == "function" then
             SMODS.destroy_cards(existing, { immediate = true, bypass_eternal = true })
         elseif existing.start_dissolve then
@@ -201,7 +193,7 @@ local function hnds_bizarre_create_child(card)
     end
 
     extra.rolls = (tonumber(extra.rolls) or 0) + 1
-    -- Bizarre Joker only creates Rare Jokers. Never fall back to Uncommon.
+
     local rarity = 3
     local pool = hnds_bizarre_pool(rarity)
     if #pool == 0 then return nil end
@@ -232,8 +224,7 @@ local function hnds_bizarre_remove_child(card)
     local child = hnds_bizarre_find_child(extra.owner_token)
     if not child then return end
 
-    -- This is a linked temporary Joker, so losing Bizarre must remove it even
-    -- if another effect happened to make the child Eternal.
+
     if SMODS and type(SMODS.destroy_cards) == "function" then
         SMODS.destroy_cards(child, { immediate = true, bypass_eternal = true })
     elseif child.start_dissolve then
@@ -285,8 +276,7 @@ SMODS.Joker({
         extra.dismissed = false
         hnds_bizarre_owner_token(card)
 
-        -- Defer one tick so save/load reconstruction can restore an already
-        -- linked child before we decide whether a replacement must be created.
+
         if G and G.E_MANAGER and Event then
             G.E_MANAGER:add_event(Event({
                 trigger = "after",

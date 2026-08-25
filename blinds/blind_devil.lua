@@ -1,10 +1,5 @@
--------------------------------------------------------------------
--- THE DEVIL
--- Container Boss Blind
---
--- Rolls 3 recreated vanilla boss blinds.
--- Their logic is stored in lib/devil_bosses.lua.
--------------------------------------------------------------------
+
+
 
 HNDS = HNDS or {}
 
@@ -12,9 +7,6 @@ local DEVIL_KEY = "bl_hnds_blind_devil"
 local DEVIL_KEYS = {"bl_hnds_blind_devil", "blind_devil"}
 
 
--- The Devil recreates vanilla Boss Blind effects under internal hook keys.
--- These map back to Balatro's native Blind localization entries so the hover
--- popup always uses the player's language and the exact vanilla wording.
 local devil_vanilla_blind_keys = {
     bl_hook_the_house = "bl_house",
     bl_hook_the_wall = "bl_wall",
@@ -121,14 +113,13 @@ HNDS.create_devil_blind_tooltip = function(ante)
     local nodes = {}
     local rolled = G and G.GAME and G.GAME.hnds_devil_bosses or {}
 
-    -- Preserve The Devil's three original tooltips as three independent boxes.
+
     for i = 1, 3 do
         local box = create_devil_effect_box(rolled[i])
         if box then nodes[#nodes + 1] = box end
     end
 
-    -- Platinum upgrades add more independent Blind boxes after the original
-    -- three; they never collapse The Devil into its normal one-line list.
+
     if HNDS.create_platinum_upgrade_effect_boxes then
         for _, box in ipairs(HNDS.create_platinum_upgrade_effect_boxes(ante)) do
             nodes[#nodes + 1] = box
@@ -148,9 +139,7 @@ HNDS.create_devil_blind_tooltip = function(ante)
     }
 end
 
--- Called from a narrow Lovely injection immediately after Balatro creates the
--- blind-choice AnimatedSprite. This changes only the Devil badge itself; the
--- surrounding blind-selection UI hierarchy and button hitboxes are untouched.
+
 HNDS.clear_devil_blind_tooltip = function(sprite)
     if not sprite then return end
     if sprite.hnds_devil_blind_tooltip_attached then
@@ -212,8 +201,8 @@ HNDS.attach_devil_blind_tooltip = function(sprite, blind_config)
 
             _self.config.h_popup = popup
             _self.config.h_popup_config = {
-                -- Keep the three effect boxes inside the game window by always
-                -- opening them outside the badge's right edge.
+
+
                 align = "cr",
                 offset = { x = 0.1, y = 0 },
                 parent = _self,
@@ -230,8 +219,6 @@ HNDS.attach_devil_blind_tooltip = function(sprite, blind_config)
 end
 
 
--- Called by the boss-selection hook so the nickname exists before the
--- blind-select UI is constructed.
 HNDS.prepare_devil_encounter = function()
     ensure_devil_roll()
     return ensure_devil_name()
@@ -274,7 +261,7 @@ SMODS.Blind {
     discovered = false,
     unlocked = true,
 
-    -- The Fish and The Serpent use the drawing_cards context.
+
     modifies_draw = true,
 
     loc_vars = function(self)
@@ -317,8 +304,7 @@ SMODS.Blind {
             G.GAME.hnds_devil_soul_bosses[i] = key
         end
 
-        -- Play once when the encounter is actually selected. Collection/preview
-        -- rendering never calls set_blind.
+
         if hnds_config and hnds_config.enableCustomSounds then
             play_sound("hnds_curse_used", 1, 0.75)
         end
@@ -334,9 +320,7 @@ SMODS.Blind {
                 if boss.debuff then
                     G.GAME.blind.debuff = G.GAME.blind.debuff or {}
 
-                    -- Card-specific suit/type checks are handled independently by
-                    -- the shared Blind:debuff_card wrapper. Keep only hand-level
-                    -- restrictions on the live Blind object.
+
                     if boss.debuff.h_size_ge then
                         G.GAME.blind.debuff.h_size_ge = boss.debuff.h_size_ge
                     end
@@ -350,16 +334,12 @@ SMODS.Blind {
             end
         end
 
-        -- The deck was evaluated before The Devil's component stack became
-        -- active. Apply its card debuffer immediately at encounter start.
+
         for _, card in ipairs(G.playing_cards or {}) do
             G.GAME.blind:debuff_card(card)
         end
 
-        -- The Blind-select badge is wired by Lovely, but the fight HUD uses the
-        -- active Blind object (and sometimes its AnimatedSprite) as the hover
-        -- target. Attach the same popup to both, then repeat after vanilla's
-        -- delayed badge reveal so the hook survives the HUD refresh.
+
         local function attach_live_devil_tooltip()
             local active_blind = G and G.GAME and G.GAME.blind
             if not active_blind then return end
@@ -386,12 +366,11 @@ SMODS.Blind {
     end,
 
     calculate = function(self, blind, context)
-        -- Blind:debuff_card owns component card debuffs consistently across
-        -- Steamodded versions; do not also return a mod-level debuff result.
+
+
         if context.debuff_card then return end
 
-        -- Cleanup contexts are sent after a Blind has been marked disabled.
-        -- Let the component effects see those contexts before returning.
+
         local cleanup_context = context.blind_disabled or context.blind_defeated
         if blind.disabled and not cleanup_context then return end
 
@@ -417,8 +396,7 @@ SMODS.Blind {
         G.GAME.hnds_devil_active = nil
         G.GAME.hnds_devil_name_key = nil
 
-        -- Restore the default localization after the encounter. The next
-        -- selection will apply its newly rolled nickname before rendering.
+
         apply_devil_name("hnds_devil_name_default")
     end,
 }

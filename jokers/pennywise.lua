@@ -3,8 +3,8 @@ SMODS.Joker {
     unlocked = false,
     unlock_condition = { type = "", extra = "", hidden = true },
     locked_loc_vars = function(self, info_queue, card)
-        -- Force Steamodded's locked-Joker path to initialise specific_vars and
-        -- use the same hidden Legendary message as vanilla Soul Jokers.
+
+
         return { key = "joker_locked_legendary", set = "Other", vars = {} }
     end,
     discovered = false,
@@ -16,24 +16,19 @@ SMODS.Joker {
     pos = { x = 5, y = 2 },
     soul_pos = { x = 0, y = 3 },
     loc_vars = function(self, info_queue, card)
-        -- In Steamodded BETA-1620a, Joker auxiliary tooltips must be queued
-        -- from loc_vars. A standalone `info_queue` callback is ignored.
-        -- Always show the Soul sticker explanation on an unlocked Pennywise.
+
+
         info_queue[#info_queue + 1] = { set = "Other", key = "hnds_soul", vars = {} }
 
         if G and G.GAME and G.GAME.blind and HNDS and HNDS.get_blind_souls then
             for _, soul in ipairs(HNDS.get_blind_souls(G.GAME.blind, "hnds_pennywise_preview") or {}) do
-                -- Soul generation recipes are also used as tooltip descriptors,
-                -- but some fallback recipes only contain `key`. BETA-1620a's
-                -- generate_card_ui requires a set for these descriptor tables.
-                -- Normalize keyed Joker recipes here and never queue an invalid
-                -- recipe/filter table into info_queue.
+
+
                 if type(soul) == "table" and soul.key then
                     local preview_center = G and G.P_CENTERS and G.P_CENTERS[soul.key]
                     if preview_center then
-                        -- Queue the registered Center itself. This guarantees
-                        -- generate_card_ui receives a complete set/key/config
-                        -- object rather than a partial Soul generation recipe.
+
+
                         info_queue[#info_queue + 1] = preview_center
                     elseif G and G.P_CENTERS and G.P_CENTERS.j_joker then
                         info_queue[#info_queue + 1] = G.P_CENTERS.j_joker
@@ -79,10 +74,8 @@ SMODS.Joker {
                         local c = SMODS.add_card(args)
                         if c then
                             c.ability = c.ability or {}
-                            -- Apply the actual registered Sticker instead of
-                            -- only toggling its ability flag. This gives the
-                            -- generated Joker the Soul badge/tooltip through
-                            -- Steamodded's normal sticker UI path.
+
+
                             if c.add_sticker then
                                 c:add_sticker('hnds_soul', true)
                             else

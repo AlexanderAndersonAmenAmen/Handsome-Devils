@@ -28,8 +28,8 @@ SMODS.Joker {
     unlocked = false,
     unlock_condition = { type = "", extra = "", hidden = true },
     locked_loc_vars = function(self, info_queue, card)
-        -- Force Steamodded's locked-Joker path to initialise specific_vars and
-        -- use the same hidden Legendary message as vanilla Soul Jokers.
+
+
         return { key = "joker_locked_legendary", set = "Other", vars = {} }
     end,
     discovered = false,
@@ -65,9 +65,7 @@ SMODS.Joker {
         if not context.blueprint then
             local upgrades = 0
 
-            -- Purchases evaluate the bought Joker separately with buying_self.
-            -- Ignore that evaluation so a newly bought Krusty cannot count its
-            -- own price or count the same purchase twice.
+
             if context.buying_card and not context.buying_self and context.card then
                 upgrades = krusty_add_spending(card, context.card.cost)
             elseif context.reroll_shop then

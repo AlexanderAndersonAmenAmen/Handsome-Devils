@@ -7,7 +7,7 @@ SMODS.Back {
         return HNDS.unlock_condition_met("crystal", args)
     end,
     apply = function(self, back)
-        G.GAME.modifiers.hnds_double_showdown = true -- legacy/save compatibility
+        G.GAME.modifiers.hnds_double_showdown = true
         G.GAME.modifiers.hnds_crystal_showdown = true
         G.GAME.modifiers.hnds_crystal_ante_8_replacement = true
     end,
@@ -21,7 +21,7 @@ SMODS.Back {
     pools = { RedeemableBacks = true }
 }
 
--- Pick a random hidden (soul-type) Consumeable key.
+
 local function random_hidden_consumeable(seed)
     local options = {}
     local pool = G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Consumeables or {}
@@ -30,8 +30,8 @@ local function random_hidden_consumeable(seed)
     end
     local chosen = #options > 0 and pseudorandom_element(options, seed) or nil
     if chosen then return chosen end
-    -- Challenges/modpacks may replace or empty the Consumeables pool. Prefer a
-    -- registered vanilla hidden consumable, but never hand SMODS a nil key.
+
+
     if G and G.P_CENTERS then
         if G.P_CENTERS.c_soul then return 'c_soul' end
         if G.P_CENTERS.c_black_hole then return 'c_black_hole' end
@@ -39,7 +39,7 @@ local function random_hidden_consumeable(seed)
     return nil
 end
 
-SMODS.Booster { --putting this in the same file for convenience
+SMODS.Booster {
     key = "spectral_ultra",
     weight = 0.01,
     kind = "Spectral",
@@ -77,8 +77,8 @@ SMODS.Booster { --putting this in the same file for convenience
             if hidden_key then
                 return { key = hidden_key, key_append = "spe", area = G.pack_cards, skip_materialize = true }
             end
-            -- Last-resort compatibility fallback when another mod removes every
-            -- hidden consumable center: generate a normal Spectral instead.
+
+
             return { set = "Spectral", area = G.pack_cards, skip_materialize = true, soulable = true, key_append = "spe" }
         else
             return {
@@ -94,7 +94,7 @@ SMODS.Booster { --putting this in the same file for convenience
     in_pool = function(self, args)
         return hnds_config.enablePackSpawning and G.GAME.round_resets.ante >= 3
     end,
-    cry_digital_hallucinations = { --cryptid digital hallucinations compat
+    cry_digital_hallucinations = {
         colour = G.C.SECONDARY_SET.Spectral,
         loc_key = "k_plus_spectral",
         create = function ()

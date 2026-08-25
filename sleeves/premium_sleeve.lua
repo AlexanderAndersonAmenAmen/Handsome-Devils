@@ -1,4 +1,4 @@
--- Premium Sleeve: Same as Premium Deck + Common Jokers appear X0.5 less often when paired
+
 CardSleeves.Sleeve({
     key = "premium_sleeve",
     atlas = "hnds_sleeves",
@@ -13,7 +13,7 @@ CardSleeves.Sleeve({
         })
     end,
     apply = function(self)
-        -- Base effect: Start with Premium and Top Shelf vouchers (always given)
+
         HNDS.grant_vouchers({'v_hnds_premium', 'v_hnds_top_shelf'})
 
         if self.get_current_deck_key() == "b_hnds_premiumdeck" then

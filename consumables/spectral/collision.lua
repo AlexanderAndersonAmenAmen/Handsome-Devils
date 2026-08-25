@@ -1,7 +1,7 @@
 SMODS.Consumable({
 	key = "collision",
 	atlas = "Consumables",
-	pos = { x = 3, y = 1 }, --this is just guessing lmao i still need the sprite
+	pos = { x = 3, y = 1 },
 	set = "Spectral",
 	config = { mod_conv = "m_hnds_aberrant", max_highlighted = 2 },
 	discovered = false,

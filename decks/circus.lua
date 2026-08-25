@@ -1,6 +1,6 @@
 SMODS.Shader({key = "transparent", path = "transparent.fs"})
 
-SMODS.DrawStep({ -- for drawing semi-transparent shader on circus joker
+SMODS.DrawStep({
 	key = "hnds_circus_cardarea_shader",
 	order = 15,
 	func = function(card, layer)

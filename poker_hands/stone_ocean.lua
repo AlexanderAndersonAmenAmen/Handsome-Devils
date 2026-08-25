@@ -30,7 +30,7 @@ SMODS.PokerHandPart({
 		local stones = 0
 		for i = 1, #hand do
 			local v = hand[i].base.value
-			-- Skip anything we can't interpret (for whatever reason)
+
 			if v then
 				if HNDS.card_has_stone and HNDS.card_has_stone(hand[i])
 					and not hand[i]:is_face() and stones < 5

@@ -18,7 +18,7 @@ SMODS.Joker({
 	eternal_compat = false,
 	perishable_compat = false,
 	config = {
-		extra_value = 13, -- $5 shop cost still; vanilla $2 sell + $13 = $15 starting sell value
+		extra_value = 13,
 		extra = { Xmult = 1.5, odds = 6, }
 	},
 	pools = { Food = true },
@@ -43,22 +43,18 @@ SMODS.Joker({
 				context.forcetrigger
 				or SMODS.pseudorandom_probability(card, "banan", 1, card.ability.extra.odds, "hnds_banana_split")
 			) then
-				-- Reserve the slot immediately. Without this, two Banana Splits that
-				-- trigger during the same evaluation can both see the same free slot
-				-- before either delayed copy is emplaced, causing an overflow.
+
+
 				G.GAME.joker_buffer = G.GAME.joker_buffer + 1
 
-				-- Banana Split copies inherit this exact copy's current sell value.
-				-- Gift Card and similar effects change ability.extra_value at runtime;
-				-- copy_card can re-seed it from the center config, so restore the
-				-- live value explicitly without touching the Joker's shop cost.
+
 				local inherited_extra_value = card.ability and card.ability.extra_value
 				local inherited_sell_cost = card.sell_cost
 				local source_card = card
 
 				G.E_MANAGER:add_event(Event({
 					func = function()
-						-- Release our reservation before checking the real CardArea again.
+
 						G.GAME.joker_buffer = math.max(0, (G.GAME.joker_buffer or 1) - 1)
 						if not (G.jokers and G.jokers.cards and G.jokers.config)
 							or #G.jokers.cards >= G.jokers.config.card_limit

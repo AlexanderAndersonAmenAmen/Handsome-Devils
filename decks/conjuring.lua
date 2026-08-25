@@ -14,7 +14,7 @@ SMODS.Back({
     pools = { RedeemableBacks = true }
 })
 
-local magic_diha_compat = { --cryptid digital hallucinations compat
+local magic_diha_compat = {
     colour = G.C.FILTER,
     loc_key = "k_plus_q",
     create = function ()
@@ -30,7 +30,7 @@ local magic_diha_compat = { --cryptid digital hallucinations compat
     end
 }
 
--- The six magic packs are identical except for their atlas sprite position.
+
 local magic_pack_positions = {
     { x = 4, y = 0 }, { x = 5, y = 0 },
     { x = 4, y = 1 }, { x = 5, y = 1 },
@@ -52,15 +52,15 @@ for pack_index, pack_pos in ipairs(magic_pack_positions) do
             local cfg = (card and card.ability) or self.config or {}
             return {
                 vars = { cfg.extra, cfg.choose },
-                key = self.key:sub(1, -3) --gets rid of the number at the end for the description key
+                key = self.key:sub(1, -3)
             }
         end,
-        ease_background_colour = function (self) --colours in the pack, subject to change probably
+        ease_background_colour = function (self)
             ease_colour(G.C.DYN_UI.MAIN, G.C.DARK_EDITION)
             ease_background_colour({ new_colour = G.C.FILTER, special_colour = G.C.BLACK, contrast = 2 })
         end,
         particles = function (self)
-            G.booster_pack_sparkles = Particles(1, 1, 0, 0, { --this is just arcana pack particle code, feel free to change some values
+            G.booster_pack_sparkles = Particles(1, 1, 0, 0, {
                 timer = 0.015,
                 scale = 0.2,
                 initialize = true,
@@ -68,7 +68,7 @@ for pack_index, pack_pos in ipairs(magic_pack_positions) do
                 speed = 1.1,
                 padding = -1,
                 attach = G.ROOM_ATTACH,
-                colours = { G.C.BLACK, G.C.RED, G.C.SECONDARY_SET.Joker, G.C.SECONDARY_SET.Planet, G.C.SECONDARY_SET.Tarot, G.C.SECONDARY_SET.Spectral }, --im just messing around with colours tbh
+                colours = { G.C.BLACK, G.C.RED, G.C.SECONDARY_SET.Joker, G.C.SECONDARY_SET.Planet, G.C.SECONDARY_SET.Tarot, G.C.SECONDARY_SET.Spectral },
                 fill = true
             })
             G.booster_pack_sparkles.fade_alpha = 1
@@ -96,8 +96,7 @@ for pack_index, pack_pos in ipairs(magic_pack_positions) do
                 and game.selected_sleeve == "sleeve_hnds_conjuring_sleeve"
             local ante = game and game.round_resets and tonumber(game.round_resets.ante) or 0
 
-            -- Conjuring Deck/Sleeve explicitly force Magic boosters and remain
-            -- exempt. Ordinary natural Magic Pack rolls begin at Ante 3.
+
             return hasConjuringDeck or hasConjuringSleeve
                 or (hnds_config.enableMagicPackSpawning and ante >= 3)
         end

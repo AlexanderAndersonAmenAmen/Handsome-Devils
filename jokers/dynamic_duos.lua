@@ -30,7 +30,7 @@ SMODS.Joker {
             if not rank_a then rank_a = r elseif r ~= rank_a and not rank_b then rank_b = r end
         end
         if not (rank_a and rank_b) then return end
-        -- A scored face card can choose whichever parity the Joker needs.
+
         if has_wild_rank then return { repetitions = card.ability.extra.repetitions } end
         local is_odd = function(x) return x % 2 == 1 or x == 14 end
         if is_odd(rank_a) ~= is_odd(rank_b) then return { repetitions = card.ability.extra.repetitions } end

@@ -24,7 +24,7 @@ SMODS.Joker({
 		return { vars = { remaining, extra.per_tag } }
 	end,
 	calculate = function(self, card, context)
-		-- On blind select: consume held consumables and convert into tags
+
 		if context.setting_blind and G.consumeables and G.consumeables.cards then
 			local to_remove = {}
 			for _, c in ipairs(G.consumeables.cards) do
@@ -43,7 +43,7 @@ SMODS.Joker({
 					}))
 				end
 				card.ability.extra.eaten = card.ability.extra.eaten + eaten
-				-- Every 2 eaten consumables -> random tag
+
 				while card.ability.extra.eaten >= card.ability.extra.per_tag do
 					card.ability.extra.eaten = card.ability.extra.eaten - card.ability.extra.per_tag
 					add_tag(HNDS.poll_tag('hnds_clown_devil'))

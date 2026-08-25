@@ -1,9 +1,5 @@
--------------------------------------------------------------------
--- WASTED WISH
--- Ante 10 Showdown Boss Blind
--- Its whole-Ante behaviour is managed by lib/hooks.lua as soon as this Blind
--- is selected, and is removed immediately if the Boss is rerolled away.
--------------------------------------------------------------------
+
+
 
 HNDS = HNDS or {}
 
@@ -33,9 +29,7 @@ SMODS.Blind {
         end
     end,
 
-    -- Disabling the Blind during its fight disables its effect too. Defeating
-    -- it leaves cleanup to the Ante transition so the wording "this Ante"
-    -- remains literal through the post-boss cashout/shop transition.
+
     disable = function(self)
         if HNDS.set_wasted_wish_active then
             HNDS.set_wasted_wish_active(false)

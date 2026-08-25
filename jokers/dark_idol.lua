@@ -29,7 +29,7 @@ SMODS.Joker{
     end,
     blueprint_compat = true,
     eternal_compat = true,
-    perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
+    perishable_compat = false,
     calculate = function(self, card, context)
         if type(context) ~= "table" or not card or not card.ability or not card.ability.extra then return end
         local current_round = G and G.GAME and G.GAME.current_round

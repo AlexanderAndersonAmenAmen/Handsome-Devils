@@ -47,9 +47,8 @@ SMODS.Joker {
             delay = 0.15,
             func = function()
                 if leftmost and rightmost and leftmost.area == G.hand and rightmost.area == G.hand then
-                    -- This is the same in-place copy path used by Death Tarot:
-                    -- rank, suit, Enhancement, Seal, Edition and card state copy
-                    -- without changing the target's hand position.
+
+
                     copy_card(rightmost, leftmost)
                 end
                 return true

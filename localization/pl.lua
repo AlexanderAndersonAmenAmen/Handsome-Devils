@@ -1,9 +1,9 @@
 return {
 	descriptions = {
-		-- this key should match the set ("object type") of your object,
-		-- e.g. Voucher, Tarot, or the key of a modded consumable type
+
+
 		Joker = {
-			-- this should be the full key of your object, including any prefixes
+
 			j_hnds_color_of_madness = {
 				name = "Kolor szaleństwa",
 				text = {
@@ -12,11 +12,8 @@ return {
 					"kolory, {C:attention}pierwsza{} punktowana",
 					"karta staje się {C:attention}Dzika{}",
 				},
-				-- only needed when this object is locked by default
-				-- unlock = {
-				--'This is a condition',
-				--'for unlocking this card',
-				--},
+
+
 			},
 			j_hnds_occultist = {
 				name = "Occultist",
@@ -155,7 +152,7 @@ return {
 					"{C:inactive}(np. {}{C:green}1 na 3{} {C:inactive}->{} {C:green}#1# na 3{}{C:inactive}){}",
 				},
 			},
-		
+
 
 			j_hnds_jack_in_the_box = {
 				name = "Jack-in-the-box",
@@ -404,7 +401,7 @@ return {
 					"{C:inactive}({C:red}brak ceny{C:inactive}){}",
 				}
 			},
-		
+
 
             hnds_jodiac_ranks_empty = {
                 name = "Scored Ranks",

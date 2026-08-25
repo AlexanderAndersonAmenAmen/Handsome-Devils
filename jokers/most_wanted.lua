@@ -1,7 +1,5 @@
--- Most Wanted
--- Kept intentionally simple: this Joker never builds auxiliary tooltips itself.
--- Steamodded is left in full control of tooltips for Editions and Stickers that
--- are physically applied to Most Wanted.
+
+
 
 local function most_wanted_multiplier(total_jokers)
     if total_jokers > 800 then return 12 end
@@ -66,8 +64,7 @@ local function display_vars(self, card)
     local edition_key = extra and extra.target_edition or nil
     local multiplier = tonumber(extra and extra.multiplier) or 4
 
-    -- Collection/fake cards do not have run state. Use a stable preview and do
-    -- not mutate the fake card or consume RNG while a tooltip is being built.
+
     local in_run = G and G.STAGES and G.STAGE == G.STAGES.RUN
     if not in_run then
         target_key = target_key or preview_target()
@@ -158,8 +155,7 @@ SMODS.Joker({
         }
     },
 
-    -- Do not append, remove, reorder, or otherwise touch info_queue here.
-    -- Steamodded uses that queue for the card's own Edition/Sticker tooltips.
+
     loc_vars = function(self, info_queue, card)
         return { vars = display_vars(self, card) }
     end,
@@ -177,8 +173,7 @@ SMODS.Joker({
         end
         local extra = card.ability.extra
 
-        -- Old saves or unusual creation paths can reach the shop before
-        -- set_ability initialized the target. Repair that state once, safely.
+
         if (context.starting_shop or context.reroll_shop or context.modify_weights or context.modify_shop_card)
             and not extra.target
         then

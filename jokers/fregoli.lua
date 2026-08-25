@@ -10,7 +10,7 @@ SMODS.Joker {
                     copied = c
                 end
             end
-            if not copied then copied = card end --failsafe
+            if not copied then copied = card end
             local name, compat
             name = localize { key = copied.config.center.key, type = "name_text", set = copied.ability.set } or
             localize("k_none")

@@ -1,4 +1,4 @@
--- Circus Sleeve: Same as Circus Deck + Creates a copy of the first Joker after defeating first boss blind when paired
+
 CardSleeves.Sleeve({
     key = "circus_sleeve",
     atlas = "hnds_sleeves",
@@ -13,11 +13,11 @@ CardSleeves.Sleeve({
         return HNDS.sleeve_loc(self, "b_hnds_circus", {joker_name, colours = {G.C.ORANGE}})
     end,
     apply = function(self)
-        -- Base effect: Set up circus deck functionality
+
         G.GAME.hnds_circus_joker_key = nil
         G.hnds_circus_joker = nil
 
-        -- Sleeve additional effect: Enable joker copying after first boss blind when paired with Circus Deck
+
         if self.get_current_deck_key() == "b_hnds_circus" then
             G.GAME.modifiers.circus_sleeve_active = true
             G.GAME.circus_boss_defeated = false
@@ -25,9 +25,8 @@ CardSleeves.Sleeve({
         end
     end,
     calculate = function(self, sleeve, context)
-        -- Base effect (random joker) is handled by reset_game_globals in lib/utils.lua
 
-        -- Sleeve Stacked effect
+
         if self.get_current_deck_key() == "b_hnds_circus" and context.end_of_round and context.main_eval and context.beat_boss and not G.GAME.circus_copy_created then
             if G.hnds_circus_joker and G.hnds_circus_joker.cards and #G.hnds_circus_joker.cards > 0 then
                 if #G.jokers.cards + (G.GAME.joker_buffer or 0) < G.jokers.config.card_limit then

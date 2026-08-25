@@ -1,4 +1,4 @@
--- patatas
+
 local RARITY = {
 	[1] = { name = 'k_common',  key = 'Common' },
 	[2] = { name = 'k_uncommon', key = 'Uncommon' },

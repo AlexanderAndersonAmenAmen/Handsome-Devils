@@ -1,47 +1,8 @@
---[[
-We have a lot of hooks here, they do global stuff and helps with specifit effects from Jokers, Blinds and more
-
-Sections:
-  Badge colour
-  Cursed Sticker exclusivity
-  Platinum Stake
-  Career stats & card destruction unlocks (Energized, Last Laugh)
-  Black Seal & voucher card destruction / scoring
-  Card cost modifications (Coffee Break, Art, Premium Deck, Curses)
-  Shop card creation (Most Wanted, Blood Stake curses)
-  Krusty food negative edition
-  DNA Tag joker copy
-  Circus Deck (find_joker extension)
-  Crystal Deck (double-showdown boss selection)
-  Challenge description tab edition patch
-  Impostor rank-spoofing system
-  Base blind increase curse (price_ante_scaling)
-  end_round dispatcher (calls per-subsystem functions)
-  Blind.set_blind dispatcher (calls per-subsystem functions)
-]]
 
 
-
-
--------------------------------------------------------------------
--- Handsome Devils hooks
--------------------------------------------------------------------
 
 HNDS = HNDS or {}
 
-
-
--------------------------------------------------------------------
--- Devil system
---
--- main.lua already loads lib/devil_bosses.lua before blinds/blind_devil.lua.
--- Do not load either file again here; double registration corrupts state and
--- makes debugging the blind much harder.
--------------------------------------------------------------------
-
--------------------------------------------------------------------
--- ANTE 10 SHOWDOWN BOSS POOL
--------------------------------------------------------------------
 
 local get_new_boss_ref = get_new_boss
 
@@ -84,9 +45,8 @@ local function hnds_crystal_replaces_ante_8_showdown()
         and G.GAME.selected_back.effect.center
     local crystal_deck = modifiers.hnds_crystal_ante_8_replacement == true
         or (selected_back and selected_back.key == "b_hnds_crystal")
-    -- Crystal only replaces the normal Ante 8 showdown. Platinum and higher
-    -- move the run's showdown/win Ante to 10, so Ante 8 must remain an ordinary
-    -- Boss Blind on those stakes.
+
+
     return crystal_deck
         and G.GAME.round_resets.ante == 8
         and G.GAME.win_ante == 8
@@ -116,13 +76,7 @@ HNDS.get_new_boss_unforced = function()
     return boss
 end
 
--------------------------------------------------------------------
--- ANTE 10 GLOBAL BOSS SUPPORT
--------------------------------------------------------------------
 
--- Perilous Pact calls this from a narrow Lovely patch at the final hand-score
--- addition. Keeping the cap here makes it compatible with ordinary numbers
--- and with Big-number mods that overload comparison/arithmetic operators.
 function HNDS.cap_perilous_pact_score(score)
     if not (G and G.GAME and G.GAME.blind and not G.GAME.blind.disabled) then
         return score
@@ -363,10 +317,7 @@ local function hnds_wasted_wish_apply_adjustments(adjustments, direction)
     end
 end
 
--- Crystal Ball and Antimatter change CardArea limits directly, so hiding
--- G.GAME.used_vouchers is not enough after those CardAreas already exist.
--- Remove only their own bonus, never derive a new limit from nil/zero, and
--- remember the exact bonus to add back when Wasted Wish stops being active.
+
 local function hnds_wasted_wish_disable_slot_bonuses(adjustments)
     if not (G and G.GAME) then return end
     adjustments = adjustments or {}
@@ -390,9 +341,8 @@ local function hnds_wasted_wish_disable_slot_bonuses(adjustments)
             area.config.card_limit = math.max(1, limit - consumable_bonus)
             state.consumable_processed = true
         else
-            -- If the CardArea is not ready yet (or already has a base-sized
-            -- limit), the empty voucher proxy will make it initialize without
-            -- Crystal Ball's bonus. Do not subtract again later.
+
+
             state.consumable_processed = false
         end
     end
@@ -507,9 +457,7 @@ function HNDS.set_wasted_wish_active(active)
     end
 end
 
--- Vouchers remain purchasable while Wasted Wish is active. After redemption,
--- rebuild the disabled-voucher snapshot so the newly bought Voucher is owned
--- but its effect stays suppressed until Wasted Wish ends or is rerolled away.
+
 if Card and Card.redeem and not Card._hnds_wasted_wish_redeem then
     Card._hnds_wasted_wish_redeem = true
     local hnds_wasted_wish_redeem_ref = Card.redeem
@@ -566,27 +514,21 @@ local function hnds_update_ante_10_runtime()
         if ante ~= G.GAME.hnds_wasted_wish_ante then
             HNDS.set_wasted_wish_active(false)
         else
-            -- Save files do not preserve metatables; reinstall the proxy after
-            -- loading so Voucher checks stay disabled for the rest of the Ante.
+
+
             local mt = type(G.GAME.used_vouchers) == "table"
                 and getmetatable(G.GAME.used_vouchers)
             if not (mt and mt.__newindex) then
                 hnds_install_wasted_wish_voucher_proxy()
             end
 
-            -- CardAreas may be created shortly after boss selection. Apply the
-            -- slot removal once they exist, without ever turning a missing or
-            -- zero-valued limit into zero slots.
+
             hnds_wasted_wish_disable_slot_bonuses(
                 G.GAME.hnds_wasted_wish_adjustments)
         end
     end
 end
 
-
--------------------------------------------------------------------
--- NIGHTMARE STAKE: CURSED JOKER LEFT IN SHOP
--------------------------------------------------------------------
 
 local function hnds_nightmare_stake_active()
     return G and G.GAME and G.GAME.modifiers
@@ -663,19 +605,13 @@ local function hnds_next_small_or_big_blind()
     return nil
 end
 
--- Called at the beginning of toggle_shop, while the shop cards still exist.
--- The actual Blind replacement is deferred until the next Blind Select screen
--- is built. At that point vanilla has finalized blind_on_deck, blind_states and
--- (after a Boss shop) the new Ante's Small/Big choices.
+
 HNDS.handle_nightmare_cursed_shop_exit = function()
     if not (G and G.GAME and G.shop) then return false end
     if G.STATES and G.STATES.SHOP and G.STATE ~= G.STATES.SHOP then return false end
     if not hnds_nightmare_stake_active() then return false end
 
-    -- Both the runtime wrapper and the Lovely fallback can fire for the same
-    -- click. The run-level pending flag blocks that duplicate immediately,
-    -- while the shop-local flag is cleared on the next event-manager tick so
-    -- the following shop (including the shop before Big Blind) can queue too.
+
     if G.GAME.hnds_nightmare_shop_upgrade_pending then return false end
     if G.shop.hnds_nightmare_cursed_upgrade_queued then return false end
     if not hnds_shop_has_cursed_joker() then return false end
@@ -701,8 +637,7 @@ HNDS.handle_nightmare_cursed_shop_exit = function()
     return true
 end
 
--- Runtime wrapper is the primary hook. The Lovely patch remains as a fallback
--- for load orders where another mod replaces toggle_shop after this file loads.
+
 if G and G.FUNCS and type(G.FUNCS.toggle_shop) == "function"
     and not _G._hnds_nightmare_toggle_shop_wrapped
 then
@@ -718,12 +653,6 @@ then
 end
 
 
--------------------------------------------------------------------
--- TAG POP COUNTER (Forbidden Fruit)
--------------------------------------------------------------------
-
--- Count a Tag exactly once when it actually triggers. Creation, holding and
--- copying do not count by themselves; a copied Tag counts when it later pops.
 local function hnds_tag_key(tag)
     if not tag then return nil end
     return tag.key
@@ -747,9 +676,8 @@ if Tag and type(Tag.apply_to_run) == "function" and not HNDS._tag_pop_hooked the
         local result
 
         if hnds_is_investment_tag(self) then
-            -- Investment is handled directly by the real physical Boss-slot
-            -- defeat hook in vanilla_investment_tag.lua. Suppress vanilla's
-            -- broad last_blind.boss check to avoid upgraded Small/Big payouts.
+
+
             result = false
         else
             result = tag_apply_to_run_ref(self, context, ...)
@@ -768,11 +696,7 @@ if Tag and type(Tag.apply_to_run) == "function" and not HNDS._tag_pop_hooked the
     end
 end
 
--------------------------------------------------------------------
--- BADGE COLOR
--------------------------------------------------------------------
 
--- Color for Carcosa badge effect.
 local hnds_loc_colours_injected = false
 local function HNDS_ensure_loc_colours()
 	if hnds_loc_colours_injected then return end
@@ -791,9 +715,7 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 		HNDS_ensure_loc_colours()
 		local trailing = HNDS.pack(...)
 
-		-- Cursed sticker tooltip workaround. Dynamic localization is kept scoped
-		-- to this one call and restored even if another mod's localization wrapper
-		-- throws. Never leave a stale Card in a global after tooltip generation.
+
 		if type(args) == 'table' and args.key == 'hnds_cursed' and args.type == 'other' then
 			local card = _G.HNDS_CURRENT_CURSE_CARD
 			if card and card.ability and G and G.localization and G.localization.descriptions then
@@ -803,9 +725,7 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 				local other = G.localization.descriptions.Other
 				local loc_entry = other and other.hnds_cursed
 
-				-- text_parsed is mandatory for localize(type='other'). If the parser is
-				-- unavailable, fall back to the static Cursed entry rather than creating
-				-- the same nil/ipairs crash path that dynamic tooltips can trigger.
+
 				if (offer or price) and type(loc_entry) == 'table' and type(loc_parse_string) == 'function' then
 					local desc_lines, offer_lines_count = {}, 0
 					local function append_entry(key, count_offer)
@@ -863,13 +783,7 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 	end
 end
 
--------------------------------------------------------------------
--- CURSED STICKER EXCLUSIVITY
--------------------------------------------------------------------
 
--- Cursed Sticker exclusivity functions.
--- hnds_card_has_cursed: quick check for the cursed sticker on a Joker.
--- hnds_strip_other_stickers: remove every sticker except hnds_cursed from a cursed Joker, including Rental.
 local function hnds_card_has_cursed(card)
 	if not card then return false end
 	return (card.ability and card.ability.hnds_cursed)
@@ -901,7 +815,7 @@ end
 local function hnds_strip_other_stickers(card)
 	if not hnds_card_has_cursed(card) then return end
 	if not card.ability then return end
-	-- Collect before clearing fields so remove_sticker can clean visual/state data.
+
 	local to_remove = {}
 	for _, k in ipairs({ 'perishable', 'eternal', 'rental' }) do
 		if card.ability[k]
@@ -911,7 +825,7 @@ local function hnds_strip_other_stickers(card)
 			to_remove[k] = true
 		end
 	end
-	-- Collect all sticker keys, mostly exist bc Bunco creates stickers with card.ability
+
 	if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
 		for _, k in ipairs(SMODS.Sticker.obj_buffer) do
 			if k ~= 'hnds_cursed' and card.ability[k] then
@@ -919,7 +833,7 @@ local function hnds_strip_other_stickers(card)
 			end
 		end
 	end
-	-- Also checks card.stickers table
+
 	if card.stickers and type(card.stickers) == 'table' then
 		for k, _ in pairs(card.stickers) do
 			if k ~= 'hnds_cursed' then to_remove[k] = true end
@@ -930,7 +844,7 @@ local function hnds_strip_other_stickers(card)
 			if k ~= 'hnds_cursed' then to_remove[k] = true end
 		end
 	end
-	-- Remove other stickers
+
 	local any_removed = false
 	for k, _ in pairs(to_remove) do
 		any_removed = true
@@ -941,8 +855,8 @@ local function hnds_strip_other_stickers(card)
 		card.ability[k] = nil
 		if card.ability.stickers then card.ability.stickers[k] = nil end
 	end
-	-- Force update on the Joker
-	-- Built-in sticker flags must be nil even when a mod bypassed add_sticker.
+
+
 	card.ability.perishable = nil
 	card.ability.eternal = nil
 	card.ability.rental = nil
@@ -951,14 +865,13 @@ local function hnds_strip_other_stickers(card)
 	end
 end
 
--- Block add_sticker calls on cursed jokers (prevents other thing adding stickers to cursed jokers)
+
 if Card and Card.add_sticker and not _G._hnds_wrapped_add_sticker_cursed then
 	_G._hnds_wrapped_add_sticker_cursed = true
 	local add_sticker_ref = Card.add_sticker
 	function Card:add_sticker(key, ...)
-		-- Bizarre-created Jokers are temporary linked cards whose only allowed
-		-- sticker is Fighting Spirit. This also blocks stickers applied later by
-		-- stakes, Jokers, consumables, or other mods while the child is linked.
+
+
 		if self.ability and self.ability.hnds_bizarre_owner
 			and key ~= 'hnds_fighting_spirit'
 		then
@@ -975,9 +888,6 @@ end
 
 HNDS.strip_other_stickers = hnds_strip_other_stickers
 
--------------------------------------------------------------------
--- CONTAGION CONSUMABLE SELECTION + RUNTIME STICKER SAFETY NET
--------------------------------------------------------------------
 
 local hnds_contagion_cache_time = nil
 local hnds_contagion_cache_bonus = 0
@@ -1007,18 +917,13 @@ local function hnds_contagion_bonus()
     return bonus
 end
 
--- Public helper for custom consumables (for example Exchange) that implement
--- their own selection limits instead of using vanilla max_highlighted fields.
+
 HNDS.get_contagion_bonus = hnds_contagion_bonus
 
 local function hnds_sync_contagion_container(container, bonus, forced_base)
     if type(container) ~= 'table' then return false end
 
-    -- Aura is a vanilla exception: it has no max_highlighted field and its
-    -- one-card rule is hard-coded. While Contagion is active, temporarily give
-    -- it ordinary selection fields so the hand UI can highlight extra cards.
-    -- Remove those fields again when Contagion leaves play so vanilla Aura's
-    -- editionless-card validation remains authoritative.
+
     if forced_base then
         if bonus > 0 then
             container.max_highlighted = forced_base + bonus
@@ -1038,9 +943,7 @@ local function hnds_sync_contagion_container(container, bonus, forced_base)
 
     local previous_bonus = tonumber(container.hnds_contagion_bonus) or 0
 
-    -- Only card-selecting consumables are eligible. Some consumables use a
-    -- field named mod_num for unrelated quantities, so changing mod_num without
-    -- a max_highlighted field would leak Contagion into non-targeting effects.
+
     if type(container.max_highlighted) ~= 'number' then
         if previous_bonus ~= 0 and type(container.mod_num) == 'number' then
             container.mod_num = math.max(0, container.mod_num - previous_bonus)
@@ -1049,11 +952,7 @@ local function hnds_sync_contagion_container(container, bonus, forced_base)
         return false
     end
 
-    -- Steamodded 1620a and many vanilla-style consumables keep their targeting
-    -- values in ability.consumeable. Cryptid and a number of custom Spectral
-    -- cards keep the same values directly on card.ability instead. Treat both
-    -- layouts identically and preserve changes made by other mods by removing
-    -- only the bonus that Contagion applied on the previous update.
+
     local base_max = math.max(0, container.max_highlighted - previous_bonus)
     container.max_highlighted = base_max + bonus
 
@@ -1072,12 +971,12 @@ local function hnds_sync_contagion_selection(card)
     local center_key = card.config and card.config.center and card.config.center.key
     local is_death = center_key == 'c_death' or card.ability.name == 'Death'
     local bonus = hnds_contagion_bonus()
-    -- Death is a special Contagion synergy: it always expands from 2 targets
-    -- to exactly 3, even if several Contagions are present.
+
+
     if is_death then bonus = bonus > 0 and 1 or 0 end
     local is_aura = center_key == 'c_aura' or card.ability.name == 'Aura'
 
-    -- Historical Steamodded spelling.
+
     if is_aura then
         card.ability.consumeable = card.ability.consumeable or {}
         hnds_sync_contagion_container(card.ability.consumeable, bonus, 1)
@@ -1085,7 +984,7 @@ local function hnds_sync_contagion_selection(card)
         hnds_sync_contagion_container(card.ability.consumeable, bonus)
     end
 
-    -- Compatibility with mods that use the corrected spelling.
+
     if card.ability.consumable ~= card.ability.consumeable then
         if is_aura then
             card.ability.consumable = card.ability.consumable or {}
@@ -1095,8 +994,7 @@ local function hnds_sync_contagion_selection(card)
         end
     end
 
-    -- Cryptid Spectrals and modern SMODS custom consumables commonly place
-    -- max_highlighted/mod_num directly on card.ability.
+
     hnds_sync_contagion_container(card.ability, bonus)
 end
 
@@ -1127,9 +1025,7 @@ if Card and Card.update and not Card._hnds_wrapped_update_runtime then
     function Card:update(dt, ...)
         local ret = card_update_ref(self, dt, ...)
 
-        -- Collection cards are display-only. Do not run gameplay sticker
-        -- maintenance or Contagion selection synchronization on them every
-        -- frame; the base Card:update has already handled their visuals.
+
         local area_config = self.area and self.area.config
         if area_config and area_config.collection then
             return ret
@@ -1141,18 +1037,16 @@ if Card and Card.update and not Card._hnds_wrapped_update_runtime then
         then
             hnds_strip_other_stickers(self)
         end
-        -- Bizarre children must keep Fighting Spirit as their only sticker,
-        -- even if another mod bypasses Card:add_sticker and mutates flags
-        -- directly. This branch is O(1) for normal cards and only does the
-        -- sticker scan on the one linked child.
+
+
         if self.ability and self.ability.hnds_bizarre_owner
             and HNDS and HNDS.strip_bizarre_child_stickers
             and hnds_runtime_maintenance_due(self, '_hnds_next_bizarre_sticker_scan', 0.25)
         then
             HNDS.strip_bizarre_child_stickers(self)
         end
-        -- Previously every Card scanned the complete Joker area every frame.
-        -- Restrict synchronization to actual consumables/targeting cards.
+
+
         if hnds_card_needs_contagion_sync(self) then
             hnds_sync_contagion_selection(self)
         end
@@ -1160,9 +1054,7 @@ if Card and Card.update and not Card._hnds_wrapped_update_runtime then
     end
 end
 
--- Ante-10 maintenance is global work and must run once per frame, not once for
--- every Card object. The old placement caused progressively worse frame times
--- as deck/shop/collection card counts grew.
+
 if Game and Game.update and not Game._hnds_wrapped_update_runtime then
     Game._hnds_wrapped_update_runtime = true
     local game_update_runtime_ref = Game.update
@@ -1171,10 +1063,7 @@ if Game and Game.update and not Game._hnds_wrapped_update_runtime then
         local ret = game_update_runtime_ref(self, dt, ...)
         hnds_update_ante_10_runtime()
 
-        -- These are installation/migration helpers, not frame maintenance. The
-        -- previous code called both every frame, which could repeatedly inspect
-        -- or re-wrap runtime methods and needlessly retained wrapper chains when
-        -- another mod touched the same Blind methods. Run them once per G.GAME.
+
         if hnds_runtime_game_ref ~= (G and G.GAME) then
             hnds_runtime_game_ref = G and G.GAME or nil
             if HNDS and HNDS.cleanup_removed_reroll_tag_rework then
@@ -1189,10 +1078,6 @@ if Game and Game.update and not Game._hnds_wrapped_update_runtime then
 end
 
 
--- Vanilla's six single-target Spectral effects still read only
--- G.hand.highlighted[1] even when Contagion raises their selection limit. Keep
--- vanilla's first-target handling intact, then apply the same effect to every
--- additional selected card. Death is deliberately absent from this list.
 local hnds_contagion_seal_spectrals = {
     c_talisman = 'Gold',
     c_deja_vu = 'Red',
@@ -1331,9 +1216,7 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
     end
 end
 
--- Aura's vanilla special-case accepts exactly one editionless card before the
--- generic max_highlighted check. With Contagion, validate every selected Aura
--- target instead, preventing editioned cards from slipping through.
+
 if Card and Card.can_use_consumeable and not Card._hnds_wrapped_contagion_can_use then
     Card._hnds_wrapped_contagion_can_use = true
     local can_use_consumeable_contagion_ref = Card.can_use_consumeable
@@ -1381,7 +1264,7 @@ if Card and Card.can_use_consumeable and not Card._hnds_wrapped_contagion_can_us
     end
 end
 
--- Clear per-card Spectral Seal progress when the seal is removed or replaced.
+
 if Card and Card.set_seal and not Card._hnds_wrapped_spectral_progress then
     Card._hnds_wrapped_spectral_progress = true
     local set_seal_spectral_ref = Card.set_seal
@@ -1396,11 +1279,6 @@ if Card and Card.set_seal and not Card._hnds_wrapped_spectral_progress then
     end
 end
 
--------------------------------------------------------------------
--- CONTAGION TOOLTIP SWAP
--- By default Spectrals have fixed numbers and no plurar so we have to make
--- that ourselves to keep the linguistic clarity
--------------------------------------------------------------------
 
 local hnds_contagion_loc_targets = {
     c_talisman = 'Gold',
@@ -1449,8 +1327,7 @@ local function hnds_contagion_proxy_loc_vars(self, info_queue, card)
     }
 end
 
--- Build a one-shot SMODS.Center-backed center that mirrors a vanilla Spectral
--- but routes description rendering through our contagion loc_vars.
+
 local function hnds_contagion_make_proxy(orig_center)
     return setmetatable({
         key = orig_center.key,
@@ -1477,27 +1354,10 @@ if not _G._hnds_contagion_generate_card_ui_wrapped then
 end
 
 
-
--------------------------------------------------------------------
--- PLATINUM STAKE
--------------------------------------------------------------------
-
--- win_ante = 10 and the hnds_platinum_active flag are set directly by
--- Platinum Stake's own `modifiers()` hook (see stakes/platinum.lua) --
--- that's the officially supported place for a stake to touch game state
--- at the start of a run, so nothing needs to happen here.
-
--------------------------------------------------------------------
--- CARD DESTRUCTION UNLOCKS
--------------------------------------------------------------------
-
--- Count only cards that Steamodded has accepted into its real destruction
--- queue. start_dissolve is also used for transformations and presentation,
--- so wrapping it directly caused enhanced cards and other animations to count.
 local function hnds_card_list(cards)
     if type(cards) ~= "table" then return {} end
     if cards[1] ~= nil then return cards end
-    -- A single Card is also a table, but does not have an array entry.
+
     if cards.base or cards.playing_card or cards.config then return { cards } end
     return {}
 end
@@ -1522,14 +1382,11 @@ if SMODS and SMODS.destroy_cards and not SMODS._hnds_wrapped_destroy_cards_stat_
         local candidates = hnds_card_list(cards)
         local queued = destroy_cards_stat_ref(cards, ...)
 
-        -- Newer Steamodded builds return the accepted queue. The beta used by
-        -- this mod may return nil, but it still marks accepted cards
-        -- getting_sliced/destroyed/shattered synchronously. Support both.
+
         local confirmed = type(queued) == "table" and queued or candidates
         local counted = hnds_count_confirmed_destroyed(confirmed)
 
-        -- Some destruction helpers set their flags in the next event. Recheck
-        -- once without ever counting unconfirmed input cards.
+
         if counted == 0 and G and G.E_MANAGER and Event and #candidates > 0 then
             G.E_MANAGER:add_event(Event({
                 trigger = "immediate",
@@ -1544,9 +1401,6 @@ if SMODS and SMODS.destroy_cards and not SMODS._hnds_wrapped_destroy_cards_stat_
     end
 end
 
--------------------------------------------------------------------
--- BLACK SEAL & VOUCHER CARD DESTRUCTION / SCORING
--------------------------------------------------------------------
 
 HNDS.should_hand_destroy = function(card)
 	if not (card and type(card.get_seal) == 'function' and G and G.GAME) then return false end
@@ -1558,7 +1412,7 @@ HNDS.should_hand_destroy = function(card)
 end
 
 local destroy_cards_ref = SMODS.calculate_destroying_cards
--- Handle destruction of cards with black seal or voucher effects
+
 function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand, ...)
 	local result = destroy_cards_ref(context, cards_destroyed, scoring_hand, ...)
 	if type(context) ~= 'table' or type(cards_destroyed) ~= 'table' then return result end
@@ -1590,7 +1444,7 @@ function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand
 	return result
 end
 
--- Black Seal scoring: Force scoring of destroyed cards as if they were played
+
 local score_card_ref = SMODS.score_card
 function SMODS.score_card(card, context, ...)
 	if type(context) ~= 'table' then return score_card_ref(card, context, ...) end
@@ -1609,11 +1463,7 @@ function SMODS.score_card(card, context, ...)
 	return score_card_ref(card, context, ...)
 end
 
--------------------------------------------------------------------
--- CARD COST MODIFICATIONS (Coffee Break, Art, Premium Deck, Curses)
--------------------------------------------------------------------
 
--- Card cost modifications: Coffee Break, Art, Premium Deck, and curse multiplier.
 local set_cost_ref = Card.set_cost
 function Card.set_cost(self, ...)
 	local results = HNDS.pack(set_cost_ref(self, ...))
@@ -1622,11 +1472,11 @@ function Card.set_cost(self, ...)
 	local key = self.config and self.config.center and self.config.center.key
 	local set = self.config and self.config.center and self.config.center.set
 
-	-- Per-joker sell cost overrides
+
 	if key == "j_hnds_coffee_break" then self.sell_cost = 0 end
 	if key == "j_hnds_art" then self.sell_cost = -5 end
 
-	-- Premium Deck: joker cost scales with ante
+
 	if set == "Joker"
 		and G.GAME and G.GAME.selected_back
 		and G.GAME.selected_back.effect and G.GAME.selected_back.effect.center
@@ -1635,7 +1485,7 @@ function Card.set_cost(self, ...)
 		self.cost = math.floor(self.cost + G.GAME.round_resets.ante)
 	end
 
-	-- Curse price multiplier (affects jokers, boosters, and consumables; NOT vouchers)
+
 	if G and G.GAME and G.GAME.hnds_price_multiplier and G.GAME.hnds_price_multiplier > 1 then
 		if set == "Joker" or set == "Booster" or set == "Consumable" then
 			self.cost = math.max(0, math.floor(self.cost * G.GAME.hnds_price_multiplier))
@@ -1644,13 +1494,7 @@ function Card.set_cost(self, ...)
 	return unpack_values(results, 1, results.n)
 end
 
--------------------------------------------------------------------
--- JOKER CREATION (Blood Stake curses)
--------------------------------------------------------------------
 
--- Blood Stake curse generation is handled by the Cursed Sticker's central
--- should_apply callback in lib/curses.lua. These wrappers remain only as an
--- exclusivity safety net after other generation code applies its stickers.
 local function hnds_finalize_generated_curse(card)
 	if hnds_card_has_cursed(card) then hnds_strip_other_stickers(card) end
 end
@@ -1671,24 +1515,19 @@ if SMODS and SMODS.create_card and not SMODS._hnds_wrapped_create_card_shop then
 		if not packed[1] then error(packed[2]) end
 		local created_card = packed[2]
 		hnds_finalize_generated_curse(created_card)
-        -- Preserve every foreign return value after the Card. Some compatibility
-        -- layers attach metadata here even though base Steamodded returns only a Card.
+
+
 		return unpack_values(packed, 2, packed.n)
 	end
 end
 
--------------------------------------------------------------------
--- CREATE_CARD WRAPPER (Devil's Round)
--------------------------------------------------------------------
 
--- Apply Devil's Round curses to centrally generated cards.
 if not _G._hnds_wrapped_create_card then
 	_G._hnds_wrapped_create_card = true
 	local create_card_ref = create_card
 	function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append, ...)
-		-- Sticker.should_apply only receives the destination area. Preserve the
-		-- creation append/source while the underlying generator performs its
-		-- central sticker roll so Cursed can reject non-pack generation effects.
+
+
 		local previous_source = HNDS and HNDS._creating_card_source
 		HNDS = HNDS or {}
 		HNDS._creating_card_source = {
@@ -1705,24 +1544,17 @@ if not _G._hnds_wrapped_create_card then
         local card = packed[2]
 
 
-		-- Feature: Devil's Round challenge - curse jokers on creation
 		if HNDS and HNDS.try_devils_round_curse then
 			HNDS.try_devils_round_curse(card)
 		end
 
-		-- Cursed Sticker is exclusive even if a later generation hook applied
-		-- another sticker after the central curse roll.
+
 		hnds_finalize_generated_curse(card)
 		return unpack_values(packed, 2, packed.n)
 	end
 end
 
--------------------------------------------------------------------
--- ADD_TO_DECK WRAPPER (DNA Tag + Devil's Round)
--------------------------------------------------------------------
 
--- Consolidated hook: DNA tag copies + Devil's Round curse application.
--- Each feature is a separate concern; both run independently.
 if not Card._hnds_wrapped_add_to_deck then
 	Card._hnds_wrapped_add_to_deck = true
 	local add_to_deck_ref = Card.add_to_deck
@@ -1731,11 +1563,8 @@ if not Card._hnds_wrapped_add_to_deck then
 		local unpack_values = (table and table.unpack) or unpack
 
 		if not from_debuff then
-			-- Feature: DNA Tag - create copies when hnds_copies_to_create is set.
-			-- Reserve the purchased Joker's own slot when it has not been emplaced
-			-- yet, then verify capacity again when the queued copy is created.
-			-- This prevents DNA from ever overflowing the Joker limit (for example
-			-- creating a sixth Joker in a 5-slot area).
+
+
 			if self.ability and self.ability.hnds_copies_to_create
 				and G and G.GAME and G.jokers and G.jokers.cards and G.jokers.config
 			then
@@ -1768,7 +1597,7 @@ if not Card._hnds_wrapped_add_to_deck then
 				self.ability.hnds_copies_to_create = nil
 			end
 
-			-- Feature: Devil's Round challenge - curse jokers on add to deck
+
 			if HNDS and HNDS.try_devils_round_curse then
 				HNDS.try_devils_round_curse(self)
 			end
@@ -1776,7 +1605,6 @@ if not Card._hnds_wrapped_add_to_deck then
 			if hnds_card_has_cursed(self) then hnds_strip_other_stickers(self) end
 
 
-			-- Play sound when cursed jokers are added (general, not just Devil's Round)
 			if self.ability and (self.ability.hnds_curse_offer or self.ability.hnds_curse_price) then
 				play_sound("hnds_curse_used", 1, 0.75)
 			end
@@ -1786,11 +1614,7 @@ if not Card._hnds_wrapped_add_to_deck then
 	end
 end
 
--------------------------------------------------------------------
--- CIRCUS DECK
--------------------------------------------------------------------
 
--- Circus Deck: extend find_joker to include the offscreen joker in results.
 local find_joker_ref = find_joker
 function find_joker(name, non_debuff, ...)
 	local jokers = find_joker_ref(name, non_debuff, ...)
@@ -1807,11 +1631,6 @@ function find_joker(name, non_debuff, ...)
 	return jokers
 end
 
-
-
--------------------------------------------------------------------
--- CRYSTAL DECK
--------------------------------------------------------------------
 
 local get_new_boss_ref = get_new_boss
 
@@ -1830,9 +1649,8 @@ function get_new_boss(...)
     local win_ante = G.GAME.win_ante
     local ante = G.GAME.round_resets.ante
     if not G.GAME.hnds_bypass_ante_10_force and hnds_crystal_forces_showdown(ante) and ante < win_ante then
-        -- Vanilla chooses a Showdown Blind whenever the current Ante equals
-        -- win_ante. Temporarily mirror that condition, then restore the true
-        -- winning Ante even if another boss-selection hook errors.
+
+
         G.GAME.win_ante = ante
     end
 
@@ -1856,12 +1674,7 @@ function get_new_boss(...)
     return unpack_values2(packed, 2, packed.n)
 end
 
--------------------------------------------------------------------
--- GAMBLING OPPORTUNITY VINTAGE EDITION PATCH
--------------------------------------------------------------------
 
--- Patch edition-only cards in the Restrictions tab to show them on a base Joker
--- card instead of a blank card.
 if G and G.UIDEF and G.UIDEF.challenge_description_tab and not G.UIDEF._hnds_wrapped_challenge_description_tab then
 	G.UIDEF._hnds_wrapped_challenge_description_tab = true
 	local challenge_description_tab_ref = G.UIDEF.challenge_description_tab
@@ -1899,19 +1712,7 @@ if G and G.UIDEF and G.UIDEF.challenge_description_tab and not G.UIDEF._hnds_wra
 	end
 end
 
--------------------------------------------------------------------
--- Imposter rank handling lives in jokers/imposter.lua.
--- Keeping it with the Joker prevents unrelated global hook code from owning
--- its state and avoids the old multi-evaluation implementation.
 
--------------------------------------------------------------------
--- EXCOMMUNICADO: Boss Blind Replacement
--------------------------------------------------------------------
-
--- Helper: Check if Excommunicado effect should be active. The effect can come
--- from the real Rare Joker OR from an active Jack-in-the-Box borrowing it.
--- Keep this as the single authority because Lovely patches cannot see Jack's
--- borrowed center through SMODS.find_card('j_hnds_excommunicado').
 function HNDS.excommunicado_effect_active()
 	if not (SMODS and SMODS.find_card) then return false end
 
@@ -1975,12 +1776,7 @@ local function hnds_excommunicado_fallback_boss(seed_key)
 	return picked
 end
 
--- Excommunicado's Small/Big replacements must always be ordinary Boss Blinds,
--- including on the final Ante. Vanilla get_new_boss() intentionally switches
--- to the Showdown pool when ante == win_ante, and Handsome Devils also has
--- final-Ante/Crystal showdown wrappers. Temporarily move the winning Ante away
--- and enable the existing bypass flag only for this poll, then validate the
--- result in case another mod still forces a Showdown.
+
 function HNDS.get_excommunicado_boss(seed_key)
 	if not (G and G.GAME and G.GAME.round_resets) then
 		return get_new_boss()
@@ -2001,8 +1797,7 @@ function HNDS.get_excommunicado_boss(seed_key)
 		return picked
 	end
 
-	-- If an external hook still returned a Showdown, undo its usage bump before
-	-- falling back to a filtered non-Showdown pool.
+
 	if ok and picked and hnds_is_showdown_boss(picked)
 		and G.GAME.bosses_used and type(G.GAME.bosses_used[picked]) == 'number'
 	then
@@ -2024,14 +1819,14 @@ function HNDS.get_excommunicado_boss(seed_key)
 	return picked
 end
 
--- Ensure Blind:get_type() returns Small/Big for replaced blinds
+
 local Blind_get_type_ref = Blind.get_type
 function Blind:get_type(...)
 	if not hnds_excommunicado_active() then
 		return Blind_get_type_ref(self, ...)
 	end
 
-	-- For the active blind, use blind_on_deck which always knows the slot
+
 	if G.GAME and G.GAME.blind == self and G.GAME.blind_on_deck then
 		return G.GAME.blind_on_deck
 	end
@@ -2039,8 +1834,7 @@ function Blind:get_type(...)
 	return Blind_get_type_ref(self, ...)
 end
 
--- Replace current vanilla Small/Big blinds with random bosses
--- Called from excommunicado.lua add_to_deck to handle mid-round acquisition
+
 function HNDS.replace_current_blinds_with_bosses()
 	if not (G.GAME and G.GAME.round_resets and G.GAME.round_resets.blind_choices) then return end
 	local blind_choices = G.GAME.round_resets.blind_choices
@@ -2094,20 +1888,13 @@ function HNDS.update_excom()
 	end
 end
 
--------------------------------------------------------------------
--- CURSED STICKER TOOLTIP WORKAROUND
--------------------------------------------------------------------
--- SMODS doesn't support generate_ui for stickers, only loc_vars.
--- We dynamically modify the localization entry for hnds_cursed
--- based on the current card being evaluated.
 
--- Store reference to current card during loc_vars evaluation
 _G.HNDS_CURRENT_CURSE_CARD = nil
 
--- Hook into the sticker's loc_vars to capture the card reference
+
 local original_loc_vars = nil
 
--- We'll set this up after the sticker is defined in curses.lua
+
 function HNDS_setup_cursed_sticker_hook(sticker)
 	if not sticker then return end
 	original_loc_vars = sticker.loc_vars
@@ -2120,12 +1907,7 @@ function HNDS_setup_cursed_sticker_hook(sticker)
 	end
 end
 
--------------------------------------------------------------------
--- PERFECTIONIST: REPLACE RE-ENHANCING WITH PERMANENT STATS
--------------------------------------------------------------------
--- This lives in the post-content hook layer instead of the Joker file so it
--- wraps Aberrant/Obsidian after their enhancement machinery is registered.
--- It also preserves the Ortalab bottle guard used by the previous implementation.
+
 if Card and Card.set_ability and not Card._hnds_perfectionist_reenhance then
     Card._hnds_perfectionist_reenhance = true
     local hnds_perfectionist_set_ability_ref = Card.set_ability
@@ -2143,8 +1925,7 @@ if Card and Card.set_ability and not Card._hnds_perfectionist_reenhance then
         return ok and type(cards) == 'table' and cards or {}
     end
 
-    -- Preserve arithmetic objects supplied by big-number/modpack frameworks.
-    -- Native runs use plain numbers; compatible objects can provide __add.
+
     local function hnds_add_permanent_stat(current, amount)
         if current == nil then return amount end
         local ok, result = pcall(function() return current + amount end)
@@ -2185,8 +1966,8 @@ if Card and Card.set_ability and not Card._hnds_perfectionist_reenhance then
                             })
                         end
                     end
-                    -- Do not call the wrapped setter: the original enhancement
-                    -- remains exactly as-is; only the permanent stats change.
+
+
                     return self
                 end
             end
@@ -2196,18 +1977,14 @@ if Card and Card.set_ability and not Card._hnds_perfectionist_reenhance then
     end
 end
 
--------------------------------------------------------------------
--- CURSE: BASE BLIND INCREASE (price_ante_scaling)
--------------------------------------------------------------------
 
 local get_blind_amount_ref = get_blind_amount
 function get_blind_amount(ante, ...)
 	local amount = get_blind_amount_ref(ante, ...)
 	local count = G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_base_blind_increase
 	if count and count > 0 and amount ~= nil then
-		-- Big-number mods often return an arithmetic object rather than a Lua
-		-- number. Multiply through its metamethod, but only math.floor native
-		-- numbers; math.floor(big-number-object) is a common modpack crash.
+
+
 		local ok, scaled = pcall(function() return amount * (1.5 ^ count) end)
 		if ok then amount = type(scaled) == 'number' and math.floor(scaled) or scaled end
 	end
@@ -2215,18 +1992,6 @@ function get_blind_amount(ante, ...)
 end
 
 
--------------------------------------------------------------------
--- MAIN-MENU LOCKED HINT SUPPRESSION
--------------------------------------------------------------------
--- Balatro can queue a delayed locked Joker/Voucher hint when the title card is
--- clicked repeatedly. With a custom Steamodded menu card already occupying
--- G.title_top, that delayed card must never be allowed to replace or stack under
--- the Handsome Devils title card.
---
--- Let CardArea:emplace perform its normal bookkeeping, then immediately remove
--- only that incoming locked hint in the same call. No frame can render between
--- those operations, so the visible title card remains untouched while the
--- temporary Card is still cleaned up correctly.
 if CardArea and CardArea.emplace and not HNDS._title_locked_hint_suppress_guard then
     HNDS._title_locked_hint_suppress_guard = true
     local hnds_cardarea_emplace_ref = CardArea.emplace
@@ -2237,9 +2002,7 @@ if CardArea and CardArea.emplace and not HNDS._title_locked_hint_suppress_guard 
         if not center or center.unlocked ~= false then return false end
         if center.set ~= 'Joker' and center.set ~= 'Voucher' then return false end
 
-        -- G.title_top is shared with every menu-card mod. Only suppress the
-        -- vanilla locked hint while a Handsome Devils menu card owns the slot;
-        -- never delete another mod's intentionally locked title card.
+
         local existing = area.cards and area.cards[1]
         local existing_center = existing and existing.config and existing.config.center
         local key = existing_center and existing_center.key
@@ -2249,9 +2012,8 @@ if CardArea and CardArea.emplace and not HNDS._title_locked_hint_suppress_guard 
 
     function CardArea:emplace(card, ...)
         if hnds_is_locked_title_hint(self, card) and self.cards and #self.cards > 0 then
-            -- Complete the native emplacement/removal lifecycle synchronously so
-            -- the transient Card does not leave sprites/nodes registered, but do
-            -- not disturb the card that was already in G.title_top.
+
+
             local ret = hnds_cardarea_emplace_ref(self, card, ...)
             self:remove_card(card)
             if card.remove then card:remove() end
@@ -2261,14 +2023,7 @@ if CardArea and CardArea.emplace and not HNDS._title_locked_hint_suppress_guard 
     end
 end
 
--------------------------------------------------------------------
--- HANDSOME DEVILS TOOLTIP POSITION STABILITY
--------------------------------------------------------------------
--- Card:hover asks Card:align_h_popup() where the popup should live.  Locking
--- Node.hover (the previous workaround) happens one layer too late and can itself
--- make a popup get torn down/recreated with a different side.  Cache the native
--- alignment result instead.  We preserve Balatro/SMODS's own alignment table and
--- only reuse the side/offset while the card stays in the same CardArea.
+
 if Card and Card.align_h_popup and not HNDS._stable_hnds_tooltip_align_v3 then
     HNDS._stable_hnds_tooltip_align_v3 = true
 
@@ -2309,9 +2064,7 @@ if Card and Card.align_h_popup and not HNDS._stable_hnds_tooltip_align_v3 then
             return native
         end
 
-        -- A different area (shop -> jokers, hand -> play, collection page, etc.)
-        -- is a legitimate reason to choose a new side.  Hover tilt, juice,
-        -- controller focus jitter and brief hover reacquisition are not.
+
         local area = self.area
         local cache = self.hnds_tooltip_alignment_cache
         if type(cache) ~= 'table' or cache.area ~= area then

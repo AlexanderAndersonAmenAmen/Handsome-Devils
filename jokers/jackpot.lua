@@ -28,7 +28,7 @@ SMODS.Joker({
 	end,
 	blueprint_compat = false,
 	demicoloncompat = true,
-	eternal_compat = false, -- Why is eternal incompatible? -- No really why STILL eternal incompatible?
+	eternal_compat = false,
 	perishable_compat = true,
 	calculate = function(self, card, context)
 		if context.joker_main then

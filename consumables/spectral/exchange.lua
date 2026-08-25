@@ -16,8 +16,8 @@ local function is_negative(target)
 end
 
 local function apply_exchange(card, cards)
-    -- Copy the highlighted-card references immediately; use_card may clear the
-    -- highlight table before this delayed visual/application event executes.
+
+
     local targets = {}
     for _, target in ipairs(cards or {}) do targets[#targets + 1] = target end
 
@@ -36,8 +36,7 @@ local function apply_exchange(card, cards)
         end,
     }))
 
-    -- Every Exchange permanently removes exactly one hand from this run. The
-    -- round reset value supplies the penalty again at the start of each round.
+
     G.GAME.hnds_exchange_hand_penalty = (G.GAME.hnds_exchange_hand_penalty or 0) + 1
     G.GAME.round_resets.hands = math.max(1, (G.GAME.round_resets.hands or 1) - 1)
     ease_hands_played(-1)
@@ -67,10 +66,8 @@ SMODS.Consumable({
         apply_exchange(card, exchange_selected_cards(card))
     end,
     can_use = function(self, card)
-        -- Do not hard-code game-state names here. Steamodded/Card:can_use_consumeable
-        -- already owns the global state/lock rules, including modded booster-open
-        -- states. Exchange only needs to validate its own target and hand-cost
-        -- requirements. This keeps it usable when drawn directly inside a pack.
+
+
         if not (G and G.GAME and G.hand) then return false end
         if not (G.GAME.current_round and G.GAME.current_round.hands_left > 1) then return false end
         if not (G.GAME.round_resets and (G.GAME.round_resets.hands or 0) > 1) then return false end
@@ -80,9 +77,7 @@ SMODS.Consumable({
             return false
         end
 
-        -- Existing Editions are valid Exchange targets. Only cards that are
-        -- already Negative are rejected, so an Editioned card can be selected
-        -- and converted to Negative normally.
+
         for _, target in ipairs(G.hand.highlighted) do
             if target and not is_negative(target) then return true end
         end

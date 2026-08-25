@@ -290,7 +290,7 @@ return {
 					"{C:attention}Puntuación Requerida{}"
 				}
 			},
-			-- Bizzare Joker section
+
 			j_hnds_bizzare_joker = {
 				name = "Comodín Desalinado",
 				text = {
@@ -342,7 +342,7 @@ return {
 				},
 			},
 
-			-- Bizzare Joker section
+
 			j_hnds_arthur = {
 				name = "Arthur",
 				text = {
@@ -461,7 +461,7 @@ return {
 					"{C:inactive,s:0.8}seleccionadas -> {C:attention,s:0.8}3{} {C:inactive,s:0.8}cartas)",
 				},
 			},
-		
+
 
 			j_hnds_jack_in_the_box = {
 				name = "Jack-in-the-box",
@@ -1136,7 +1136,7 @@ return {
 					"ganar el Pozo de {C:attention}Sangre{}",
 				}
 			},
-		
+
 
             hnds_jodiac_ranks_empty = {
                 name = "Scored Ranks",
@@ -1547,7 +1547,7 @@ return {
 			k_hnds_color_of_madness = "¡Locura!",
 			k_hnds_occultist = "¡Estudio!",
 			k_hnds_splashed = "¡Salpicado!",
-			hnds_plus_q = "+1 ???", --this is for the cryptid digital hallucinations creation message with magic packs
+			hnds_plus_q = "+1 ???",
 			k_hnds_plus_tag = "+Etiqueta",
 			k_hnds_wanted = "[Nombre del comodín]",
 			k_hnds_magic_pack = "Paquete Mágico",
@@ -1566,7 +1566,7 @@ return {
 			k_hnds_creepy_6 = "volver a ver...",
 			k_hnds_creepy_7 = "al Barón...",
 			k_hnds_creepy_8 = "...que nos tracionó",
-			-- DEVIL BLIND ALIASES
+
 			hnds_devil_name_default = "El Diablo",
 			hnds_devil_name_legion = "La Legión",
 			hnds_devil_name_old_nick = "Él",
@@ -1579,7 +1579,7 @@ return {
 			hnds_devil_name_lucifer = "Lucifer",
 			hnds_devil_name_abaddon = "Abaddon",
 			hnds_devil_name_leviathan = "Levitán",
-			-- CONFIG TAB LOCALIZATION
+
 			hnds_require_restart = "Requiere reiniciar",
 			hnds_config_StoneOcean = "Habilitar mano de Stone Ocean",
 			hnds_config_vintage = "Habilitar edición Vintage",

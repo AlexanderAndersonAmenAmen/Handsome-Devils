@@ -1,6 +1,7 @@
 HNDS = HNDS or {}
 
-local JOL_RANK_KEY = 'hnds_jack_of_lanterns'
+local JOL_RANK_KEY = 'Jack'
+local LEGACY_JOL_RANK_KEY = 'hnds_jack_of_lanterns'
 local JOL_SUIT_KEY = 'hnds_lanterns'
 local JOL_OWNER_FIELD = 'hnds_jack_of_lanterns_owner'
 
@@ -12,6 +13,25 @@ function HNDS.is_jack_of_lanterns(card)
     return hnds_jol_owner(card) ~= nil
 end
 
+local function hnds_jol_has_enhancement(card, key)
+    if not card then return false end
+    local center = card.config and card.config.center
+    if center and center.key == key then return true end
+    local fusions = card.ability and card.ability.hnds_aberrant_fusions
+    if type(fusions) == 'table' then
+        for _, fusion_key in ipairs(fusions) do
+            if fusion_key == key then return true end
+        end
+    end
+    return false
+end
+
+function HNDS.jack_of_lanterns_native_xmult(card)
+    if not HNDS.is_jack_of_lanterns(card) or hnds_jol_has_enhancement(card, 'm_stone') then return nil end
+    if hnds_jol_has_enhancement(card, 'm_glass') then return 5 end
+    return 3
+end
+
 local function hnds_card_identity(card)
     if not card then return nil end
     return tostring(card.playing_card or card.sort_id or card.ID or card)
@@ -19,9 +39,8 @@ end
 
 function HNDS.is_jevil_wild(card)
     if not card then return false end
-    -- Jevil now only affects actual Spade/Club starting-hand cards. Keep this
-    -- restriction at the shared Wild predicate too, so stale markers from an
-    -- older save can never make Hearts, Diamonds, or modded suits Wild.
+
+
     local suit = card.base and card.base.suit
     if suit ~= 'Spades' and suit ~= 'Clubs' then return false end
     if card.ability and card.ability.hnds_jevil_wild then return true end
@@ -31,7 +50,7 @@ function HNDS.is_jevil_wild(card)
     if type(G.GAME.hnds_jevil_round_cards) == 'table' and G.GAME.hnds_jevil_round_cards[id] then
         return true
     end
-    -- Save compatibility with the older per-owner representation.
+
     if type(G.GAME.hnds_jevil_wild_cards) == 'table' then
         for _, marked in pairs(G.GAME.hnds_jevil_wild_cards) do
             if type(marked) == 'table' and marked[id] then return true end
@@ -41,25 +60,18 @@ function HNDS.is_jevil_wild(card)
 end
 
 local function hnds_no_suit(card)
-    -- Faceless cards KEEP their suit. Use the guarded helper so quantum
-    -- enhancements supplied by other mods cannot recurse through suit checks.
+
+
     if HNDS.safe_has_no_suit then return HNDS.safe_has_no_suit(card) end
     return SMODS and SMODS.has_no_suit and SMODS.has_no_suit(card) or false
 end
 
 local function hnds_no_rank(card)
     if HNDS.safe_has_no_rank then return HNDS.safe_has_no_rank(card) end
-    if HNDS.is_faceless and HNDS.is_faceless(card) then return true end
     return SMODS and SMODS.has_no_rank and SMODS.has_no_rank(card) or false
 end
 
--- Jack of Lanterns is a true custom Rank + a private custom Suit rather
--- than an Enhancement, so it can still be enhanced normally. The visible
--- card name is therefore naturally "Jack of Lanterns": rank "Jack" +
--- orange suit "Lanterns". Both objects are excluded from normal pools.
--- The Jack of Lanterns playing card uses its dedicated JackOfLanterns atlas.
--- That atlas is a single-rank strip; x=0/y=0 is the Lanterns face used by this
--- private rank+suit combination.
+
 if SMODS and SMODS.Suit and SMODS.Suits and not SMODS.Suits[JOL_SUIT_KEY] then
     SMODS.Suit {
         key = 'lanterns',
@@ -74,38 +86,104 @@ if SMODS and SMODS.Suit and SMODS.Suits and not SMODS.Suits[JOL_SUIT_KEY] then
     }
 end
 
-if SMODS and SMODS.Rank and SMODS.Ranks and not SMODS.Ranks[JOL_RANK_KEY] then
+
+if SMODS and SMODS.Rank and SMODS.Ranks and not SMODS.Ranks[LEGACY_JOL_RANK_KEY] then
     SMODS.Rank {
         key = 'jack_of_lanterns',
         card_key = 'JOL',
         pos = { x = 0 },
-        nominal = 50,
+        nominal = 10,
         shorthand = 'J',
         face = true,
-        -- Treat the custom Jack rank like a normal Jack for Strength: the next
-        -- rank is Queen. Once changed, vanilla ranks take over the normal
-        -- Queen -> King -> Ace progression while the owner marker keeps this
-        -- physical card tied to Headless Joker.
         next = { 'Queen' },
-        strength_effect = { fixed = 1 },
+        strength_effect = { ignore = true },
         lc_atlas = 'JackOfLanterns',
         hc_atlas = 'JackOfLanterns',
         suit_map = { [JOL_SUIT_KEY] = 0 },
         in_pool = function(self, args) return false end,
-        loc_vars = function(self, info_queue, card)
-            info_queue[#info_queue + 1] = { set = 'Other', key = 'hnds_jack_of_lanterns' }
-        end,
     }
 end
 
--- Jevil's marked Spade/Club starting-hand cards and Jack of Lanterns count as Wild
--- for suit checks. Stone/no-suit effects remain dominant.
+local function hnds_jol_nope(card)
+    if not card or card.removed then return end
+    if card.juice_up then card:juice_up(0.35, 0.35) end
+    if play_sound then play_sound('hnds_curse_used', 1, 0.75) end
+    if card_eval_status_text then
+        card_eval_status_text(card, 'extra', nil, nil, nil, {
+            message = localize and localize('k_nope_ex') or 'Nope!',
+            colour = (G and G.C and (G.C.FILTER or G.C.RED)) or { 1, 0.2, 0.2, 1 },
+        })
+    end
+end
+
+
+if SMODS and type(SMODS.modify_rank) == 'function' and not HNDS._jol_modify_rank_guard then
+    HNDS._jol_modify_rank_guard = true
+    local modify_rank_ref = SMODS.modify_rank
+    function SMODS.modify_rank(card, amount, ...)
+        if HNDS.is_jack_of_lanterns(card) and tonumber(amount or 0) ~= 0 then
+            hnds_jol_nope(card)
+            return card
+        end
+        return modify_rank_ref(card, amount, ...)
+    end
+end
+
+if SMODS and type(SMODS.change_base) == 'function' and not HNDS._jol_change_base_guard then
+    HNDS._jol_change_base_guard = true
+    local change_base_ref = SMODS.change_base
+    function SMODS.change_base(card, suit, rank, ...)
+        if HNDS.is_jack_of_lanterns(card) then
+            local rank_change = rank ~= nil
+                and rank ~= JOL_RANK_KEY and rank ~= LEGACY_JOL_RANK_KEY
+            local suit_change = suit ~= nil and suit ~= JOL_SUIT_KEY
+            if rank_change or suit_change then
+                hnds_jol_nope(card)
+
+
+                return card
+            end
+        end
+        return change_base_ref(card, suit, rank, ...)
+    end
+end
+
+if Card and type(Card.set_base) == 'function' and not HNDS._jol_set_base_guard then
+    HNDS._jol_set_base_guard = true
+    local set_base_ref = Card.set_base
+    function Card:set_base(base_card, ...)
+        if HNDS.is_jack_of_lanterns(self) and base_card then
+            local requested_rank = base_card.value
+            local requested_suit = base_card.suit
+            local rank_change = requested_rank ~= nil
+                and requested_rank ~= JOL_RANK_KEY and requested_rank ~= LEGACY_JOL_RANK_KEY
+            local suit_change = requested_suit ~= nil and requested_suit ~= JOL_SUIT_KEY
+            if rank_change or suit_change then
+                hnds_jol_nope(self)
+
+
+                base_card = self.config and self.config.card or base_card
+            end
+        end
+        return set_base_ref(self, base_card, ...)
+    end
+end
+
+
+if Card and type(Card.get_id) == 'function' and not HNDS._jol_get_id_guard then
+    HNDS._jol_get_id_guard = true
+    local get_id_ref = Card.get_id
+    function Card:get_id(...)
+        if HNDS.is_jack_of_lanterns(self) and not hnds_no_rank(self) then return 11 end
+        return get_id_ref(self, ...)
+    end
+end
+
+
 if Card and Card.is_suit and not HNDS._special_any_suit_card_hook then
     local is_suit_ref = Card.is_suit
     function Card:is_suit(suit, ...)
-        if (HNDS.is_jack_of_lanterns(self) or HNDS.is_jevil_wild(self)) and not hnds_no_suit(self) then
-            return true
-        end
+        if HNDS.is_jevil_wild(self) and not hnds_no_suit(self) then return true end
         return is_suit_ref(self, suit, ...)
     end
     HNDS._special_any_suit_card_hook = true
@@ -114,17 +192,155 @@ end
 if SMODS and SMODS.has_any_suit and not HNDS._special_any_suit_smods_hook then
     local has_any_suit_ref = SMODS.has_any_suit
     function SMODS.has_any_suit(card, ...)
-        if (HNDS.is_jack_of_lanterns(card) or HNDS.is_jevil_wild(card)) and not hnds_no_suit(card) then
-            return true
-        end
+        if HNDS.is_jevil_wild(card) and not hnds_no_suit(card) then return true end
         return has_any_suit_ref(card, ...)
     end
     HNDS._special_any_suit_smods_hook = true
 end
 
--- Preserve Jack-of-Lantern identity through Enhancement changes. Playing-card
--- set_ability normally rebuilds ability, so a custom field would otherwise be
--- lost when the user applies Gold/Steel/Stone/etc.
+
+if Card and type(Card.get_chip_x_mult) == 'function' and not HNDS._jol_xmult_hook then
+    HNDS._jol_xmult_hook = true
+    local get_chip_x_mult_ref = Card.get_chip_x_mult
+    function Card:get_chip_x_mult(...)
+        local value = get_chip_x_mult_ref(self, ...)
+        if HNDS.is_jack_of_lanterns(self) and not self.debuff then
+            local native_xmult = HNDS.jack_of_lanterns_native_xmult(self)
+            if native_xmult == 5 then return 5 end
+            if native_xmult == 3 then
+                if type(value) == 'number' and value ~= 0 then return value * 3 end
+                return 3
+            end
+        end
+        return value
+    end
+end
+
+
+if Card and type(Card.get_chip_bonus) == 'function' and not HNDS._jol_chip_bonus_hook then
+    HNDS._jol_chip_bonus_hook = true
+    local get_chip_bonus_ref = Card.get_chip_bonus
+    function Card:get_chip_bonus(...)
+        if not (HNDS.is_jack_of_lanterns(self) and self.base) then
+            return get_chip_bonus_ref(self, ...)
+        end
+
+        local old_nominal = self.base.nominal
+        self.base.nominal = 0
+        local results = HNDS.pack(pcall(get_chip_bonus_ref, self, ...))
+        self.base.nominal = old_nominal
+        if not results[1] then error(results[2], 0) end
+        return ((table and table.unpack) or unpack)(results, 2, results.n)
+    end
+end
+
+
+if Card and type(Card.generate_UIBox_ability_table) == 'function' and not HNDS._jol_ui_hook then
+    HNDS._jol_ui_hook = true
+    local generate_ability_ui_ref = Card.generate_UIBox_ability_table
+
+    local function hnds_jol_enhancement_xmult(card)
+        if not card or not card.ability then return 1 end
+        local xmult = tonumber(card.ability.x_mult) or 1
+        local cfg = card.config and card.config.center and card.config.center.config
+        local cfg_xmult = cfg and tonumber(cfg.Xmult or cfg.x_mult)
+        if cfg_xmult and cfg_xmult ~= 1 then xmult = cfg_xmult end
+        return xmult
+    end
+
+    local function hnds_jol_localized_nodes(key, xmult)
+        local nodes = {}
+        localize {
+            type = 'descriptions',
+            set = 'Other',
+            key = key,
+            nodes = nodes,
+            vars = { xmult or 3 },
+        }
+        return nodes
+    end
+
+    local function hnds_jol_prepend(dst, src, index)
+        if type(dst) ~= 'table' or type(src) ~= 'table' then return end
+        index = math.max(1, math.min(tonumber(index) or 1, #dst + 1))
+        for i = #src, 1, -1 do table.insert(dst, index, src[i]) end
+    end
+
+    function Card:generate_UIBox_ability_table(...)
+        if not (HNDS.is_jack_of_lanterns(self) and self.base) then
+            return generate_ability_ui_ref(self, ...)
+        end
+
+        local args = HNDS.pack(...)
+        local old_nominal = self.base.nominal
+        local native_xmult = HNDS.jack_of_lanterns_native_xmult(self)
+        local stone = native_xmult == nil
+        local glass = native_xmult == 5
+        local enhancement_xmult = hnds_jol_enhancement_xmult(self)
+        local folds_xmult = not stone and enhancement_xmult ~= 1
+        local old_ability_xmult = self.ability and self.ability.x_mult
+        local old_ability_Xmult = self.ability and self.ability.Xmult
+        local center = self.config and self.config.center
+        local center_cfg = center and center.config
+        local old_center_Xmult = center_cfg and center_cfg.Xmult
+        local old_center_x_mult = center_cfg and center_cfg.x_mult
+        local old_loc_vars = center and center.loc_vars
+
+        self.base.nominal = 0
+        if folds_xmult then
+            local combined = glass and 5 or enhancement_xmult * 3
+            if self.ability then
+                self.ability.x_mult = combined
+                self.ability.Xmult = combined
+            end
+            if center_cfg then
+                center_cfg.Xmult = combined
+                center_cfg.x_mult = combined
+            end
+            if glass and type(old_loc_vars) == 'function' then
+                center.loc_vars = function(center_self, info_queue, card)
+                    local ret = old_loc_vars(center_self, info_queue, card) or {}
+                    ret.vars = ret.vars or {}
+                    ret.vars[1] = 5
+                    return ret
+                end
+            end
+        end
+
+        local results = HNDS.pack(pcall(generate_ability_ui_ref, self,
+            ((table and table.unpack) or unpack)(args, 1, args.n)))
+
+        self.base.nominal = old_nominal
+        if self.ability then
+            self.ability.x_mult = old_ability_xmult
+            self.ability.Xmult = old_ability_Xmult
+        end
+        if center_cfg then
+            center_cfg.Xmult = old_center_Xmult
+            center_cfg.x_mult = old_center_x_mult
+        end
+        if center then center.loc_vars = old_loc_vars end
+
+        if not results[1] then error(results[2], 0) end
+        local result = results[2]
+        if result and result.main and not result.hnds_jol_main_added then
+            result.hnds_jol_main_added = true
+            if not stone then
+                if folds_xmult then
+                    hnds_jol_prepend(result.main,
+                        hnds_jol_localized_nodes('hnds_jack_of_lanterns_removed_only', glass and 5 or enhancement_xmult * 3),
+                        math.min(2, #result.main + 1))
+                else
+                    hnds_jol_prepend(result.main,
+                        hnds_jol_localized_nodes('hnds_jack_of_lanterns_card', native_xmult or 3), 1)
+                end
+            end
+        end
+        return result
+    end
+end
+
+
 if Card and Card.set_ability and not HNDS._jol_set_ability_hook then
     local set_ability_ref = Card.set_ability
     function Card:set_ability(...)
@@ -136,8 +352,7 @@ if Card and Card.set_ability and not HNDS._jol_set_ability_hook then
     HNDS._jol_set_ability_hook = true
 end
 
--- Death/Cryptid/other copy effects should produce real copies of the head. If a
--- Jack of Lanterns is overwritten by a non-head source, its identity is cleared.
+
 if type(copy_card) == 'function' and not HNDS._jol_copy_card_hook then
     local copy_card_ref = copy_card
     function copy_card(source, ...)
@@ -160,7 +375,7 @@ function HNDS.add_jack_of_lanterns(source_joker, owner)
     local new_card = SMODS.create_card({
         set = 'Base',
         area = G.deck,
-        rank = JOL_RANK_KEY,
+        rank = 'Jack',
         suit = JOL_SUIT_KEY,
         key_append = 'hnds_headless',
         skip_materialize = true,
@@ -200,10 +415,46 @@ function HNDS.remove_jack_of_lanterns(owner)
     end
 end
 
--- Deck preview helpers -------------------------------------------------------
--- Steamodded beta-1620a paginates visible suits four at a time. The Lovely
--- patch calls this helper only to pin Lanterns into position 5, making it the
--- first suit on page 2 while preserving normal 4-row pages.
+
+if type(create_UIBox_customize_deck) == 'function' and not HNDS._jol_customize_deck_options_hook then
+    HNDS._jol_customize_deck_options_hook = true
+    local create_UIBox_customize_deck_ref = create_UIBox_customize_deck
+    function create_UIBox_customize_deck(...)
+        local suit_class = SMODS and SMODS.Suit
+        local obj_list_ref = suit_class and suit_class.obj_list
+        local scoped_obj_list
+
+        if type(obj_list_ref) == 'function' then
+            scoped_obj_list = function(self, ...)
+                local results = HNDS.pack(obj_list_ref(self, ...))
+                local list = results[1]
+                if type(list) == 'table' then
+                    local filtered = {}
+                    for _, suit in ipairs(list) do
+                        if not (suit and suit.key == JOL_SUIT_KEY) then
+                            filtered[#filtered + 1] = suit
+                        end
+                    end
+                    results[1] = filtered
+                end
+                return ((table and table.unpack) or unpack)(results, 1, results.n)
+            end
+            suit_class.obj_list = scoped_obj_list
+        end
+
+        local results = HNDS.pack(pcall(create_UIBox_customize_deck_ref, ...))
+
+
+        if suit_class and scoped_obj_list and suit_class.obj_list == scoped_obj_list then
+            suit_class.obj_list = obj_list_ref
+        end
+
+        if not results[1] then error(results[2], 0) end
+        return ((table and table.unpack) or unpack)(results, 2, results.n)
+    end
+end
+
+
 function HNDS.prepare_jol_deck_preview(visible_suit)
     if type(visible_suit) ~= 'table' then return 4 end
 
@@ -227,156 +478,8 @@ function HNDS.hide_jol_suit_tally(hidden_suits)
     end
 end
 
--- Deck-preview only: an untouched Jack of Lanterns contributes to the vanilla
--- Jack (J) tally rather than rendering a separate custom-rank count. Strength-
--- changed Lanterns cards contribute to their real Queen/King/Ace rank instead.
+
 function HNDS.jol_preview_rank_key(card)
-    if card and HNDS.is_jack_of_lanterns(card)
-        and card.base and card.base.value == JOL_RANK_KEY
-    then
-        return 'Jack'
-    end
+    if card and HNDS.is_jack_of_lanterns(card) then return 'Jack' end
     return card and card.base and card.base.value or nil
-end
-
--- Rank wildcard support -------------------------------------------------------
--- Suit wildness is handled by Card:is_suit above. For rank-based poker hands,
--- evaluate the hand across all *distinct* rank assignments of Jack of Lanterns
--- and keep the strongest coherent assignment. Hands contain at most five cards;
--- using nondecreasing assignments means even five copied heads require only
--- C(17,5)=6188 evaluations instead of 13^5 permutations.
-if type(evaluate_poker_hand) == 'function' and not HNDS._jol_poker_eval_hook then
-    local evaluate_poker_hand_ref = evaluate_poker_hand
-    local fallback_order = {
-        'Flush Five', 'Flush House', 'Five of a Kind', 'Straight Flush',
-        'Four of a Kind', 'Full House', 'Flush', 'Straight',
-        'Three of a Kind', 'Two Pair', 'Pair', 'High Card',
-    }
-
-    local function result_priority(result)
-        local order = (G and G.handlist) or fallback_order
-        for i, name in ipairs(order) do
-            local bucket = result and result[name]
-            if type(bucket) == 'table' and next(bucket) then return i end
-        end
-        return math.huge
-    end
-
-    local function enumerate_assignments(count, callback)
-        local values = {}
-        local function rec(depth, minimum)
-            if depth > count then
-                callback(values)
-                return
-            end
-            for rank = minimum, 14 do
-                values[depth] = rank
-                rec(depth + 1, rank)
-            end
-        end
-        rec(1, 2)
-    end
-
-    -- Cache only the immediately repeated hand evaluation. Balatro can ask for
-    -- the same highlighted hand many times while drawing/updating UI, so this
-    -- avoids replaying thousands of wildcard assignments without retaining
-    -- results across unrelated game states or other mods' dynamic hand rules.
-    local last_signature, last_result
-
-    local function hand_signature(hand)
-        local parts = {}
-        for i, c in ipairs(hand or {}) do
-            local owner = hnds_jol_owner(c) or ''
-            local id = c and (c.playing_card or c.sort_id or c.ID) or i
-            local base = c and c.base or {}
-            local fusions = c and c.ability and c.ability.hnds_aberrant_fusions
-            local fusion_sig = type(fusions) == 'table' and table.concat(fusions, ',') or ''
-            parts[#parts + 1] = table.concat({
-                tostring(id), tostring(owner), tostring(base.id), tostring(base.suit),
-                tostring(c and c.config and c.config.center_key), tostring(c and c.debuff == true),
-                tostring(c and c.seal or ''), fusion_sig,
-            }, ':')
-        end
-        return table.concat(parts, '|')
-    end
-
-    local function cache_store(signature, result)
-        last_signature, last_result = signature, result
-    end
-
-    function evaluate_poker_hand(hand, ...)
-        local eval_args = HNDS.pack(...)
-        local unpack_values = (table and table.unpack) or unpack
-        local wilds = {}
-        for _, playing_card in ipairs(hand or {}) do
-            if HNDS.is_jack_of_lanterns(playing_card) and not hnds_no_rank(playing_card) then
-                wilds[#wilds + 1] = playing_card
-            end
-        end
-        if #wilds == 0 then return evaluate_poker_hand_ref(hand, unpack_values(eval_args, 1, eval_args.n)) end
-
-        local signature = hand_signature(hand)
-        if signature == last_signature and last_result then return last_result end
-
-        local best, best_priority
-        local original_get_id = {}
-        for i, playing_card in ipairs(wilds) do original_get_id[i] = rawget(playing_card, 'get_id') end
-
-        local function restore()
-            for i, playing_card in ipairs(wilds) do playing_card.get_id = original_get_id[i] end
-        end
-
-        -- Fast path for the expensive 4/5-wild cases: if all real ranked
-        -- cards share one rank (or there are no real ranked cards), assigning
-        -- every Lantern to that same rank often already produces the strongest
-        -- hand in G.handlist. Only accept the shortcut when the evaluator itself
-        -- confirms priority #1, so custom poker hands remain correct.
-        local common_rank, common_rank_ok = nil, true
-        for _, playing_card in ipairs(hand or {}) do
-            if not HNDS.is_jack_of_lanterns(playing_card) and not hnds_no_rank(playing_card) then
-                local id = playing_card.get_id and playing_card:get_id() or (playing_card.base and playing_card.base.id)
-                if type(id) == 'number' then
-                    if common_rank == nil then common_rank = id
-                    elseif common_rank ~= id then common_rank_ok = false break end
-                end
-            end
-        end
-        local fast_rank = common_rank_ok and (common_rank or 14) or nil
-        if fast_rank and fast_rank >= 2 and fast_rank <= 14 then
-            for _, playing_card in ipairs(wilds) do
-                playing_card.get_id = function() return fast_rank end
-            end
-            local fast_ok, candidate = pcall(evaluate_poker_hand_ref, hand, unpack_values(eval_args, 1, eval_args.n))
-            if not fast_ok then
-                restore()
-                error(candidate, 0)
-            end
-            local priority = result_priority(candidate)
-            if priority == 1 then
-                restore()
-                cache_store(signature, candidate)
-                return candidate
-            end
-        end
-
-        local ok, err = pcall(function()
-            enumerate_assignments(#wilds, function(values)
-                for i, playing_card in ipairs(wilds) do
-                    local assigned = values[i]
-                    playing_card.get_id = function() return assigned end
-                end
-                local candidate = evaluate_poker_hand_ref(hand, unpack_values(eval_args, 1, eval_args.n))
-                local priority = result_priority(candidate)
-                if not best or priority < best_priority then
-                    best, best_priority = candidate, priority
-                end
-            end)
-        end)
-        restore()
-        if not ok then error(err) end
-        best = best or evaluate_poker_hand_ref(hand, unpack_values(eval_args, 1, eval_args.n))
-        cache_store(signature, best)
-        return best
-    end
-    HNDS._jol_poker_eval_hook = true
 end

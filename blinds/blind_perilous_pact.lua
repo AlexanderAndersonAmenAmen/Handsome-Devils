@@ -1,9 +1,5 @@
--------------------------------------------------------------------
--- PERILOUS PACT
--- Ante 10 Showdown Boss Blind
--- Caps each played hand according to the number of hands available
--- at the start of the Boss round.
--------------------------------------------------------------------
+
+
 
 HNDS = HNDS or {}
 
@@ -74,8 +70,8 @@ SMODS.Blind {
         if active_perilous_pact() or selecting then
             local fraction
             if selecting and not active_perilous_pact() then
-                -- hands_left may still contain the previous round's value while
-                -- choosing a Blind, so preview from the next round's reset.
+
+
                 fraction = cap_fraction(reset_hands())
             else
                 fraction = G.GAME.hnds_perilous_pact_cap
@@ -134,8 +130,7 @@ SMODS.Blind {
     end,
 }
 
--- Steamodded's current scoring pipeline routes the final hand score through
--- this function, so this is the reliable place to apply the per-hand cap.
+
 if SMODS and type(SMODS.calculate_round_score) == "function"
     and not HNDS._perilous_pact_score_hooked
 then

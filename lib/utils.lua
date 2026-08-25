@@ -1,46 +1,15 @@
---[[
-Handsome Devils - Shared Utilities
 
-Purpose
-- This file holds shared helper functions used across multiple Handsome Devils systems.
-- These helpers are intentionally kept "dumb" (no hooks) so they can be reused safely from:
-  - Joker/consumable definitions
-  - deck/stake logic
-  - challenge logic
-  - cross-mod compatibility glue
 
-Who uses this
-- `main.lua` and various content scripts call into `HNDS.*` helpers.
-- `hooks.lua` relies on some helpers during run initialization and special deck logic.
 
-Notable helpers
-- `HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)`
-  - Counts distinct suits in a scoring hand, handling wild cards.
-
-- `HNDS.poll_tag(seed, options, exclusions)`
-  - Re-implements tag selection with exclusions, and fixes Orbital tag selection for modded hands.
-
-- `HNDS.get_shop_joker_tags()`
-  - Returns a list of tag keys that can create shop jokers (extended when other mods are installed).
-
-- `HNDS.get_key_for_value`
-  - Small utility helper used by deck/stake effects.
-
-Notes / invariants
-- Some functions consult `SMODS.find_mod(...)` to include optional compatibility behavior.
-- This file should avoid hooking globals; that work belongs in `hooks.lua` / `challenge_rules.lua`.
---]]
-
----Gets the number of unique suits in a provided scoring hand - code from Paperback, try it if you haven't!
 function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
-	-- Set each suit's count to 0
+
 	local suits = {}
 
 	for k, _ in pairs(SMODS.Suits) do
 		suits[k] = 0
 	end
 
-	-- First we cover all the non Wild Cards in the hand
+
 	for _, card in ipairs(scoring_hand or {}) do
 		if not (HNDS.safe_has_any_suit and HNDS.safe_has_any_suit(card) or false) then
 			for suit, count in pairs(suits) do
@@ -52,7 +21,7 @@ function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
 		end
 	end
 
-	-- Then we cover Wild Cards, filling the missing suits
+
 	for _, card in ipairs(scoring_hand or {}) do
 		if HNDS.safe_has_any_suit and HNDS.safe_has_any_suit(card) then
 			for suit, count in pairs(suits) do
@@ -64,7 +33,7 @@ function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
 		end
 	end
 
-	-- Count the amount of suits that were found
+
 	local num_suits = 0
 
 	for _, v in pairs(suits) do
@@ -76,14 +45,11 @@ function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
 	return num_suits
 end
 
----Gets a pseudorandom tag from the Tag pool - Also from Paperback. Go play it!!!!!
+
 function HNDS.poll_tag(seed, options, exclusions)
 	if not exclusions and not options then exclusions = { 'tag_boss', 'tag_top_up', 'tag_speed' } end
 
-	-- Never mutate get_current_pool()'s returned table in place. Steamodded and
-	-- other mods may cache/share that pool; removing entries from it can poison
-	-- later rolls globally. Also filter UNAVAILABLE up front so an all-unavailable
-	-- pool cannot trap the game in an infinite reroll loop.
+
 	local source_pool = options or get_current_pool('Tag') or {}
 	local excluded = {}
 	for _, key in ipairs(exclusions or {}) do excluded[key] = true end
@@ -96,12 +62,11 @@ function HNDS.poll_tag(seed, options, exclusions)
 		end
 	end
 
-	-- A heavily modded challenge can legitimately ban every Tag. Return the
-	-- harmless vanilla Handy Tag when available instead of hanging forever.
+
 	if #pool == 0 then
 		local fallback = G and G.P_TAGS and (G.P_TAGS.tag_handy and 'tag_handy' or G.P_TAGS.tag_double and 'tag_double')
-		-- Handy Tag is a vanilla object and therefore remains a safe last-resort
-		-- constructor even if another mod temporarily replaced the visible pool.
+
+
 		return Tag(fallback or 'tag_handy')
 	end
 
@@ -110,8 +75,7 @@ function HNDS.poll_tag(seed, options, exclusions)
 	local tag = Tag(tag_key)
 	if not tag then return nil end
 
-	-- The base Orbital selection can miss modded hands. Choose from all visible
-	-- live hands, but guard the empty-list case used by unusual challenges.
+
 	if tag_key == 'tag_orbital' then
 		local available_hands = {}
 		for k, hand in pairs((G and G.GAME and G.GAME.hands) or {}) do
@@ -125,8 +89,7 @@ function HNDS.poll_tag(seed, options, exclusions)
 	return tag
 end
 
--- Cursed Deck: Check if all joker slots are filled with unmovable jokers
--- (eternal or negative). Returns true when no slot can accept a new non-negative joker.
+
 function HNDS.joker_slots_full_of_unmovables()
 	if not (G and G.jokers and G.jokers.cards and G.jokers.config and G.jokers.config.card_limit) then return false end
 	if #G.jokers.cards < G.jokers.config.card_limit then return false end
@@ -139,7 +102,7 @@ function HNDS.joker_slots_full_of_unmovables()
 	return true
 end
 
--- Return a list of all the jokers that create jokers in shop (for tag compatibility)
+
 function HNDS.get_shop_joker_tags()
 	local tag_list = {
 		"tag_foil",
@@ -153,18 +116,18 @@ function HNDS.get_shop_joker_tags()
 		"tag_hnds_cursed_tag"
 	}
 
-	--Add tags from other mods
-	if HNDS.mod_loaded and HNDS.mod_loaded('paperback') then --paperback tags
+
+	if HNDS.mod_loaded and HNDS.mod_loaded('paperback') then
 		table.insert(tag_list, "tag_paperback_dichrome")
 	end
 
-	if HNDS.mod_loaded and HNDS.mod_loaded('Pokermon') then --pokermon tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('Pokermon') then
 		table.insert(tag_list, "tag_poke_shiny_tag")
 		table.insert(tag_list, "tag_poke_stage_one_tag")
 		table.insert(tag_list, "tag_poke_safari_tag")
 	end
 
-	if HNDS.mod_loaded and HNDS.mod_loaded('Cryptid') then --cryptid tags (why are there so fucking many)
+	if HNDS.mod_loaded and HNDS.mod_loaded('Cryptid') then
 		table.insert(tag_list, "tag_cry_epic")
 		table.insert(tag_list, "tag_cry_glitched")
 		table.insert(tag_list, "tag_cry_mosaic")
@@ -183,7 +146,7 @@ function HNDS.get_shop_joker_tags()
 		table.insert(tag_list, "tag_cry_loss")
 	end
 
-	if HNDS.mod_loaded and HNDS.mod_loaded('entr') then --entropy tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('entr') then
 		table.insert(tag_list, "tag_entr_sunny")
 		table.insert(tag_list, "tag_entr_solar")
 		table.insert(tag_list, "tag_entr_fractured")
@@ -193,11 +156,11 @@ function HNDS.get_shop_joker_tags()
 		table.insert(tag_list, "tag_entr_kaleidoscopic")
 	end
 
-	if HNDS.mod_loaded and HNDS.mod_loaded('GARBPACK') then --garbshit tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('GARBPACK') then
 		table.insert(tag_list, "tag_garb_carnival")
 	end
 
-	if HNDS.mod_loaded and HNDS.mod_loaded('ortalab') then --ortalab patches
+	if HNDS.mod_loaded and HNDS.mod_loaded('ortalab') then
 		table.insert(tag_list, "tag_ortalab_common")
 		table.insert(tag_list, "tag_ortalab_anaglyphic")
 		table.insert(tag_list, "tag_ortalab_fluorescent")
@@ -206,29 +169,29 @@ function HNDS.get_shop_joker_tags()
 		table.insert(tag_list, "tag_ortalab_soul")
 	end
 
-	if HNDS.mod_loaded and HNDS.mod_loaded('MoreFluff') then --morefluff tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('MoreFluff') then
 		table.insert(tag_list, "tag_mf_moddedpack")
 		if Entropy then
 			table.insert(tag_list, "tag_mf_absolute")
 		end
 	end
 
-	if HNDS.mod_loaded and HNDS.mod_loaded('Bunco') then --bunco tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('Bunco') then
 		table.insert(tag_list, "tag_bunc_glitter")
 		table.insert(tag_list, "tag_bunc_fuorescent")
 	end
 
-	if HNDS.mod_loaded and HNDS.mod_loaded('JoyousSpring') then --joyousspring tags
+	if HNDS.mod_loaded and HNDS.mod_loaded('JoyousSpring') then
 		table.insert(tag_list, "tag_joy_monster")
 	end
 
-	if HNDS.mod_loaded and HNDS.mod_loaded('allinjest') then --all in jest
+	if HNDS.mod_loaded and HNDS.mod_loaded('allinjest') then
 		table.insert(tag_list, "tag_aij_soulbound")
 		table.insert(tag_list, "tag_aij_glimmer")
 		table.insert(tag_list, "tag_aij_stellar")
 	end
 
-	if HNDS.mod_loaded and HNDS.mod_loaded('Yahimod') then --yahimod
+	if HNDS.mod_loaded and HNDS.mod_loaded('Yahimod') then
 		table.insert(tag_list, "tag_yahimod_tag_yahimodrare")
 	end
 
@@ -244,7 +207,7 @@ function HNDS.get_shop_joker_tags()
 	return tag_list
 end
 
--- Supersuit Joker: Reset the randomly chosen suit for the round
+
 function reset_supersuit_card()
 	local supersuit_suits = {}
 	G.GAME.current_round.supersuit_card = G.GAME.current_round.supersuit_card or {}
@@ -258,19 +221,19 @@ function reset_supersuit_card()
 	end
 	local supersuit_card = #supersuit_suits > 0
 		and pseudorandom_element(supersuit_suits, pseudoseed("sup" .. G.GAME.round_resets.ante)) or nil
-	-- Do not erase the previous suit if an unusual mod/challenge temporarily
-	-- exposes no eligible suits. This keeps downstream Joker UI/effects valid.
+
+
 	if supersuit_card then G.GAME.current_round.supersuit_card.suit = supersuit_card end
 end
 
--- Dark Idol Joker: Reset the randomly chosen card for the round
+
 function reset_dark_idol()
 	G.GAME.current_round.dark_idol = { suit = 'Spades', rank = 'Ace' }
 	local valid_dark_idol_cards = {}
 	for _, v in ipairs((G and G.playing_cards) or {}) do
 		local no_suit = HNDS.safe_has_no_suit and HNDS.safe_has_no_suit(v) or false
 		local no_rank = HNDS.safe_has_no_rank and HNDS.safe_has_no_rank(v) or false
-		if not no_suit and not no_rank then -- Guarded for quantum/custom enhancements.
+		if not no_suit and not no_rank then
 			valid_dark_idol_cards[#valid_dark_idol_cards + 1] = v
 		end
 	end
@@ -290,7 +253,7 @@ HNDS.circus_joker_pool = {
 	'j_chaos',
 	'j_sock_and_buskin',
 	'j_smeared',
-	'j_ring_master', -- Showman's internal key
+	'j_ring_master',
 	'j_oops',
 	'j_vagabond',
 	'j_astronomer',
@@ -301,10 +264,7 @@ HNDS.circus_joker_pool = {
 	'j_hnds_pot_of_greed'
 }
 
--- Reset game globals: called at run start and at the beginning of each round.
--- Initializes round-specific variables, re-rolls per-round joker state
--- (Supersuit suit, Dark Idol card, Bizarre suit), and manages the Circus Deck's
--- rotating joker effect.
+
 SMODS.current_mod.reset_game_globals = function(run_start)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
@@ -312,9 +272,7 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 		G.GAME.hnds_exchange_hand_penalty = 0
 	end
 
-	-- Save migration from the former Exchange implementation: retire its Bound
-	-- marker and preserve the paid-for card benefit as Negative when that card
-	-- does not already have a newer Edition.
+
 	for _, card in ipairs((G and G.playing_cards) or {}) do
 		if card and card.ability and card.ability.hnds_exchange_draw then
 			card.ability.hnds_exchange_draw = nil
@@ -324,28 +282,25 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 		end
 	end
 
-	-- Bound's forced opening draw is once per round. current_round is reused by
-	-- some game versions, so clear the guard explicitly instead of relying on
-	-- the table being replaced.
+
 	if G.GAME.current_round then
 		G.GAME.current_round.hnds_bound_cards_drawn = nil
 	end
 
-	-- Re-roll per-round joker state (suit/card changes every round)
+
 	reset_supersuit_card()
 	reset_dark_idol()
 
-	-- Circus Deck: assign a random joker from the pool each ante.
-	-- The joker lives in an offscreen CardArea and is found by find_joker().
+
 	if HNDS.DeckOrSleeve('circus') then
 		if (G.GAME and G.GAME.blind) or run_start then
-			-- Remove the previous joker
+
 			if #G.hnds_circus_joker.cards > 0 then
 				G.hnds_circus_joker.cards[1]:start_dissolve()
 				G.hnds_circus_joker.cards = {}
 			end
 
-			-- Pick a new joker, excluding the one from last ante
+
 			local poolcopy = SMODS.shallow_copy(HNDS.circus_joker_pool)
 			if G.GAME.hnds_circus_joker_key then
 				local i = HNDS.get_key_for_value(poolcopy, G.GAME.hnds_circus_joker_key)
@@ -382,7 +337,7 @@ SMODS.current_mod.custom_card_areas = function (game)
 	end
 end
 
--- Utility: Get key for a given value in a table
+
 function HNDS.get_key_for_value(t, value)
   for k,v in pairs(t) do
     if v==value then return k end
@@ -390,9 +345,7 @@ function HNDS.get_key_for_value(t, value)
   return nil
 end
 
--- Check if the active deck or sleeve matches the provided key.
--- Returns the match count (truthy) or nil. Supports CardSleeves mod and Entropy's
--- bought-deck system. (Pattern from Entropy)
+
 function HNDS.DeckOrSleeve(key)
 	local num = 0
 	if CardSleeves and G.GAME.selected_sleeve == ("sleeve_hnds_"..key.."_sleeve") then
@@ -407,15 +360,14 @@ function HNDS.DeckOrSleeve(key)
 	return num > 0 and num or nil
 end
 
--- Shared sleeve loc_vars helper. Sleeves show their "_alt" description text when
--- paired with their matching deck; otherwise the base description.
+
 function HNDS.sleeve_loc(self, deck_key, vars)
 	local key = self.key
 	if self.get_current_deck_key() == deck_key then key = key .. "_alt" end
 	return { key = key, vars = vars }
 end
 
--- Grant a list of vouchers immediately at run start (used by sleeves/decks).
+
 function HNDS.grant_vouchers(vouchers)
 	for _, v in ipairs(vouchers) do
 		if G.P_CENTERS[v] then
@@ -431,7 +383,7 @@ function HNDS.grant_vouchers(vouchers)
 	end
 end
 
--- Ban every booster that isn't part of the hnds_magic pack (Conjuring deck/sleeve).
+
 function HNDS.ban_non_magic_boosters()
 	for _, booster in pairs(G.P_CENTER_POOLS.Booster) do
 		if booster.kind ~= "hnds_magic" then
@@ -440,39 +392,37 @@ function HNDS.ban_non_magic_boosters()
 	end
 end
 
--- Shared Cycle / Extinction tag code
--- Preserves all stickers/editions; %0% chance of removing stickers
--- Ignores Eternal and Cursed Sticker
+
 function replace_jokers_keep_rarity(jokers, sticker_removal_chance)
 	if not jokers or #jokers == 0 then return end
-	
+
 	local replacements = {}
-	
-	-- Pre-calculate all replacements
+
+
 	for i, card in ipairs(jokers) do
 		local rarity = card.config.center.rarity
 		local pool = {}
 		local src = G.P_JOKER_RARITY_POOLS and G.P_JOKER_RARITY_POOLS[rarity] or G.P_CENTER_POOLS['Joker']
-		
-		-- Build pool excluding current joker
+
+
 		for _, center in ipairs(src) do
 			if center.key ~= card.config.center.key then
 				pool[#pool + 1] = center
 			end
 		end
-		
+
 		local new_center = nil
 		if #pool > 0 then
 			new_center = pseudorandom_element(pool, pseudoseed('replace_joker' .. i))
 		end
-		
-		-- Roll for sticker removal
+
+
 		local remove_stickers = pseudorandom('replace_sticker' .. i) < sticker_removal_chance
-		
-		-- Preserve Cursed Sticker
+
+
 		local has_cursed = card.ability and card.ability.hnds_cursed
 		local curse_data = has_cursed and card.ability.hnds_curse and copy_table(card.ability.hnds_curse) or nil
-		
+
 		replacements[i] = {
 			card = card,
 			center = new_center,
@@ -481,8 +431,8 @@ function replace_jokers_keep_rarity(jokers, sticker_removal_chance)
 			curse_data = curse_data,
 		}
 	end
-	
-	-- Perform replacements with reshape animation
+
+
 	for i, rep in ipairs(replacements) do
 		if rep.center then
 			G.E_MANAGER:add_event(Event({
@@ -490,31 +440,31 @@ function replace_jokers_keep_rarity(jokers, sticker_removal_chance)
 				delay = i == 1 and 0 or 0.45,
 				func = function()
 					local card = rep.card
-					
-					-- Wait then reshape
+
+
 					G.E_MANAGER:add_event(Event({
 						trigger = 'after',
 						delay = i == 1 and 0.2 or 0.4,
 						func = function()
-							-- Remove from deck if method exists
+
 							if card.remove_from_deck and type(card.remove_from_deck) == 'function' then
 								pcall(card.remove_from_deck, card)
 							end
-							
-							-- Change ability (preserves position, edition, stickers by default)
+
+
 							card:set_ability(rep.center, true)
-							
-							-- Re-add to deck
+
+
 							card:add_to_deck()
-							
-							-- Remove stickers if roll failed (Eternal and Cursed ignored)
+
+
 							if rep.remove_stickers then
-								-- Remove base stickers
+
 								if card.ability then
 									card.ability.perishable = nil
 									card.ability.rental = nil
 								end
-								-- Remove modded stickers
+
 								if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
 									for _, k in ipairs(SMODS.Sticker.obj_buffer) do
 										if card.ability and card.ability[k] then
@@ -523,8 +473,8 @@ function replace_jokers_keep_rarity(jokers, sticker_removal_chance)
 									end
 								end
 							end
-							
-							-- Materialize animation
+
+
 							card:start_materialize()
 							card:juice_up(0.5, 0.3)
 							play_sound('card1', 1 + (i - 1) * 0.05, 0.6)

@@ -24,7 +24,7 @@ SMODS.Consumable({
 			trigger = "before",
 			delay = 0.75,
 			func = function()
-				--empty event for timing purposes
+
 				return true
 			end,
 		}))
@@ -50,7 +50,7 @@ SMODS.Consumable({
 			trigger = "before",
 			delay = 0.75,
 			func = function()
-				--empty event for timing purposes
+
 				return true
 			end,
 		}))
@@ -74,7 +74,7 @@ SMODS.Consumable({
 			trigger = "before",
 			delay = 0.75,
 			func = function()
-				--empty event for timing purposes
+
 				return true
 			end,
 		}))

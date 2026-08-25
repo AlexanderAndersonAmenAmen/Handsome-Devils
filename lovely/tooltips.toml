@@ -3,9 +3,6 @@ version = "1.0.0"
 dump_lua = true
 priority = 0
 
-# -----------------------------
-# DNA Tag
-# -----------------------------
 
 [[patches]]
 [patches.pattern]
@@ -20,12 +17,7 @@ payload = '''
 '''
 match_indent = true
 
-# -----------------------------
-# The Devil rolled-effect tooltip
-# -----------------------------
-# Attach hover behaviour to the blind badge without modifying the surrounding
-# blind-choice UI tree. `times = 1` selects create_UIBox_blind_choice rather
-# than the later run-summary badge that uses the same draw-step snippet.
+
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"

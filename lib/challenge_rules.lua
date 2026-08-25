@@ -1,11 +1,11 @@
 _G.HNDS_CHALLENGE_RULES_LOADED = true
 
--- Check if the current challenge matches the given key (SMODS format: c_hnds_<key>)
+
 function HNDS.is_challenge(key)
 	return G and G.GAME and G.GAME.challenge == 'c_hnds_'..key
 end
 
--- Dark Ritual
+
 	if G and G.FUNCS and type(G.FUNCS.cash_out) == 'function' and not G.FUNCS._hnds_wrapped_cash_out then
 		G.FUNCS._hnds_wrapped_cash_out = true
 		local cash_out_ref = G.FUNCS.cash_out
@@ -15,7 +15,7 @@ end
 		end
 
 		stop_use()
-		if G.round_eval then  
+		if G.round_eval then
 			e.config.button = nil
 			G.round_eval.alignment.offset.y = G.ROOM.T.y + 15
 			G.round_eval.alignment.offset.x = 0
@@ -25,14 +25,14 @@ end
 			G.E_MANAGER:add_event(Event({
 				trigger = 'immediate',
 				func = function()
-					if G.round_eval then 
+					if G.round_eval then
 						G.round_eval:remove()
 						G.round_eval = nil
 					end
 					G.GAME.current_round.jokers_purchased = 0
 					G.GAME.current_round.discards_left = math.max(0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards)
 					G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))
-					-- KEY CHANGE: Skip shop and go directly to blind select
+
 					G.STATE = G.STATES.BLIND_SELECT
 					G.STATE_COMPLETE = false
 					return true
@@ -52,13 +52,12 @@ end
 	end
 end
 
--- Gambling Opportunity: banned money-generating enhancements, seals, and editions.
--- Other mods can append to these tables to extend the ban list.
+
 HNDS.GAMBLING_BANNED_ENHANCEMENTS = HNDS.GAMBLING_BANNED_ENHANCEMENTS or { m_gold = true, m_lucky = true }
 HNDS.GAMBLING_BANNED_SEALS = HNDS.GAMBLING_BANNED_SEALS or { Gold = true }
 HNDS.GAMBLING_BANNED_EDITIONS = HNDS.GAMBLING_BANNED_EDITIONS or { e_hnds_vintage = true }
 
--- Safety net: strip banned enhancements/seals that slipped through on UI render
+
 if Card and Card.generate_card_ui and not Card._hnds_wrapped_generate_card_ui then
 	Card._hnds_wrapped_generate_card_ui = true
 	local generate_card_ui_ref = Card.generate_card_ui
@@ -77,7 +76,7 @@ if Card and Card.generate_card_ui and not Card._hnds_wrapped_generate_card_ui th
 	end
 end
 
--- Block banned enhancements from being applied
+
 if Card and Card.set_ability and not Card._hnds_wrapped_set_ability then
 	Card._hnds_wrapped_set_ability = true
 	local set_ability_ref = Card.set_ability
@@ -90,7 +89,7 @@ if Card and Card.set_ability and not Card._hnds_wrapped_set_ability then
 	end
 end
 
--- Block banned seals from being applied
+
 if Card and Card.set_seal and not Card._hnds_wrapped_set_seal then
 	Card._hnds_wrapped_set_seal = true
 	local set_seal_ref = Card.set_seal
@@ -102,7 +101,7 @@ if Card and Card.set_seal and not Card._hnds_wrapped_set_seal then
 	end
 end
 
--- Block banned editions from being applied
+
 if Card and Card.set_edition and not Card._hnds_wrapped_set_edition then
 	Card._hnds_wrapped_set_edition = true
 	local set_edition_ref = Card.set_edition
@@ -114,7 +113,7 @@ if Card and Card.set_edition and not Card._hnds_wrapped_set_edition then
 	end
 end
 
--- Filter banned enhancements from the pool
+
 if get_current_pool and not _G._hnds_wrapped_get_current_pool then
 	_G._hnds_wrapped_get_current_pool = true
 	local get_current_pool_ref = get_current_pool
@@ -135,8 +134,7 @@ if get_current_pool and not _G._hnds_wrapped_get_current_pool then
 	end
 end
 
--- Devil's Round: all jokers get cursed on creation.
--- Shared helper: apply curse to a joker if it's eligible and the challenge is active.
+
 function HNDS.try_devils_round_curse(card)
 	if not HNDS.is_challenge('devils_round') then return end
 	if not (card and card.config and card.config.center and card.config.center.set == 'Joker') then return end

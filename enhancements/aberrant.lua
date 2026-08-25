@@ -19,9 +19,7 @@ end
 local function aberrant_fusions(card)
     if not (card and card.ability) then return {} end
 
-    -- Migrate cards made by the previous draw-count version. Keeping that old
-    -- table in `ability.extra` also breaks vanilla numeric enhancement fields
-    -- (notably Glass), so remove it when encountered.
+
     if type(card.ability.extra) == "table"
         and (card.ability.extra.draws ~= nil
             or card.ability.extra.drawn ~= nil
@@ -56,8 +54,8 @@ local function enhancement_name(key)
         local center = G and G.P_CENTERS and G.P_CENTERS[key]
         name = (center and center.name) or key
     end
-    -- The compact status requested for Aberrant is `(Steel/Gold)`, rather
-    -- than `(Steel Card/Gold Card)` in English.
+
+
     name = name:gsub(" Card$", "")
     return name
 end
@@ -83,11 +81,8 @@ local function clone_table(value, seen)
 end
 
 local function fusion_entries(card)
-    -- `SMODS.get_enhancements` is a key set, so duplicate fusions should not be
-    -- represented by fake Center keys. Duplicate effects are evaluated from the
-    -- ordered fusion slots in `SMODS.calculate_quantum_enhancements` below.
-    -- Keeping only real enhancement keys here avoids invalid/synthetic Centers
-    -- leaking into probability and compatibility checks (notably Lucky/Lucky).
+
+
     local entries, seen = {}, {}
     for _, key in ipairs(aberrant_fusions(card)) do
         if not seen[key] then
@@ -104,17 +99,14 @@ local function invalidate_enhancement_cache(card)
     end
 end
 
--- Expose fused enhancement TYPES to normal Steamodded enhancement helpers.
--- Duplicate slots intentionally collapse here because this API is a key set;
--- their effects are still evaluated once per stored fusion slot below.
+
 local get_enhancements_ref = SMODS.get_enhancements
 function SMODS.get_enhancements(card, extra_only, ...)
     local base = get_enhancements_ref(card, extra_only, ...)
     if base == nil then base = {} end
     if not is_aberrant(card) or type(base) ~= 'table' then return base end
 
-    -- Some mod loaders/cache layers return a shared table here. Never append
-    -- Aberrant state directly to that table or another mod/card may observe it.
+
     local enhancements = {}
     for key, value in pairs(base) do enhancements[key] = value end
 
@@ -129,7 +121,7 @@ local function refresh_aberrant_visuals(card)
     if card.set_sprites then card:set_sprites(card.config.center) end
     if card.should_hide_front then card.front_hidden = card:should_hide_front() end
 
-    -- A newly fused Wild card immediately sheds an existing debuff.
+
     if has_fusion(card, "m_wild") and card.debuff and card.set_debuff then
         card:set_debuff(false)
     elseif G and G.GAME and G.GAME.blind and G.GAME.blind.debuff_card then
@@ -159,9 +151,7 @@ local function destroy_overstacked_card(card)
     end
 end
 
--- Applying another Enhancement to an Aberrant card fuses it instead of
--- replacing Aberrant. Once both slots are occupied, any further attempt
--- destroys the playing card.
+
 local set_ability_ref = Card.set_ability
 function Card:set_ability(center, initial, delay_sprites, ...)
     local new_center = resolve_center(center)
@@ -173,18 +163,14 @@ function Card:set_ability(center, initial, delay_sprites, ...)
         return set_ability_ref(self, center, initial, delay_sprites, ...)
     end
 
-    -- A permanently Bound card being changed to Obsidian is a visual
-    -- replacement, not an Aberrant fusion. Let Obsidian's wrapper handle it.
+
     if new_key == "m_hnds_obsidian"
         and HNDS.is_bound_card and HNDS.is_bound_card(self)
     then
         return set_ability_ref(self, center, initial, delay_sprites, ...)
     end
 
-    -- Applying Aberrant to a card that is already Enhanced now preserves that
-    -- existing enhancement as Aberrant's first fusion instead of deleting it.
-    -- Delegate the actual center change through the full wrapper chain first,
-    -- then attach only the previous real enhancement to the resulting card.
+
     if not initial
         and new_key == ABERRANT_KEY
         and old_center
@@ -223,11 +209,7 @@ function Card:set_ability(center, initial, delay_sprites, ...)
     return set_ability_ref(self, center, initial, delay_sprites, ...)
 end
 
--- Let Steamodded (and any compatibility wrapper installed before Handsome
--- Devils) calculate every UNIQUE quantum enhancement normally. Aberrant's
--- get_enhancements hook above exposes its fused types through that standard API.
--- We only add evaluations for duplicate fusion slots (Steel/Steel, Gold/Gold,
--- etc.), because a key-set API necessarily collapses duplicates.
+
 local calculate_quantum_ref = SMODS.calculate_quantum_enhancements
 function SMODS.calculate_quantum_enhancements(card, effects, context, ...)
     local downstream_results
@@ -250,9 +232,7 @@ function SMODS.calculate_quantum_enhancements(card, effects, context, ...)
         return ((table and table.unpack) or unpack)(downstream_results, 1, downstream_results.n)
     end
 
-    -- Build only the duplicate occurrences after the first copy of each key.
-    -- The first occurrence has already been evaluated by the normal quantum
-    -- pipeline above, together with enhancements granted by other mods/Jokers.
+
     local seen, duplicate_keys = {}, {}
     for _, key in ipairs(fusions) do
         if seen[key] then duplicate_keys[#duplicate_keys + 1] = key
@@ -308,7 +288,7 @@ function SMODS.calculate_quantum_enhancements(card, effects, context, ...)
     return ((table and table.unpack) or unpack)(downstream_results, 1, downstream_results.n)
 end
 
--- Stone is deliberately dominant over Wild on Aberrant cards.
+
 local has_no_suit_ref = SMODS.has_no_suit
 function SMODS.has_no_suit(card, ...)
     if is_aberrant(card) and has_fusion(card, "m_stone") then return true end
@@ -321,8 +301,7 @@ function SMODS.has_any_suit(card, ...)
     return has_any_suit_ref(card, ...)
 end
 
--- Stone also removes the normal rank/suit front and its base-rank chip value,
--- leaving only the Aberrant enhancement art visible.
+
 if Card.should_hide_front then
     local should_hide_front_ref = Card.should_hide_front
     function Card:should_hide_front(...)
@@ -339,8 +318,7 @@ if Card.get_chip_bonus then
     end
 end
 
--- Wild's anti-debuff clause remains active even when Stone suppresses its suit
--- wildcard clause, and works independently of the optional vanilla-tweaks file.
+
 local mod = SMODS.current_mod
 local set_debuff_hook_ref = mod.set_debuff
 mod.set_debuff = function(card)
@@ -353,9 +331,7 @@ mod.set_debuff = function(card)
     end
 end
 
--- Aberrant fusion indicators are visual-only sticker sprites. They are never
--- applied to the card as real Stickers, so they cannot create badges/tooltips,
--- participate in sticker rolls, or interfere with Cursed sticker exclusivity.
+
 local ABERRANT_INDICATOR_POS = {
     unknown = { top = { x = 4, y = 0 }, bottom = { x = 5, y = 0 } },
     stone = { top = { x = 3, y = 1 }, bottom = { x = 5, y = 3 } },
@@ -381,9 +357,7 @@ local ABERRANT_INDICATOR_KIND = {
     m_hnds_obsidian = "obsidian",
 }
 
--- These four take the top position whenever paired with a lower-priority
--- enhancement. When both fusions are from this group, fusion order breaks the
--- tie (first = top, second = bottom), which is the only way to show both.
+
 local ABERRANT_TOP_PRIORITY = {
     stone = true, mult = true, bonus = true, glass = true,
 }
@@ -407,9 +381,7 @@ local function aberrant_indicator_slots(card)
     local first_priority = ABERRANT_TOP_PRIORITY[first]
     local second_priority = ABERRANT_TOP_PRIORITY[second]
 
-    -- Stone/Mult/Bonus/Glass versus Stone/Mult/Bonus/Glass is order-based:
-    -- the first fused enhancement stays on top and the second goes on bottom.
-    -- (The identical-pair case above also draws one copy in each position.)
+
     if first_priority and second_priority then
         return first, second
     elseif first_priority then
@@ -418,15 +390,11 @@ local function aberrant_indicator_slots(card)
         return second, first
     end
 
-    -- Steel/Gold/Lucky/Wild/Obsidian/Unknown combinations are also order-based.
+
     return first, second
 end
 
--- These are intentionally NOT registered as SMODS.Sticker objects. In
--- Steamodded BETA-1620a Sticker has no object-level :draw() method, and
--- registering visual-only helpers also makes them appear in the Stickers
--- collection. Instead, cache plain sprites from HDstickers and render them
--- directly in a DrawStep.
+
 local ABERRANT_INDICATOR_ATLAS = "hnds_Stickers"
 local ABERRANT_INDICATOR_SPRITES = {}
 
@@ -455,10 +423,8 @@ local function draw_aberrant_indicator(card, kind, slot)
     if not sprite or not card.children or not card.children.center then return end
 
     sprite.role.draw_major = card
-    -- Keep the indicators flat: only use the dissolve pass so they follow the
-    -- card's materialize/dissolve animation. The vanilla sticker-style
-    -- 'voucher' pass adds the moving shine, which these indicators should not
-    -- have.
+
+
     sprite:draw_shader('dissolve', nil, nil, nil, card.children.center)
 end
 
@@ -467,9 +433,8 @@ SMODS.DrawStep({
     order = 35,
     func = function(card, layer)
         if not is_aberrant(card) then return end
-        -- A Card flip updates `facing` and `sprite_facing` at slightly
-        -- different points. Draw only once both agree that the front is
-        -- visible; this prevents an indicator frame leaking onto the card back.
+
+
         if card.facing ~= "front" or card.sprite_facing ~= "front" then return end
 
         local top_kind, bottom_kind = aberrant_indicator_slots(card)
@@ -492,7 +457,9 @@ SMODS.Enhancement({
     loc_vars = function(self, info_queue, card)
         local seen = {}
         for _, key in ipairs(aberrant_fusions(card)) do
-            if not seen[key] and G.P_CENTERS[key] then
+            local completed_obsidian = key == "m_hnds_obsidian"
+                and HNDS.is_bound_card and HNDS.is_bound_card(card)
+            if not seen[key] and G.P_CENTERS[key] and not completed_obsidian then
                 info_queue[#info_queue + 1] = G.P_CENTERS[key]
                 seen[key] = true
             end

@@ -1,11 +1,11 @@
--- The hate is fading
+
 SMODS.Tag {
     key = "extinction_tag",
     atlas = "HDtags",
     pos = { x = 4, y = 0 },
     discovered = false,
     in_pool = function(self, args)
-        return false  -- Never appears in pool or as skip option, to protect player's mental health
+        return false
     end,
     apply = function(self, tag, context)
         if context.type == 'new_blind_choice' then

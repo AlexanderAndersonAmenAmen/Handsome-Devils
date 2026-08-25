@@ -3,11 +3,7 @@ version = "1.0.0"
 dump_lua = true
 priority = 0
 
-# ---------------------------------------------------------------
-# Code yoinked from Lost Edition (Men I miss that mod :c )
-# ---------------------------------------------------------------
 
-# Patch game.lua blind assignment
 [[patches]]
 [patches.pattern]
 target = "game.lua"
@@ -24,7 +20,7 @@ else
 end
 '''
 
-# Patch common_events.lua blind assignment
+
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -41,7 +37,7 @@ else
 end
 '''
 
-# Patch blind.lua chip calculation for replaced blinds
+
 [[patches]]
 [patches.pattern]
 target = "blind.lua"
@@ -63,7 +59,7 @@ else
 end
 '''
 
-# Patch UI blind amount display
+
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"

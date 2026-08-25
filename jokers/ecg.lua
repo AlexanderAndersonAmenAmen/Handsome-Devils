@@ -19,8 +19,7 @@ local function hnds_ecg_remove_at_zero(card)
     if not card or card.hnds_ecg_removing then return end
     card.hnds_ecg_removing = true
 
-    -- Match self-expiring Jokers such as Popcorn: let the Mult change finish
-    -- resolving, then dissolve the actual ECG card.
+
     if G and G.E_MANAGER and Event then
         G.E_MANAGER:add_event(Event({
             trigger = 'after',
@@ -73,8 +72,7 @@ SMODS.Joker {
     calculate = function(self, card, context)
         local extra = card.ability.extra
 
-        -- Update once for the played hand. Blueprint/Brainstorm copies use the
-        -- stored value but must not advance ECG's own running Mult a second time.
+
         if context.before and not context.blueprint then
             local delta
             if hnds_ecg_scoring_hearts(context) >= 2 then

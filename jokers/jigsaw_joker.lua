@@ -20,23 +20,23 @@ local function hnds_all_hand_keys()
 
     local function add(hand_key)
         if type(hand_key) ~= 'string' or added[hand_key] then return end
-        -- When a run exists, only list real poker hands present in that run.
+
         if hands and not hands[hand_key] then return end
         ordered[#ordered + 1] = hand_key
         added[hand_key] = true
     end
 
-    -- Preserve Balatro's normal strongest-to-weakest hierarchy first.
+
     for _, hand_key in ipairs(HNDS_VANILLA_HAND_HIERARCHY) do
         add(hand_key)
     end
 
-    -- Then include custom hands in Steamodded's live ordering.
+
     for _, hand_key in ipairs((G and G.handlist) or {}) do
         add(hand_key)
     end
 
-    -- Compatibility fallback for custom hands missing from G.handlist.
+
     if hands then
         local remaining = {}
         for hand_key, hand_data in pairs(hands) do
@@ -60,9 +60,8 @@ end
 local function hnds_jigsaw_should_show_hand(hand_key, tracked)
     local hand_data = G and G.GAME and G.GAME.hands and G.GAME.hands[hand_key]
     if hand_data then
-        -- Secret poker hands are hidden until they have actually been played in
-        -- this run. `played` is run-scoped, so a secret discovered in an older
-        -- run does not leak into this checklist.
+
+
         if hand_data.visible == false then
             return (tonumber(hand_data.played) or 0) > 0
                 or (type(tracked) == 'table' and tracked[hand_key] == true)
@@ -70,8 +69,7 @@ local function hnds_jigsaw_should_show_hand(hand_key, tracked)
         return true
     end
 
-    -- Collection/title-screen fallback where the live run hand table may not
-    -- exist. Ask Steamodded for the hand's current visibility if possible.
+
     if SMODS and type(SMODS.is_poker_hand_visible) == 'function' then
         local ok, visible = pcall(SMODS.is_poker_hand_visible, hand_key)
         if ok then
@@ -80,8 +78,7 @@ local function hnds_jigsaw_should_show_hand(hand_key, tracked)
         end
     end
 
-    -- Vanilla secret hands are the only hidden hands we can identify safely
-    -- without a live run/Steamodded visibility result.
+
     if hand_key == 'Flush Five'
         or hand_key == 'Flush House'
         or hand_key == 'Five of a Kind'
@@ -102,11 +99,7 @@ local function hnds_jigsaw_checklist_text(tracked)
             local completed = type(tracked) == 'table' and tracked[hand_key] == true
             local colour = completed and 'attention' or 'inactive'
 
-            -- Keep both the raw localization text and the already-parsed form
-            -- in sync. Localization is initialized before a run begins, so
-            -- replacing this entry at hover time leaves text_parsed nil and
-            -- crashes localize(type = 'other'). Building the parsed line here
-            -- lets the normal info_queue renderer remain fully dynamic.
+
             lines[#lines + 1] = '{C:' .. colour .. '}' .. hand_name .. '{}'
             parsed_lines[#parsed_lines + 1] = {
                 { strings = { hand_name }, control = { C = colour } },
@@ -129,10 +122,7 @@ local function hnds_jigsaw_queue_checklist(info_queue, tracked)
     entry.text = lines
     entry.text_parsed = parsed_lines
 
-    -- Use Balatro's normal auxiliary-tooltip path. The localization object
-    -- itself stays intact (including its parsed name), so this works with
-    -- 1.0.1o/Steamodded BETA-1620a instead of creating a transient broken
-    -- localization entry.
+
     info_queue[#info_queue + 1] = {
         key = 'hnds_jigsaw_checklist',
         set = 'Other',
@@ -175,8 +165,7 @@ SMODS.Joker {
         local required = extra.required_hands or 8
         local progress = math.min(tracked_count, required)
 
-        -- Keep the poker-hand checklist in its own tooltip. Collection cards
-        -- intentionally show only Jigsaw's normal description, with no list.
+
         local in_collection = card and card.area and card.area.config
             and card.area.config.collection
         if info_queue and card and not in_collection then
@@ -194,7 +183,7 @@ SMODS.Joker {
     calculate = function(self, card, context)
         local extra = card.ability.extra
 
-        -- Count each poker hand only once for this copy of Jigsaw.
+
         if context.joker_main and not context.repetition and not context.blueprint then
             local hand_type = context.scoring_name
             if hand_type then
@@ -221,8 +210,7 @@ SMODS.Joker {
             end
         end
 
-        -- The reward belongs specifically to selling this Jigsaw, not selling
-        -- some other card while a completed Jigsaw is present.
+
         local selling_this = context.selling_self
             or (context.selling_card and context.card == card)
 

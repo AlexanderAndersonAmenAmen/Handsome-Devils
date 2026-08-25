@@ -1,7 +1,7 @@
 SMODS.Consumable({
 	key = "gateway",
 	atlas = "Consumables",
-	pos = { x = 2, y = 1 }, --this is just guessing lmao i still need the sprite
+	pos = { x = 2, y = 1 },
 	set = "Spectral",
 	config = { mod_conv = "m_hnds_obsidian", max_highlighted = 2 },
 	discovered = false,

@@ -3,8 +3,8 @@ SMODS.Joker {
     unlocked = false,
     unlock_condition = { type = "", extra = "", hidden = true },
     locked_loc_vars = function(self, info_queue, card)
-        -- Force Steamodded's locked-Joker path to initialise specific_vars and
-        -- use the same hidden Legendary message as vanilla Soul Jokers.
+
+
         return { key = "joker_locked_legendary", set = "Other", vars = {} }
     end,
     discovered = false,

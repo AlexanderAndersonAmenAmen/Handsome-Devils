@@ -1,11 +1,10 @@
--- Optional vanilla balance/content tweaks for Handsome Devils.
--- This file is loaded only when config.enableVanillaTweaks is enabled.
+
+
 
 HNDS = HNDS or {}
 local MOD = SMODS.current_mod
 
--- Silent ownership changes vanilla objects in place without assigning this mod
--- as their owner, keeping balance tweaks out of the mod's Additions tab.
+
 local function take_vanilla_ownership(class, key, definition)
     return class:take_ownership(key, definition, true)
 end
@@ -24,15 +23,16 @@ end
 
 local function is_wild(card)
     if not card then return false end
+    if HNDS.is_faceless and HNDS.is_faceless(card) and HNDS.faceless_copy_target then
+        local target = HNDS.faceless_copy_target(card)
+        if target then return is_wild(target) end
+    end
     local center = card.config and card.config.center
     if center and center.key == 'm_wild' then return true end
     if HNDS.aberrant_has_fusion then
         local ok, result = pcall(HNDS.aberrant_has_fusion, card, 'm_wild')
         if ok and result then return true end
     end
-    -- Jevil grants a temporary virtual Wild state rather than replacing the
-    -- card's Enhancement. Under Vanilla Tweaks it receives the same Wild
-    -- anti-debuff treatment as a real m_wild card.
     return HNDS.is_jevil_wild and HNDS.is_jevil_wild(card) or false
 end
 
@@ -74,10 +74,8 @@ local function add_dollars(amount)
 end
 
 local function flower_pot_suit_cap()
-    -- Keep the vanilla ceiling at X4 unless another mod has actually
-    -- registered additional suits. Handsome Devils' private Lanterns suit is
-    -- only a Jack of Lanterns implementation detail, so it must not by itself
-    -- unlock Flower Pot's modded-suit scaling.
+
+
     local registered = 0
     for suit_key, _ in pairs((SMODS and SMODS.Suits) or {}) do
         if suit_key ~= 'hnds_lanterns' then registered = registered + 1 end
@@ -88,18 +86,13 @@ end
 local function count_unique_suits(cards)
     if type(cards) ~= 'table' then return 0 end
 
-    -- Use the same dynamic suit helper as Occultist and Color of Madness, but
-    -- cap Flower Pot to the number of public registered suits. In a normal
-    -- four-suit game this preserves the vanilla X4 maximum; if another mod
-    -- adds one or more suits the cap automatically becomes X5, X6, etc.
+
     local cap = flower_pot_suit_cap()
     if HNDS and type(HNDS.get_unique_suits) == 'function' then
         return math.min(cap, HNDS.get_unique_suits(cards))
     end
 
-    -- Defensive fallback for unusual load orders where utils.lua has not yet
-    -- exposed the shared helper. Wild cards fill missing suits, but cannot
-    -- push the total above the currently available public-suit cap.
+
     local suits, wilds = {}, 0
     for _, playing_card in ipairs(cards) do
         if playing_card and not playing_card.debuff
@@ -121,7 +114,7 @@ end
 
 local function highlighted_scoring_hand()
     if not (G and G.hand and G.hand.highlighted and #G.hand.highlighted > 0) then return {} end
-    -- Splash makes every highlighted card score.
+
     if active_splash() then return G.hand.highlighted end
     if not (G.FUNCS and type(G.FUNCS.get_poker_hand_info) == 'function') then return {} end
     local ok, _, _, _, scoring_hand = pcall(G.FUNCS.get_poker_hand_info, G.hand.highlighted)
@@ -155,7 +148,6 @@ local function current_mail_rank()
     return { rank = rank, id = (rank_obj and rank_obj.id) or vanilla_rank_ids[rank] or 14 }
 end
 
--- Tags ------------------------------------------------------------------------
 
 take_vanilla_ownership(SMODS.Tag, 'juggle', {
     config = { type = 'round_start_bonus', h_size = 3 },
@@ -177,9 +169,6 @@ take_vanilla_ownership(SMODS.Tag, 'juggle', {
 })
 
 
--- Reroll Tag uses Balatro's unmodified vanilla behavior.
--- Clear state left by pre-2.2.13 banked-reroll builds so old runs do not retain
--- a virtual Director's Cut or delayed UI refresh request.
 function HNDS.cleanup_removed_reroll_tag_rework()
     if not (G and G.GAME) then return end
 
@@ -231,10 +220,7 @@ local function used_voucher(key)
     return G and G.GAME and G.GAME.used_vouchers and G.GAME.used_vouchers[key]
 end
 
--- Steamodded BETA-1620a can route the shop's Enhanced object type through
--- Balatro's legacy create_card path and call SMODS.poll_object with only
--- `guaranteed = true`. Supply the pool only for that exact compatibility
--- call; all normal object polling remains untouched.
+
 if SMODS and type(SMODS.poll_object) == 'function'
     and not SMODS._hnds_enhanced_shop_poll_guard
 then
@@ -275,9 +261,7 @@ local function repair_shop_playing_card_ui(card, has_illusion)
         func = function()
             if not (card.area == G.shop_jokers and is_playing_card(card)) then return true end
 
-            -- Steamodded applies Illusion's Edition after modify_shop_card.
-            -- Re-poll only successful Edition rolls here, once the vanilla
-            -- shop creator has finished, so Negative and Vintage are included.
+
             if has_illusion and card.edition and not card.hnds_illusion_edition_repolled then
                 card.hnds_illusion_edition_repolled = true
                 local edition = SMODS.poll_edition({
@@ -290,8 +274,7 @@ local function repair_shop_playing_card_ui(card, has_illusion)
 
             if card.set_cost then card:set_cost() end
 
-            -- The normal shop creator adds this UI after modify_shop_card.
-            -- Rebuild it only when another compatibility path failed to do so.
+
             if card.children and not card.children.buy_button
                 and type(create_shop_card_ui) == 'function'
             then
@@ -315,8 +298,7 @@ local function modify_voucher_shop_playing_card(card)
 
     local has_illusion = used_voucher('v_illusion')
 
-    -- Illusion's shop type roll already supplies a 40% Enhancement chance.
-    -- Magic Trick alone receives the same chance here.
+
     if not has_illusion and card.config and card.config.center
         and card.config.center.key == 'c_base'
     then
@@ -332,10 +314,8 @@ local function modify_voucher_shop_playing_card(card)
     end
 
     if has_illusion and not card.seal then
-        -- Steamodded BETA-1620a omits Illusion's Seal roll for shop playing
-        -- cards. A 10x modifier raises the normal 2% Seal poll to 20%, and the
-        -- roll is independent from Enhancement and Edition so combinations
-        -- of all three modifiers can naturally appear.
+
+
         local seal = SMODS.poll_seal({
             key = 'hnds_illusion_seal',
             mod = 10,
@@ -363,8 +343,8 @@ local function create_planet_copy(source, negative, must_have_room)
         trigger = 'after',
         delay = 0.1,
         func = function()
-            -- The buffer reserves the Merchant slot between purchase and spawn.
-            -- Re-check the physical area in case another effect filled it first.
+
+
             local can_create = not must_have_room
                 or #G.consumeables.cards < (G.consumeables.config.card_limit or 0)
             if can_create then
@@ -390,10 +370,7 @@ local function planet_voucher_purchase(context)
         return
     end
 
-    -- Steamodded can evaluate the purchased card twice in buying_card contexts.
-    -- Store the guard on that physical shop card so each voucher creates only
-    -- one copy per purchase while remaining compatible with contexts that do
-    -- not expose buying_self to Mod.calculate.
+
     if context.card.hnds_planet_voucher_purchase_processed then return end
     context.card.hnds_planet_voucher_purchase_processed = true
 
@@ -435,10 +412,7 @@ HNDS.calculate_vanilla_tweaks = function(context)
     planet_voucher_purchase(context)
 end
 
--- Vouchers --------------------------------------------------------------------
 
--- These two vouchers no longer modify Planet appearance rates. Their new
--- purchase-copy effects are handled in HNDS.calculate_vanilla_tweaks above.
 take_vanilla_ownership(SMODS.Voucher, 'planet_merchant', {
     redeem = function(self, voucher)
         G.GAME.hnds_planet_voucher_rework_seen = true
@@ -453,7 +427,6 @@ take_vanilla_ownership(SMODS.Voucher, 'planet_tycoon', {
     unredeem = function(self, voucher) end,
 })
 
--- Enhancement -----------------------------------------------------------------
 
 take_vanilla_ownership(SMODS.Enhancement, 'wild', {
     any_suit = true,
@@ -464,7 +437,6 @@ take_vanilla_ownership(SMODS.Enhancement, 'wild', {
     end,
 })
 
--- Jokers ----------------------------------------------------------------------
 
 take_vanilla_ownership(SMODS.Joker, 'matador', {
     blueprint_compat = true,
@@ -605,8 +577,7 @@ local function normalize_suit_joker_extra(card)
     end
 end
 
--- Repair cards saved by the earlier broken build before vanilla's hardcoded
--- tooltip branch indexes ability.extra.s_mult / ability.extra.suit.
+
 if Card and Card.generate_UIBox_ability_table and not HNDS._suit_joker_tooltip_fix then
     local hnds_generate_UIBox_ability_table = Card.generate_UIBox_ability_table
     function Card:generate_UIBox_ability_table(...)
@@ -621,9 +592,8 @@ for key, suit in pairs(suit_jokers) do
     local owned_suit = suit
     take_vanilla_ownership(SMODS.Joker, key, {
         blueprint_compat = true,
-        -- Vanilla Card:generate_UIBox_ability_table indexes
-        -- ability.extra.s_mult and ability.extra.suit for these four Jokers.
-        -- Keep that native table shape or hovering the card crashes.
+
+
         config = { extra = { s_mult = 4, suit = owned_suit } },
         loc_vars = function(self, info_queue, card)
             return { vars = { extra_value(card, 's_mult', 4) } }
@@ -694,17 +664,15 @@ take_vanilla_ownership(SMODS.Joker, 'ring_master', {
 take_vanilla_ownership(SMODS.Joker, 'hiker', {
     blueprint_compat = true,
     config = { extra = 5 },
-    -- Explicitly preserve the vanilla Hiker attributes. In current Steamodded
-    -- these are also used by systems that classify card-modifying effects.
+
+
     attributes = { 'modify_card', 'chips', 'perma_bonus' },
     loc_vars = function(self, info_queue, card)
         return { vars = { 5 } }
     end,
     calculate = function(self, card, context)
-        -- In SMODS' scoring order the playing card's stored perma_bonus has
-        -- already been read by the time Joker `context.individual` runs.
-        -- Store Hiker's +5 permanently, then also score that exact +5 now so
-        -- the upgrade affects the same scoring instance (and every retrigger).
+
+
         if context.individual and context.cardarea == G.play
             and context.other_card and not context.other_card.debuff
         then
@@ -722,10 +690,7 @@ take_vanilla_ownership(SMODS.Joker, 'hiker', {
     end,
 })
 
--- Blue Stake rework -----------------------------------------------------------
--- Replaces vanilla Blue Stake's discard penalty. While Blue Stake (or any
--- higher Stake that applies it) is active, level-1 hand values and their
--- per-level Planet gains use the reduced table below.
+
 local HNDS_BLUE_STAKE_HAND_VALUES = {
     ['High Card']       = { mult = 1,  chips = 1,   l_mult = 1, l_chips = 5  },
     ['Pair']            = { mult = 1,  chips = 10,  l_mult = 1, l_chips = 10 },
@@ -755,17 +720,15 @@ function HNDS.apply_blue_stake_hand_rework()
             local level = math.max(1, tonumber(hand.level) or 1)
             hand.l_mult = values.l_mult
             hand.l_chips = values.l_chips
-            -- Preserve any legitimate starting hand level while rebuilding its
-            -- score from the new Blue-Stake level-1 base and level gains.
+
+
             hand.mult = values.mult + (level - 1) * values.l_mult
             hand.chips = values.chips + (level - 1) * values.l_chips
         end
     end
 end
 
--- All in Jest ships its own Blue Stake rework. Do not make two mods fight
--- over the same vanilla Stake object; when AIJ is installed, its Stake owns the
--- rule and Handsome Devils simply leaves its hnds_blue_stake_rework flag unset.
+
 if not (HNDS.mod_loaded and HNDS.mod_loaded('allinjest')) then
     take_vanilla_ownership(SMODS.Stake, 'blue', {
         modifiers = function(self)
@@ -776,9 +739,7 @@ if not (HNDS.mod_loaded and HNDS.mod_loaded('allinjest')) then
     })
 end
 
--- Stake modifiers normally run after the hand table exists, but keep a
--- post-start sync as a compatibility fallback for load orders that initialise
--- custom poker hands (notably Stone Ocean) later in Game:start_run().
+
 if Game and type(Game.start_run) == 'function' and not HNDS._blue_stake_start_run_hook then
     HNDS._blue_stake_start_run_hook = true
     local hnds_blue_stake_start_run_ref = Game.start_run
@@ -791,7 +752,6 @@ if Game and type(Game.start_run) == 'function' and not HNDS._blue_stake_start_ru
     end
 end
 
--- Spectral / poker hands -------------------------------------------------------
 
 take_vanilla_ownership(SMODS.Consumable, 'black_hole', {
     use = function(self, card, area, copier)

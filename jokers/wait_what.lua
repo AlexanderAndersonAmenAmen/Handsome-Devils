@@ -43,33 +43,32 @@ SMODS.Joker({
 		badges[#badges + 1] = create_badge(localize('k_common'), G.C.CHIPS, G.C.WHITE, 1.2)
 	end,
 	update = function(self, card, dt)
-		-- Collection cards are static previews. Avoid running shop-disguise sprite
-		-- maintenance every frame while the collection screen is left open.
 		if card.area and card.area.config and card.area.config.collection then return end
-		local dominated_by_shop = card.area and card.area.config and card.area.config.type == 'shop'
+		local in_shop = card.area and card.area.config and card.area.config.type == 'shop'
 		local revealed = card.ability and card.ability.hnds_wait_what_revealed
-		local should_disguise = dominated_by_shop and not revealed
-		local current_center = card.config and card.config.center
-		local target_center = should_disguise and G.P_CENTERS.j_joker or G.P_CENTERS.j_hnds_wait_what
-		if current_center ~= target_center then
-			card:set_sprites(target_center)
+		local should_disguise = in_shop and not revealed
+		if card.ability and card.ability.hnds_wait_what_visual_disguised ~= should_disguise then
+			card.ability.hnds_wait_what_visual_disguised = should_disguise
+			card:set_sprites(should_disguise and G.P_CENTERS.j_joker or G.P_CENTERS.j_hnds_wait_what)
 		end
 	end,
 	set_ability = function(self, card, initial, delay_sprites)
+		if card.ability then card.ability.hnds_wait_what_visual_disguised = false end
 		card:set_sprites(G.P_CENTERS.j_hnds_wait_what)
 	end,
 	add_to_deck = function(self, card, from_debuff)
 		card.ability.hnds_wait_what_revealed = true
+		card.ability.hnds_wait_what_visual_disguised = false
 		card:set_sprites(G.P_CENTERS.j_hnds_wait_what)
 	end,
 	calculate = function(self, card, context)
-		-- X4 Mult when scoring
+
 		if context.joker_main then
 			return { xmult = card.ability.extra.xmult }
 		end
 
 		if context.end_of_round and not context.individual and not context.repetition then
-			-- Balatro probability math factoring in Oops! All Sixes multiplier modifications
+
 			if pseudorandom('wait_what_tag') < G.GAME.probabilities.normal / card.ability.extra.tag_chance then
 				G.E_MANAGER:add_event(Event({
 					func = function()

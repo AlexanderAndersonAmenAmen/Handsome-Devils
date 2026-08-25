@@ -1,19 +1,10 @@
--------------------------------------------------------------------
--- THE DEVIL
--- Recreated Vanilla Boss Blind container
---
--- These are NOT SMODS.Blind objects.
--- They are modules used by blind_devil.lua
--------------------------------------------------------------------
+
+
+
 HNDS = HNDS or {}
 
 HNDS.DEVIL_BOSSES = {}
 
-
-
--------------------------------------------------------------------
--- Boss pool
--------------------------------------------------------------------
 
 HNDS.DEVIL_BOSS_POOL = {
 
@@ -52,12 +43,6 @@ HNDS.DEVIL_BOSS_POOL = {
 }
 
 
-
-
--------------------------------------------------------------------
--- Special properties
--------------------------------------------------------------------
-
 local card_debuffers = {
 
 
@@ -74,9 +59,6 @@ local card_debuffers = {
 }
 
 
-
--- Blinds whose effects can cause cards drawn to hand to be face down.
--- The Devil may roll at most one of these at a time.
 local card_flippers = {
     bl_hook_the_house = true,
     bl_hook_the_wheel = true,
@@ -115,8 +97,6 @@ local forbidden = {
 }
 
 
-
-
 local function contains(tbl, value)
 
     for _,v in ipairs(tbl) do
@@ -132,9 +112,6 @@ local function contains(tbl, value)
 end
 
 
-
-
-
 local function invalid_combo(result, candidate)
 
 
@@ -147,11 +124,6 @@ local function invalid_combo(result, candidate)
 
     test[#test+1] = candidate
 
-
-
-    ---------------------------------------------------------------
-    -- maximum one card debuff blind
-    ---------------------------------------------------------------
 
     local debuffs = 0
 
@@ -174,12 +146,6 @@ local function invalid_combo(result, candidate)
     end
 
 
-
-
-    ---------------------------------------------------------------
-    -- maximum one card-flipping blind
-    ---------------------------------------------------------------
-
     local flippers = 0
 
     for _,v in ipairs(test) do
@@ -192,11 +158,6 @@ local function invalid_combo(result, candidate)
         return true
     end
 
-
-
-    ---------------------------------------------------------------
-    -- forbidden pairs
-    ---------------------------------------------------------------
 
     for _,pair in ipairs(forbidden) do
 
@@ -213,25 +174,16 @@ local function invalid_combo(result, candidate)
     end
 
 
-
     return false
 
 end
 
--- Public compatibility helpers used by Platinum Blind upgrades. Keeping the
--- validator here guarantees both systems use the same debuffer/flipper limits
--- and forbidden-pair rules.
+
 HNDS.devil_combo_invalid = invalid_combo
 HNDS.DEVIL_CARD_DEBUFFERS = card_debuffers
 HNDS.DEVIL_CARD_FLIPPERS = card_flippers
 
--------------------------------------------------------------------
--- THE HOOK
--------------------------------------------------------------------
 
--- Not part of The Devil's own roll pool, but available as a Platinum
--- replacement/stack component. Mirrors vanilla's two random discards when a
--- hand is played.
 HNDS.DEVIL_BOSSES.bl_hook_the_hook = {
     loc_name = "The Hook",
 
@@ -260,10 +212,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_hook = {
 }
 
 
--------------------------------------------------------------------
--- THE OX
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_ox = {
     loc_name = "The Ox",
 
@@ -281,10 +229,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_ox = {
 }
 
 
--------------------------------------------------------------------
--- THE ARM
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_arm = {
     loc_name = "The Arm",
 
@@ -301,16 +245,10 @@ HNDS.DEVIL_BOSSES.bl_hook_the_arm = {
 }
 
 
-
--------------------------------------------------------------------
--- THE HOUSE
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_house = {
 
 
     loc_name = "The House",
-
 
 
     set_blind = function(self)
@@ -320,9 +258,7 @@ HNDS.DEVIL_BOSSES.bl_hook_the_house = {
     end,
 
 
-
     calculate = function(self, blind, context)
-
 
 
         if context.blind_disabled or context.blind_defeated then
@@ -348,8 +284,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_house = {
         end
 
 
-
-
         if context.stay_flipped
         and context.to_area == G.hand
         and G.GAME.current_round.hands_played == 0
@@ -373,23 +307,13 @@ HNDS.DEVIL_BOSSES.bl_hook_the_house = {
 }
 
 
-
-
-
-
--------------------------------------------------------------------
--- THE WALL
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_wall = {
 
 
     loc_name = "The Wall",
 
 
-
     calculate = function(self, blind, context)
-
 
 
         if context.blind_disabled then
@@ -408,26 +332,16 @@ HNDS.DEVIL_BOSSES.bl_hook_the_wall = {
         end
 
 
-
     end
 
 
 }
 
 
-
-
-
-
--------------------------------------------------------------------
--- THE WHEEL
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_wheel = {
 
 
     loc_name = "The Wheel",
-
 
 
     calculate = function(self, blind, context)
@@ -460,14 +374,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_wheel = {
 }
 
 
-
-
-
-
--------------------------------------------------------------------
--- THE CLUB
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_club = {
 
 
@@ -484,14 +390,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_club = {
 }
 
 
-
-
-
-
--------------------------------------------------------------------
--- THE FISH
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_fish = {
 
     loc_name = "The Fish",
@@ -502,14 +400,13 @@ HNDS.DEVIL_BOSSES.bl_hook_the_fish = {
     end,
 
     calculate = function(self, blind, context)
-        -- Playing a hand arms The Fish for the next draw-to-hand batch.
+
         if context.press_play then
             self.prepped = true
             self.cards_to_flip = 0
         end
 
-        -- Capture only the next draw batch, then disarm the effect so draws
-        -- caused by a later discard are face up.
+
         if context.drawing_cards and self.prepped then
             self.cards_to_flip = context.amount or 0
             self.prepped = false
@@ -531,10 +428,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_fish = {
 }
 
 
--------------------------------------------------------------------
--- THE PSYCHIC
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_psychic = {
 
 
@@ -550,14 +443,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_psychic = {
 
 }
 
-
-
-
-
-
--------------------------------------------------------------------
--- THE GOAD
--------------------------------------------------------------------
 
 HNDS.DEVIL_BOSSES.bl_hook_the_goad = {
 
@@ -576,14 +461,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_goad = {
 
 }
 
-
-
-
-
-
--------------------------------------------------------------------
--- THE WINDOW
--------------------------------------------------------------------
 
 HNDS.DEVIL_BOSSES.bl_hook_the_window = {
 
@@ -609,25 +486,15 @@ HNDS.DEVIL_BOSSES.bl_hook_the_window = {
 }
 
 
-
-
-
-
--------------------------------------------------------------------
--- THE MANACLE
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_manacle = {
 
 
     loc_name = "The Manacle",
 
 
-
     set_blind = function(self)
-        -- Component tables are singletons, so keep the adjustment idempotent.
-        -- This prevents Chicot/Luchador cleanup and round-end cleanup from
-        -- restoring the same -1 hand-size penalty twice.
+
+
         if not self.handsize_penalty_applied then
             G.hand:change_size(-1)
             self.handsize_penalty_applied = true
@@ -647,20 +514,10 @@ HNDS.DEVIL_BOSSES.bl_hook_the_manacle = {
 }
 
 
-
-
-
-
-
--------------------------------------------------------------------
--- THE EYE
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_eye = {
 
 
     loc_name = "The Eye",
-
 
 
     set_blind = function(self)
@@ -679,17 +536,13 @@ HNDS.DEVIL_BOSSES.bl_hook_the_eye = {
     end,
 
 
-
     calculate = function(self, blind, context)
-
 
 
         if context.debuff_hand then
 
 
-
             if self.hands[context.scoring_name] then
-
 
 
                 return {
@@ -701,10 +554,7 @@ HNDS.DEVIL_BOSSES.bl_hook_the_eye = {
                 }
 
 
-
             end
-
-
 
 
             if not context.check then
@@ -713,13 +563,10 @@ HNDS.DEVIL_BOSSES.bl_hook_the_eye = {
                 self.hands[context.scoring_name] = true
 
 
-
             end
 
 
-
         end
-
 
 
     end
@@ -728,21 +575,10 @@ HNDS.DEVIL_BOSSES.bl_hook_the_eye = {
 }
 
 
-
-
-
-
-
-
--------------------------------------------------------------------
--- THE MOUTH
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_mouth = {
 
 
     loc_name = "The Mouth",
-
 
 
     set_blind = function(self)
@@ -752,13 +588,10 @@ HNDS.DEVIL_BOSSES.bl_hook_the_mouth = {
     end,
 
 
-
     calculate = function(self, blind, context)
 
 
-
         if context.debuff_hand then
-
 
 
             if self.only_hand
@@ -778,9 +611,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_mouth = {
             end
 
 
-
-
-
             if not context.check then
 
 
@@ -788,13 +618,10 @@ HNDS.DEVIL_BOSSES.bl_hook_the_mouth = {
                     context.scoring_name
 
 
-
             end
 
 
-
         end
-
 
 
     end
@@ -803,21 +630,10 @@ HNDS.DEVIL_BOSSES.bl_hook_the_mouth = {
 }
 
 
-
-
-
-
-
-
--------------------------------------------------------------------
--- THE PLANT
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_plant = {
 
 
     loc_name = "The Plant",
-
 
 
     set_blind = function(self)
@@ -829,9 +645,7 @@ HNDS.DEVIL_BOSSES.bl_hook_the_plant = {
     end,
 
 
-
     calculate = function(self, blind, context)
-
 
 
         if context.debuff_card
@@ -851,22 +665,11 @@ HNDS.DEVIL_BOSSES.bl_hook_the_plant = {
         end
 
 
-
     end
-
 
 
 }
 
-
-
-
-
-
-
--------------------------------------------------------------------
--- THE SERPENT
--------------------------------------------------------------------
 
 HNDS.DEVIL_BOSSES.bl_hook_the_serpent = {
 
@@ -874,9 +677,7 @@ HNDS.DEVIL_BOSSES.bl_hook_the_serpent = {
     loc_name = "The Serpent",
 
 
-
     calculate = function(self, blind, context)
-
 
 
         if context.drawing_cards
@@ -906,32 +707,19 @@ HNDS.DEVIL_BOSSES.bl_hook_the_serpent = {
 }
 
 
-
-
-
-
-
-
--------------------------------------------------------------------
--- THE PILLAR
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_pillar = {
 
 
     loc_name = "The Pillar",
 
 
-
     calculate = function(self, blind, context)
-
 
 
         if context.debuff_card
         and context.debuff_card.area ~= G.jokers
         and context.debuff_card.ability.played_this_ante
         then
-
 
 
             return {
@@ -952,24 +740,13 @@ HNDS.DEVIL_BOSSES.bl_hook_the_pillar = {
 }
 
 
-
-
-
-
-
-
--------------------------------------------------------------------
--- THE NEEDLE
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_needle = {
 
     loc_name = "The Needle",
 
     calculate = function(self, blind, context)
-        -- Match the vanilla Blind lifecycle instead of directly assigning
-        -- hands_left in set_blind. In particular, this leaves round-start Tag
-        -- processing (including Juggle Tag's hand-size change) untouched.
+
+
         if context.setting_blind then
             local hands_left = G.GAME.current_round.hands_left
                 or G.GAME.round_resets.hands
@@ -995,15 +772,10 @@ HNDS.DEVIL_BOSSES.bl_hook_the_needle = {
 }
 
 
--------------------------------------------------------------------
--- THE HEAD
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_head = {
 
 
     loc_name = "The Head",
-
 
 
     debuff = {
@@ -1018,24 +790,13 @@ HNDS.DEVIL_BOSSES.bl_hook_the_head = {
 }
 
 
-
-
-
-
-
--------------------------------------------------------------------
--- THE MARK
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_mark = {
 
 
     loc_name = "The Mark",
 
 
-
     calculate = function(self, blind, context)
-
 
 
         if context.stay_flipped
@@ -1043,7 +804,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_mark = {
         and context.other_card
         and context.other_card:is_face(true)
         then
-
 
 
             return {
@@ -1055,7 +815,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_mark = {
             }
 
 
-
         end
 
 
@@ -1065,33 +824,19 @@ HNDS.DEVIL_BOSSES.bl_hook_the_mark = {
 }
 
 
-
-
-
-
-
-
--------------------------------------------------------------------
--- THE FLINT
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_flint = {
 
 
     loc_name = "The Flint",
 
 
-
     calculate = function(self, blind, context)
-
 
 
         if context.modify_hand then
 
 
-
             blind.triggered = true
-
 
 
             mult =
@@ -1105,7 +850,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_flint = {
                 )
 
 
-
             hand_chips =
                 mod_chips(
                     math.max(
@@ -1115,7 +859,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_flint = {
                         0
                     )
                 )
-
 
 
             update_hand_text(
@@ -1133,7 +876,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_flint = {
             )
 
 
-
         end
 
 
@@ -1143,29 +885,17 @@ HNDS.DEVIL_BOSSES.bl_hook_the_flint = {
 }
 
 
-
-
-
-
-
--------------------------------------------------------------------
--- THE WATER
--------------------------------------------------------------------
-
 HNDS.DEVIL_BOSSES.bl_hook_the_water = {
 
 
     loc_name = "The Water",
 
 
-
     set_blind = function(self)
-
 
 
         self.discards_sub =
             G.GAME.current_round.discards_left
-
 
 
         ease_discard(
@@ -1176,19 +906,15 @@ HNDS.DEVIL_BOSSES.bl_hook_the_water = {
     end,
 
 
-
     calculate = function(self, blind, context)
-
 
 
         if context.blind_disabled or context.blind_defeated then
 
 
-
             ease_discard(
                 self.discards_sub
             )
-
 
 
         end
@@ -1200,19 +926,6 @@ HNDS.DEVIL_BOSSES.bl_hook_the_water = {
 }
 
 
-
-
-
-
-
-
--------------------------------------------------------------------
--- THE TOOTH
--------------------------------------------------------------------
-
--- Kept out of The Devil's own roll pool, but exposed as a stackable Platinum
--- Boss effect. The selected cards are still in G.hand.highlighted when the
--- press_play context fires.
 HNDS.DEVIL_BOSSES.bl_hook_the_tooth = {
     loc_name = "The Tooth",
 
@@ -1228,33 +941,19 @@ HNDS.DEVIL_BOSSES.bl_hook_the_tooth = {
 }
 
 
--------------------------------------------------------------------
--- Devil cleanup
---
--- Called by blind_devil.lua disable()
--------------------------------------------------------------------
-
 function HNDS.clear_devil_state()
-
 
 
     G.GAME.hnds_devil_bosses = nil
 
 
-
 end
 
-
-
--------------------------------------------------------------------
--- Devil roller
--------------------------------------------------------------------
 
 HNDS.roll_devil_bosses = function(seed_suffix, ante_override)
     local pool = {}
 
-    -- Use the explicit pool so Tooth, Ox, Arm, Showdown blinds and any
-    -- unrelated definitions can never enter the roll.
+
     for _, key in ipairs(HNDS.DEVIL_BOSS_POOL or {}) do
         if HNDS.DEVIL_BOSSES[key] then
             pool[#pool + 1] = key
