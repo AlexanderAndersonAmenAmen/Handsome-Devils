@@ -1992,37 +1992,6 @@ function get_blind_amount(ante, ...)
 end
 
 
-if CardArea and CardArea.emplace and not HNDS._title_locked_hint_suppress_guard then
-    HNDS._title_locked_hint_suppress_guard = true
-    local hnds_cardarea_emplace_ref = CardArea.emplace
-
-    local function hnds_is_locked_title_hint(area, card)
-        if not (G and G.title_top and area == G.title_top and card) then return false end
-        local center = card.config and card.config.center
-        if not center or center.unlocked ~= false then return false end
-        if center.set ~= 'Joker' and center.set ~= 'Voucher' then return false end
-
-
-        local existing = area.cards and area.cards[1]
-        local existing_center = existing and existing.config and existing.config.center
-        local key = existing_center and existing_center.key
-        return type(key) == 'string' and (key:match('^j_hnds_')
-            or key:match('^c_hnds_') or key:match('^p_hnds_')) ~= nil
-    end
-
-    function CardArea:emplace(card, ...)
-        if hnds_is_locked_title_hint(self, card) and self.cards and #self.cards > 0 then
-
-
-            local ret = hnds_cardarea_emplace_ref(self, card, ...)
-            self:remove_card(card)
-            if card.remove then card:remove() end
-            return ret
-        end
-        return hnds_cardarea_emplace_ref(self, card, ...)
-    end
-end
-
 
 if Card and Card.align_h_popup and not HNDS._stable_hnds_tooltip_align_v3 then
     HNDS._stable_hnds_tooltip_align_v3 = true

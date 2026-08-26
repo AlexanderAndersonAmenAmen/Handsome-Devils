@@ -469,6 +469,24 @@ SMODS.current_mod.menu_cards = function()
     return {
         remove_original = true,
         { key = chosen_key },
+        func = function()
+            if not (G and G.title_top and G.title_top.cards) then return end
+            local kept_hnds
+            for i = #G.title_top.cards, 1, -1 do
+                local card = G.title_top.cards[i]
+                local center = card and card.config and card.config.center
+                local key = center and center.key
+                local is_hnds = type(key) == 'string' and (key:match('^j_hnds_') or key:match('^c_hnds_') or key:match('^p_hnds_'))
+                if is_hnds then
+                    if not kept_hnds then
+                        kept_hnds = card
+                    else
+                        G.title_top:remove_card(card)
+                        if card.remove then card:remove() end
+                    end
+                end
+            end
+        end,
     }
 end
 end

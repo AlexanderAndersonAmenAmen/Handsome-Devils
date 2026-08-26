@@ -1,3 +1,9 @@
+local function hnds_wait_what_disguise_area(card)
+	if not (card and card.area) then return false end
+	if G and G.pack_cards and card.area == G.pack_cards then return true end
+	return card.area.config and card.area.config.type == 'shop' or false
+end
+
 SMODS.Joker({
 	key = "wait_what",
 	atlas = "Jokers",
@@ -22,9 +28,9 @@ SMODS.Joker({
 		return { vars = { card.ability.extra.xmult, card.ability.extra.tag_chance } }
 	end,
 	generate_ui = function(self, info_queue, card, desc_nodes, specific_vars, full_UI_table)
-		local in_shop = card.area and card.area.config and card.area.config.type == 'shop'
-		local disguised = in_shop and not (card.ability and card.ability.hnds_wait_what_revealed)
-		local hidden_collection = not self.discovered and not in_shop
+		local disguise_area = hnds_wait_what_disguise_area(card)
+		local disguised = disguise_area and not (card.ability and card.ability.hnds_wait_what_revealed)
+		local hidden_collection = not self.discovered and not disguise_area
 
 		self.no_main_mod_badge = disguised or hidden_collection
 		full_UI_table.name = localize { type = 'name', key = self.key, set = 'Joker' }
@@ -44,9 +50,8 @@ SMODS.Joker({
 	end,
 	update = function(self, card, dt)
 		if card.area and card.area.config and card.area.config.collection then return end
-		local in_shop = card.area and card.area.config and card.area.config.type == 'shop'
 		local revealed = card.ability and card.ability.hnds_wait_what_revealed
-		local should_disguise = in_shop and not revealed
+		local should_disguise = hnds_wait_what_disguise_area(card) and not revealed
 		if card.ability and card.ability.hnds_wait_what_visual_disguised ~= should_disguise then
 			card.ability.hnds_wait_what_visual_disguised = should_disguise
 			card:set_sprites(should_disguise and G.P_CENTERS.j_joker or G.P_CENTERS.j_hnds_wait_what)
