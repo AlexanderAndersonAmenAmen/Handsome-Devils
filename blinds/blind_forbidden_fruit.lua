@@ -1,8 +1,5 @@
--------------------------------------------------------------------
--- FORBIDDEN FRUIT
--- Ante 10 Showdown Boss Blind
--- Randomly debuffs 6 playing cards per Tag popped this run.
--------------------------------------------------------------------
+
+
 
 HNDS = HNDS or {}
 

@@ -1,4 +1,4 @@
--- patatas
+
 local function hnds_petrify(card, face_cards)
 	card_eval_status_text(card, 'extra', nil, nil, nil, {
 		message = localize('k_hnds_petrified'),
@@ -59,10 +59,8 @@ SMODS.Joker({
 			and context.other_card:is_face() and context.other_card.area == G.hand then
 			local face_cards = {}
 			for _, c in ipairs(G.hand.cards) do
-				-- set_ability immediately removes the face rank by turning the card
-				-- into Stone, so a persistent per-card guard is unnecessary. Keeping
-				-- one would make a card permanently immune if another mod later
-				-- restores/re-enhances it into a face card.
+
+
 				if c:is_face() then
 					face_cards[#face_cards + 1] = c
 				end

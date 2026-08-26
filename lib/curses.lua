@@ -16,9 +16,8 @@ local function set_enhancement(card, key)
 end
 
 G.CURSE_OFFERS = {
-    -- Offers are benefits
-    -- They technically work like a Jokers
-    -- 1. Create a copy of a random tarot card
+
+
     [1] = {
         id = 'offer_copy_random_tarot',
         func = function(card, context)
@@ -48,7 +47,7 @@ G.CURSE_OFFERS = {
             end
         end
     },
-    -- 2. Create 2 random Planet cards
+
     [2] = {
         id = 'offer_copy_random_planet',
         func = function(card, context)
@@ -95,7 +94,7 @@ G.CURSE_OFFERS = {
             end
         end
     },
-    -- 3. Give a random enhancement to 8 cards in your deck
+
     [3] = {
         id = 'offer_random_enhancement',
         func = function(card, context)
@@ -134,7 +133,7 @@ G.CURSE_OFFERS = {
             end
         end
     },
-    -- 4. Gives negative to itself
+
     [4] = {
         id = 'offer_self_negative',
         func = function(card, context)
@@ -144,7 +143,7 @@ G.CURSE_OFFERS = {
             end
         end
     },
-    -- 5. Retrigger this Joker (Is kinda buggy and can do some weird stuff still)
+
     [5] = {
         id = 'offer_retrigger',
         func = function(card, context)
@@ -154,12 +153,12 @@ G.CURSE_OFFERS = {
             end
         end
     },
-    -- 6. Create one Spectral card each Ante.
-    -- Keep the legacy internal ID for save compatibility; only the effect/text changed.
+
+
     [6] = {
         id = 'offer_interest_cap',
         func = function(card, context)
-            if not (context and context.setting_blind) or context.repetition or context.blueprint then return end
+            if not (context and context.hnds_boss_defeated) then return end
             if not (G and G.GAME and G.GAME.round_resets and G.consumeables and G.consumeables.cards
                 and G.consumeables.config and SMODS and SMODS.add_card) then return end
 
@@ -182,7 +181,7 @@ G.CURSE_OFFERS = {
                     SMODS.add_card({
                         set = 'Spectral',
                         area = G.consumeables,
-                        key_append = 'hnds_curse_ante_spectral_' .. tostring(ante),
+                        key_append = 'hnds_curse_boss_spectral_' .. tostring(ante),
                     })
                     if G.GAME then
                         G.GAME.consumeable_buffer = math.max(0, (tonumber(G.GAME.consumeable_buffer) or 1) - 1)
@@ -192,7 +191,7 @@ G.CURSE_OFFERS = {
             }))
         end
     },
-    -- 7. Gain 2 free reroll for each shop
+
     [7] = {
         id = 'offer_free_rerolls',
         func = function(card, context)
@@ -228,10 +227,10 @@ G.CURSE_OFFERS = {
                         if copy then
                             copy.ability = copy.ability or {}
                             copy.ability.hnds_curse_preview = nil
-                            copy.ability.hnds_curse_acquire_triggered = true -- Prevent re-triggering
+                            copy.ability.hnds_curse_acquire_triggered = true
                             copy.hnds_curse_acquire_triggered = true
                             copy.cursed_shake = nil
-                            -- Completely remove cursed sticker from all data structures
+
                             if copy.stickers and type(copy.stickers) == 'table' then
                                 copy.stickers.hnds_cursed = nil
                             end
@@ -239,13 +238,13 @@ G.CURSE_OFFERS = {
                             if copy.ability.stickers and type(copy.ability.stickers) == 'table' then
                                 copy.ability.stickers.hnds_cursed = nil
                             end
-                            -- Set flag for Devil's Round challenge only
+
                             copy.ability.hnds_eternal_copy_created = true
-                            -- Remove the cursed sticker from the card's sticker list
+
                             if copy.remove_sticker then
                                 copy:remove_sticker('hnds_cursed')
                             end
-                            -- Force refresh the card's sticker display
+
                             if copy.sticker_display then
                                 copy.sticker_display:remove()
                                 copy.sticker_display = nil
@@ -266,10 +265,8 @@ G.CURSE_OFFERS = {
 }
 
 G.CURSE_PRICES = {
-    -- Prices are drawbacks/penalties. all trigger immediately on buy (context.buying_card)
-    -- They technically work like a Jokers
 
-    -- 1. Destroy all Jokers
+
     [1] = {
         id = 'price_destroy_jokers',
         func = function(card, context)
@@ -282,7 +279,7 @@ G.CURSE_PRICES = {
             end
         end
     },
-    -- 2. Destroy 8 random cards from your deck
+
     [2] = {
         id = 'price_destroy_cards',
         func = function(card, context)
@@ -311,7 +308,7 @@ G.CURSE_PRICES = {
             end
         end
     },
-    -- 3. Set money to 0
+
     [3] = {
         id = 'price_bankrupt',
         func = function(card, context)
@@ -342,9 +339,9 @@ G.CURSE_PRICES = {
             end
         end
     },
-    -- 4. Permanently increase reroll cost by $2
+
     [4] = {
-        id = 'price_inflation', -- legacy ID retained for save compatibility
+        id = 'price_inflation',
         func = function(card, context)
             if not (context and context.buying_card and G and G.GAME) then return end
             G.GAME.round_resets = G.GAME.round_resets or {}
@@ -358,7 +355,7 @@ G.CURSE_PRICES = {
             end
         end
     },
-    -- 5. -1 Hand
+
     [5] = {
         id = 'price_lose_hand',
         func = function(card, context)
@@ -369,7 +366,7 @@ G.CURSE_PRICES = {
             ease_hands_played(-1)
         end
     },
-    -- 6. -1 Discard
+
     [6] = {
         id = 'price_lose_discard',
         func = function(card, context)
@@ -380,7 +377,7 @@ G.CURSE_PRICES = {
             ease_discard(-1)
         end
     },
-    -- 7. -1 Hand size
+
     [7] = {
         id = 'price_lose_hand_size',
         func = function(card, context)
@@ -393,7 +390,7 @@ G.CURSE_PRICES = {
             end
         end
     },
-    -- 8. Ante Scaling
+
     [8] = {
         id = 'price_ante_scaling',
         func = function(card, context)
@@ -403,8 +400,11 @@ G.CURSE_PRICES = {
     }
 }
 
--- Shared helper: strip every sticker except hnds_cursed from all of a
--- card's data structures. Used by apply_curse and the sticker safety-net.
+
+local function hnds_curse_keeps_sticker(key)
+    return key == 'hnds_cursed' or key == 'hnds_fighting_spirit'
+end
+
 local function hnds_strip_foreign_stickers(card)
     if not card then return false end
     local to_remove = {}
@@ -418,19 +418,19 @@ local function hnds_strip_foreign_stickers(card)
     end
     if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
         for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-            if k ~= 'hnds_cursed' and card.ability and card.ability[k] then
+            if not hnds_curse_keeps_sticker(k) and card.ability and card.ability[k] then
                 to_remove[k] = true
             end
         end
     end
     if card.stickers and type(card.stickers) == 'table' then
         for k, _ in pairs(card.stickers) do
-            if k ~= 'hnds_cursed' then to_remove[k] = true end
+            if not hnds_curse_keeps_sticker(k) then to_remove[k] = true end
         end
     end
     if card.ability and card.ability.stickers and type(card.ability.stickers) == 'table' then
         for k, _ in pairs(card.ability.stickers) do
-            if k ~= 'hnds_cursed' then to_remove[k] = true end
+            if not hnds_curse_keeps_sticker(k) then to_remove[k] = true end
         end
     end
     local any_removed = false
@@ -452,7 +452,7 @@ local function hnds_strip_foreign_stickers(card)
     return any_removed
 end
 
--- Shared helper: ensure card.ability.extra exists, seeded from the center config.
+
 local function hnds_ensure_extra(card)
     if not card.ability then card.ability = {} end
     if card.ability.extra ~= nil then return end
@@ -479,8 +479,8 @@ SMODS.Sticker {
     rate = 0.12,
     needs_enable_flag = false,
     sets = { Joker = true },
-    -- Natural Cursed rolls are intentionally limited to purchasable Joker
-    -- sources: the shop, Buffoon packs, Cursed packs, and Magic packs.
+
+
     should_apply = function(self, card, center, area, bypass_roll)
         if not (G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.enable_curses) then return false end
         if not (center and center.set == 'Joker') then return false end
@@ -517,12 +517,11 @@ SMODS.Sticker {
             HNDS.assign_curse_data(card)
         end
     end,
-    -- Dynamic tooltip using loc_vars with global state
-    -- Store current card data in globals for loc_vars to access
+
+
     loc_vars = function(self, info_queue, card)
-        -- Store reference for potential use. Builds that briefly renamed the
-        -- Spectral-per-Ante offer saved `offer_spectral_gen`; migrate those
-        -- cards back to the stable legacy ID before tooltip localization.
+
+
         if card and card.ability and card.ability.hnds_curse_offer == 'offer_spectral_gen' then
             card.ability.hnds_curse_offer = 'offer_interest_cap'
         end
@@ -532,20 +531,22 @@ SMODS.Sticker {
 
     calculate = function(self, card, context)
         if card and card.ability and (card.ability.hnds_curse_offer or card.ability.hnds_curse_price) then
-            -- Continuous safety net: generation paths such as Buffoon Packs may
-            -- apply their stickers after the curse was assigned.
+
+
             hnds_strip_foreign_stickers(card)
             return trigger_curse(card, context)
         end
     end,
 }
 
+HNDS_setup_cursed_sticker_hook(SMODS.Stickers['hnds_cursed'])
+
 
 if not _G.HNDS_curse_collections then
     _G.HNDS_curse_collections = true
 
     HNDS = HNDS or {}
-    -- Guarded by _G.HNDS_curse_collections, so this block runs exactly once.
+
     HNDS.CURSE_OFFERS_COLLECTION = {}
     HNDS.CURSE_PRICES_COLLECTION = {}
 
@@ -561,7 +562,7 @@ if not _G.HNDS_curse_collections then
     end
 
     SMODS.current_mod.custom_collection_tabs = function()
-        -- Adds pages to the collection for browsing curse offer/price descriptions.
+
         return {
             UIBox_button({button = 'your_collection_hnds_curse_offers', label = {localize('k_hnds_cursed_offers')}, minw = 5, minh = 1, id = 'your_collection_hnds_curse_offers', focus_args = {snap_to = true}}),
             UIBox_button({button = 'your_collection_hnds_curse_prices', label = {localize('k_hnds_cursed_prices')}, minw = 5, minh = 1, id = 'your_collection_hnds_curse_prices', focus_args = {snap_to = true}}),
@@ -624,9 +625,8 @@ if not _G.HNDS_curse_collections then
 end
 
 local function hnds_assign_curse_data(card, attach_sticker)
-    -- Assign a random offer + price to a card, then attach the cursed sticker.
-    -- This is used when generating cursed pack cards.
-    -- Guard: only apply to Jokers
+
+
     if not (card and card.config and card.config.center and card.config.center.set == 'Joker') then return end
     if card.config.center.key then
         local center_key = card.config.center.key
@@ -637,20 +637,17 @@ local function hnds_assign_curse_data(card, attach_sticker)
 
     hnds_ensure_extra(card)
 
-    -- Strip every existing sticker before applying the curse. The helper also
-    -- clears direct built-in flags used by vanilla generation paths.
+
     hnds_strip_foreign_stickers(card)
 
     local offer_index
     local price_index
     local attempt_count = 0
 
-    -- Check if a Joker have a "calculate" function is a bit generic way to prevent passive joker
-    -- from obtaining the trigger again effect
+
     local can_be_retriggered = card.config and card.config.center and card.config.center.calculate ~= nil
 
-    -- Whether the joker already has an edition. If so, offer_self_negative
-    -- would overwrite it on purchase, so we reroll to a different offer.
+
     local has_existing_edition = false
     if card.edition then
         for k, _ in pairs(card.edition) do
@@ -660,25 +657,24 @@ local function hnds_assign_curse_data(card, attach_sticker)
 
     while attempt_count < 10 do
         attempt_count = attempt_count + 1
-        -- Use unique seed per attempt
+
         offer_index = pseudorandom('curse_offer'..(card.ID or '')..attempt_count, 1, #G.CURSE_OFFERS)
         price_index = pseudorandom('curse_price'..(card.ID or '')..attempt_count, 1, #G.CURSE_PRICES)
 
         local offer_entry = G.CURSE_OFFERS[offer_index]
         local price_entry = G.CURSE_PRICES[price_index]
 
-        -- Reroll if offer_retrigger landed on a non-retriggerable joker.
+
         if offer_entry and offer_entry.id == 'offer_retrigger' and not can_be_retriggered then
             offer_entry = nil
         end
 
-        -- Reroll if offer_self_negative landed on a joker that already has an edition
+
         if offer_entry and offer_entry.id == 'offer_self_negative' and has_existing_edition then
             offer_entry = nil
         end
 
-        -- Mutually exclusive curse combinations. These effects directly cancel
-        -- or undermine each other and must never be assigned to the same Joker.
+
         if offer_entry and price_entry then
             local incompatible =
                 (offer_entry.id == 'offer_free_rerolls' and price_entry.id == 'price_inflation')
@@ -698,8 +694,7 @@ local function hnds_assign_curse_data(card, attach_sticker)
                 card.ability.hnds_cursed = true
             end
 
-            -- add_sticker may call set_ability internally, which can wipe extra
-            -- and re-apply foreign stickers via should_apply, so re-run both.
+
             hnds_ensure_extra(card)
             hnds_strip_foreign_stickers(card)
 
@@ -719,7 +714,7 @@ function apply_curse(card)
     return hnds_assign_curse_data(card, true)
 end
 
--- Cursed Pack Definition
+
 SMODS.Booster{
     key = 'cursed_pack',
     kind = 'Joker',
@@ -738,10 +733,7 @@ SMODS.Booster{
         local game = G and G.GAME
         local rare_only = false
 
-        -- Cursed Sleeve's stacked effect applies to exactly the first physical
-        -- Cursed Pack opened. Store that decision on the booster itself so all
-        -- cards in this pack agree, then consume the run-level one-shot flag.
-        -- Keeping this inside the Booster API avoids globally wrapping create_card.
+
         if card and game and game.modifiers and game.modifiers.cursed_sleeve_active then
             if card.hnds_cursed_sleeve_rare_pack == nil then
                 card.hnds_cursed_sleeve_rare_pack = game.hnds_first_cursed_pack == true
@@ -769,8 +761,8 @@ SMODS.Booster{
             and game.modifiers.hnds_blood_stake == true
         self.weight = blood_active and 1.6 or 0.8
         local ante = game and game.round_resets and tonumber(game.round_resets.ante) or 0
-        -- This only gates natural booster-pool rolls. Directly created Cursed
-        -- Packs (Tags, decks/sleeves, scripted effects) still work before Ante 3.
+
+
         return hnds_config.enableCursedPackSpawning and ante >= 3
     end
 }
@@ -786,20 +778,17 @@ local function hnds_build_lookups()
     for _, def in pairs(G.CURSE_PRICES) do
         hnds_price_lookup[def.id] = def
     end
-    -- Compatibility with the short-lived broken ID used by one build.
+
     if hnds_offer_lookup.offer_interest_cap then
         hnds_offer_lookup.offer_spectral_gen = hnds_offer_lookup.offer_interest_cap
     end
 end
 
--- Run the offer and price funcs under pcall, log failures, return the combined effect.
+
 local function hnds_run_defs(card, ctx, offer_def, price_def)
     local offer_ret, price_ret
 
-    -- The Ancestor: the first Joker it curses in each shop has a 1-in-4
-    -- chance to ignore only its Curse price when that specific Joker is bought.
-    -- The beneficial Curse offer still resolves normally. Cache the roll so the
-    -- add_to_deck and shop callback paths can never disagree or roll twice.
+
     if price_def and ctx and ctx.buying_card and card and card.ability
         and card.ability.hnds_ancestor_cursed
     then
@@ -828,20 +817,17 @@ local function hnds_run_defs(card, ctx, offer_def, price_def)
 end
 
 function trigger_curse(card, context)
-    -- Central dispatcher: looks up the selected offer/price by ID and executes them.
-    -- This is called from:
-    -- - lovely card.lua hooks (add_to_deck/remove_from_deck)
-    -- - lovely button callback hook (buying_card)
-    -- - cursed sticker calculate (normal evaluation)
+
+
     if not card.ability or not (card.ability.hnds_curse_offer or card.ability.hnds_curse_price) then return end
     if card.ability.hnds_curse_offer == 'offer_spectral_gen' then
         card.ability.hnds_curse_offer = 'offer_interest_cap'
     end
-    
-    -- Prevent re-triggering on eternal copies (Devil's Round joker copies).
+
+
     if card.ability.hnds_eternal_copy_created then return end
 
-    -- Prevent curse re-triggering when vouchers are bought (vouchers trigger buying_card context on all jokers)
+
     if context and context.buying_card and context.card and context.card.ability and context.card.ability.set == 'Voucher' then
         return
     end
@@ -863,8 +849,8 @@ function trigger_curse(card, context)
     local price_def = hnds_price_lookup[card.ability.hnds_curse_price]
 
     local acquire_ret
-    -- When a Joker is first added to the deck, we simulate a single "buy" trigger
-    -- so offers/prices that are keyed to context.buying_card still fire once.
+
+
     if context and context.add_to_deck and not ((card.ability and card.ability.hnds_curse_acquire_triggered) or card.hnds_curse_acquire_triggered) then
         card.ability = card.ability or {}
         card.ability.hnds_curse_acquire_triggered = true
@@ -877,8 +863,31 @@ function trigger_curse(card, context)
         acquire_context.remove_from_deck = nil
 
         acquire_ret = hnds_run_defs(card, acquire_context, offer_def, price_def)
-        -- Do NOT return here; we still need to process passive add_to_deck effects
+
     end
 
     return acquire_ret or hnds_run_defs(card, context, offer_def, price_def)
+end
+
+function HNDS.trigger_boss_defeat_curse_offers()
+    for _, card in ipairs((G and G.jokers and G.jokers.cards) or {}) do
+        if card and card.ability
+            and (card.ability.hnds_curse_offer == 'offer_interest_cap'
+                or card.ability.hnds_curse_offer == 'offer_spectral_gen')
+        then
+            trigger_curse(card, { hnds_boss_defeated = true, main_eval = true })
+        end
+    end
+end
+
+if Blind and type(Blind.defeat) == 'function' and not HNDS._curse_boss_defeat_hook then
+    HNDS._curse_boss_defeat_hook = true
+    local hnds_curse_defeat_ref = Blind.defeat
+    function Blind:defeat(...)
+        local real_boss = HNDS.active_blind_is_real_ante_boss
+            and HNDS.active_blind_is_real_ante_boss()
+        local results = HNDS.pack(hnds_curse_defeat_ref(self, ...))
+        if real_boss then HNDS.trigger_boss_defeat_curse_offers() end
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
+    end
 end

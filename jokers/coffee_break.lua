@@ -101,7 +101,7 @@ SMODS.Joker({
 			return { dollars = card.ability.extra.money, }
 		end
 	end,
-	-- TO DO Must improve this later
+
 	joker_display_def = function(JokerDisplay)
 		return {
 			text = {
@@ -125,5 +125,5 @@ SMODS.Joker({
 			end
 		}
 	end,
-	attributes = { "economy", "on_sell", "scaling", "food" } -- Ramen has scaling too so i guess descaling counts, you can check the Attribute section on smods wiki
+	attributes = { "economy", "on_sell", "scaling", "food" }
 })

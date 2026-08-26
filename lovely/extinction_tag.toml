@@ -3,7 +3,7 @@ version = "1.0.0"
 dump_lua = true
 priority = 0
 
-# Fire a post-hand hook for tags after each hand is played completely
+
 [[patches]]
 [patches.pattern]
 target = 'functions/state_events.lua'

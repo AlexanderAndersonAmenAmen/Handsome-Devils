@@ -1,67 +1,63 @@
--- Blind Soul Rewards
--- gets card creation args to pass into SMODS.add_card based on the blind. used by pennywise
 
---old hardcoded list (UNUSED, BUT KEPT FOR USE AS REFERENCE)
+
+
 HNDS.blind_souls = {
-    -- The Hook:
+
     bl_hook = { "j_drunkard" },
-    -- The Ox:
+
     bl_ox = { "j_matador" },
-    -- The House:
+
     bl_house = { "j_burnt", "j_family" },
-    -- The Wall:
+
     bl_wall = { "j_stone", "j_marble", "j_castle", "j_ancient", "j_bloodstone" },
-    -- The Wheel:
+
     bl_wheel = { "j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel", "j_hnds_banana_split", "j_hnds_energized", "j_hnds_jackpot", "j_hnds_ms_fortune", "j_oops" },
-    -- The Arm:
+
     bl_arm = { "j_juggler" },
-    -- The Club:
+
     bl_club = { "j_gluttenous_joker", "j_blackboard", "j_onyx_agate", "j_seeing_double" },
-    -- The Fish:
+
     bl_fish = { "j_splash", "j_lucky_cat", "j_lucky_cat", "j_lucky_cat" },
-    -- The Psychic:
+
     bl_psychic = { "j_sixth_sense", "j_seance" },
-    -- The Goad:
+
     bl_goad = { "j_wrathful_joker", "j_blackboard", "j_arrowhead" },
-    -- The Water:
+
     bl_water = { "j_splash", "j_splash", "j_splash", "j_burglar" },
-    -- The Window:
+
     bl_window = { "j_greedy_joker", "j_rough_gem" },
-    -- The Manacle:
+
     bl_manacle = { "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_burglar", "j_merry_andy", "j_stuntman" },
-    -- The Eye:
+
     bl_eye = { "j_sixth_sense", "j_obelisk" },
-    -- The Mouth:
+
     bl_mouth = { "j_card_sharp", "Food" },
-    -- The Plant:
+
     bl_plant = { "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_faceless", "j_green_joker" },
-    -- The Serpent:
+
     bl_serpent = { "j_hnds_head_of_medusa" },
-    -- The Pillar:
+
     bl_pillar = { "j_obelisk" },
-    -- The Needle:
+
     bl_needle = { "j_sixth_sense", "j_dna" },
-    -- The Head:
+
     bl_head = { "j_lusty_joker", "j_bloodstone" },
-    -- The Tooth:
+
     bl_tooth = { "j_hnds_coffee_break" },
-    -- The Flint:
+
     bl_flint = { "j_campfire", "j_campfire", "j_campfire", "j_hiker" },
-    -- The Mark:
+
     bl_mark = { "j_smiley", "j_scary_face", "j_photograph", "j_pareidolia", "j_sock_and_buskin" },
 
-    ------------------------------
-    -- Final Blinds
-    ------------------------------
-    -- Ambar Acorn:
+
     bl_final_acorn = { "j_half", "j_wee", "j_wee", "j_wee", "j_wee", "j_wee", "j_wee", "j_square" },
-    -- Verdent Leaf:
+
     bl_final_leaf = { "j_luchador", "j_diet_cola", "j_invisible", "j_invisible", "j_invisible", "j_invisible", "j_invisible", "j_invisible" },
-    -- Violet Vessel:
+
     bl_final_vessel = { "j_four_fingers", "j_8_ball", "j_sixth_sense", "j_fortune_teller" },
-    -- Crimson Heart:
+
     bl_final_heart = { "j_lusty_joker", "j_bloodstone", "j_bloodstone", "j_bloodstone" },
-    -- Cerulean Bell:
+
     bl_final_bell = { "j_sixth_sense", "j_sixth_sense", "j_dna", "j_dna", "j_dna", "j_idol", "j_idol", "j_idol" },
 }
 
@@ -105,9 +101,8 @@ if next(SMODS.find_mod("Entropy")) then
     end
 end
 ]]
--- Get a random soul joker for defeating a blind (supports custom soul definitions).
--- `blind` should be an instance of `Blind`
--- for modded, get_hnds_soul(self, seed) can be added to support this. seed should in some way be used for the internal rng
+
+
 HNDS.get_blind_soul = function (blind, seed)
 	local blind_obj = blind and blind.config and blind.config.blind
 	if type(blind_obj) ~= "table" then return { set = "Joker", key = "j_joker" } end
@@ -117,7 +112,7 @@ HNDS.get_blind_soul = function (blind, seed)
         local ok, custom_soul = pcall(blind_obj.get_hnds_soul, blind_obj, seed)
         if ok and type(custom_soul) == "table" then return custom_soul end
     end
-    -- Handsome Devils custom Boss souls.
+
     if k == "bl_hnds_wasted_wish" or k == "wasted_wish" then
         return { key = "j_hnds_krusty" }
     elseif k == "bl_hnds_forbidden_fruit" or k == "forbidden_fruit" then
@@ -138,7 +133,7 @@ HNDS.get_blind_soul = function (blind, seed)
         return { key = pseudorandom_element(legendary, pseudoseed(tostring(seed) .. "_sinful_legendary")) or "j_caino" }
     end
 
-    -- GIANT FUCKING ELSEIF CHAIN
+
     if k == "bl_hook" then return { key = "j_drunkard", }
     elseif k == "bl_ox" then return { key = "j_matador" }
     elseif k == "bl_house" then return { key = pseudorandom_element({ "j_burnt", "j_family" }, seed) }
@@ -150,7 +145,7 @@ HNDS.get_blind_soul = function (blind, seed)
         }
     elseif k == "bl_arm" then return { key = "j_juggler" }
     elseif k == "bl_club" then
-        return { --maybe suit ones to old?
+        return {
             attributes = {"clubs"}
         }
     elseif k == "bl_fish" then
@@ -224,7 +219,7 @@ HNDS.get_blind_soul = function (blind, seed)
             return {
                 attributes = {"on_sell"},
                 filter = function (pool)
-                    pool["j_invisible"] = nil --praying that this works
+                    pool["j_invisible"] = nil
                     return pool
                 end
             }
@@ -243,12 +238,11 @@ HNDS.get_blind_soul = function (blind, seed)
             return { key = "j_sixth_sense" }
         end
     end
-	-- Safe fallback for bosses from mods that do not define get_hnds_soul.
+
 	return { set = "Joker", key = "j_joker" }
 end
 
--- Pennywise normally creates one Soul. The Devil is a container for three
--- rolled vanilla Bosses, so it creates one Soul for each stored component.
+
 local hnds_devil_soul_key_map = {
     bl_hook_the_house = "bl_house",
     bl_hook_the_wall = "bl_wall",

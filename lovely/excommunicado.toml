@@ -3,11 +3,7 @@ version = "1.0.0"
 dump_lua = true
 priority = 0
 
-# ---------------------------------------------------------------
-# Code yoinked from Lost Edition (Men I miss that mod :c )
-# ---------------------------------------------------------------
 
-# Patch game.lua blind assignment
 [[patches]]
 [patches.pattern]
 target = "game.lua"
@@ -16,15 +12,15 @@ position = "at"
 match_indent = true
 payload = '''
 if (HNDS and HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active()) then
-    self.GAME.round_resets.blind_choices.Small = get_new_boss()
-    self.GAME.round_resets.blind_choices.Big = get_new_boss()
+    self.GAME.round_resets.blind_choices.Small = HNDS.get_excommunicado_boss('excom_small')
+    self.GAME.round_resets.blind_choices.Big = HNDS.get_excommunicado_boss('excom_big')
     self.GAME.round_resets.blind_choices.Boss = get_new_boss()
 else
     self.GAME.round_resets.blind_choices.Boss = get_new_boss()
 end
 '''
 
-# Patch common_events.lua blind assignment
+
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -33,15 +29,15 @@ position = "at"
 match_indent = true
 payload = '''
 if (HNDS and HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active()) then
-    G.GAME.round_resets.blind_choices.Small = get_new_boss()
-    G.GAME.round_resets.blind_choices.Big = get_new_boss()
+    G.GAME.round_resets.blind_choices.Small = HNDS.get_excommunicado_boss('excom_small')
+    G.GAME.round_resets.blind_choices.Big = HNDS.get_excommunicado_boss('excom_big')
     G.GAME.round_resets.blind_choices.Boss = get_new_boss()
 else
     G.GAME.round_resets.blind_choices.Boss = get_new_boss()
 end
 '''
 
-# Patch blind.lua chip calculation for replaced blinds
+
 [[patches]]
 [patches.pattern]
 target = "blind.lua"
@@ -52,9 +48,9 @@ payload = '''
 if (HNDS and HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active()) then
     local base_score = get_blind_amount(G.GAME.round_resets.ante) * self.mult * G.GAME.starting_params.ante_scaling
     if G.GAME.blind_on_deck == 'Small' then
-        self.chips = (function(v) return type(v) == 'number' and math.floor(v) or v end)(base_score * 0.5)
+        self.chips = (function(v) return _G.type(v) == 'number' and math.floor(v) or v end)(base_score * 0.5)
     elseif G.GAME.blind_on_deck == 'Big' then
-        self.chips = (function(v) return type(v) == 'number' and math.floor(v) or v end)(base_score * 0.75)
+        self.chips = (function(v) return _G.type(v) == 'number' and math.floor(v) or v end)(base_score * 0.75)
     else
         self.chips = base_score
     end
@@ -63,7 +59,7 @@ else
 end
 '''
 
-# Patch UI blind amount display
+
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
@@ -73,9 +69,9 @@ match_indent = true
 payload = '''
 if (HNDS and HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active()) then
     if type == 'Small' then
-        blind_amt = (function(v) return type(v) == 'number' and math.floor(v) or v end)(blind_amt * 0.5)
+        blind_amt = (function(v) return _G.type(v) == 'number' and math.floor(v) or v end)(blind_amt * 0.5)
     elseif type == 'Big' then
-        blind_amt = (function(v) return type(v) == 'number' and math.floor(v) or v end)(blind_amt * 0.75)
+        blind_amt = (function(v) return _G.type(v) == 'number' and math.floor(v) or v end)(blind_amt * 0.75)
     end
 end
 '''

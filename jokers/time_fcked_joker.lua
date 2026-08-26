@@ -17,8 +17,7 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = true,
 
-    -- The user's operational clarification specifies 1 in 2. Keep the odds in
-    -- config so probability modifiers and the tooltip use the same value.
+
     config = { extra = { odds = 3 } },
 
     loc_vars = function(self, info_queue, card)

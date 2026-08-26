@@ -3,16 +3,7 @@ version = "1.0.0"
 dump_lua = true
 priority = 0
 
-# Public Nuisance: suppress only Balatro's normal "Blind score reached" end-round
-# branch while the Joker is active and another hand can actually be played.
-#
-# This intentionally does NOT rewrite G.STATE, call end_round(), or patch the
-# empty-deck handlers. Those were the source of the old double-end/softlock bugs.
-# A regex patch is used because common big-number mods rewrite the score comparison
-# itself; Lovely applies regex patches after ordinary pattern patches, so this can
-# wrap the resulting condition instead of competing with it. If another mod
-# completely replaces the end-round rule (for example NotJustYet), this deliberately
-# leaves that custom rule alone rather than hijacking its manual-end semantics.
+
 [[patches]]
 [patches.regex]
 target = "game.lua"

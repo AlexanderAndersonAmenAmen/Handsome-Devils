@@ -1,4 +1,4 @@
--- Conjuring Sleeve: Same as Conjuring Deck + Start with Stuffed and Wholesale when paired
+
 CardSleeves.Sleeve({
     key = "conjuring_sleeve",
     atlas = "hnds_sleeves",

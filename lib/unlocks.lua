@@ -1,6 +1,5 @@
--------------------------------------------------------------------
--- HANDSOME DEVILS: UNLOCK CONDITIONS AND PERSISTENT PROGRESS
--------------------------------------------------------------------
+
+
 
 HNDS = HNDS or {}
 
@@ -152,9 +151,7 @@ local function increment_career_stat(stat_name, amount)
     end
 end
 
--- Count a playing card only after a real destruction path has accepted it.
--- This deliberately does not hook set_ability/start_dissolve because those are
--- also used by enhancement changes and visual transformations.
+
 local function is_real_playing_card(card)
     if type(card) ~= "table" or type(card.base) ~= "table" then return false end
     if card.base.suit == nil or card.base.value == nil then return false end
@@ -330,8 +327,8 @@ local function card_has_enhancement(card, key)
         return HNDS.card_has_stone(card)
     end
     if card_center_key(card) == key then return true end
-    -- Recognise Handsome Devils' real multi-enhancement state without asking
-    -- Steamodded to calculate arbitrary quantum enhancements from a UI/deck scan.
+
+
     if HNDS.aberrant_has_fusion then
         local ok, result = pcall(HNDS.aberrant_has_fusion, card, key)
         if ok and result then return true end
@@ -356,10 +353,7 @@ local function deck_enhancement_count(key)
     return count
 end
 
--- Highest number of cards in the current deck that share one actual
--- Enhancement. Base cards do not count. This is used by Plague's unlock and
--- intentionally supports modded Enhancements as long as they register as the
--- Enhanced set.
+
 local function max_same_enhancement_count()
     local counts = {}
     local best = 0
@@ -736,8 +730,8 @@ local function reset_round_tracking(state)
     state.money_gained_round = 0
     state.round_end_serial = nil
     state.boss_counted_serial = nil
-    -- Famine: a round starts eligible and is invalidated by any played hand
-    -- whose primary poker hand is not High Card.
+
+
     state.famine_round_high_card_only = true
 end
 
@@ -774,9 +768,7 @@ function HNDS.track_unlock_context(context)
     if not state then return end
     local changed = false
 
-    -- ECG: one point for each consecutive played hand containing at least
-    -- one Heart among the scoring cards. Any hand without a scoring Heart
-    -- resets the streak to zero.
+
     if context.before and not context.blueprint and not context.retrigger_joker then
         local scoring = context.scoring_hand
 
@@ -802,9 +794,7 @@ function HNDS.track_unlock_context(context)
             end
         end
 
-        -- Be Not Afraid: play a Three of a Kind whose scoring cards include
-        -- three enhanced Aces. The three Aces may share the same Enhancement;
-        -- only being enhanced matters.
+
         if not state.be_not_afraid_unlock
             and context.scoring_name == "Three of a Kind"
             and type(scoring) == "table"
@@ -827,9 +817,7 @@ function HNDS.track_unlock_context(context)
 
     end
 
-    -- Famine: every hand played during each qualifying round must evaluate
-    -- primarily as High Card. A single different poker hand invalidates that
-    -- round, even if the player later wins it with a High Card.
+
     if context.before and not context.blueprint and not context.retrigger_joker
         and state.round_serial > 0 and context.scoring_name
         and context.scoring_name ~= "High Card"
@@ -840,8 +828,7 @@ function HNDS.track_unlock_context(context)
         end
     end
 
-    -- Water Slide: discard context is explicitly per discarded card and exposes
-    -- that card as context.other_card.
+
     if context.discard and context.other_card and not context.repetition then
         local discarded = context.other_card
         local rank = discarded.get_id and discarded:get_id()
@@ -874,7 +861,7 @@ function HNDS.track_unlock_context(context)
             changed = true
         end
 
-        -- Jodiac unlock: one card of every rank during the same Ante.
+
         local ante = current_ante()
         if state.jodiac_ante ~= ante then
             state.jodiac_ante = ante
@@ -907,9 +894,8 @@ function HNDS.track_unlock_context(context)
     end
 
     if context.setting_blind and not context.blueprint then
-        -- A Joker can only be bought in the shop between two Blind selections.
-        -- Evaluate that completed shop window before resetting it for the newly
-        -- selected round; the first Blind has no preceding shop and is ignored.
+
+
         if state.has_selected_blind then
             if state.joker_bought_round then state.no_joker_buy_streak = 0
             else state.no_joker_buy_streak = state.no_joker_buy_streak + 1 end
@@ -944,7 +930,7 @@ function HNDS.track_unlock_context(context)
                 card.hnds_wait_what_purchase_counted = true
             end
 
-            -- Joker Reverse: rare sale + common purchase in the same shop.
+
             local rarity = center and normalize_rarity(center.rarity)
             if rarity == 1 then
                 state.joker_reverse_common_bought = true
@@ -976,9 +962,8 @@ function HNDS.track_unlock_context(context)
     end
 
     if context.skip_blind then
-        -- Coffee Break is recorded by the G.FUNCS.skip_blind wrapper before
-        -- vanilla advances blind_on_deck. Recording here as well would see
-        -- the next Blind and incorrectly count both Small and Big at once.
+
+
         increment_career_stat(STAT_BLINDS_SKIPPED, 1)
         changed = true
     end
@@ -990,9 +975,7 @@ function HNDS.track_unlock_context(context)
         changed = true
     end
 
-    -- Steamodded emits this only for playing cards that have actually entered
-    -- its removal/destruction pipeline. It covers scoring destruction (Glass,
-    -- destroy-card Jokers, seals, etc.) without counting enhancement changes.
+
     if context.remove_playing_cards and type(context.removed) == "table" then
         for _, removed_card in ipairs(context.removed) do
             if HNDS.count_destroyed_playing_card(removed_card) then changed = true end
@@ -1012,9 +995,7 @@ function HNDS.track_unlock_context(context)
             changed = true
         end
 
-        -- JEvil unlock condition:
-        -- Play exactly 5 cards, every one actually enhanced to Wild, and all
-        -- 5 cards retain the same underlying/base suit. Any suit is valid.
+
         local played_hand = context.scoring_hand
         if not state.jevil_wild_flush and type(played_hand) == "table" and #played_hand == 5 then
             local common_suit = nil
@@ -1076,9 +1057,8 @@ function HNDS.track_unlock_context(context)
         and state.round_serial > 0
         and G.deck and G.deck.cards and #G.deck.cards == 0
     then
-        -- hand_drawn fires after Steamodded's queued draw events
-        -- have actually moved the cards. This avoids re-entering unlock checks
-        -- in the middle of Blind:drawn_to_hand (notably The Bell).
+
+
         if not state.flags.pot_of_greed then
             state.flags.pot_of_greed = true
             changed = true
@@ -1104,8 +1084,7 @@ function HNDS.track_unlock_context(context)
                 state.famine_high_card_round_streak = 0
             end
 
-            -- Death: win a round while every card still held in hand shares
-            -- the same printed rank and suit.
+
             local held = (G and G.hand and G.hand.cards) or {}
             local death_valid = #held > 0
             local rank, suit = nil, nil
@@ -1133,15 +1112,11 @@ function HNDS.track_unlock_context(context)
             state.famine_high_card_round_streak = 0
         end
 
-        -- ECG uses the consecutive played-hand streak above; no per-round reset here.
-        -- A Boss definition can occupy the Small/Big slot after a Platinum
-        -- upgrade. Only the real Boss slot counts as a defeated Boss Blind for
-        -- career progress and Boss-win streak unlocks.
+
         local active_blind = G.GAME.blind
         local upgraded_slot = active_blind and active_blind.hnds_platinum_replacement_slot
-        -- The end-of-round context already tells us whether the defeated Blind
-        -- was a Boss. Do not depend on blind_on_deck, which can be advanced
-        -- before this context fires.
+
+
         local is_boss = not upgraded_slot
             and ((context.beat_boss == true) or (active_blind and active_blind.boss == true))
         local round_serial = state.round_serial
@@ -1165,9 +1140,7 @@ function HNDS.track_unlock_context(context)
         HNDS.request_unlock_check("hnds_boss_defeated")
     end
 
-    -- Jack-in-the-Box: snapshot the Rare-Joker lineup when entering a real
-    -- showdown Blind. Selling Jokers afterward is allowed; the snapshot is what
-    -- makes the condition "enter showdown with 5 Rare Jokers".
+
     if context.setting_blind and not context.blueprint then
         local blind = G and G.GAME and G.GAME.blind
         local center = blind and blind.config and blind.config.blind
@@ -1249,9 +1222,8 @@ if CardArea and type(CardArea.draw_card_from) == "function" and not CardArea._hn
                     HNDS.request_unlock_check("hnds_full_deck_drawn")
                     return true
                 end
-                -- The card has already been moved into the hand. Queue the
-                -- unlock check after this draw event so Blind:drawn_to_hand
-                -- never sees an empty hand because of re-entrant unlock work.
+
+
                 if G.E_MANAGER and Event then
                     G.E_MANAGER:add_event(Event({
                         trigger = "after",
@@ -1324,16 +1296,19 @@ if Card and type(Card.calculate_joker) == "function" and not Card._hnds_unlock_t
             and (type(value) ~= "table" or next(value) ~= nil)
     end
     function Card:calculate_joker(...)
-        local a, b, c, d = calculate_joker_unlock_ref(self, ...)
-        local triggered = hnds_unlock_effect_triggered(a)
-            or hnds_unlock_effect_triggered(b)
-            or hnds_unlock_effect_triggered(c)
-            or hnds_unlock_effect_triggered(d)
+        local results = HNDS.pack(calculate_joker_unlock_ref(self, ...))
+        local triggered = false
+        for i = 1, results.n do
+            if hnds_unlock_effect_triggered(results[i]) then
+                triggered = true
+                break
+            end
+        end
         if triggered and card_set(self) == "Joker" then
             local state = run_state()
             if state then self.hnds_unlock_trigger_round = state.round_serial end
         end
-        return a, b, c, d
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1342,7 +1317,7 @@ if Card and type(Card.set_edition) == "function" and not Card._hnds_unlock_editi
     local set_edition_unlock_ref = Card.set_edition
     function Card:set_edition(edition, immediate, silent, ...)
         local was_negative = self.edition and (self.edition.negative or self.edition.key == "e_negative")
-        local ret = set_edition_unlock_ref(self, edition, immediate, silent, ...)
+        local results = HNDS.pack(set_edition_unlock_ref(self, edition, immediate, silent, ...))
         local is_negative = self.edition and (self.edition.negative or self.edition.key == "e_negative")
         if in_run() and card_set(self) == "Joker" and not was_negative and is_negative then
             increment_career_stat(STAT_NEGATIVE_JOKERS, 1)
@@ -1350,7 +1325,7 @@ if Card and type(Card.set_edition) == "function" and not Card._hnds_unlock_editi
         else
             HNDS.request_unlock_check("hnds_edition_state")
         end
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1360,7 +1335,7 @@ if Card and type(Card.set_base) == "function" and not Card._hnds_unlock_base_wra
     function Card:set_base(card, initial, ...)
         local old_suit = self.base and self.base.suit
         local old_rank = self.base and (self.base.value or self.base.id)
-        local ret = set_base_unlock_ref(self, card, initial, ...)
+        local results = HNDS.pack(set_base_unlock_ref(self, card, initial, ...))
         if in_run() and not initial and old_suit and old_rank and self.base then
             local changes = 0
             local new_rank = self.base.value or self.base.id
@@ -1371,7 +1346,7 @@ if Card and type(Card.set_base) == "function" and not Card._hnds_unlock_base_wra
                 HNDS.request_unlock_check("hnds_card_identity")
             end
         end
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1379,9 +1354,9 @@ if Card and type(Card.set_ability) == "function" and not Card._hnds_unlock_abili
     Card._hnds_unlock_ability_wrapped = true
     local set_ability_unlock_ref = Card.set_ability
     function Card:set_ability(...)
-        local ret = set_ability_unlock_ref(self, ...)
+        local results = HNDS.pack(set_ability_unlock_ref(self, ...))
         HNDS.request_unlock_check("hnds_enhancement_state")
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1389,13 +1364,13 @@ if type(add_tag) == "function" and not HNDS._unlock_add_tag_wrapped then
     HNDS._unlock_add_tag_wrapped = true
     local add_tag_unlock_ref = add_tag
     function add_tag(tag, ...)
-        local ret = add_tag_unlock_ref(tag, ...)
+        local results = HNDS.pack(add_tag_unlock_ref(tag, ...))
         if in_run() and (type(tag) ~= "table" or not tag.hnds_unlock_tag_counted) then
             if type(tag) == "table" then tag.hnds_unlock_tag_counted = true end
             increment_career_stat(STAT_TAGS_CREATED, 1)
             HNDS.request_unlock_check("hnds_tag_created")
         end
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1403,12 +1378,13 @@ if SMODS and type(SMODS.pseudorandom_probability) == "function" and not SMODS._h
     SMODS._hnds_unlock_probability_wrapped = true
     local probability_unlock_ref = SMODS.pseudorandom_probability
     function SMODS.pseudorandom_probability(...)
-        local result = probability_unlock_ref(...)
+        local results = HNDS.pack(probability_unlock_ref(...))
+        local result = results[1]
         if in_run() and result == false then
             increment_career_stat(STAT_PROBABILITY_FAILURES, 1)
             HNDS.request_unlock_check("hnds_probability_failed")
         end
-        return result
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1430,10 +1406,11 @@ if SMODS and type(SMODS.add_card) == "function" and not SMODS._hnds_unlock_add_c
     SMODS._hnds_unlock_add_card_wrapped = true
     local add_card_unlock_ref = SMODS.add_card
     function SMODS.add_card(args, ...)
-        local card = add_card_unlock_ref(args, ...)
+        local results = HNDS.pack(add_card_unlock_ref(args, ...))
+        local card = results[1]
         if card_is_consumable(card) then record_consumable_created(card) end
         HNDS.request_unlock_check("hnds_card_added")
-        return card
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1441,11 +1418,12 @@ if type(create_card) == "function" and not HNDS._unlock_create_card_wrapped then
     HNDS._unlock_create_card_wrapped = true
     local create_card_unlock_ref = create_card
     function create_card(_type, area, ...)
-        local card = create_card_unlock_ref(_type, area, ...)
+        local results = HNDS.pack(create_card_unlock_ref(_type, area, ...))
+        local card = results[1]
         if card and G and G.consumeables and area == G.consumeables and card_is_consumable(card) then
             card.hnds_unlock_created_consumable = true
         end
-        return card
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1453,10 +1431,10 @@ if Card and type(Card.add_to_deck) == "function" and not Card._hnds_unlock_add_t
     Card._hnds_unlock_add_to_deck_wrapped = true
     local add_to_deck_unlock_ref = Card.add_to_deck
     function Card:add_to_deck(...)
-        local ret = add_to_deck_unlock_ref(self, ...)
+        local results = HNDS.pack(add_to_deck_unlock_ref(self, ...))
         if self.hnds_unlock_created_consumable then record_consumable_created(self) end
         HNDS.request_unlock_check("hnds_card_added")
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1472,8 +1450,7 @@ if type(discover_card) == "function" and not HNDS._unlock_discover_card_wrapped 
     end
 end
 
--- Count explicit "start a new run" restarts. Game:start_run receives
--- args.savetext when loading an existing save, so those loads are not counted.
+
 if Game and type(Game.start_run) == "function" and not HNDS._restart_unlock_wrapped then
     HNDS._restart_unlock_wrapped = true
     local start_run_unlock_ref = Game.start_run
@@ -1492,9 +1469,9 @@ if not HNDS._hnds_wrapped_level_up_unlock and type(level_up_hand) == "function" 
     HNDS._hnds_wrapped_level_up_unlock = true
     local level_up_hand_ref = level_up_hand
     function level_up_hand(card, hand, instant, ...)
-        local ret = level_up_hand_ref(card, hand, instant, ...)
+        local results = HNDS.pack(level_up_hand_ref(card, hand, instant, ...))
         HNDS.request_unlock_check("hnds_hand_level")
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -1562,9 +1539,8 @@ function HNDS.apply_unlock_state_migration()
     end
 
     if not destroy_schema_current then
-        -- Earlier builds counted enhancement/dissolve animations as destroyed
-        -- playing cards. The stored total is therefore not recoverable; reset
-        -- it once when upgrading to the corrected counter.
+
+
         profile.career_stats = profile.career_stats or {}
         profile.career_stats[STAT_CARDS_DESTROYED] = 0
         profile.hnds_destroy_stat_schema = DESTROY_STAT_SCHEMA
@@ -1578,9 +1554,9 @@ if type(set_discover_tallies) == "function" and not HNDS._unlock_tallies_wrapped
     HNDS._unlock_tallies_wrapped = true
     local set_discover_tallies_unlock_ref = set_discover_tallies
     function set_discover_tallies(...)
-        local result = { set_discover_tallies_unlock_ref(...) }
+        local result = HNDS.pack(set_discover_tallies_unlock_ref(...))
         HNDS.apply_unlock_state_migration()
         HNDS.request_unlock_check("hnds_discovery_refresh")
-        return unpack(result)
+        return ((table and table.unpack) or unpack)(result, 1, result.n)
     end
 end

@@ -31,8 +31,7 @@ SMODS.Joker {
     calculate = function(self, card, context)
         local extra = card.ability.extra
 
-        -- Remember the actual scoring hand on every played hand. The value left
-        -- here when the Blind ends is therefore the final poker hand of round.
+
         if context.before and context.scoring_name and not context.blueprint then
             extra.last_hand = context.scoring_name
         end
@@ -52,12 +51,11 @@ SMODS.Joker {
             local data = hnds_spag_hand_data(hand)
             if not (data and (tonumber(data.level) or 1) > 1) then return end
 
-            -- l_chips/l_mult are the values the respective Planet currently
-            -- grants, including Handsome Devils' Blue Stake rework when active.
+
             local chip_gain = tonumber(data.l_chips) or 0
             local mult_gain = tonumber(data.l_mult) or 0
 
-            -- Steal exactly one level; never allow the hand to fall below 1.
+
             level_up_hand(card, hand, nil, -1)
             extra.chips = (tonumber(extra.chips) or 0) + chip_gain
             extra.mult = (tonumber(extra.mult) or 0) + mult_gain

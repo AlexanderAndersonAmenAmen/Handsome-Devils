@@ -42,9 +42,9 @@ SMODS.Consumable {
             G.E_MANAGER:add_event(Event({
                 func = function()
                     local c = G.hand.cards[i]
-                    
+
                     local enh = SMODS.poll_enhancement({ guaranteed = true, options = enh_options })
-                    
+
                     c:set_ability(enh)
                     return true
                 end
@@ -54,7 +54,7 @@ SMODS.Consumable {
             G.E_MANAGER:add_event(Event({
                 func = function()
                     local c = G.hand.cards[i]
-                    
+
                      local seal = SMODS.poll_seal({ guaranteed = true })
                     c:set_seal(seal)
                     return true

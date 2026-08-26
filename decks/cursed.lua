@@ -12,11 +12,10 @@ SMODS.Back {
             and G.GAME.round_resets.ante == 1
             and not G.GAME.hnds_cursed_deck_reward_claimed
             and not G.GAME.hnds_cursed_pack_opened then
-            -- Claim before queueing.  Even if calculate is evaluated more than
-            -- once for the same Boss, this run can never schedule another deck
-            -- reward on a later Ante.
+
+
             G.GAME.hnds_cursed_deck_reward_claimed = true
-            G.GAME.hnds_cursed_pack_opened = true -- legacy/save compatibility
+            G.GAME.hnds_cursed_pack_opened = true
             if HNDS.queue_cursed_pack then
                 HNDS.queue_cursed_pack({ forced = true, source = 'cursed_deck' })
             end

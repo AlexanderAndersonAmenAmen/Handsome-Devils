@@ -7,7 +7,7 @@ SMODS.Back {
         return HNDS.unlock_condition_met("crystal", args)
     end,
     apply = function(self, back)
-        G.GAME.modifiers.hnds_double_showdown = true -- legacy/save compatibility
+        G.GAME.modifiers.hnds_double_showdown = true
         G.GAME.modifiers.hnds_crystal_showdown = true
         G.GAME.modifiers.hnds_crystal_ante_8_replacement = true
     end,
@@ -21,16 +21,25 @@ SMODS.Back {
     pools = { RedeemableBacks = true }
 }
 
--- Pick a random hidden (soul-type) Consumeable key.
+
 local function random_hidden_consumeable(seed)
     local options = {}
-    for _, center in ipairs(G.P_CENTER_POOLS.Consumeables) do
-        if center.hidden then options[#options + 1] = center.key end
+    local pool = G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Consumeables or {}
+    for _, center in ipairs(type(pool) == 'table' and pool or {}) do
+        if center and center.hidden and center.key then options[#options + 1] = center.key end
     end
-    return pseudorandom_element(options, seed)
+    local chosen = #options > 0 and pseudorandom_element(options, seed) or nil
+    if chosen then return chosen end
+
+
+    if G and G.P_CENTERS then
+        if G.P_CENTERS.c_soul then return 'c_soul' end
+        if G.P_CENTERS.c_black_hole then return 'c_black_hole' end
+    end
+    return nil
 end
 
-SMODS.Booster { --putting this in the same file for convenience
+SMODS.Booster {
     key = "spectral_ultra",
     weight = 0.01,
     kind = "Spectral",
@@ -64,7 +73,13 @@ SMODS.Booster { --putting this in the same file for convenience
     end,
     create_card = function(self, card, i)
         if i == 1 then
-            return { key = random_hidden_consumeable("spe"), key_append = "spe", area = G.pack_cards, skip_materialize = true }
+            local hidden_key = random_hidden_consumeable("spe")
+            if hidden_key then
+                return { key = hidden_key, key_append = "spe", area = G.pack_cards, skip_materialize = true }
+            end
+
+
+            return { set = "Spectral", area = G.pack_cards, skip_materialize = true, soulable = true, key_append = "spe" }
         else
             return {
                 set = "Spectral",
@@ -79,13 +94,16 @@ SMODS.Booster { --putting this in the same file for convenience
     in_pool = function(self, args)
         return hnds_config.enablePackSpawning and G.GAME.round_resets.ante >= 3
     end,
-    cry_digital_hallucinations = { --cryptid digital hallucinations compat
+    cry_digital_hallucinations = {
         colour = G.C.SECONDARY_SET.Spectral,
         loc_key = "k_plus_spectral",
         create = function ()
             if pseudorandom("diha_ultraspec") < 0.2 then
+                local hidden_key = random_hidden_consumeable("diha_spe")
                 SMODS.add_card({
-                    key = random_hidden_consumeable("diha_spe"),
+                    key = hidden_key,
+                    set = hidden_key and nil or "Spectral",
+                    soulable = hidden_key and nil or true,
                     key_append = "diha",
                     area = G.consumeables,
                     edition = "e_negative"

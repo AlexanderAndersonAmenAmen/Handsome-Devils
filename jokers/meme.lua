@@ -16,7 +16,7 @@ SMODS.Joker({
 	blueprint_compat = true,
 	demicoloncompat = true,
 	eternal_compat = true,
-	perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
+	perishable_compat = false,
 	config = {
 		extra = {
 			x_mult = 1,
@@ -34,7 +34,7 @@ SMODS.Joker({
 					ref_table = card.ability.extra,
 					ref_value = "x_mult",
 					scalar_value = "scaling",
-					operation = function(ref_table, ref_value, initial, change) --errors but should work
+					operation = function(ref_table, ref_value, initial, change)
 						ref_table[ref_value] = initial + boost * change
 					end,
 				})

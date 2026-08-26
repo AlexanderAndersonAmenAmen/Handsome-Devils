@@ -29,7 +29,7 @@ SMODS.Joker{
     end,
     blueprint_compat = true,
     eternal_compat = true,
-    perishable_compat = false, -- By default, all Scaling Jokers cant be perishable
+    perishable_compat = false,
     calculate = function(self, card, context)
         if type(context) ~= "table" or not card or not card.ability or not card.ability.extra then return end
         local current_round = G and G.GAME and G.GAME.current_round
@@ -38,7 +38,7 @@ SMODS.Joker{
         local other = context.other_card
         if context.individual and G and context.cardarea == G.play and not context.blueprint
             and other and type(other.get_id) == "function" and type(other.is_suit) == "function" then
-            if other:get_id() == idol.id and
+            if HNDS.imposter_rank_match(other, idol.id, context) and
             other:is_suit(idol.suit) then
                 SMODS.scale_card(card, {
                     ref_table = card.ability.extra,

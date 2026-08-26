@@ -1,4 +1,4 @@
--- Crystal Sleeve: Same as Crystal Deck + Showdown Blinds in ante 2 and 6 when paired
+
 CardSleeves.Sleeve({
     key = "crystal_sleeve",
     atlas = "hnds_sleeves",
@@ -9,7 +9,7 @@ CardSleeves.Sleeve({
         return HNDS.sleeve_loc(self, "b_hnds_crystal")
     end,
     apply = function(self)
-        G.GAME.modifiers.hnds_double_showdown = true -- legacy/save compatibility
+        G.GAME.modifiers.hnds_double_showdown = true
         G.GAME.modifiers.hnds_crystal_showdown = true
         if self.get_current_deck_key() == "b_hnds_crystal" then
             G.GAME.modifiers.crystal_sleeve_active = true
@@ -31,5 +31,4 @@ CardSleeves.Sleeve({
     end,
 })
 
--- NOTE: get_new_boss is wrapped once in lib/hooks.lua; do not re-wrap it here
--- (double-wrapping quartered win_ante instead of halving it).
+

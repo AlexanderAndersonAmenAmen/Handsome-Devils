@@ -41,7 +41,7 @@ SMODS.Joker({
 			return nil, true
 		end
 
-		--Scoring
+
 		if context.joker_main or context.forcetrigger then
 			return {
 				xmult = card.ability.extra.x_mult,

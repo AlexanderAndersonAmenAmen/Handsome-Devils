@@ -22,13 +22,10 @@ SMODS.Joker({
     blueprint_compat = false,
     demicoloncompat = true,
     eternal_compat = false,
-    
+
     calculate = function(self, card, context)
-        -- "Defeated in one hand" must be scoped to THIS Blind.
-        -- SMODS.last_hand_oneshot describes whether the most recently scored
-        -- hand cleared the requirement and can still be present in contexts
-        -- after that hand, so it is not a reliable round-length check here.
-        -- Match Pennywise's explicit current-round hand counter instead.
+
+
         if context.end_of_round and context.main_eval
             and not context.game_over
             and not context.blueprint

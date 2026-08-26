@@ -12,10 +12,8 @@ SMODS.Stake({
         applied_stakes = { mod = false },
         above_stake = { mod = false }
     },
-    -- Called by SMODS when this stake is applied at the start of a run.
-    -- Extends the run to Ante 10 and flags Platinum as active so other
-    -- systems (e.g. The Devil's forced-showdown-boss hook) can check for
-    -- it without needing to look up G.P_STAKES or compare stake numbers.
+
+
     modifiers = function(self)
         G.GAME.win_ante = 10
         G.GAME.hnds_platinum_active = true

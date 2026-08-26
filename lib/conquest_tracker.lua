@@ -1,11 +1,5 @@
--------------------------------------------------------------------
--- CONQUEST: RUN-WIDE BOSS-EQUIVALENT DEFEAT TRACKER
---
--- Tracks every defeated real Boss Blind plus every Small/Big Blind
--- explicitly replaced by Blind Raiser with an upgraded Boss Blind.
--- The counter exists independently of owning Conquest, so buying the
--- Joker later in the same run still sees all prior qualifying defeats.
--------------------------------------------------------------------
+
+
 
 HNDS = HNDS or {}
 
@@ -28,12 +22,7 @@ local function parse_upgrade_key(key)
     return tonumber(ante), normalize_slot(slot)
 end
 
--- Existing saves from before Conquest have no tracker field. Reconstruct a
--- conservative exact-enough baseline from run state:
---   * reaching Ante N implies N-1 real Bosses have already been defeated;
---   * hnds_blind_upgrades is cumulative;
---   * current-Ante upgraded Small/Big slots that are not yet Defeated are
---     subtracted because they have been rolled but not beaten yet.
+
 local function migrate_existing_run_count()
     if not (G and G.GAME) then return 0 end
 
@@ -83,8 +72,7 @@ local function is_real_boss_blind(blind)
     if not blind then return false end
     if is_upgraded_boss_blind(blind) then return false end
 
-    -- The Investment wrapper snapshots the physical slot on the live Blind;
-    -- prefer it because blind_on_deck can advance during end-of-round cleanup.
+
     local slot = normalize_slot(blind.hnds_investment_physical_slot)
         or normalize_slot(G and G.GAME and G.GAME.blind_on_deck)
     return slot == 'Boss'
@@ -95,11 +83,6 @@ local function conquest_blind_counts(blind)
 end
 
 
--- Balatro reuses the same live Blind object across encounters. The old tracker
--- stored its duplicate-defeat guard on that object, so after the first Boss it
--- stayed true forever and every later Boss was ignored. Clear the guard only
--- when a genuinely new Blind center is installed; set_blind(nil, true) refresh
--- calls (selling cards, HUD refreshes, etc.) must not create a second count.
 function HNDS.install_conquest_set_blind_hook()
     if not (Blind and type(Blind.set_blind) == 'function') then return false end
     if Blind.set_blind == HNDS._conquest_set_blind_wrapper then return true end

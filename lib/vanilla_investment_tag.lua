@@ -1,7 +1,6 @@
--- Unconditional vanilla Investment Tag adjustment.
--- This follows the Blind Raiser-style implementation: the physical Blind slot
--- is recorded when the Blind starts, and held Investment Tags are paid directly
--- only when that physical slot is the Ante's Boss slot.
+
+
+
 HNDS = HNDS or {}
 
 local pack = HNDS.pack
@@ -32,7 +31,7 @@ end
 local function real_boss_slot(blind)
     if not blind then return false end
 
-    -- Blind Raiser marks Boss definitions installed into Small/Big here.
+
     local replacement = normalize_slot(blind.hnds_platinum_replacement_slot)
     if replacement == 'Small' or replacement == 'Big' then return false end
 
@@ -115,8 +114,8 @@ function HNDS.install_investment_blind_hooks()
 
     local defeat_ref = Blind.defeat
     local wrapper = function(self, ...)
-        -- Snapshot eligibility and Tags before any inner Blind Raiser/vanilla
-        -- cleanup advances blind_on_deck or mutates G.GAME.tags.
+
+
         local eligible = real_boss_slot(self)
         local tags = eligible and collect_investment_tags() or nil
         local results = pack(defeat_ref(self, ...))

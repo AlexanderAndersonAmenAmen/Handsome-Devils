@@ -68,9 +68,8 @@ SMODS.Joker {
     end,
 
     set_ability = function(self, card, initial, delay_sprites)
-        -- Give every physical War card its target as soon as the card is
-        -- initialized. This means shop/pack copies do not sit on the old
-        -- High Card fallback until their first calculation.
+
+
         local extra = card and card.ability and card.ability.extra
         if extra and not extra.poker_hand and G and G.GAME then
             hnds_war_choose_hand(card, false)
@@ -87,27 +86,22 @@ SMODS.Joker {
     calculate = function(self, card, context)
         local extra = card.ability.extra
 
-        -- Choose an initial target lazily inside an active run. This keeps
-        -- collection/title-screen previews from consuming gameplay RNG state.
+
         if not extra.poker_hand and G and G.GAME then hnds_war_choose_hand(card, false) end
 
         if context.before and not context.blueprint
             and G.GAME.current_round and G.GAME.current_round.hands_played == 0
         then
             local hand = hnds_war_hand(card)
-            -- War requires the hand's primary evaluated poker hand to be the
-            -- target exactly. Do not use context.poker_hands here: composite
-            -- hands (e.g. Straight Flush) also populate weaker contained-hand
-            -- buckets and would incorrectly satisfy a target such as Flush.
+
+
             extra.destroy_this_hand = context.scoring_name == hand
             if extra.destroy_this_hand then
                 return { message = localize('k_hnds_war'), colour = G.C.RED }
             end
         end
 
-        -- Balatro evaluates this context after every scored card has finished
-        -- scoring, so the hand still contributes its Chips/Mult before War
-        -- destroys those scored cards through the normal destruction pipeline.
+
         if context.destroying_card and extra.destroy_this_hand and not context.blueprint then
             return { remove = true }
         end

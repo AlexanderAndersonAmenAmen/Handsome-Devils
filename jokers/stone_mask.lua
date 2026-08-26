@@ -34,8 +34,7 @@ local function hnds_edition_identity(edition)
     if type(edition) ~= 'table' then return tostring(edition) end
     if edition.key then return tostring(edition.key) end
 
-    -- Vanilla editions historically serialize as {foil=true}/{holo=true}/etc.,
-    -- while modern SMODS editions normally expose `key`. Resolve either shape.
+
     local matches = {}
     for flag, value in pairs(edition) do
         if value == true and type(flag) == 'string' then
@@ -60,8 +59,8 @@ local function hnds_stone_mask_save_original(card)
 end
 
 local function hnds_stone_mask_apply(card, owner)
-    -- hand_drawn is a strict Steamodded calculate context, so quantum Stone
-    -- effects may be queried here without exposing shop/UI scans to them.
+
+
     if not (card and card.ability and HNDS.card_has_stone and HNDS.card_has_stone(card, true)) then return false end
     hnds_stone_mask_save_original(card)
 
@@ -86,9 +85,7 @@ local function hnds_stone_mask_apply(card, owner)
     if edition and card.set_edition then card:set_edition(edition, true, true) end
     if seal and card.set_seal then card:set_seal(seal, true) end
 
-    -- Snapshot what Stone Mask actually installed. If another mod changes one
-    -- of these modifiers later in the round, restoration will leave that newer
-    -- external change alone rather than clobbering it.
+
     card.ability.hnds_stone_mask_applied_edition = card.edition and hnds_copy_table(card.edition) or false
     card.ability.hnds_stone_mask_applied_edition_key = hnds_edition_identity(card.edition)
     card.ability.hnds_stone_mask_applied_seal = card.seal or false

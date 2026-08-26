@@ -3,10 +3,7 @@ version = "1.0.0"
 dump_lua = true
 priority = 0
 
-# The vanilla title renderer always uses a fixed logical width of 13 units.
-# Since this mod deliberately widens the balatro atlas frame from 333px to
-# 499px, widen the rendered Sprite by the same ratio so pixels are not squeezed.
-# Height remains at the original pixel scale automatically.
+
 [[patches]]
 [patches.pattern]
 target = "game.lua"

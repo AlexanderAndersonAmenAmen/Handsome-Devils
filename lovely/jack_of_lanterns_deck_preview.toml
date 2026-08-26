@@ -3,12 +3,7 @@ version = "1.0.0"
 dump_lua = true
 priority = 25
 
-# Jack of Lanterns deck-view layout (Steamodded beta-1620a).
-# Keep Lanterns as a private/decoy suit on page 2. The helper pins it to
-# visible-suit position 5 while Steamodded keeps normal 4-row pagination.
-# Lanterns stays hidden from the suit tally and its custom rank counts as J.
 
-# Initial deck-view page: pin Lanterns to position 5 (page 2).
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
@@ -25,7 +20,7 @@ payload = '''
 match_indent = false
 times = 1
 
-# Subsequent suit pages use the same page size and ordering.
+
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
@@ -42,7 +37,7 @@ payload = '''
 match_indent = false
 times = 1
 
-# Hide only the Lanterns suit icon/count from the left-side suit summary.
+
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
@@ -60,7 +55,7 @@ payload = '''
 match_indent = false
 times = 2
 
-# Initial left-side tally remains the normal four page rows.
+
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
@@ -70,7 +65,7 @@ payload = '''while i <= math.min(hnds_suits_per_page, #visible_suit) do'''
 match_indent = true
 times = 1
 
-# Page counts/options remain four rows per page.
+
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
@@ -100,8 +95,6 @@ match_indent = true
 times = 1
 
 
-# Merge the custom Jack-of-Lanterns rank into vanilla Jack (J) in the left-side
-# rank tally, for both the initial deck preview and page refresh function.
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'

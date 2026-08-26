@@ -16,9 +16,8 @@ local function hnds_plague_next_scoring_card(context)
 end
 
 local function hnds_plague_snapshot(source)
-    -- If this card is itself waiting to receive a Plague spread, that pending
-    -- Enhancement is what it will score as and therefore what it should spread
-    -- onward. This keeps A -> B -> C chains correct without changing B early.
+
+
     local pending = source and source.hnds_plague_pending
     if pending and pending.center and pending.center.set == 'Enhanced' then
         return {
@@ -49,7 +48,7 @@ end
 local function hnds_plague_set_ability(card, snapshot, delay_sprites)
     if not (card and snapshot and snapshot.center) then return false end
 
-    -- Plague is an outright replacement, never an Aberrant fusion attempt.
+
     local old_internal = HNDS and HNDS._aberrant_internal_center_swap
     if HNDS then HNDS._aberrant_internal_center_swap = true end
     local ok, err = pcall(function()
@@ -84,9 +83,7 @@ local function hnds_plague_apply_visible(source, target, snapshot)
         return true
     end
 
-    -- The status text and the *real* permanent Enhancement change intentionally
-    -- live in the same Event. Nothing on the physical card is changed before
-    -- this point; only a private pending snapshot is used for score calculation.
+
     if source and not source.removed and card_eval_status_text then
         card_eval_status_text(source, 'extra', nil, nil, nil, {
             message = localize('k_hnds_spread'),
@@ -99,8 +96,7 @@ local function hnds_plague_apply_visible(source, target, snapshot)
     hnds_plague_refresh_visual(target)
     if target.juice_up then target:juice_up(0.35, 0.35) end
 
-    -- Only clear this exact pending spread. A later scoring pass/mod may have
-    -- queued a newer snapshot for the same physical card.
+
     if target.hnds_plague_pending == snapshot then
         target.hnds_plague_pending = nil
     end
@@ -112,23 +108,12 @@ local function hnds_plague_queue_visible_spread(source, target, snapshot)
         return hnds_plague_apply_visible(source, target, snapshot)
     end
 
-    -- IMPORTANT: use an AFTER event, not an IMMEDIATE event.
-    -- Steamodded calculates the whole hand synchronously and queues its visual
-    -- scoring work. An immediate Event jumps ahead of that queue, which caused
-    -- every Plague proc/message to appear before the first card visibly scored.
-    --
-    -- This event is added only AFTER the source card's complete SMODS.score_card
-    -- call has finished, so it sits in the event queue between the source card's
-    -- scoring visuals and the next card's visuals. Zero delay keeps it snappy and
-    -- avoids the old post-scoring hitch.
+
     G.E_MANAGER:add_event(Event({
         trigger = 'after',
         delay = 0,
-        -- This MUST remain blockable (the default). Earlier scoring events need
-        -- to finish before Spread may run. Setting blockable=false lets this
-        -- event jump the scoring queue and was the cause of the batched pre-score
-        -- Spread messages. It also blocks later events for this zero-delay call,
-        -- giving strict source-score -> Spread -> target-score ordering.
+
+
         blockable = true,
         blocking = true,
         func = function()
@@ -141,9 +126,7 @@ end
 local function hnds_plague_record_proc(source, target, snapshot)
     if not (source and target and snapshot) then return end
 
-    -- The target needs a private pending Enhancement immediately so its later
-    -- synchronous score calculation can use the spread Enhancement. This field
-    -- has NO sprite/UI effect and does not alter the physical card.
+
     target.hnds_plague_pending = snapshot
 
     source.hnds_plague_proc_queue = source.hnds_plague_proc_queue or {}
@@ -158,7 +141,7 @@ local function hnds_plague_drain_source_procs(source)
     local queue = source and source.hnds_plague_proc_queue
     if type(queue) ~= 'table' or #queue == 0 then return end
 
-    -- Clear first so callbacks/re-entrancy cannot drain the same proc twice.
+
     source.hnds_plague_proc_queue = nil
     for i = 1, #queue do
         local proc = queue[i]
@@ -168,29 +151,39 @@ local function hnds_plague_drain_source_procs(source)
     end
 end
 
--- Steamodded's score_card() performs one physical card's base scoring, Joker
--- individual contexts, and all of that card's retriggers before returning. The
--- visible scoring work is queued as it goes. We use that exact boundary to put
--- Plague *after this card* and *before the next card*.
---
--- A pending target Enhancement is only borrowed temporarily for calculation;
--- the physical card is restored before score_card() returns. Its permanent
--- Enhancement changes later in the queued Spread event.
+
 HNDS = HNDS or {}
 if SMODS and type(SMODS.score_card) == 'function' and not HNDS._plague_score_card_wrapped then
     HNDS._plague_score_card_wrapped = true
     local hnds_plague_score_card_ref = SMODS.score_card
+    local unpack_values = (table and table.unpack) or unpack
 
-    function SMODS.score_card(scored_card, context)
+    function SMODS.score_card(scored_card, context, ...)
+        local trailing = HNDS.pack(...)
         local pending = scored_card and scored_card.hnds_plague_pending
         local old_ability, old_center, old_center_key
+        local prepared = false
 
-        if pending and pending.center then
-            old_ability = copy_table(scored_card.ability or {})
-            old_center = scored_card.config and scored_card.config.center
-            old_center_key = scored_card.config and scored_card.config.center_key
+        local function restore_real_card()
+            if not prepared then return end
+            scored_card.ability = old_ability
+            if scored_card.config then
+                scored_card.config.center = old_center
+                scored_card.config.center_key = old_center_key
+            end
+            hnds_plague_write_enh_cache(scored_card)
+            prepared = false
+        end
 
-            local ok_prepare, prepare_err = pcall(function()
+        local traceback = (debug and debug.traceback) or function(err) return err end
+        local results
+        local ok, err = xpcall(function()
+            if pending and pending.center then
+                old_ability = copy_table(scored_card.ability or {})
+                old_center = scored_card.config and scored_card.config.center
+                old_center_key = scored_card.config and scored_card.config.center_key
+                prepared = true
+
                 if scored_card.quantum_set_ability then
                     scored_card:quantum_set_ability(pending.center)
                 else
@@ -205,28 +198,17 @@ if SMODS and type(SMODS.score_card) == 'function' and not HNDS._plague_score_car
                     end
                 end
                 hnds_plague_write_enh_cache(scored_card)
-            end)
-            if not ok_prepare then error(prepare_err) end
-        end
-
-        local ok_score, score_err = pcall(hnds_plague_score_card_ref, scored_card, context)
-
-        if pending and pending.center then
-            -- Restore the real card without refreshing sprites. The permanent
-            -- set_ability happens only when the queued Spread event is shown.
-            scored_card.ability = old_ability
-            if scored_card.config then
-                scored_card.config.center = old_center
-                scored_card.config.center_key = old_center_key
             end
-            hnds_plague_write_enh_cache(scored_card)
-        end
 
-        if not ok_score then error(score_err) end
+            results = HNDS.pack(hnds_plague_score_card_ref(scored_card, context, unpack_values(trailing, 1, trailing.n)))
+        end, traceback)
 
-        -- This is the critical timing boundary. Do not queue Spread from
-        -- Joker:calculate(); doing so batches it into pre-animation hand calc.
+        restore_real_card()
+        if not ok then error(err, 0) end
+
+
         hnds_plague_drain_source_procs(scored_card)
+        return unpack_values(results, 1, results.n)
     end
 end
 
@@ -270,9 +252,7 @@ SMODS.Joker {
         local snapshot = hnds_plague_snapshot(source)
         if not (next_card and snapshot) then return end
 
-        -- context.individual is evaluated once per actual scoring pass, including
-        -- retriggers. Record the proc only; NEVER return a normal effect/message
-        -- here, because Steamodded is still synchronously calculating the hand.
+
         if not SMODS.pseudorandom_probability(
             card, 'hnds_plague', 1, tonumber(card.ability.extra.odds) or 4, 'hnds_plague'
         ) then

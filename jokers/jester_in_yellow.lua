@@ -22,17 +22,17 @@ SMODS.Joker({
 		return { vars = { card.ability.extra.rounds } }
 	end,
 	calculate = function(self, card, context)
-		-- On blind select: apply temporary Negative to leftmost Joker only
+
 		if context.setting_blind and G.jokers and G.jokers.cards and #G.jokers.cards > 0 then
 			local target = G.jokers.cards[1]
-			-- Skip if leftmost is this card itself, already has temporary Negative, or is already naturally Negative
+
 			if target and target ~= card and not target.ability.hnds_jester_negative_rounds and not (target.edition and target.edition.negative) then
 				target:set_edition("e_negative")
 				target:juice_up(0.3, 0.5)
 				target.ability.hnds_jester_negative_rounds = card.ability.extra.rounds
 				target:add_sticker('hnds_jester_temp_negative', true)
 				if hnds_config and hnds_config.enableCustomSounds then
-					-- 2:1 weighting: the super-rare line is half as likely as the common one.
+
 					local sound_key = pseudorandom('hnds_jiy_sfx') < (1 / 3)
 						and 'hnds_jiy_superrare_sfx' or 'hnds_jiy_common_sfx'
 					play_sound(sound_key, 1, 0.75)
@@ -77,6 +77,8 @@ SMODS.Sticker {
 		end
 	end,
 	update = function(self, card, dt)
+
+		if card.area and card.area.config and card.area.config.collection then return end
 		if card.sell_cost ~= 0 then
 			card.sell_cost = 0
 			card.sell_cost_label = 0

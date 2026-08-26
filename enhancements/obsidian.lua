@@ -7,21 +7,44 @@ end
 
 HNDS.is_bound_card = is_bound
 
+local function center_key(card)
+    return card and card.config and card.config.center and card.config.center.key
+end
+
+local function has_obsidian_fusion(card)
+    local fusions = card and card.ability and card.ability.hnds_aberrant_fusions
+    if type(fusions) ~= "table" then return false end
+    for _, key in ipairs(fusions) do
+        if key == OBSIDIAN_KEY then return true end
+    end
+    return false
+end
+
+local function has_obsidian(card)
+    return center_key(card) == OBSIDIAN_KEY or has_obsidian_fusion(card)
+end
+
+HNDS.card_has_obsidian = has_obsidian
+
 local function obsidian_extra(card)
-    -- Collection-preview cards can call loc_vars/set_ability before Steamodded
-    -- has initialized their ability table. Return display defaults without
-    -- mutating those temporary cards.
     if not card or not card.ability then
-        return { required = 2, scored = 0, complete = false }
+        return { required = 1, scored = 0, complete = false }
     end
 
-    card.ability.extra = type(card.ability.extra) == "table" and card.ability.extra or {}
-    local extra = card.ability.extra
-    -- Save migration from both former Obsidian implementations.
-    extra.required = math.max(1, tonumber(extra.required) or tonumber(extra.cards) or 2)
+    local extra
+    if has_obsidian_fusion(card) then
+        card.ability.hnds_obsidian_extra = type(card.ability.hnds_obsidian_extra) == "table"
+            and card.ability.hnds_obsidian_extra or {}
+        extra = card.ability.hnds_obsidian_extra
+    else
+        card.ability.extra = type(card.ability.extra) == "table" and card.ability.extra or {}
+        extra = card.ability.extra
+    end
+
+    extra.required = 1
     extra.scored = math.max(0, tonumber(extra.scored) or 0)
-    extra.complete = extra.complete == true or extra.scored >= extra.required or is_bound(card)
-    if extra.complete then extra.scored = extra.required end
+    extra.complete = extra.complete == true or extra.scored >= 1 or is_bound(card)
+    if extra.complete then extra.scored = 1 end
     extra.cards = nil
     return extra
 end
@@ -42,10 +65,6 @@ local function make_bound(card, silent)
     end
 end
 
-local function center_key(card)
-    return card and card.config and card.config.center and card.config.center.key
-end
-
 local function resolve_center(center)
     if type(center) == "string" then return G and G.P_CENTERS and G.P_CENTERS[center] end
     return center
@@ -55,29 +74,23 @@ SMODS.Enhancement({
     key = "obsidian",
     atlas = "Extras",
     pos = { x = 3, y = 0 },
-    config = { extra = { required = 2, scored = 0, complete = false } },
+    config = { extra = { required = 1, scored = 0, complete = false } },
     loc_vars = function(self, info_queue, card)
         local extra = obsidian_extra(card)
         local complete = extra.complete or is_bound(card)
 
-        -- Before completion, explain what Bound does from Obsidian's tooltip.
-        -- After completion, the permanent Bound Sticker supplies that tooltip,
-        -- preventing the same description from appearing twice.
+
         if not complete then
             info_queue[#info_queue + 1] = { key = "hnds_bound", set = "Other" }
         end
-        return {
-            key = complete and "m_hnds_obsidian_complete" or nil,
-            vars = { extra.required, math.min(extra.required, extra.scored) },
-        }
+        return { key = complete and "m_hnds_obsidian_complete" or nil }
     end,
     calculate = function(self, card, context)
         local extra = obsidian_extra(card)
-        -- Repair completed cards from saves made before Bound was moved here.
+
         if extra.complete and not is_bound(card) then make_bound(card, true) end
 
-        -- Enhancements receive `main_scoring` for their own scoring card in
-        -- this Steamodded build. Keep the individual branch for compatibility.
+
         local scored_now = context.main_scoring and context.cardarea == G.play
         local legacy_individual = context.individual and context.cardarea == G.play
             and context.other_card == card and not context.repetition
@@ -88,7 +101,7 @@ SMODS.Enhancement({
     weight = 2.5,
 })
 
--- Permanent playing-card marker applied by completed Obsidian cards.
+
 SMODS.Sticker({
     key = "bound",
     atlas = "Stickers",
@@ -102,16 +115,14 @@ SMODS.Sticker({
     end,
 })
 
--- Keep Obsidian's progress tied to the Obsidian enhancement itself while the
--- completed Bound effect remains permanent on the playing card.
+
 if Card and Card.set_ability and not Card._hnds_obsidian_ability_wrapped then
     Card._hnds_obsidian_ability_wrapped = true
     local set_ability_obsidian_ref = Card.set_ability
 
     function Card:set_ability(center, initial, delay_sprites, ...)
-        -- During Card:init (including the collection UI), ability does not exist
-        -- yet. Let the original method initialize the card before applying any
-        -- runtime Obsidian transition rules.
+
+
         if initial or not self.ability then
             return set_ability_obsidian_ref(self, center, initial, delay_sprites, ...)
         end
@@ -123,39 +134,35 @@ if Card and Card.set_ability and not Card._hnds_obsidian_ability_wrapped then
         local was_bound = is_bound(self)
         local old_extra = was_obsidian and obsidian_extra(self) or nil
 
-        -- Reapplying Obsidian to an already completed Obsidian card is a visual
-        -- no-op. The consumable's normal flip animation still plays outside
-        -- this function, but the card and its permanent state are unchanged.
+
         if not initial and was_obsidian and was_bound and new_key == OBSIDIAN_KEY then
             old_extra.complete = true
             old_extra.scored = old_extra.required
             return self
         end
 
-        -- Leaving an incomplete Obsidian enhancement discards its partial
-        -- ritual progress. Returning to Obsidian later begins again at 0/2.
+
         if not initial and was_obsidian and new_key ~= OBSIDIAN_KEY and old_extra and not old_extra.complete then
             old_extra.scored = 0
             old_extra.complete = false
             if self.ability then self.ability.hnds_obsidian_scored_last_hand = nil end
         end
 
-        local ret = set_ability_obsidian_ref(self, center, initial, delay_sprites, ...)
+        local results = HNDS.pack(set_ability_obsidian_ref(self, center, initial, delay_sprites, ...))
 
-        -- Bound is permanent even after changing to another enhancement.
+
         if was_bound and not is_bound(self) then make_bound(self, true) end
 
         if not initial and new_key == OBSIDIAN_KEY and was_bound then
-            -- Applying Obsidian to any already-Bound non-Obsidian card changes
-            -- only its enhancement appearance; it remains permanently Bound
-            -- and does not start or replay the 0/2 requirement.
+
+
             local extra = obsidian_extra(self)
             extra.complete = true
             extra.scored = extra.required
             if self.ability then self.ability.hnds_obsidian_scored_last_hand = nil end
         end
 
-        return ret
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
 
@@ -168,7 +175,7 @@ end
 HNDS.complete_obsidian_final_hand = function()
     for _, card in ipairs((G and G.playing_cards) or {}) do
         if card and card.ability and card.ability.hnds_obsidian_scored_last_hand
-            and center_key(card) == OBSIDIAN_KEY
+            and has_obsidian(card)
         then
             local extra = obsidian_extra(card)
             if not extra.complete then
@@ -189,9 +196,7 @@ HNDS.complete_obsidian_final_hand = function()
     end
 end
 
--- Called from the mod-level first_hand_drawn context. Bound cards already in
--- hand need no action; non-debuffed Bound cards still in the deck are drawn as
--- extra opening cards.
+
 HNDS.draw_bound_cards = function()
     if not (G and G.GAME and G.GAME.current_round and G.deck and G.hand) then return end
     if G.GAME.current_round.hnds_bound_cards_drawn then return end

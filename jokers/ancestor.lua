@@ -28,7 +28,7 @@ local function hnds_ancestor_curse_first_shop_joker()
     if not target then return true end
     target.ability = target.ability or {}
 
-    -- Multiple Ancestors should still affect only the first Joker in the shop.
+
     if target.ability.hnds_ancestor_cursed then return true end
 
     if type(apply_curse) == 'function' then
@@ -42,8 +42,7 @@ local function hnds_ancestor_curse_first_shop_joker()
         return true
     end
 
-    -- Mark only the Joker forced by The Ancestor. trigger_curse uses this flag
-    -- to give this purchase (and no other Cursed Joker) a 1-in-4 price bypass.
+
     target.ability = target.ability or {}
     target.ability.hnds_ancestor_cursed = true
     return true
@@ -66,6 +65,15 @@ SMODS.Joker {
     unlock_condition = { type = 'hnds_discovery' },
 
     loc_vars = function(self, info_queue, card)
+
+
+        local has_cursed = card and card.ability and card.ability.hnds_cursed
+        if info_queue and not has_cursed then
+
+
+            _G.HNDS_CURRENT_CURSE_CARD = nil
+            info_queue[#info_queue + 1] = { set = 'Other', key = 'hnds_cursed' }
+        end
         local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_ancestor")
         return { key = self.key, vars = { numerator, denominator } }
     end,

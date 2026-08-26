@@ -14,10 +14,7 @@ local function hnds_headless_gain_head(card)
     local owner = hnds_headless_owner_id(card)
     if not owner then return end
 
-    -- "When you get this Joker": add_to_deck is the common acquisition path
-    -- for shop buys, packs, creation effects and Joker replacements. The saved
-    -- head_added flag prevents save/load or repeated add_to_deck calls from
-    -- producing duplicate heads.
+
     extra.head_added = true
     if not (G and G.E_MANAGER and Event) then return end
     G.E_MANAGER:add_event(Event({
@@ -78,5 +75,5 @@ SMODS.Joker {
         end
     end,
 
-    attributes = { 'modify_card', 'rank', 'suit', 'chips' },
+    attributes = { 'modify_card', 'rank', 'suit', 'xmult' },
 }

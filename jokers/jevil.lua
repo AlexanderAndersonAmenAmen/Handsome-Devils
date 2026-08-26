@@ -9,10 +9,8 @@ end
 
 local function hnds_jevil_is_target_suit(card)
     if not card then return false end
-    -- Jevil only claims cards whose actual printed/base suit is Spades or Clubs.
-    -- Do not use Card:is_suit here: once Jevil's Sticker is active that method
-    -- intentionally reports every suit, which would make load-time cleanup
-    -- unable to distinguish old Hearts/Diamonds markers.
+
+
     local suit = card.base and card.base.suit
     return suit == 'Spades' or suit == 'Clubs'
 end
@@ -21,9 +19,8 @@ local function hnds_jevil_is_stone(card)
     if not card then return false end
     local center = card.config and card.config.center
     if center and center.key == 'm_stone' then return true end
-    -- Aberrant's fused Stone is intentionally dominant over Wild. Jevil is a
-    -- temporary Sticker/virtual Wild state, never an Enhancement, so it must
-    -- neither apply to Stone-fused Aberrant cards nor touch their fusion list.
+
+
     if HNDS and HNDS.is_aberrant and HNDS.is_aberrant(card)
         and HNDS.aberrant_has_fusion and HNDS.aberrant_has_fusion(card, 'm_stone')
     then
@@ -43,10 +40,8 @@ end
 local function hnds_jevil_apply_tooltip(card)
     if not card then return end
     card.ability = card.ability or {}
-    -- add_sticker is idempotent for an already-present sticker.  Calling it
-    -- again is intentional: after loading a mid-round save it rebuilds the
-    -- registered Sticker state/visual even if only the serialized ability flag
-    -- survived.
+
+
     if card.add_sticker then card:add_sticker(JEVIL_STICKER, true) end
     card.ability[JEVIL_STICKER] = true
     card.ability[JEVIL_STICKER .. '_applied'] = true
@@ -68,10 +63,7 @@ function HNDS.jevil_mark_starting_hand(cards)
     local owned = SMODS and SMODS.find_card and SMODS.find_card('j_hnds_jevil') or {}
     if type(owned) ~= 'table' or #owned == 0 then return false end
 
-    -- Jevil deliberately reads the hand *now*, after the start-of-round event
-    -- queue has finished its draw effects.  Do not use the original
-    -- first_hand_drawn list here: Jokers such as Jokestone may have added more
-    -- cards to G.hand in the meantime.
+
     local drawn = type(cards) == 'table' and cards or ((G.hand and G.hand.cards) or {})
     if #drawn == 0 then return false end
 
@@ -94,16 +86,14 @@ function HNDS.jevil_mark_starting_hand(cards)
 
     G.GAME.hnds_jevil_round_cards = marked
 
-    -- The indicator happens at the same moment Jevil claims the final opening
-    -- hand.  At this point the cards are already visible, so juice_up cannot be
-    -- swallowed by the opening draw animation.
+
     for _, playing_card in ipairs(visible_cards) do
         if playing_card and not playing_card.removed and playing_card.juice_up then
             playing_card:juice_up(0.55, 0.45)
         end
     end
 
-    -- One status popup per Jevil that actually supplied the round effect.
+
     for _, jevil in ipairs(owned) do
         if jevil and not jevil.removed then
             if jevil.juice_up then jevil:juice_up(0.3, 0.3) end
@@ -116,9 +106,7 @@ function HNDS.jevil_mark_starting_hand(cards)
         end
     end
 
-    -- Jevil resolves after the normal opening-hand autosave boundary. Persist
-    -- the marked card IDs + Sticker ability flags now so leaving/re-entering
-    -- the run does not erase the temporary Wild state.
+
     if type(save_run) == 'function' then save_run() end
 
     return true
@@ -134,13 +122,7 @@ local function hnds_jevil_any_pending_draws()
     return false
 end
 
--- first_hand_drawn is emitted before every Joker's start-of-round draw Events
--- have necessarily finished.  Queue two non-blocking tail sentinels.  The
--- first lets all calculate callbacks enqueue their work; the second is placed
--- behind those parent Events and then puts the final Jevil application behind
--- any draw Events those parents created.  The final Event is blockable and
--- waits for Handsome Devils' explicit draw-in-progress markers as an extra
--- safeguard, but never blocks the draw queue itself.
+
 function HNDS.jevil_schedule_starting_hand()
     if not (G and G.GAME and G.E_MANAGER and Event) then
         return HNDS.jevil_mark_starting_hand((G and G.hand and G.hand.cards) or {})
@@ -168,8 +150,8 @@ function HNDS.jevil_schedule_starting_hand()
                         func = function()
                             if hnds_jevil_any_pending_draws() then
                                 pending_draw_waits = pending_draw_waits + 1
-                                -- Never leave an Event resident forever if a draw
-                                -- marker is stranded by another mod or a bad save.
+
+
                                 if pending_draw_waits < 240 then return false end
                             end
                             if not (G and G.GAME) then return true end
@@ -206,9 +188,15 @@ SMODS.Sticker {
     pos = { x = 3, y = 4 },
     badge_colour = G.C.PURPLE,
     rate = 0,
+    no_collection = true,
     default_compat = true,
     sets = { Default = true, Enhanced = true },
     hide_badge = true,
+    draw = function(self, card, layer)
+        if HNDS.draw_flat_sticker then
+            HNDS.draw_flat_sticker(self, card, layer)
+        end
+    end,
     apply = function(self, card, val)
         SMODS.Sticker.apply(self, card, val)
         card.ability = card.ability or {}
@@ -220,9 +208,8 @@ SMODS.Sticker {
             card.ability[JEVIL_STICKER .. '_applied'] = nil
         end
     end,
-    -- Vanilla Tweaks makes Wild cards immune to being flipped. Jevil's Wild is
-    -- virtual rather than the m_wild center, so mirror that clause while its
-    -- temporary Sticker is active.
+
+
     calculate = function(self, card, context)
         if hnds_config and hnds_config.enableVanillaTweaks
             and context and context.stay_flipped
@@ -234,9 +221,7 @@ SMODS.Sticker {
     end,
 }
 
--- Rebuild a saved mid-round Jevil marker after Game:start_run finishes loading
--- the serialized playing cards. This also migrates saves created by versions
--- that stored only G.GAME.hnds_jevil_round_cards and not the Sticker flag.
+
 function HNDS.jevil_rehydrate_round()
     if not (G and G.GAME and type(G.GAME.hnds_jevil_round_cards) == 'table'
         and type(G.playing_cards) == 'table')
@@ -249,9 +234,8 @@ function HNDS.jevil_rehydrate_round()
         local id = hnds_jevil_card_id(playing_card)
         if id and G.GAME.hnds_jevil_round_cards[id] then
             if hnds_jevil_is_stone(playing_card) or not hnds_jevil_is_target_suit(playing_card) then
-                -- Migrate older mid-round saves that may have marked Stone,
-                -- Stone-fused Aberrant, Heart, Diamond, or other-suit cards
-                -- before Jevil was restricted to Spades and Clubs.
+
+
                 G.GAME.hnds_jevil_round_cards[id] = nil
                 hnds_jevil_remove_tooltip(playing_card)
             else
@@ -319,9 +303,6 @@ SMODS.Joker {
 }
 
 
--- Guarantee a hover tooltip without relying on Sticker UI timing.  Steamodded's
--- normal card UI builder uses generate_card_ui for info-queue descriptors, so
--- append our Other descriptor after the base playing-card tooltip is built.
 if Card and Card.generate_UIBox_ability_table and not HNDS._jevil_card_tooltip_hook then
     local hnds_jevil_generate_ui_ref = Card.generate_UIBox_ability_table
     function Card:generate_UIBox_ability_table(...)

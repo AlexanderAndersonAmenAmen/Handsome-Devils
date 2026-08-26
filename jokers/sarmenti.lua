@@ -1,8 +1,7 @@
 local function play_sarmenti_sound()
     if not (hnds_config and hnds_config.enableCustomSounds) then return end
 
-    -- Equal chance for every Sarmenti tune; edition selection itself remains
-    -- weighted independently through SMODS.poll_edition.
+
     local roll = pseudorandom("hnds_sarmenti_sfx")
     local sound_key = roll < 0.25 and "hnds_sarmenti_common_tune1"
         or roll < 0.5 and "hnds_sarmenti_common_tune2"
@@ -16,8 +15,8 @@ SMODS.Joker {
     unlocked = false,
     unlock_condition = { type = "", extra = "", hidden = true },
     locked_loc_vars = function(self, info_queue, card)
-        -- Force Steamodded's locked-Joker path to initialise specific_vars and
-        -- use the same hidden Legendary message as vanilla Soul Jokers.
+
+
         return { key = "joker_locked_legendary", set = "Other", vars = {} }
     end,
     discovered = false,
@@ -58,8 +57,8 @@ SMODS.Joker {
                 })
 
                 if edition then
-                    -- No capacity check is intentional. Losing Negative may leave
-                    -- the Joker area over its normal limit, as requested.
+
+
                     target:set_edition(edition, true)
                     target:juice_up()
                     changed = changed + 1

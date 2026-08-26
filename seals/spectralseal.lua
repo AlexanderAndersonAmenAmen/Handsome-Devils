@@ -18,7 +18,7 @@ local function hnds_order_tracked_hands(tracked)
     local added = {}
     if type(tracked) ~= 'table' then return ordered end
 
-    -- First use Balatro's fixed poker-hand hierarchy (strongest to weakest).
+
     for _, hand_key in ipairs(HNDS_VANILLA_HAND_HIERARCHY) do
         if tracked[hand_key] then
             ordered[#ordered + 1] = hand_key
@@ -26,8 +26,7 @@ local function hnds_order_tracked_hands(tracked)
         end
     end
 
-    -- Keep modded hands deterministic too: follow the live hand list after all
-    -- vanilla hierarchy entries, then alphabetically append any unknown keys.
+
     for _, hand_key in ipairs((G and G.handlist) or {}) do
         if tracked[hand_key] and not added[hand_key] then
             ordered[#ordered + 1] = hand_key
@@ -71,10 +70,8 @@ SMODS.Seal {
                     },
                 }
             else
-                -- Use a different localization entry for each progress count so
-                -- the tooltip only creates rows for poker hands that actually
-                -- exist. Fixed placeholder rows render as visible blank space in
-                -- Balatro's tooltip layout, so they must not be supplied at all.
+
+
                 local shown = math.min(progress, self.config.extra.hands)
                 local vars = {}
                 for i = 1, shown do
@@ -106,8 +103,7 @@ SMODS.Seal {
 
         card.ability.hnds_spectral_hands = card.ability.hnds_spectral_hands or {}
 
-        -- The token prevents a retrigger or repeated calculation pass for the same
-        -- played hand from being interpreted as another newly-scored hand.
+
         local round = G.GAME and G.GAME.current_round
         local hand_token = table.concat({
             tostring(round and round.round or 0),
@@ -122,8 +118,8 @@ SMODS.Seal {
 
         if card.ability.hnds_spectral_last_token ~= hand_token then
             card.ability.hnds_spectral_last_token = hand_token
-            -- A hand counts once per progress cycle. Retriggers remain blocked
-            -- until a completed cycle resets both the set and its hand token.
+
+
             if unique_hands < self.config.extra.hands
                 and not card.ability.hnds_spectral_hands[context.scoring_name]
             then
@@ -134,10 +130,7 @@ SMODS.Seal {
 
         if unique_hands < self.config.extra.hands then return end
 
-        -- Completing the four-hand set always consumes that progress, even if
-        -- there is no room to create the Spectral card. Clearing the hand token
-        -- as well is intentional: if this card is retriggered later in the same
-        -- scoring hand, the freshly-reset set may count that hand as 1/4.
+
         card.ability.hnds_spectral_hands = {}
         card.ability.hnds_spectral_last_token = nil
 

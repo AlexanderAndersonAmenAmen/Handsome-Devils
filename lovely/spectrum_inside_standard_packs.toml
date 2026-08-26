@@ -3,13 +3,7 @@ version = "1.0.0"
 dump_lua = true
 priority = 0
 
-# -----------------------------
-# Standard Packs: Force drawing a hand if spectrum is in a pack
-# -----------------------------
 
-# Force draw_hand when Spectrum appears in Standard Packs
-# very possible to make it selectable into consumables but probably not a great idea for a rare consumable
-# This workaround forces draw_from_deck_to_hand() to make it selectable and alert the player
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/game_object.lua"]'
@@ -29,19 +23,12 @@ if self.draw_hand ~= true and self.kind == "Standard" then
 end
 '''
 
-# -----------------------------
-# Stop vanilla from clobbering the soul key chosen by SMODS for Spectral-class
-# legendaries when generating Standard Pack cards. Vanilla forces forced_key =
-# 'c_base' whenever _type == 'Base' (the ~40% of Standard slots that are plain
-# playing cards), which would overwrite the c_hnds_spectrum key SMODS already
-# rolled for soul_set = "Base". Guarding with `and not forced_key` lets the
-# legendary survive; vanilla still defaults normal Base slots to c_base.
-# -----------------------------
+
 [[patches]]
 [patches.pattern]
 target = 'functions/common_events.lua'
 pattern = '''
-if _type == 'Base' then 
+if _type == 'Base' then
     forced_key = 'c_base'
 end
 '''

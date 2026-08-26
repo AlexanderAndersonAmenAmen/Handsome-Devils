@@ -1,8 +1,5 @@
--- Joker Reverse
--- Adjacent physical Joker cards are paired with a unique non-Legendary
--- counterpart. Joker TYPE pairings live in G.GAME for the whole run, so once
--- Devious Joker <-> Campfire is assigned, every future copy of either Joker
--- uses that same counterpart. Per-card state still lives on the physical card.
+
+
 
 local PAIR_FIELD = 'hnds_joker_reverse_pair'
 
@@ -80,8 +77,7 @@ local function register_counterpart_pair(key_a, key_b)
     local registry = counterpart_registry()
     if not registry then return false end
 
-    -- Pairings are one-to-one for the entire run. Never silently overwrite an
-    -- existing relationship, because that would make old pairs stop reversing.
+
     if registry[key_a] and registry[key_a] ~= key_b then return false end
     if registry[key_b] and registry[key_b] ~= key_a then return false end
 
@@ -98,8 +94,7 @@ end
 local function collect_excluded_keys()
     local excluded = {}
 
-    -- Every Joker type already used in a run-wide pairing is reserved. This
-    -- keeps counterpart relationships one-to-one even after either card is sold.
+
     local registry = counterpart_registry()
     if registry then
         for key, counterpart in pairs(registry) do
@@ -108,7 +103,7 @@ local function collect_excluded_keys()
         end
     end
 
-    -- A newly-created pairing also cannot choose a Joker currently owned.
+
     for _, joker in ipairs((G and G.jokers and G.jokers.cards) or {}) do
         local key = current_center_key(joker)
         if key then excluded[key] = true end
@@ -129,9 +124,7 @@ local function center_available_for_counterpart(center)
     if center.no_pool_flag and pool_flags[center.no_pool_flag] then return false end
     if center.yes_pool_flag and not pool_flags[center.yes_pool_flag] then return false end
 
-    -- Preserve custom Steamodded in_pool restrictions even though rarity pools
-    -- are read directly. A nil return is treated as "no extra restriction";
-    -- an explicit false removes the Joker from this counterpart pool.
+
     if type(center.in_pool) == 'function' then
         local ok, allowed = pcall(center.in_pool, center, { source = 'hnds_joker_reverse' })
         if ok and allowed == false then return false end
@@ -152,11 +145,11 @@ local function valid_counterpart(center, excluded, source_rarity)
 end
 
 local RARITY_TRANSITION_WEIGHTS = {
-    -- Joker Reverse uses its own explicit rarity odds. The source rarity is
-    -- NEVER eligible, and Legendary is NEVER eligible.
-    [1] = { [2] = 80, [3] = 20 }, -- Common   -> 80% Uncommon / 20% Rare
-    [2] = { [1] = 60, [3] = 40 }, -- Uncommon -> 60% Common   / 40% Rare
-    [3] = { [2] = 80, [1] = 20 }, -- Rare     -> 80% Uncommon / 20% Common
+
+
+    [1] = { [2] = 80, [3] = 20 },
+    [2] = { [1] = 60, [3] = 40 },
+    [3] = { [2] = 80, [1] = 20 },
 }
 
 local function add_candidate(pool, seen, center, excluded, source_rarity)
@@ -169,12 +162,7 @@ end
 local function clean_pool_for_rarity(rarity, excluded, source_rarity)
     local pool, seen = {}, {}
 
-    -- IMPORTANT: read the dedicated rarity pools directly. In some Steamodded
-    -- builds, calling get_current_pool('Joker', <numeric rarity>, ...) can yield
-    -- an empty pool for one tier, which made Joker Reverse appear to roll only
-    -- the other tier (most visibly Common -> Rare). G.P_JOKER_RARITY_POOLS is
-    -- already partitioned by Joker rarity, so it cannot collapse the 80/20 or
-    -- 60/40 choice this way.
+
     local rarity_pool = G and G.P_JOKER_RARITY_POOLS and G.P_JOKER_RARITY_POOLS[rarity]
     if type(rarity_pool) == 'table' then
         for _, entry in ipairs(rarity_pool) do
@@ -184,9 +172,7 @@ local function clean_pool_for_rarity(rarity, excluded, source_rarity)
         end
     end
 
-    -- Compatibility fallback for unusual mod setups that do not populate
-    -- G.P_JOKER_RARITY_POOLS. Scan the registered Joker pool and filter by the
-    -- center's actual rarity instead of relying on get_current_pool's rarity arg.
+
     if #pool == 0 then
         for _, center in ipairs((G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Joker) or {}) do
             if normalize_rarity(center and center.rarity) == rarity
@@ -206,9 +192,7 @@ local function rarity_weights_for_source(source_rarity)
     local configured = RARITY_TRANSITION_WEIGHTS[source_rarity]
     if configured then return configured end
 
-    -- Safety for a modded/custom source rarity: still only choose vanilla
-    -- non-Legendary counterpart rarities. (The normal Common/Uncommon/Rare
-    -- cases above are the intended Joker Reverse behaviour.)
+
     return { [1] = 70, [2] = 25, [3] = 5 }
 end
 
@@ -218,8 +202,7 @@ local function counterpart_pool(seed, source_rarity)
     local weights = rarity_weights_for_source(source_rarity)
     local total_weight = 0
 
-    -- Build both permitted rarity pools first. Only a genuinely empty eligible
-    -- tier loses its weight; otherwise the exact configured odds are preserved.
+
     for rarity = 1, 3 do
         local weight = rarity ~= source_rarity and (weights[rarity] or 0) or 0
         if weight > 0 then
@@ -246,7 +229,7 @@ local function counterpart_pool(seed, source_rarity)
         end
     end
 
-    -- Floating-point guard. This does not change normal probabilities.
+
     if not chosen_rarity then
         for rarity = 3, 1, -1 do
             if pools[rarity] then
@@ -287,8 +270,8 @@ local function edition_candidates_except(current_key)
     local function add(center)
         local key = center and center.key
         if not key or seen[key] or key == current_key then return end
-        -- Steamodded can expose a base/no-edition center in Edition pools. It is
-        -- not a real visual Edition and must never be a Joker Reverse result.
+
+
         if key == 'e_base' or key == 'e_none' or key == 'e_no_edition' then return end
         if center.set and center.set ~= 'Edition' then return end
 
@@ -303,8 +286,7 @@ local function edition_candidates_except(current_key)
         add(center)
     end
 
-    -- Compatibility fallback: use registered Edition centers directly if the
-    -- pool is unavailable or contains only the source/base Edition.
+
     if #candidates == 0 and G and G.P_CENTERS then
         for _, key in ipairs({ 'e_foil', 'e_holo', 'e_hnds_vintage', 'e_polychrome', 'e_negative' }) do
             add(G.P_CENTERS[key])
@@ -334,8 +316,7 @@ local function poll_different_edition(current_key, serial)
         if roll < cumulative then return entry.key end
     end
 
-    -- Floating-point guard; because candidates are all real Editions this is
-    -- still guaranteed to return an Edition whenever one is available.
+
     return candidates[#candidates].key
 end
 
@@ -400,16 +381,15 @@ local function ensure_pair(card)
 
     local pair = card.ability[PAIR_FIELD]
     if type(pair) == 'table' and pair.a and pair.b and pair.a.key and pair.b.key then
-        -- Migrate pre-registry saves: an already-existing physical pair seeds the
-        -- run-wide registry, provided neither side conflicts with a newer pair.
+
+
         local registered = registered_counterpart(source_key)
         if not registered then
             register_counterpart_pair(pair.a.key, pair.b.key)
             registered = registered_counterpart(source_key)
         end
 
-        -- If this old local pair conflicts with the run registry, rebuild it from
-        -- the registry instead of allowing two counterpart answers for one type.
+
         if registered and ((source_key == pair.a.key and registered == pair.b.key)
             or (source_key == pair.b.key and registered == pair.a.key))
         then
@@ -436,10 +416,8 @@ local function ensure_pair(card)
     pair = {
         serial = serial,
         active = 'a',
-        -- Side A is always the physical card as it was naturally acquired. Side
-        -- B is its run-registered counterpart. This means stickers on a naturally
-        -- found Campfire return when Campfire returns, but generated Devious does
-        -- not inherit them.
+
+
         a = make_side(card, source_key),
         b = {
             key = counterpart_key,
@@ -463,8 +441,7 @@ local function save_current_side(card, pair, side_name)
     local side = pair[side_name]
     if not side then return end
 
-    -- Counterpart Jokers are never allowed to carry stickers into their saved
-    -- state. Original-side stickers are retained and restored when flipped back.
+
     if side_name == 'b' then strip_all_stickers(card) end
 
     side.ability = snapshot_ability(card)
@@ -496,8 +473,7 @@ local function restore_joker_slot(card, desired_index)
     table.insert(cards, desired_index, card)
     card.area = G.jokers
 
-    -- Re-align visuals after restoring the logical order. Never let a Joker's
-    -- remove_from_deck/add_to_deck hooks permanently move it to another slot.
+
     if G.jokers.align_cards then pcall(G.jokers.align_cards, G.jokers) end
 end
 
@@ -506,13 +482,7 @@ local function restore_side(card, pair, side_name, desired_index)
     local center = side and G and G.P_CENTERS and G.P_CENTERS[side.key]
     if not (side and center) then return false end
 
-    -- Apply the destination Edition while this physical Joker is still in its
-    -- CardArea. This is important for Negative: Steamodded updates the Joker
-    -- area's card_limit when an owned Negative gains/loses its slot bonus.
-    -- Losing Negative is intentionally allowed to leave #G.jokers.cards above
-    -- card_limit (for example 6 Jokers in 5 slots); Joker Reverse is a
-    -- transformation, not a fresh acquisition, so there is no "must have room"
-    -- check and no Joker should be removed just to make room.
+
     if edition_key(card) ~= side.edition and card.set_edition then
         card:set_edition(side.edition, true, true)
     end
@@ -537,9 +507,7 @@ local function restore_side(card, pair, side_name, desired_index)
         if card.set_sticker_display then pcall(card.set_sticker_display, card) end
     end
 
-    -- set_ability/add/remove hooks from unusual Jokers may touch the Edition,
-    -- so enforce the saved destination Edition once more without doing any
-    -- capacity check. In the normal path this is already a no-op.
+
     if edition_key(card) ~= side.edition and card.set_edition then
         card:set_edition(side.edition, true, true)
     end
@@ -559,16 +527,13 @@ end
 local function reverse_card(target, pair)
     if not (target and target.area == G.jokers and pair) then return false end
 
-    -- Capture the exact slot before any Joker remove/add hooks fire. Some Jokers
-    -- mutate area order in those hooks, so restoring by index prevents shuffling.
+
     local slot = joker_slot(target)
     local active = resolve_active_side(pair, target)
     save_current_side(target, pair, active)
     local destination = active == 'a' and 'b' or 'a'
 
-    -- An Editioned Joker must always become an Editioned counterpart with a
-    -- different Edition. If the destination side was previously editionless (or
-    -- was externally changed to the same Edition), generate and remember a new one.
+
     local source_edition = pair[active] and pair[active].edition
     local destination_side = pair[destination]
     if source_edition and destination_side

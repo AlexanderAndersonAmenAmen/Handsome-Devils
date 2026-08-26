@@ -1,9 +1,9 @@
 return {
 	descriptions = {
-		-- this key should match the set ("object type") of your object,
-		-- e.g. Voucher, Tarot, or the key of a modded consumable type
+
+
 		Joker = {
-			-- this should be the full key of your object, including any prefixes
+
 			j_hnds_color_of_madness = {
 				name = "星之彩",
 				text = {
@@ -12,11 +12,8 @@ return {
 					"则将{C:attention}第一张{}计分卡",
 					"变成{C:attention}万能牌{}",
 				},
-				-- only needed when this object is locked by default
-				-- unlock = {
-				--'This is a condition',
-				--'for unlocking this card',
-				--},
+
+
 			},
 			j_hnds_occultist = {
 				name = "神秘学家",
@@ -140,7 +137,7 @@ return {
 					"{C:inactive}(当前为{X:mult,C:white}X#1#{C:inactive}倍率)",
 				},
 			},
-		
+
 
 			j_hnds_jack_in_the_box = {
 				name = "Jack-in-the-box",
@@ -337,7 +334,7 @@ return {
 					"额外抽{C:attention}2{}张牌",
 				},
 			},
-		
+
 
             hnds_jodiac_ranks_empty = {
                 name = "Scored Ranks",

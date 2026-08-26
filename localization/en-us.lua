@@ -322,7 +322,7 @@ local localization = {
 				name = "Jokestone",
 				text = {
 					"At the start of round,",
-					"draw up to {C:attention}#1#{} Enhanced", -- Using a var instead bc Dongtong from all in jest, also the var was already there
+					"draw up to {C:attention}#1#{} Enhanced",
 					"cards from your deck",
 				},
 				unlock = {
@@ -375,11 +375,10 @@ local localization = {
 			j_hnds_ms_fortune = {
 				name = "Ms. Fortune",
 				text = {
-					"Quadruples all",
-					"{C:attention}listed{} {C:green,E:1}probabilities{}",
-					"Set your money to {C:red}$0",
-					"when {C:attention}Blind{} is selected",
-					"{C:inactive}(e.x. {}{C:green}1 in 3{} {C:inactive}->{} {C:green}#1# in 3{}{C:inactive}){}",
+					"{C:red}Cursed{}",
+					"When obtained,",
+					"gains {C:money}$#1#{} of base",
+					"{C:attention}sell value{} this run",
 				},
 				unlock = {
 					"Fail a {C:green}probability{}",
@@ -579,7 +578,7 @@ local localization = {
                     "cards, otherwise, {C:mult}-#2#{} Mult",
                     "{C:inactive}(Currently {C:mult}#3#{} {C:inactive}Mult)",
                 },
-            
+
 			unlock = {
 				"Play {C:attention}10{} consecutive",
 				"hands with a scoring",
@@ -603,8 +602,8 @@ local localization = {
             j_hnds_headless_joker = {
                 name = "Headless Joker",
                 text = {
-                    "When you get this,",
-                    "add {C:attention}Jack of Lanterns{}",
+                    "When obtained, add",
+                    "{C:attention}Jack of Lanterns{}",
                     "to your deck",
                 },
             unlock = {
@@ -719,7 +718,8 @@ local localization = {
 				text = {
 					"{C:green}#1# in #2#{} chance to",
 					"gain {X:mult,C:white}X#3#{} Mult per",
-					"{C:hearts}Heart{} card scored",
+					"{C:hearts}Heart{} card scored,",
+					"reset each {C:attention}Ante{}",
 					"{C:inactive}(Currently {X:mult,C:white}X#4#{C:inactive} Mult)",
 				},
 			unlock = {
@@ -774,10 +774,10 @@ local localization = {
 			j_hnds_bizzare_joker = {
 				name = "Bizarre Joker",
 				text = {
-					"When you get this,",
+					"When obtained,",
 					"create a {C:red}Rare Joker{}",
 					"Remove it when you",
-					"lose {C:attention}Bizzare Joker{}",
+					"lose {C:attention}Bizarre Joker{}",
 				},
 				unlock = {
 					"Have all cards",
@@ -921,8 +921,8 @@ local localization = {
 			j_hnds_imposter = {
 				name = "Imposter",
 				text = {
-					"{C:attention}face cards{} count",
-					"as any rank",
+					"{C:attention}Face{} cards",
+					"count as any rank",
 					"for Joker effects",
 				},
 				unlock = {
@@ -1028,17 +1028,16 @@ local localization = {
 			j_hnds_creepy = {
 				name = "Creepy Joker",
 				text = {
-					"{X:mult,C:white}X#1#{} Mult",
-					"{C:green}#2# in #3#{} chance adjacent",
-					"Jokers become a copy of",
-					"this at end of round",
+					"{C:green}#1# in #2#{} chance",
+					"to steal face from",
+					"scored {C:attention}face{} cards",
 				},
 				unlock = {
 					"Have {C:attention}3{} copies of",
 					"the same Joker",
 				},
 			},
-		
+
 			j_hnds_jack_in_the_box = {
 				name = "Jack-in-the-Box",
 				text = {
@@ -1103,7 +1102,7 @@ local localization = {
 					"On Ante {C:attention}4{}, face",
 					"the {C:attention}Showdown Blind{}",
 					"Defeat it to open an",
-					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}", --might need to remove the E:1, hover tooltip doesnt seem to work with that
+					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}",
 				},
 				unlock = {
 					"Win a run with any",
@@ -1451,21 +1450,59 @@ local localization = {
             hnds_jack_of_lanterns_headless = {
                 name = "Jack of Lanterns",
                 text = {
-					"{C:chips}+50{} chips",
+                    "{X:mult,C:white}X3{} Mult",
                     "Removed when you",
                     "lose {C:attention}Headless Joker{}",
-					"Can be used as any",
-                    "rank or suit",
                 },
             },
 
 			hnds_jack_of_lanterns = {
                 name = "Jack of Lanterns",
                 text = {
+                    "{X:mult,C:white}X3{} Mult",
                     "Removed when you",
                     "lose {C:attention}Headless Joker{}",
-					"Can be used as any",
-                    "rank or suit",
+                },
+            },
+
+            hnds_jack_of_lanterns_card = {
+                name = "Jack of Lanterns",
+                text = {
+                    "{X:mult,C:white}X#1#{} Mult",
+                    "Removed when you",
+                    "lose {C:attention}Headless Joker{}",
+                },
+            },
+
+            hnds_jack_of_lanterns_removed_only = {
+                name = "Jack of Lanterns",
+                text = {
+                    "Removed when you",
+                    "lose {C:attention}Headless Joker{}",
+                },
+            },
+
+            hnds_faceless = {
+                name = "Faceless",
+                text = {
+                    "Copies abilities of",
+                    "{C:attention}card{} to the right",
+                },
+            },
+
+            hnds_faceless_card = {
+                name = "Faceless",
+                text = {
+                    "Copies abilities of",
+                    "{C:attention}card{} to the right",
+                },
+            },
+
+            hnds_fighting_spirit = {
+                name = "Fighting Spirit",
+                text = {
+                    "Removed when you",
+                    "lose {C:attention}Bizarre Joker{}",
                 },
             },
 
@@ -1485,6 +1522,11 @@ local localization = {
                     "cards in your full deck",
                     "{C:inactive}(Currently {C:attention}#3#{C:inactive})",
                 },
+            },
+
+            hnds_jigsaw_checklist = {
+                name = "Poker Hands",
+                text = {},
             },
 
             hnds_jigsaw_progress_empty = {
@@ -1747,7 +1789,7 @@ local localization = {
 					"{C:red}Cursed{} Joker cards"
 				}
 			},
-			-- Cursed Sticker
+
 			hnds_cursed_offer_title = {
 				text = {
 					"{C:green}Offer{}:",
@@ -1758,14 +1800,14 @@ local localization = {
 					"{C:red}Price{}:",
 				},
 			},
-			hnds_cursed = { -- Display in the Collection
+			hnds_cursed = {
 				name = "Cursed",
 				text = {
 					"Extra {C:green}power{} but",
 					"at what {C:red}cost{}?",
 				}
 			},
-			-- Cursed Offers Descriptions
+
 			offer_copy_random_tarot = {
 				text = {
 					"Creates a {C:tarot}Tarot{}",
@@ -1814,7 +1856,7 @@ local localization = {
 					"of this {C:attention}Joker{}",
 				},
 			},
-			-- Cursed Prices Descriptions
+
 			price_destroy_jokers = {
 				text = {
 					"Destroy your",
@@ -1862,7 +1904,7 @@ local localization = {
 					"size permanently",
 				},
 			},
-		
+
             hnds_jodiac_ranks_empty = {
                 name = "Scored Ranks",
                 text = {
@@ -2184,9 +2226,8 @@ local localization = {
 				name = "Obsidian Card",
 				text = {
 					"Permanently becomes",
-					"{C:dark_edition}Bound{} if scored in {C:attention}#1#{}",
-					"final hands of round",
-					"{C:inactive}(Currently {C:attention}#2#{}{C:inactive}/2)",
+					"{C:dark_edition}Bound{} when scored in",
+					"final hand of round",
 				},
 			},
 			m_hnds_obsidian_complete = {
@@ -2348,6 +2389,7 @@ local localization = {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_jigsaw_poker_hands = "Poker Hands",
 			k_hnds_be_not_afraid = "Holy trinity!",
 		k_hnds_spread = "Spread!",
 		k_hnds_war = "War!",
@@ -2385,7 +2427,7 @@ local localization = {
 			k_hnds_color_of_madness = "Madness!",
 			k_hnds_occultist = "Study!",
 			k_hnds_splashed = "Splashed!",
-			hnds_plus_q = "+1 ???", --this is for the cryptid digital hallucinations creation message with magic packs
+			hnds_plus_q = "+1 ???",
 			k_hnds_plus_tag = "+Tag",
 			k_hnds_magic_pack = "Magic Pack",
 			k_hnds_cursed_pack = "Cursed Pack",
@@ -2405,7 +2447,7 @@ local localization = {
 			k_hnds_creepy_7 = "the Baron...",
 			k_hnds_creepy_8 = "...who betrayed us",
 			k_hnds_wanted = "[Joker name]",
-			-- DEVIL BLIND ALIASES
+
 			hnds_devil_name_default = "The Devil",
 			hnds_devil_name_legion = "Legion",
 			hnds_devil_name_old_nick = "Old Nick",
@@ -2418,7 +2460,7 @@ local localization = {
 			hnds_devil_name_lucifer = "Lucifer",
 			hnds_devil_name_abaddon = "Abaddon",
 			hnds_devil_name_leviathan = "Leviathan",
-			-- CONFIG TAB LOCALIZATION
+
 			hnds_require_restart = "Requires restart",
 			hnds_config_StoneOcean = "Enable Stone Ocean hand",
 			hnds_config_vintage = "Enable Vintage edition",
@@ -2433,6 +2475,7 @@ local localization = {
 		},
 		labels = {
 			hnds_jevil_wild = "Jevil",
+			hnds_fighting_spirit = "Fighting Spirit",
 			hnds_exchange_draw = "Bound",
 			hnds_bound = "Bound",
 			hnds_vintage = "Vintage",
@@ -2476,8 +2519,7 @@ local localization = {
 	},
 }
 
--- Vanilla balance text must follow the restart-required config toggle. When
--- disabled, omit these entries so Balatro's original localization remains.
+
 local vanilla_tweaks_config = hnds_config
 	or (SMODS and SMODS.Mods and SMODS.Mods.HandsomeDevils and SMODS.Mods.HandsomeDevils.config)
 	or (SMODS and SMODS.current_mod and SMODS.current_mod.config)

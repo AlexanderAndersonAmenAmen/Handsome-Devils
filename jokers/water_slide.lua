@@ -24,14 +24,19 @@ SMODS.Joker {
     end,
 
     calculate = function(self, card, context)
-        -- pre_discard fires exactly once for the entire discarded selection and
-        -- exposes context.full_hand, unlike context.discard which fires once per
-        -- individual card. This guarantees one roll total even if several 8s are
-        -- discarded together.
+
+
         if context.pre_discard and not context.hook and not context.retrigger_joker then
             local has_eight = false
             for _, playing_card in ipairs(context.full_hand or {}) do
-                if playing_card and playing_card.get_id then
+
+
+                if HNDS.imposter_rank_match and HNDS.imposter_rank_match(playing_card, 8, context) then
+                    has_eight = true
+                    break
+                elseif playing_card and playing_card.get_id then
+
+
                     local ok, id = pcall(playing_card.get_id, playing_card)
                     if ok and id == 8 then
                         has_eight = true

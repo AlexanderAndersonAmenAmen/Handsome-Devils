@@ -1,3 +1,93 @@
+HNDS = HNDS or {}
+
+local BIZARRE_BANNED_KEYS = {
+    j_hnds_bizzare_joker = true,
+    j_hnds_ms_fortune = true,
+}
+
+local function hnds_bizarre_key_allowed(key)
+    return key and key ~= "UNAVAILABLE" and not BIZARRE_BANNED_KEYS[key]
+end
+
+SMODS.Sticker {
+    key = 'fighting_spirit',
+    atlas = 'Stickers',
+    pos = { x = 5, y = 4 },
+    badge_colour = (G.C and G.C.RED) or G.C.PURPLE,
+    rate = 0,
+    no_collection = true,
+    default_compat = true,
+    sets = { Joker = true },
+}
+
+local function hnds_bizarre_strip_child_stickers(child)
+    if not child then return end
+    child.ability = child.ability or {}
+
+    local keys = {
+        perishable = true,
+        eternal = true,
+        rental = true,
+    }
+    if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
+        for _, key in ipairs(SMODS.Sticker.obj_buffer) do keys[key] = true end
+    end
+    if type(child.stickers) == 'table' then
+        for key in pairs(child.stickers) do keys[key] = true end
+    end
+    if type(child.ability.stickers) == 'table' then
+        for key in pairs(child.ability.stickers) do keys[key] = true end
+    end
+
+
+    keys.hnds_fighting_spirit = nil
+    local any_removed = false
+    for key in pairs(keys) do
+        local present = child.ability[key]
+            or (child.stickers and child.stickers[key])
+            or (child.ability.stickers and child.ability.stickers[key])
+        if present then
+            any_removed = true
+            if child.remove_sticker then
+                pcall(child.remove_sticker, child, key)
+            end
+            if child.stickers then child.stickers[key] = nil end
+            child.ability[key] = nil
+            if child.ability.stickers then child.ability.stickers[key] = nil end
+        end
+    end
+
+    child.ability.perishable = nil
+    child.ability.eternal = nil
+    child.ability.rental = nil
+    child.ability.perish_tally = nil
+    if any_removed and child.set_sticker_display then
+        pcall(child.set_sticker_display, child)
+    end
+end
+
+
+HNDS.strip_bizarre_child_stickers = hnds_bizarre_strip_child_stickers
+
+local function hnds_bizarre_mark_child(child, owner_token)
+    if not child then return nil end
+    child.ability = child.ability or {}
+
+
+    hnds_bizarre_strip_child_stickers(child)
+    child.ability.hnds_bizarre_owner = owner_token
+
+    if not child.ability.hnds_fighting_spirit then
+        if child.add_sticker then
+            child:add_sticker('hnds_fighting_spirit', true)
+        else
+            child.ability.hnds_fighting_spirit = true
+        end
+    end
+    if child.set_sticker_display then pcall(child.set_sticker_display, child) end
+    return child
+end
+
 local function hnds_bizarre_rarity(center)
     local rarity = center and center.rarity
     if type(rarity) == "table" then rarity = rarity.id or rarity.key or rarity.name end
@@ -9,15 +99,14 @@ end
 local function hnds_bizarre_pool(rarity)
     local pool, seen = {}, {}
 
-    -- Prefer the live Steamodded pool so bans, unlocks and other pool rules are
-    -- respected. Fall back to registered rarity pools for compatibility.
+
     if get_current_pool then
         local ok, current = pcall(get_current_pool, "Joker", rarity, nil, "hnds_bizarre_spawn")
         if ok and type(current) == "table" then
             for _, entry in ipairs(current) do
                 local key = type(entry) == "table" and entry.key or entry
                 local center = key and G and G.P_CENTERS and G.P_CENTERS[key]
-                if key and key ~= "UNAVAILABLE" and key ~= "j_hnds_bizzare_joker"
+                if hnds_bizarre_key_allowed(key)
                     and center and hnds_bizarre_rarity(center) == rarity
                     and center.unlocked ~= false and not center.hidden and not seen[key]
                 then
@@ -35,7 +124,7 @@ local function hnds_bizarre_pool(rarity)
             local center = type(entry) == "table" and entry
                 or (G and G.P_CENTERS and G.P_CENTERS[entry])
             local key = center and center.key
-            if key and key ~= "j_hnds_bizzare_joker"
+            if hnds_bizarre_key_allowed(key)
                 and hnds_bizarre_rarity(center) == rarity
                 and center.unlocked ~= false and not center.hidden and not seen[key]
             then
@@ -85,12 +174,26 @@ local function hnds_bizarre_create_child(card)
     local owner_token = hnds_bizarre_owner_token(card)
     local existing = hnds_bizarre_find_child(owner_token)
     if existing then
-        extra.child_id = existing.sort_id or existing.ID
-        return existing
+        local existing_key = existing.config and existing.config.center and existing.config.center.key
+        if hnds_bizarre_key_allowed(existing_key) then
+            hnds_bizarre_mark_child(existing, owner_token)
+            extra.child_id = existing.sort_id or existing.ID
+            return existing
+        end
+
+
+        if SMODS and type(SMODS.destroy_cards) == "function" then
+            SMODS.destroy_cards(existing, { immediate = true, bypass_eternal = true })
+        elseif existing.start_dissolve then
+            existing:start_dissolve()
+        elseif existing.remove then
+            existing:remove()
+        end
+        extra.child_id = nil
     end
 
     extra.rolls = (tonumber(extra.rolls) or 0) + 1
-    -- Bizarre Joker only creates Rare Jokers. Never fall back to Uncommon.
+
     local rarity = 3
     local pool = hnds_bizarre_pool(rarity)
     if #pool == 0 then return nil end
@@ -105,10 +208,10 @@ local function hnds_bizarre_create_child(card)
         area = G.jokers,
         key = key,
         key_append = "hnds_bizarre_spawn",
+        no_edition = true,
     })
     if child then
-        child.ability = child.ability or {}
-        child.ability.hnds_bizarre_owner = owner_token
+        hnds_bizarre_mark_child(child, owner_token)
         extra.child_id = child.sort_id or child.ID
     end
     return child
@@ -121,8 +224,7 @@ local function hnds_bizarre_remove_child(card)
     local child = hnds_bizarre_find_child(extra.owner_token)
     if not child then return end
 
-    -- This is a linked temporary Joker, so losing Bizarre must remove it even
-    -- if another effect happened to make the child Eternal.
+
     if SMODS and type(SMODS.destroy_cards) == "function" then
         SMODS.destroy_cards(child, { immediate = true, bypass_eternal = true })
     elseif child.start_dissolve then
@@ -174,8 +276,7 @@ SMODS.Joker({
         extra.dismissed = false
         hnds_bizarre_owner_token(card)
 
-        -- Defer one tick so save/load reconstruction can restore an already
-        -- linked child before we decide whether a replacement must be created.
+
         if G and G.E_MANAGER and Event then
             G.E_MANAGER:add_event(Event({
                 trigger = "after",

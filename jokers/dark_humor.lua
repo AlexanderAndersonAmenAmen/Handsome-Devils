@@ -29,7 +29,7 @@ SMODS.Joker({
 				end
 			end
 			if #destructable_cards > 0 then
-				local target = pseudorandom_element(destructable_cards, "hnds_dark_humor") or {} --to stop vscode from screaming at me, the 'or' doesnt actually change anything
+				local target = pseudorandom_element(destructable_cards, "hnds_dark_humor") or {}
 				card.ability.extra.chips = card.ability.extra.chips
 					+ target:get_chip_bonus()
 					+ target:get_chip_h_bonus()

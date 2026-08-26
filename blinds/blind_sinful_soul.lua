@@ -1,9 +1,5 @@
--------------------------------------------------------------------
--- SINFUL SOUL
--- Ante 10 Showdown Boss Blind
--- +50% Blind size per full $5 of total Joker sell value at the
--- moment the Boss fight begins.
--------------------------------------------------------------------
+
+
 
 HNDS = HNDS or {}
 
@@ -39,8 +35,7 @@ local function apply_blind_size()
     if not (G and G.GAME and G.GAME.blind) then return end
     local blind = G.GAME.blind
 
-    -- set_blind can be recalculated after loading. Always restore the original
-    -- requirement first so the increase never compounds.
+
     if blind.hnds_sinful_soul_base_chips ~= nil then
         blind.chips = blind.hnds_sinful_soul_base_chips
     end

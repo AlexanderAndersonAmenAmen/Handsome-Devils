@@ -439,7 +439,7 @@ return {
 					"{C:attention}Ciega Jefe{}",
 				},
 			},
-			-- Bizzare Joker section
+
 			j_hnds_bizzare_joker = {
 				name = "Comodín Desalinado",
 				text = {
@@ -769,11 +769,15 @@ return {
 			j_hnds_creepy = {
 				name = "Comodín Perturbador",
 				text = {
-					"{X:mult,C:white}X#1#{} Multi",
-					"prob. de {C:green}#2# en #3#{} de convertir",
-					"comodines adyacentes al",
-					"final de la ronda",
-				}
+					"Prob. de {C:green}#1# en #2#{C:inactive} de robar",
+					"la figura de una {C:attention}carta de figura{}",
+					"anotada",
+				},
+				unlock = {
+					"Ten {C:attention}3{} copias del",
+					"mismo Comodín",
+				},
+			}
 			},
 			j_hnds_one_punchline_man = {
 				name = "One Punchline Man",
@@ -787,11 +791,15 @@ return {
 			j_hnds_jigsaw_joker = {
 				name = "Comodín Jigsaw",
 				text = {
-					"Tras jugar {C:attention}8{} manos",
-					"de póquer {C:attention}únicas{}, vende esta",
-					"carta para subir {C:attention}#3#{} niveles",
-					"todas las {C:attention}manos de póquer{}",
+					"Tras jugar {C:attention}8{} manos de póker",
+					"{C:attention}únicas{}, vende esta carta",
+					"para subir {C:attention}#3#{} niveles todas",
+					"las {C:attention}manos de póker{}",
 					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive}/8){}",
+				},
+				unlock = {
+					"Juega {C:attention}8{} manos de póker",
+					"{C:attention}únicas{} en una Apuesta {C:inactive}(#1#)",
 				},
 			},
 			j_hnds_dynamic_duos = {
@@ -819,7 +827,7 @@ return {
 					"{C:inactive,s:0.8}seleccionadas -> {C:attention,s:0.8}3{} {C:inactive,s:0.8}cartas)",
 				},
 			},
-		
+
 
 			j_hnds_jack_in_the_box = {
 				name = "Jack-in-the-box",
@@ -1573,7 +1581,7 @@ return {
 					"ganar el Pozo de {C:attention}Sangre{}",
 				}
 			},
-		
+
 
             hnds_jodiac_ranks_empty = {
                 name = "Scored Ranks",
@@ -1883,9 +1891,8 @@ return {
 				name = "Carta de Obsidiana",
 				text = {
 					"Se vuelve permanentemente",
-					"{C:dark_edition}Enlazada{} si anota en las",
-					"{C:attention}#1#{} últimas manos de la ronda",
-					"{C:inactive}(Actualmente {C:attention}#2#{}{C:inactive}/2)",
+					"{C:dark_edition}Enlazada{} al anotar en la",
+					"última mano de la ronda",
 				},
 			},
 			m_hnds_obsidian_complete = {
@@ -2077,7 +2084,7 @@ return {
 			k_hnds_color_of_madness = "¡Locura!",
 			k_hnds_occultist = "¡Estudio!",
 			k_hnds_splashed = "¡Salpicado!",
-			hnds_plus_q = "+1 ???", --this is for the cryptid digital hallucinations creation message with magic packs
+			hnds_plus_q = "+1 ???",
 			k_hnds_plus_tag = "+Etiqueta",
 			k_hnds_wanted = "[Nombre del comodín]",
 			k_hnds_magic_pack = "Paquete Mágico",
@@ -2096,7 +2103,7 @@ return {
 			k_hnds_creepy_6 = "volver a ver...",
 			k_hnds_creepy_7 = "al Barón...",
 			k_hnds_creepy_8 = "...que nos tracionó",
-			-- DEVIL BLIND ALIASES
+
 			hnds_devil_name_default = "El Diablo",
 			hnds_devil_name_legion = "La Legión",
 			hnds_devil_name_old_nick = "Él",
@@ -2109,7 +2116,7 @@ return {
 			hnds_devil_name_lucifer = "Lucifer",
 			hnds_devil_name_abaddon = "Abaddon",
 			hnds_devil_name_leviathan = "Levitán",
-			-- CONFIG TAB LOCALIZATION
+
 			hnds_require_restart = "Requiere reiniciar",
 			hnds_config_StoneOcean = "Habilitar mano de Stone Ocean",
 			hnds_config_vintage = "Habilitar edición Vintage",

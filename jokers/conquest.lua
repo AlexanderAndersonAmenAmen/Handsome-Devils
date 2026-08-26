@@ -1,7 +1,5 @@
--- Conquest
--- Gains X0.25 Mult for every Boss-equivalent Blind defeated this run.
--- Boss-equivalent means either the real Boss slot or a Small/Big Blind that
--- Handsome Devils' Blind Raiser explicitly upgraded into a Boss Blind.
+
+
 
 local function conquest_defeated_count()
     if HNDS and HNDS.conquest_bosses_defeated then

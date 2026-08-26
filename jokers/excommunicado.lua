@@ -1,5 +1,5 @@
--- Excommunicado: replaces Small and Big blinds with random boss blinds
--- Core logic is in lib/hooks.lua - this file just defines the joker
+
+
 
 SMODS.Joker({
 	key = "excommunicado",
@@ -28,7 +28,7 @@ SMODS.Joker({
 	end,
 	calculate = function(self, card, context)
 		if context.end_of_round and context.main_eval then
-			-- Add a random tag for beating any blind
+
 			add_tag(HNDS.poll_tag('hnds_excommunicado'))
 			card:juice_up()
 			return { message = localize('k_hnds_plus_tag'), colour = G.C.GREEN }

@@ -4,12 +4,11 @@ local function hnds_famine_xmult(card, context)
     local loss = tonumber(extra.loss_per_card) or 1
     local full_hand
     if context and context.full_hand then
-        -- Actual scoring always uses the hand that was played.
+
         full_hand = context.full_hand
     elseif G and G.hand and G.hand.highlighted then
-        -- Outside scoring, preview the value from the cards the player has
-        -- currently selected to play. This keeps the tooltip/JokerDisplay in
-        -- sync while building a hand: 0 selected = X6, 1 = X5, etc.
+
+
         full_hand = G.hand.highlighted
     elseif G and G.play and G.play.cards then
         full_hand = G.play.cards
