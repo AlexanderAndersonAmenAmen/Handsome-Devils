@@ -674,6 +674,7 @@ return {
 			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
 			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade button",
 			hnds_config_CustomMenu = "Enable custom main menu",
+			hnds_config_ChaosSuits = "Chaos suits",
 			k_hnds_water_slide_discard = "+1 Discard",
 			k_hnds_petrified = "Skamieniały!",
 			k_hnds_goldfish = "Złota ryba!",

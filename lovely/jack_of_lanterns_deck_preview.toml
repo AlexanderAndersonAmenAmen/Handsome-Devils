@@ -22,15 +22,41 @@ times = 1
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
 pattern = '''
+	for _, suit in ipairs(suit_map) do
+		if suit_counts[suit] == 0 and SMODS.Suits[suit].in_pool and not SMODS.add_to_pool(SMODS.Suits[suit],{rank=''}) then
+			hidden_suits[suit] = true
+		end
+	end
+'''
+position = "after"
+payload = '''
+	if HNDS and HNDS.hide_unused_abstract_preview_suits then
+		HNDS.hide_unused_abstract_preview_suits(hidden_suits, suit_counts)
+	end
+'''
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
 	for j = 1, #visible_suit do
 		if (j >= 1 and j <= 4) or num_suits <= 4 then
 '''
 position = "at"
 payload = '''
 	local hnds_suits_per_page = (HNDS and HNDS.prepare_jol_deck_preview and HNDS.prepare_jol_deck_preview(visible_suit)) or 4
-	local hnds_abstract_view = HNDS and ((HNDS.is_abstract_run_active and HNDS.is_abstract_run_active()) or (HNDS.has_abstract_suit_in_list and HNDS.has_abstract_suit_in_list(visible_suit))) or false
+	local hnds_abstract_view = HNDS and HNDS.is_abstract_deck and HNDS.is_abstract_deck() or false
+	local hnds_abstract_config_view = HNDS and HNDS.is_abstract_config_view_active and HNDS.is_abstract_config_view_active(visible_suit) or false
 	for j = 1, #visible_suit do
-		if not hnds_abstract_view and ((j >= 1 and j <= hnds_suits_per_page) or num_suits <= hnds_suits_per_page) then
+		local hnds_show_suit
+		if HNDS and HNDS.abstract_view_should_render_initial_suit then
+			hnds_show_suit = HNDS.abstract_view_should_render_initial_suit(visible_suit[j], j, num_suits, hnds_suits_per_page, visible_suit)
+		else
+			hnds_show_suit = (j >= 1 and j <= hnds_suits_per_page) or num_suits <= hnds_suits_per_page
+		end
+		if hnds_show_suit then
 '''
 match_indent = false
 times = 1
@@ -45,11 +71,13 @@ pattern = '''
 position = "before"
 payload = '''
 	if hnds_abstract_view and HNDS and HNDS.append_abstract_view_deck_rows then
-		HNDS.append_abstract_view_deck_rows(deck_tables, SUITS, unplayed_only)
+		HNDS.append_abstract_view_deck_rows(deck_tables, SUITS, unplayed_only or view_deck_unplayed_only)
+	elseif hnds_abstract_config_page and HNDS and HNDS.append_abstract_config_view_deck_rows then
+		HNDS.append_abstract_config_view_deck_rows(deck_tables, SUITS, unplayed_only or view_deck_unplayed_only, visible_suit, args and args.cycle_config and args.cycle_config.current_option)
 	end
 '''
 match_indent = false
-times = 1
+times = 2
 
 [[patches]]
 [patches.pattern]
@@ -67,10 +95,17 @@ times = 1
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
-pattern = '''while i <= math.min(4, #visible_suit) do'''
+pattern = '''
+	while i <= math.min(4, #visible_suit) do
+		if not hidden_suits[visible_suit[i]] then
+'''
 position = "at"
-payload = '''while i <= math.min(hnds_abstract_view and #visible_suit or hnds_suits_per_page, #visible_suit) do'''
-match_indent = true
+payload = '''
+	local hnds_initial_suit_limit = hnds_abstract_view and #visible_suit or (hnds_abstract_config_view and #visible_suit or math.min(hnds_suits_per_page, #visible_suit))
+	while i <= hnds_initial_suit_limit do
+		if not hidden_suits[visible_suit[i]] and not (hnds_abstract_config_view and HNDS and HNDS.is_abstract_suit_key and HNDS.is_abstract_suit_key(visible_suit[i])) then
+'''
+match_indent = false
 times = 1
 
 [[patches]]
@@ -78,7 +113,7 @@ times = 1
 target = '=[SMODS _ "src/overrides.lua"]'
 pattern = '''#visible_suit > 4 and {n = G.UIT.R'''
 position = "at"
-payload = '''(not (HNDS and HNDS.has_abstract_suit_in_list and HNDS.has_abstract_suit_in_list(visible_suit)) and #visible_suit > hnds_suits_per_page) and {n = G.UIT.R'''
+payload = '''((HNDS and HNDS.abstract_view_show_page_cycle and HNDS.abstract_view_show_page_cycle(visible_suit, hnds_suits_per_page)) or (not HNDS and #visible_suit > hnds_suits_per_page)) and {n = G.UIT.R'''
 match_indent = true
 times = 1
 
@@ -92,8 +127,31 @@ pattern = '''
 position = "at"
 payload = '''
 	local hnds_suits_per_page = (HNDS and HNDS.prepare_jol_deck_preview and HNDS.prepare_jol_deck_preview(visible_suit)) or 4
+	local hnds_abstract_config_view = HNDS and HNDS.is_abstract_config_view_active and HNDS.is_abstract_config_view_active(visible_suit) or false
+	local hnds_abstract_config_page = HNDS and HNDS.abstract_config_page_two and HNDS.abstract_config_page_two(visible_suit, args.cycle_config.current_option) or false
 	local deck_start_index = (args.cycle_config.current_option - 1) * hnds_suits_per_page + 1
 	local deck_end_index = math.min(deck_start_index + hnds_suits_per_page - 1, #visible_suit)
+	if hnds_abstract_config_view then
+		if hnds_abstract_config_page then
+			deck_start_index, deck_end_index = 1, 0
+		else
+			deck_start_index, deck_end_index = 1, #visible_suit
+		end
+	end
+'''
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+		if SUITS[visible_suit[j]][1] and (j >= deck_start_index and j <= deck_end_index) then
+'''
+position = "at"
+payload = '''
+		if SUITS[visible_suit[j]][1] and (j >= deck_start_index and j <= deck_end_index)
+			and not (hnds_abstract_config_view and HNDS and HNDS.is_abstract_suit_key and HNDS.is_abstract_suit_key(visible_suit[j])) then
 '''
 match_indent = false
 times = 1
@@ -111,6 +169,7 @@ pattern = '''
 position = "after"
 payload = '''
 	if HNDS and HNDS.hide_jol_suit_tally then HNDS.hide_jol_suit_tally(hidden_suits) end
+	if HNDS and HNDS.hide_unused_abstract_preview_suits then HNDS.hide_unused_abstract_preview_suits(hidden_suits, suit_tallies) end
 '''
 match_indent = false
 times = 2
@@ -147,7 +206,6 @@ payload = '''
 match_indent = false
 times = 1
 
-
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
@@ -165,7 +223,7 @@ payload = '''
 	end
 '''
 match_indent = false
-times = 1
+times = 2
 
 [[patches]]
 [patches.pattern]
@@ -180,7 +238,6 @@ payload = '''
 match_indent = false
 times = 1
 
-
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
@@ -192,10 +249,51 @@ position = "at"
 payload = '''
 G.FUNCS.your_suits_page = function(args)
 	if not args or not args.cycle_config then return end
-	if HNDS and HNDS.is_abstract_run_active and HNDS.is_abstract_run_active() then return end
+	if HNDS and HNDS.is_abstract_deck and HNDS.is_abstract_deck() then return end
 '''
 match_indent = false
 times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+	while i <= deck_end_index do
+		if not hidden_suits[visible_suit[i]] then
+'''
+position = "at"
+payload = '''
+	while i <= deck_end_index do
+		if not hidden_suits[visible_suit[i]] and not (hnds_abstract_config_view and HNDS and HNDS.is_abstract_suit_key and HNDS.is_abstract_suit_key(visible_suit[i])) then
+'''
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+	for _, v in ipairs(temp_list) do
+		local n = {n = G.UIT.R, config = {align = "cm", minh = 0.05, padding = 0.05}, nodes = v}
+		table.insert(tally_ui, n)
+	end
+
+	local suit_options = {}
+'''
+position = "at"
+payload = '''
+	for _, v in ipairs(temp_list) do
+		local n = {n = G.UIT.R, config = {align = "cm", minh = 0.05, padding = 0.05}, nodes = v}
+		table.insert(tally_ui, n)
+	end
+	if hnds_abstract_config_page and HNDS and HNDS.append_abstract_config_tally_rows then
+		HNDS.append_abstract_config_tally_rows(tally_ui, suit_tallies, mod_suit_tallies, flip_col, visible_suit, args.cycle_config.current_option)
+	end
+
+	local suit_options = {}
+'''
+match_indent = false
+times = 2
 
 [[patches]]
 [patches.pattern]
@@ -205,10 +303,11 @@ pattern = '''
 '''
 position = "at"
 payload = '''
-	for i = 1, (hnds_abstract_view and 1 or math.ceil(#visible_suit / hnds_suits_per_page)) do
+	local hnds_page_count = (HNDS and HNDS.abstract_view_page_count and HNDS.abstract_view_page_count(visible_suit, hnds_suits_per_page)) or math.ceil(#visible_suit / hnds_suits_per_page)
+	for i = 1, hnds_page_count do
 '''
 match_indent = false
-times = 1
+times = 2
 
 [[patches]]
 [patches.pattern]
@@ -220,10 +319,10 @@ pattern = '''
 position = "at"
 payload = '''
 		table.insert(suit_options,
-			localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(hnds_abstract_view and 1 or math.ceil(#visible_suit / hnds_suits_per_page)))
+			localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(hnds_page_count))
 '''
 match_indent = false
-times = 1
+times = 2
 
 [[patches]]
 [patches.pattern]

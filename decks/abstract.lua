@@ -16,13 +16,9 @@ HNDS.ABSTRACT_SUITS = ABSTRACT_SUIT
 
 local function abstract_suit_pool_enabled(args)
     if args and args.initial_deck then return false end
-    return G ~= nil
-        and G.STAGES ~= nil
-        and G.STAGE == G.STAGES.RUN
-        and G.GAME ~= nil
-        and G.GAME.modifiers ~= nil
-        and G.GAME.modifiers.hnds_abstract_deck == true
-        or false
+    if not (G and G.STAGES and G.STAGE == G.STAGES.RUN and G.GAME) then return false end
+    if hnds_config and hnds_config.enableChaosSuits == true then return true end
+    return G.GAME.modifiers ~= nil and G.GAME.modifiers.hnds_abstract_deck == true or false
 end
 
 HNDS.abstract_suit_pool_enabled = abstract_suit_pool_enabled
@@ -608,6 +604,198 @@ end
 local ABSTRACT_SUIT_SET = {}
 for _, suit_key in pairs(ABSTRACT_SUIT) do ABSTRACT_SUIT_SET[suit_key] = true end
 
+
+local CHAOS_TAROTS = {
+    c_sun = {
+        vanilla = 'Hearts',
+        suits = { 'Hearts', ABSTRACT_SUIT.rubies, ABSTRACT_SUIT.flowers },
+        pos = { x = 4, y = 2 },
+        seed = 'hnds_chaos_tarot_sun',
+    },
+    c_star = {
+        vanilla = 'Diamonds',
+        suits = { 'Diamonds', ABSTRACT_SUIT.rubies, ABSTRACT_SUIT.bananas, ABSTRACT_SUIT.smiles },
+        pos = { x = 0, y = 3 },
+        seed = 'hnds_chaos_tarot_star',
+    },
+    c_moon = {
+        vanilla = 'Clubs',
+        suits = { 'Clubs', ABSTRACT_SUIT.petals, ABSTRACT_SUIT.free_parking_spots },
+        pos = { x = 3, y = 2 },
+        seed = 'hnds_chaos_tarot_moon',
+    },
+    c_world = {
+        vanilla = 'Spades',
+        suits = { 'Spades', ABSTRACT_SUIT.petals, ABSTRACT_SUIT.beans, ABSTRACT_SUIT.wraiths },
+        pos = { x = 2, y = 2 },
+        seed = 'hnds_chaos_tarot_world',
+    },
+}
+
+HNDS.CHAOS_TAROTS = CHAOS_TAROTS
+
+local function chaos_tarots_enabled()
+    return abstract_suit_pool_enabled({ source = 'hnds_chaos_tarot' })
+end
+
+HNDS.chaos_tarots_enabled = chaos_tarots_enabled
+
+local function chaos_tarot_definition(card_or_center)
+    local center = card_or_center
+    if card_or_center and card_or_center.config and card_or_center.config.center then
+        center = card_or_center.config.center
+    end
+    local key = center and center.key
+    return key and CHAOS_TAROTS[key] or nil, key
+end
+
+local function chaos_tarot_valid_target(def, target)
+    if not (def and target) then return false end
+    for _, suit in ipairs(def.suits) do
+        if suit == target then return true end
+    end
+    return false
+end
+
+local function chaos_tarot_roll_target(def)
+    if not def then return nil end
+    if type(pseudorandom_element) == 'function' and type(pseudoseed) == 'function' then
+        return pseudorandom_element(def.suits, pseudoseed(def.seed))
+    end
+    return def.suits[math.random(#def.suits)]
+end
+
+local function chaos_tarot_detach_consumeable(card, center, target)
+    if not (card and card.ability and center and center.config) then return end
+    local config = {}
+    for k, v in pairs(center.config) do config[k] = v end
+    config.suit_conv = target
+    card.ability.consumeable = config
+end
+
+local function chaos_tarot_refresh_ability(card, reroll)
+    local def = chaos_tarot_definition(card)
+    if not def or not card.ability then return end
+    if chaos_tarots_enabled() then
+        local target = card.ability.hnds_chaos_tarot_suit or card.hnds_chaos_tarot_suit
+        if reroll or not chaos_tarot_valid_target(def, target) then
+            target = chaos_tarot_roll_target(def)
+        end
+        card.hnds_chaos_tarot_suit = target
+        card.ability.hnds_chaos_tarot_suit = target
+        chaos_tarot_detach_consumeable(card, card.config and card.config.center, target)
+    else
+        card.hnds_chaos_tarot_suit = nil
+        card.ability.hnds_chaos_tarot_suit = nil
+        chaos_tarot_detach_consumeable(card, card.config and card.config.center, def.vanilla)
+    end
+end
+
+local function chaos_tarot_sprite_pos_available(atlas, pos)
+    if not (atlas and pos) then return false end
+    local image = atlas.image
+    if image and type(image.getDimensions) == 'function' then
+        local width, height = image:getDimensions()
+        if width and height and width > 0 and height > 0 then
+            local scale = math.max(1, math.floor(width / 426 + 0.5))
+            local columns = math.floor(width / (71 * scale))
+            local rows = math.floor(height / (95 * scale))
+            return pos.x >= 0 and pos.x < columns and pos.y >= 0 and pos.y < rows
+        end
+    end
+    return pos.x >= 0 and pos.x < 6 and pos.y >= 0 and pos.y < 4
+end
+
+local function chaos_tarot_apply_sprite(card)
+    local def = chaos_tarot_definition(card)
+    if not (def and card and card.children and card.children.center) then return end
+    if not chaos_tarots_enabled() then return end
+    local atlas = G and G.ASSET_ATLAS and (G.ASSET_ATLAS.hnds_Consumables or G.ASSET_ATLAS.Consumables)
+    if not chaos_tarot_sprite_pos_available(atlas, def.pos) then return end
+    card.children.center.atlas = atlas
+    if card.children.center.set_sprite_pos then
+        card.children.center:set_sprite_pos(def.pos)
+    end
+end
+
+local function chaos_tarot_loc_vars(center, card)
+    local def = chaos_tarot_definition(center)
+    if not def then return {} end
+    local target = def.vanilla
+    if chaos_tarots_enabled() and card and card.ability then
+        target = card.ability.hnds_chaos_tarot_suit or target
+    end
+    local max_highlighted = center.config and center.config.max_highlighted or 3
+    local suit_name = localize(target, 'suits_plural')
+    local colour = G and G.C and G.C.SUITS and G.C.SUITS[target] or nil
+    colour = colour or (G and G.C and (G.C.FILTER or G.C.ATTENTION or G.C.WHITE)) or { 1, 1, 1, 1 }
+    return { vars = { max_highlighted, suit_name, colours = { colour } } }
+end
+
+if Card and type(Card.change_suit) == 'function' and not HNDS._abstract_change_suit_hook then
+    HNDS._abstract_change_suit_hook = true
+    local abstract_change_suit_ref = Card.change_suit
+    function Card:change_suit(new_suit, ...)
+        if ABSTRACT_SUIT_SET[new_suit] and SMODS and type(SMODS.change_base) == 'function' then
+            SMODS.change_base(self, new_suit, nil)
+            if G and G.GAME and G.GAME.blind and G.GAME.blind.debuff_card then
+                G.GAME.blind:debuff_card(self)
+            end
+            return
+        end
+        return abstract_change_suit_ref(self, new_suit, ...)
+    end
+end
+
+if SMODS and SMODS.Consumable and type(SMODS.Consumable.take_ownership) == 'function'
+    and not HNDS._chaos_tarot_ownership
+then
+    HNDS._chaos_tarot_ownership = true
+    local ownership_keys = { 'sun', 'star', 'moon', 'world' }
+    for _, short_key in ipairs(ownership_keys) do
+        SMODS.Consumable:take_ownership(short_key, {
+            set_ability = function(self, card, initial, delay_sprites)
+                local reroll = chaos_tarots_enabled() and not chaos_tarot_valid_target(chaos_tarot_definition(self), card.hnds_chaos_tarot_suit)
+                chaos_tarot_refresh_ability(card, reroll)
+            end,
+            loc_vars = function(self, info_queue, card)
+                return chaos_tarot_loc_vars(self, card)
+            end,
+            set_sprites = function(self, card, front)
+                chaos_tarot_apply_sprite(card)
+                card.hnds_chaos_tarot_visual = chaos_tarots_enabled()
+            end,
+            load = function(self, card, card_table, other_card)
+                chaos_tarot_refresh_ability(card, false)
+                chaos_tarot_apply_sprite(card)
+                card.hnds_chaos_tarot_visual = chaos_tarots_enabled()
+            end,
+            update = function(self, card, dt)
+                local active = chaos_tarots_enabled()
+                if card.hnds_chaos_tarot_visual ~= active then
+                    chaos_tarot_refresh_ability(card, active)
+                    card.hnds_chaos_tarot_visual = active
+                    if card.set_sprites and card.config and card.config.center then
+                        card:set_sprites(card.config.center)
+                    end
+                    card.ability_UIBox_table = nil
+                    if card.config then
+                        card.config.h_popup = nil
+                        card.config.h_popup_config = nil
+                    end
+                elseif active and card.ability and not chaos_tarot_valid_target(chaos_tarot_definition(self), card.ability.hnds_chaos_tarot_suit) then
+                    chaos_tarot_refresh_ability(card, true)
+                    card.ability_UIBox_table = nil
+                    if card.config then
+                        card.config.h_popup = nil
+                        card.config.h_popup_config = nil
+                    end
+                end
+            end,
+        }, true)
+    end
+end
+
 function HNDS.has_abstract_suit_in_list(list)
     if type(list) ~= 'table' then return false end
     for _, suit in ipairs(list) do
@@ -760,6 +948,61 @@ function HNDS.is_abstract_preview_active()
     return selected_abstract_back() or abstract_cards_present()
 end
 
+function HNDS.is_abstract_config_view_active(list)
+    if selected_abstract_back() then return false end
+    if not (hnds_config and hnds_config.enableChaosSuits == true) then return false end
+    if type(list) == 'table' and HNDS.has_abstract_suit_in_list(list) then return true end
+    return abstract_cards_present()
+end
+
+function HNDS.is_abstract_suit_key(suit_key)
+    return ABSTRACT_SUIT_SET[suit_key] == true
+end
+
+function HNDS.abstract_view_should_render_initial_suit(suit_key, index, num_suits, suits_per_page, visible_suit)
+    if selected_abstract_back() then return false end
+    if HNDS.is_abstract_config_view_active(visible_suit) then
+        return not ABSTRACT_SUIT_SET[suit_key]
+    end
+    suits_per_page = suits_per_page or 4
+    return (index >= 1 and index <= suits_per_page) or num_suits <= suits_per_page
+end
+
+function HNDS.abstract_view_page_count(visible_suit, suits_per_page)
+    if selected_abstract_back() then return 1 end
+    if HNDS.is_abstract_config_view_active(visible_suit) then return 2 end
+    suits_per_page = suits_per_page or 4
+    return math.max(1, math.ceil(#(visible_suit or {}) / suits_per_page))
+end
+
+function HNDS.abstract_view_show_page_cycle(visible_suit, suits_per_page)
+    if selected_abstract_back() then return false end
+    if HNDS.is_abstract_config_view_active(visible_suit) then return true end
+    suits_per_page = suits_per_page or 4
+    return type(visible_suit) == 'table' and #visible_suit > suits_per_page
+end
+
+function HNDS.abstract_config_page_two(visible_suit, current_option)
+    return current_option == 2 and HNDS.is_abstract_config_view_active(visible_suit)
+end
+
+local function abstract_deck_owns_suit(suit_key)
+    if not (G and type(G.playing_cards) == 'table') then return false end
+    for _, card in ipairs(G.playing_cards) do
+        if card and card.base and card.base.suit == suit_key then return true end
+    end
+    return false
+end
+
+function HNDS.hide_unused_abstract_preview_suits(hidden_suits, suit_tallies)
+    if selected_abstract_back() or type(hidden_suits) ~= 'table' then return end
+    for suit_key in pairs(ABSTRACT_SUIT_SET) do
+        if not abstract_deck_owns_suit(suit_key) then
+            hidden_suits[suit_key] = true
+        end
+    end
+end
+
 local function poll_abstract_first_shop_standard_pack()
     if not (G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Booster) then return nil end
     local choices = {}
@@ -846,20 +1089,35 @@ function HNDS.abstract_force_first_shop_standard()
     }))
 end
 
-local abstract_preview_suit_order = {
-    'Hearts', 'Clubs', 'Spades', 'Diamonds',
-    ABSTRACT_SUIT.smiles, ABSTRACT_SUIT.wraiths, ABSTRACT_SUIT.free_parking_spots, ABSTRACT_SUIT.bananas, ABSTRACT_SUIT.beans,
-    ABSTRACT_SUIT.flowers, ABSTRACT_SUIT.rubies, ABSTRACT_SUIT.petals, ABSTRACT_SUIT.dices,
+local abstract_vanilla_suit_order = { 'Hearts', 'Clubs', 'Spades', 'Diamonds' }
+local abstract_custom_suit_order = {
+    ABSTRACT_SUIT.smiles, ABSTRACT_SUIT.bananas, ABSTRACT_SUIT.dices,
+    ABSTRACT_SUIT.rubies, ABSTRACT_SUIT.flowers, ABSTRACT_SUIT.petals,
+    ABSTRACT_SUIT.free_parking_spots, ABSTRACT_SUIT.wraiths, ABSTRACT_SUIT.beans,
 }
 
 local function reorder_abstract_suits(list)
     if type(list) ~= 'table' then return end
+    local original = {}
     local present = {}
-    for _, suit in ipairs(list) do present[suit] = true end
-    for i = #list, 1, -1 do list[i] = nil end
-    for _, suit in ipairs(abstract_preview_suit_order) do
-        if present[suit] then list[#list + 1] = suit end
+    for _, suit in ipairs(list) do
+        original[#original + 1] = suit
+        present[suit] = true
     end
+    for i = #list, 1, -1 do list[i] = nil end
+    local added = {}
+    local function add(suit)
+        if present[suit] and not added[suit] then
+            list[#list + 1] = suit
+            added[suit] = true
+        end
+    end
+    for _, suit in ipairs(abstract_vanilla_suit_order) do add(suit) end
+    for _, suit in ipairs(original) do
+        if not ABSTRACT_SUIT_SET[suit] then add(suit) end
+    end
+    for _, suit in ipairs(abstract_custom_suit_order) do add(suit) end
+    for _, suit in ipairs(original) do add(suit) end
 end
 
 function HNDS.prepare_abstract_full_preview_suit_map(suit_map)
@@ -899,7 +1157,7 @@ end
 if type(create_option_cycle) == 'function' and not HNDS._abstract_view_deck_page_cycle_hook then
     local hnds_create_option_cycle_ref = create_option_cycle
     function create_option_cycle(args)
-        if args and args.opt_callback == 'your_suits_page' and abstract_suit_pool_enabled() then
+        if args and args.opt_callback == 'your_suits_page' and selected_abstract_back() then
             return { n = G.UIT.R, config = { align = 'cm', minh = 0, minw = 0, padding = 0 }, nodes = {} }
         end
         return hnds_create_option_cycle_ref(args)
@@ -914,9 +1172,16 @@ local preview_groups = {
     { ABSTRACT_SUIT.free_parking_spots, ABSTRACT_SUIT.wraiths, ABSTRACT_SUIT.beans },
 }
 
-function HNDS.append_abstract_view_deck_rows(deck_tables, suit_cards, unplayed_only)
-    if not HNDS.is_abstract_preview_active() or type(deck_tables) ~= 'table' or type(suit_cards) ~= 'table' then return false end
-    for _, group in ipairs(preview_groups) do
+local abstract_config_preview_groups = {
+    { ABSTRACT_SUIT.smiles, ABSTRACT_SUIT.bananas, ABSTRACT_SUIT.dices },
+    { ABSTRACT_SUIT.rubies, ABSTRACT_SUIT.flowers, ABSTRACT_SUIT.petals },
+    { ABSTRACT_SUIT.free_parking_spots, ABSTRACT_SUIT.wraiths, ABSTRACT_SUIT.beans },
+}
+
+local function append_abstract_card_rows(deck_tables, suit_cards, unplayed_only, groups)
+    if type(deck_tables) ~= 'table' or type(suit_cards) ~= 'table' then return false end
+    local before = #deck_tables
+    for _, group in ipairs(groups) do
         local cards = {}
         for _, suit_key in ipairs(group) do
             local source = suit_cards[suit_key]
@@ -955,7 +1220,45 @@ function HNDS.append_abstract_view_deck_rows(deck_tables, suit_cards, unplayed_o
             end
         end
     end
-    return #deck_tables > 0
+    return #deck_tables > before
+end
+
+function HNDS.append_abstract_view_deck_rows(deck_tables, suit_cards, unplayed_only)
+    if not selected_abstract_back() then return false end
+    return append_abstract_card_rows(deck_tables, suit_cards, unplayed_only, preview_groups)
+end
+
+function HNDS.append_abstract_config_view_deck_rows(deck_tables, suit_cards, unplayed_only, visible_suit, current_option)
+    if not HNDS.abstract_config_page_two(visible_suit, current_option) then return false end
+    return append_abstract_card_rows(deck_tables, suit_cards, unplayed_only, abstract_config_preview_groups)
+end
+
+function HNDS.append_abstract_config_tally_rows(tally_ui, suit_tallies, mod_suit_tallies, flip_col, visible_suit, current_option)
+    if not HNDS.abstract_config_page_two(visible_suit, current_option) then return false end
+    if type(tally_ui) ~= 'table' or type(suit_tallies) ~= 'table' or type(mod_suit_tallies) ~= 'table' then return false end
+    if type(tally_sprite) ~= 'function' then return false end
+    local added = false
+    for _, group in ipairs(abstract_config_preview_groups) do
+        local nodes = {}
+        for _, suit_key in ipairs(group) do
+            if (suit_tallies[suit_key] or 0) > 0 and SMODS and SMODS.Suits and SMODS.Suits[suit_key] then
+                nodes[#nodes + 1] = tally_sprite(
+                    SMODS.Suits[suit_key].ui_pos,
+                    {
+                        { string = '' .. (suit_tallies[suit_key] or 0), colour = flip_col },
+                        { string = '' .. (mod_suit_tallies[suit_key] or 0), colour = G.C.BLUE }
+                    },
+                    { localize(suit_key, 'suits_plural') },
+                    suit_key
+                )
+            end
+        end
+        if #nodes > 0 then
+            tally_ui[#tally_ui + 1] = { n = G.UIT.R, config = { align = 'cm', minh = 0.05, padding = 0.05 }, nodes = nodes }
+            added = true
+        end
+    end
+    return added
 end
 
 SMODS.Back {

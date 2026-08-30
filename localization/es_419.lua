@@ -1590,6 +1590,7 @@ return {
 			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
 			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade button",
 			hnds_config_CustomMenu = "Habilitar menú principal personalizado",
+			hnds_config_ChaosSuits = "Chaos suits",
 			k_hnds_water_slide_discard = "+1 Discard",
 		},
 		labels = {

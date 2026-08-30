@@ -537,6 +537,7 @@ SMODS.current_mod.config_tab = function()
 			config_toggle_row(localize("hnds_config_VanillaTweaks"), "enableVanillaTweaks", localize("hnds_require_restart")),
 			config_toggle_row(localize("hnds_config_BlindUpgradeButton"), "enableBlindUpgradeButton", localize("hnds_require_restart")),
 			config_toggle_row(localize("hnds_config_CustomMenu"), "enableCustomMenu", localize("hnds_require_restart")),
+			config_toggle_row(localize("hnds_config_ChaosSuits"), "enableChaosSuits"),
 		},
 	}
 end

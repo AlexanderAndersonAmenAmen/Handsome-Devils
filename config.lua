@@ -8,6 +8,7 @@ local configDefinition = {
 	["enableVanillaTweaks"] = true,
 	["enableBlindUpgradeButton"] = true,
 	["enableCustomMenu"] = true,
+	["enableChaosSuits"] = false,
 }
 
 return configDefinition
