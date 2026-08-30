@@ -217,6 +217,34 @@ local function all_registered_centers_discovered(set_name)
     return total > 0 and discovered >= total
 end
 
+local CHAOS_UNLOCK_IGNORED = {
+    b_hnds_abstract = true,
+    j_hnds_fun_pilled = true,
+    j_hnds_cursed_doll = true,
+    j_hnds_error = true,
+    j_hnds_handicap_placard = true,
+}
+
+local function is_handsome_devils_center(key)
+    return type(key) == "string" and string.find(key, "_hnds_", 1, true) ~= nil
+end
+
+function HNDS.all_other_unlocks_complete()
+    local centers = G and G.P_CENTERS
+    if type(centers) ~= "table" then return false end
+
+    local found = false
+    for key, center in pairs(centers) do
+        if is_handsome_devils_center(key) and not CHAOS_UNLOCK_IGNORED[key] then
+            found = true
+            if type(center) == "table" and center.unlocked == false then
+                return false
+            end
+        end
+    end
+    return found
+end
+
 local function current_stake_at_least(target_key)
     if not (G and G.GAME) then return false end
 
@@ -256,7 +284,9 @@ function HNDS.unlock_progress(key)
 end
 
 function HNDS.unlock_condition_met(key, args)
-    if key == "premiumdeck" then
+    if key == "abstract" then
+        return HNDS.all_other_unlocks_complete()
+    elseif key == "premiumdeck" then
         return HNDS.collection_discovered_count() >= TARGETS.premiumdeck
     elseif key == "crystal" then
         return args and args.type == "win" and current_stake_at_least("stake_gold")
@@ -1482,6 +1512,7 @@ end
 
 local LOCK_SCHEMA = 7
 local DESTROY_STAT_SCHEMA = 1
+local CHAOS_UNLOCK_SCHEMA = 1
 local CONDITION_LOCK_KEYS = {
     "b_hnds_premiumdeck", "b_hnds_crystal", "b_hnds_conjuring",
     "b_hnds_cursed", "b_hnds_circus", "b_hnds_ol_reliable",
@@ -1516,7 +1547,8 @@ function HNDS.apply_unlock_state_migration()
 
     local lock_schema_current = tonumber(profile.hnds_unlock_schema) == LOCK_SCHEMA
     local destroy_schema_current = tonumber(profile.hnds_destroy_stat_schema) == DESTROY_STAT_SCHEMA
-    if lock_schema_current and destroy_schema_current then return end
+    local chaos_unlock_schema_current = tonumber(profile.hnds_chaos_unlock_schema) == CHAOS_UNLOCK_SCHEMA
+    if lock_schema_current and destroy_schema_current and chaos_unlock_schema_current then return end
 
     if not (G and G.P_CENTERS
         and G.P_CENTERS.b_hnds_premiumdeck
@@ -1549,6 +1581,12 @@ function HNDS.apply_unlock_state_migration()
         profile.career_stats = profile.career_stats or {}
         profile.career_stats[STAT_CARDS_DESTROYED] = 0
         profile.hnds_destroy_stat_schema = DESTROY_STAT_SCHEMA
+    end
+
+    if not chaos_unlock_schema_current then
+        local chaos = G.P_CENTERS.b_hnds_abstract
+        if chaos then chaos.unlocked = false end
+        profile.hnds_chaos_unlock_schema = CHAOS_UNLOCK_SCHEMA
     end
 
     if G and type(G.save_progress) == "function" then G:save_progress() end

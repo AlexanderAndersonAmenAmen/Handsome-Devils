@@ -1082,6 +1082,19 @@ local localization = {
 			},
 },
 		Back = {
+			b_hnds_abstract = {
+				name = "Chaos Deck",
+				text = {
+					"Start the run with",
+					"{C:attention}9{} extra suits, each",
+					"has {C:hnds_chaos_abilities}unique abilities{}",
+					"{C:attention}4{} cards per suit",
+				},
+				unlock = {
+					"Unlock everything else",
+					"in Handsome Devils!",
+				},
+			},
 			b_hnds_premiumdeck = {
 				name = "Premium Deck",
 				text = {
@@ -1446,6 +1459,84 @@ local localization = {
 		},
 
         Other = {
+
+            hnds_suit_smiles = {
+                name = "Smiles",
+                text = {
+                    "{C:mult}+1{} Mult per",
+                    "{C:attention}face{} card in",
+                    "played hand",
+                },
+            },
+
+            hnds_suit_wraiths = {
+                name = "Wraiths",
+                text = {
+                    "Debuffs cards",
+					"{C:attention}adjacent{} to this"
+                },
+            },
+
+            hnds_suit_dices = {
+                name = "Dice",
+                text = {
+                    "Increases all",
+					"{C:green}probabilities{} for",
+                    "played hand by {C:attention}1{}",
+                },
+            },
+
+            hnds_suit_flowers = {
+                name = "Flowers",
+                text = {
+                    "Permanently gains",
+					"{C:chips}+3{} Chips per unique",
+                    "{C:attention}suit{} in played hand",
+                },
+            },
+
+            hnds_suit_rubies = {
+                name = "Rubies",
+                text = {
+                    "If selected for a hand,",
+                    "{C:hearts}Hearts{}/{C:diamonds}Diamonds{}/{C:hnds_rubies}Rubies{}",
+                    "count as the same suit",
+                },
+            },
+
+            hnds_suit_petals = {
+                name = "Leaves",
+                text = {
+                    "If selected for a hand,",
+                    "{C:spades}Spades{}/{C:clubs}Clubs{}/{C:hnds_petals}Leaves{}",
+                    "count as the same suit",
+                },
+            },
+
+            hnds_suit_bananas = {
+                name = "Bananas",
+                text = {
+                    "{C:mult}+3{} Mult",
+                    "{C:green}#1# in #2#{} chance to",
+                    "destroy card",
+                },
+            },
+
+            hnds_suit_beans = {
+                name = "Beans",
+                text = {
+                    "{C:attention}+1{} hand size",
+                },
+            },
+
+            hnds_suit_free_parking_spots = {
+                name = "Parking Spots",
+                text = {
+                    "{C:green}#1# in #2#{} chance to",
+                    "give {C:money}$1{} when a hand",
+                    "is played while held",
+                },
+            },
 
             hnds_jack_of_lanterns_headless = {
                 name = "Jack of Lanterns",
@@ -2073,10 +2164,10 @@ local localization = {
 			v_magic_trick = {
 				name = "Magic Trick",
 				text = {
-					"{C:attention}Playing cards{} can be",
-					"purchased from the",
-					"shop and may have",
-					"an {C:attention}Enhancement{}",
+					"{C:attention}Enhanced{}",
+					"{C:attention}playing cards{}",
+					"can be purchased",
+					"from the shop",
 				},
 			},
 			v_illusion = {
@@ -2506,9 +2597,27 @@ local localization = {
 		},
 		suits_singular = {
 			hnds_lanterns = "Lanterns",
+			hnds_smiles = "Smiles",
+			hnds_bananas = "Bananas",
+			hnds_dices = "Dice",
+			hnds_rubies = "Rubies",
+			hnds_flowers = "Flowers",
+			hnds_petals = "Leaves",
+			hnds_free_parking_spots = "Parking Spots",
+			hnds_wraiths = "Wraiths",
+			hnds_beans = "Beans",
 		},
 		suits_plural = {
 			hnds_lanterns = "Lanterns",
+			hnds_smiles = "Smiles",
+			hnds_bananas = "Bananas",
+			hnds_dices = "Dice",
+			hnds_rubies = "Rubies",
+			hnds_flowers = "Flowers",
+			hnds_petals = "Leaves",
+			hnds_free_parking_spots = "Parking Spots",
+			hnds_wraiths = "Wraiths",
+			hnds_beans = "Beans",
 		},
 		poker_hands = {
 			hnds_stone_ocean = "Stone Ocean",

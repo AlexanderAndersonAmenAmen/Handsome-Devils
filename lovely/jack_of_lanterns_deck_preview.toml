@@ -3,6 +3,20 @@ version = "1.0.0"
 dump_lua = true
 priority = 25
 
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+local rank_name_mapping = {}
+'''
+position = "before"
+payload = '''
+if HNDS and HNDS.prepare_abstract_full_preview_suit_map then
+    HNDS.prepare_abstract_full_preview_suit_map(suit_map)
+end
+'''
+match_indent = true
+times = 1
 
 [[patches]]
 [patches.pattern]
@@ -14,12 +28,59 @@ pattern = '''
 position = "at"
 payload = '''
 	local hnds_suits_per_page = (HNDS and HNDS.prepare_jol_deck_preview and HNDS.prepare_jol_deck_preview(visible_suit)) or 4
+	local hnds_abstract_view = HNDS and ((HNDS.is_abstract_run_active and HNDS.is_abstract_run_active()) or (HNDS.has_abstract_suit_in_list and HNDS.has_abstract_suit_in_list(visible_suit))) or false
 	for j = 1, #visible_suit do
-		if (j >= 1 and j <= hnds_suits_per_page) or num_suits <= hnds_suits_per_page then
+		if not hnds_abstract_view and ((j >= 1 and j <= hnds_suits_per_page) or num_suits <= hnds_suits_per_page) then
 '''
 match_indent = false
 times = 1
 
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+	if not next(deck_tables) then
+		local view_deck = CardArea(
+'''
+position = "before"
+payload = '''
+	if hnds_abstract_view and HNDS and HNDS.append_abstract_view_deck_rows then
+		HNDS.append_abstract_view_deck_rows(deck_tables, SUITS, unplayed_only)
+	end
+'''
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+	local suits_per_row = 2
+'''
+position = "at"
+payload = '''
+	local suits_per_row = hnds_abstract_view and 5 or 2
+'''
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''while i <= math.min(4, #visible_suit) do'''
+position = "at"
+payload = '''while i <= math.min(hnds_abstract_view and #visible_suit or hnds_suits_per_page, #visible_suit) do'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''#visible_suit > 4 and {n = G.UIT.R'''
+position = "at"
+payload = '''(not (HNDS and HNDS.has_abstract_suit_in_list and HNDS.has_abstract_suit_in_list(visible_suit)) and #visible_suit > hnds_suits_per_page) and {n = G.UIT.R'''
+match_indent = true
+times = 1
 
 [[patches]]
 [patches.pattern]
@@ -37,7 +98,6 @@ payload = '''
 match_indent = false
 times = 1
 
-
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
@@ -54,46 +114,6 @@ payload = '''
 '''
 match_indent = false
 times = 2
-
-
-[[patches]]
-[patches.pattern]
-target = '=[SMODS _ "src/overrides.lua"]'
-pattern = '''while i <= math.min(4, #visible_suit) do'''
-position = "at"
-payload = '''while i <= math.min(hnds_suits_per_page, #visible_suit) do'''
-match_indent = true
-times = 1
-
-
-[[patches]]
-[patches.pattern]
-target = '=[SMODS _ "src/overrides.lua"]'
-pattern = '''
-	for i = 1, math.ceil(#visible_suit / 4) do
-		table.insert(suit_options,
-			localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(math.ceil(#visible_suit / 4)))
-	end
-'''
-position = "at"
-payload = '''
-	for i = 1, math.ceil(#visible_suit / hnds_suits_per_page) do
-		table.insert(suit_options,
-			localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(math.ceil(#visible_suit / hnds_suits_per_page)))
-	end
-'''
-match_indent = false
-times = 2
-
-[[patches]]
-[patches.pattern]
-target = '=[SMODS _ "src/overrides.lua"]'
-pattern = '''#visible_suit > 4 and {n = G.UIT.R'''
-position = "at"
-payload = '''#visible_suit > hnds_suits_per_page and {n = G.UIT.R'''
-match_indent = true
-times = 1
-
 
 [[patches]]
 [patches.pattern]
@@ -123,6 +143,103 @@ payload = '''
 			local hnds_preview_rank = (HNDS and HNDS.jol_preview_rank_key and HNDS.jol_preview_rank_key(v)) or v.base.value
 			if hnds_preview_rank then rank_tallies[hnds_preview_rank] = (rank_tallies[hnds_preview_rank] or 0) + 1 end
 			if hnds_preview_rank and not v.debuff then mod_rank_tallies[hnds_preview_rank] = (mod_rank_tallies[hnds_preview_rank] or 0) + 1 end
+'''
+match_indent = false
+times = 1
+
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+	for j = 1, #suit_map do
+		if SUITS[suit_map[j]][1] then
+			table.insert(visible_suit, suit_map[j])
+		end
+	end
+'''
+position = "after"
+payload = '''
+	if HNDS and HNDS.prepare_abstract_view_suit_order then
+		HNDS.prepare_abstract_view_suit_order(visible_suit)
+	end
+'''
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+		if #n_nodes == suits_per_row then
+'''
+position = "at"
+payload = '''
+		if #n_nodes == (hnds_abstract_view and (#temp_list == 0 and 4 or #temp_list == 1 and 5 or 4) or suits_per_row) then
+'''
+match_indent = false
+times = 1
+
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+G.FUNCS.your_suits_page = function(args)
+	if not args or not args.cycle_config then return end
+'''
+position = "at"
+payload = '''
+G.FUNCS.your_suits_page = function(args)
+	if not args or not args.cycle_config then return end
+	if HNDS and HNDS.is_abstract_run_active and HNDS.is_abstract_run_active() then return end
+'''
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+	for i = 1, math.ceil(#visible_suit / 4) do
+'''
+position = "at"
+payload = '''
+	for i = 1, (hnds_abstract_view and 1 or math.ceil(#visible_suit / hnds_suits_per_page)) do
+'''
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+		table.insert(suit_options,
+			localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(math.ceil(#visible_suit / 4)))
+'''
+position = "at"
+payload = '''
+		table.insert(suit_options,
+			localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(hnds_abstract_view and 1 or math.ceil(#visible_suit / hnds_suits_per_page)))
+'''
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+			if v:is_suit(kk) then mod_suit_counts[kk] = mod_suit_counts[kk] + 1 end
+'''
+position = "at"
+payload = '''
+			local hnds_effective_suit
+			if HNDS and HNDS.abstract_deck_preview_is_suit then
+				hnds_effective_suit = HNDS.abstract_deck_preview_is_suit(v, kk)
+			else
+				hnds_effective_suit = v:is_suit(kk)
+			end
+			if hnds_effective_suit then mod_suit_counts[kk] = mod_suit_counts[kk] + 1 end
 '''
 match_indent = false
 times = 1

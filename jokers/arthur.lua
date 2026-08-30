@@ -1,5 +1,3 @@
-local ARTHUR_SUITS = { "Spades", "Hearts", "Clubs", "Diamonds" }
-
 local function arthur_suit(card)
     local extra = card and card.ability and card.ability.extra
     if type(extra) ~= "table" then return "Spades" end
@@ -9,9 +7,11 @@ end
 
 local function change_arthur_suit(card)
     local current = arthur_suit(card)
-    local choices = {}
-    for _, suit in ipairs(ARTHUR_SUITS) do
-        if suit ~= current then choices[#choices + 1] = suit end
+    local choices = HNDS.get_pollable_suit_keys and HNDS.get_pollable_suit_keys('hnds_arthur', current) or {}
+    if #choices == 0 then
+        for _, suit in ipairs({ 'Spades', 'Hearts', 'Clubs', 'Diamonds' }) do
+            if suit ~= current then choices[#choices + 1] = suit end
+        end
     end
     local seed = "hnds_arthur_suit_" .. tostring(card and card.sort_id or 0)
     card.ability.extra.suit = pseudorandom_element(choices, pseudoseed(seed)) or "Spades"

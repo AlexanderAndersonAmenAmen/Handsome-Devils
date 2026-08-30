@@ -671,6 +671,9 @@ SMODS.current_mod.calculate = function(self, context)
 
 
 	if context.starting_shop then
+		if HNDS.abstract_force_first_shop_standard then
+			HNDS.abstract_force_first_shop_standard()
+		end
 		if G.GAME.hnds_crystal_queued then
 			spawn_queued_booster('p_hnds_spectral_ultra')
 			G.GAME.hnds_crystal_queued = nil
@@ -761,7 +764,22 @@ SMODS.current_mod.calculate = function(self, context)
 		HNDS.complete_obsidian_final_hand()
 	end
 
-	return boss_stack_result
+	local abstract_result = HNDS.calculate_abstract_suits and HNDS.calculate_abstract_suits(context) or nil
+	if abstract_result and boss_stack_result and type(abstract_result) == 'table' and type(boss_stack_result) == 'table' then
+		local merged = {}
+		for key, value in pairs(boss_stack_result) do merged[key] = value end
+		for key, value in pairs(abstract_result) do
+			if type(value) == 'number' and type(merged[key]) == 'number'
+				and (key == 'mult' or key == 'chips' or key == 'dollars' or key == 'repetitions')
+			then
+				merged[key] = merged[key] + value
+			else
+				merged[key] = value
+			end
+		end
+		return merged
+	end
+	return abstract_result or boss_stack_result
 end
 
 SMODS.current_mod.optional_features = {
@@ -910,10 +928,11 @@ local files = {
 		list = {
 			"crystal",
 			"cursed",
-			"premiumdeck",
-			"conjuring",
 			"circus",
 			"ol_reliable",
+			"premiumdeck",
+			"conjuring",
+			"abstract",
 		},
 		directory = "decks/",
 	},
@@ -973,6 +992,22 @@ end
 
 SMODS.Gradient({key = "SEAL_EDITION", colours = { G.C.RED, G.C.BLUE, G.C.GOLD, G.C.PURPLE }, cycle = 7.5,})
 G.C.HNDS_SEAL_EDITION = SMODS.Gradients.hnds_SEAL_EDITION
+SMODS.Gradient({
+    key = "chaos_abilities",
+    colours = {
+        HEX('c9a500'),
+        HEX('9bb031'),
+        HEX('479d7a'),
+        HEX('ff5d9b'),
+        HEX('6CA2A6'),
+        HEX('7a73bb'),
+        HEX('4189e9'),
+        HEX('4f6367'),
+        HEX('6e8965'),
+    },
+    cycle = 2 * math.pi / 1.5,
+})
+G.C.HNDS_CHAOS_ABILITIES = SMODS.Gradients.hnds_chaos_abilities
 G.C.HNDS_CARCOSA = HEX('C9A227')
 G.C.hnds_carcosa = G.C.HNDS_CARCOSA
 
@@ -998,6 +1033,8 @@ SMODS.Atlas({ key = "Jokers",      path = "Jokers.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "JackOfLanterns", path = "JackOfLanterns.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "Faceless_opt1", path = "Faceless_opt1.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "Faceless_opt2", path = "Faceless_opt2.png", px = 71, py = 95 })
+SMODS.Atlas({ key = "SUITS", path = "SUITS.png", px = 71, py = 95 })
+SMODS.Atlas({ key = "SUITS_UI", path = "SUITS_UI.png", px = 18, py = 18 })
 SMODS.Atlas({ key = "Consumables", path = "THD.png",     px = 71, py = 95 })
 SMODS.Atlas({ key = "Vouchers",    path = "VHD.png",     px = 71, py = 95 })
 SMODS.Atlas({ key = "Extras",      path = "EHD.png",     px = 71, py = 95 })

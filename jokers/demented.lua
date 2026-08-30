@@ -17,8 +17,9 @@ SMODS.Joker({
     calculate = function(self, card, context)
         if (context.before or context.forcetrigger) and G.GAME.current_round and G.GAME.current_round.hands_played == 0 and G.hand and #G.hand.cards > 0 then
 
-            local valid_suits = {'H', 'D', 'S', 'C'}
-            local valid_ranks = {'2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'}
+            local valid_suits = HNDS.get_pollable_suit_keys and HNDS.get_pollable_suit_keys('hnds_demented') or {}
+            if #valid_suits == 0 then valid_suits = { 'Hearts', 'Diamonds', 'Spades', 'Clubs' } end
+            local valid_ranks = {'2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'}
 
             local current_blind = (G.GAME.blind and G.GAME.blind.config and G.GAME.blind.config.blind and G.GAME.blind.config.blind.key) or "blind"
             local round_modifier = tostring(G.GAME.round_resets.ante) .. '_' .. tostring(current_blind)
@@ -31,12 +32,9 @@ SMODS.Joker({
 
                 G.E_MANAGER:add_event(Event({
                     func = function()
-                        local card_key = target_suit .. '_' .. target_rank
-
-                        if G.P_CARDS[card_key] then
-                            target_card:set_base(G.P_CARDS[card_key])
+                        if SMODS and type(SMODS.change_base) == 'function' then
+                            SMODS.change_base(target_card, target_suit, target_rank)
                         end
-
                         target_card:juice_up()
                         return true
                     end

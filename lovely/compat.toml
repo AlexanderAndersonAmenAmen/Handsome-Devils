@@ -19,3 +19,11 @@ pattern = "bottle_randomise(new_cards[i])"
 position = "after"
 payload = "G._ortalab_bottle_rolling = nil"
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "engine/controller.lua"
+pattern = "G.debug_tools.alignment.offset.x = -4"
+position = "at"
+payload = "if G.debug_tools and G.debug_tools.alignment and G.debug_tools.alignment.offset then G.debug_tools.alignment.offset.x = -4 end"
+match_indent = true

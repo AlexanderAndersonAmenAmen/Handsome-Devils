@@ -244,12 +244,32 @@ then
     end
 end
 
-local function illusion_edition_options()
-    local options = { 'e_foil', 'e_holo', 'e_polychrome', 'e_negative' }
-    if G and G.P_CENTERS and G.P_CENTERS.e_hnds_vintage then
-        options[#options + 1] = 'e_hnds_vintage'
+local ILLUSION_EDITION_WEIGHTS = {
+    { key = 'e_foil', weight = 25 },
+    { key = 'e_holo', weight = 25 },
+    { key = 'e_hnds_vintage', weight = 20 },
+    { key = 'e_polychrome', weight = 15 },
+    { key = 'e_negative', weight = 15 },
+}
+
+local function poll_illusion_edition()
+    local available = {}
+    local total_weight = 0
+    for _, entry in ipairs(ILLUSION_EDITION_WEIGHTS) do
+        if G and G.P_CENTERS and G.P_CENTERS[entry.key] then
+            available[#available + 1] = entry
+            total_weight = total_weight + entry.weight
+        end
     end
-    return options
+    if total_weight <= 0 then return nil end
+
+    local roll = pseudorandom('hnds_illusion_edition_type') * total_weight
+    local cumulative = 0
+    for _, entry in ipairs(available) do
+        cumulative = cumulative + entry.weight
+        if roll < cumulative then return entry.key end
+    end
+    return available[#available] and available[#available].key or nil
 end
 
 local function repair_shop_playing_card_ui(card, has_illusion)
@@ -262,14 +282,15 @@ local function repair_shop_playing_card_ui(card, has_illusion)
             if not (card.area == G.shop_jokers and is_playing_card(card)) then return true end
 
 
-            if has_illusion and card.edition and not card.hnds_illusion_edition_repolled then
+            if has_illusion and not card.hnds_illusion_edition_repolled then
                 card.hnds_illusion_edition_repolled = true
-                local edition = SMODS.poll_edition({
-                    key = 'hnds_illusion_edition',
-                    guaranteed = true,
-                    options = illusion_edition_options(),
-                })
-                if edition then card:set_edition(edition, true, true) end
+                card:set_edition(nil, true, true)
+                if SMODS and type(SMODS.pseudorandom_probability) == 'function'
+                    and SMODS.pseudorandom_probability(card, 'hnds_illusion_edition', 2, 5)
+                then
+                    local edition = poll_illusion_edition()
+                    if edition then card:set_edition(edition, true, true) end
+                end
             end
 
             if card.set_cost then card:set_cost() end
@@ -299,11 +320,12 @@ local function modify_voucher_shop_playing_card(card)
     local has_illusion = used_voucher('v_illusion')
 
 
-    if not has_illusion and card.config and card.config.center
+    if card.config and card.config.center
         and card.config.center.key == 'c_base'
     then
         local enhancement = SMODS.poll_enhancement({
             key = 'hnds_magic_trick_enhancement',
+            guaranteed = true,
         })
         if enhancement then
             local center = type(enhancement) == 'string'
@@ -313,12 +335,13 @@ local function modify_voucher_shop_playing_card(card)
         end
     end
 
-    if has_illusion and not card.seal then
-
-
+    if has_illusion and not card.seal
+        and SMODS and type(SMODS.pseudorandom_probability) == 'function'
+        and SMODS.pseudorandom_probability(card, 'hnds_illusion_seal', 2, 5)
+    then
         local seal = SMODS.poll_seal({
-            key = 'hnds_illusion_seal',
-            mod = 10,
+            key = 'hnds_illusion_seal_type',
+            guaranteed = true,
         })
         if seal then card:set_seal(seal, true, true) end
     end
