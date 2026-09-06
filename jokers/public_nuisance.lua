@@ -38,6 +38,8 @@ local function hnds_public_nuisance_is_active()
     return false
 end
 
+HNDS.public_nuisance_is_active = hnds_public_nuisance_is_active
+
 
 function HNDS.public_nuisance_should_continue()
     if not (G and G.GAME and G.GAME.current_round and G.GAME.blind) then return false end

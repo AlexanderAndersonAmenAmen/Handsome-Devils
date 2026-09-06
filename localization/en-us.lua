@@ -422,12 +422,67 @@ local localization = {
 					"{C:inactive}(#1#)",
 				},
 			},
+			j_grim_jester = {
+				name = "Grim Jester",
+				text = {
+					"Cards with",
+					"{V:1}Spade{} and {V:2}Club{}",
+					"suit are always",
+					"drawn first"
+				},
+			},
+			j_hnds_error = {
+				name = "Joker.mld",
+				text = {
+					"When you",
+					"obtain a {C:attention}Joker{}",
+					"{C:green}#1# in #2#{} chance to",
+					"become its copy",
+				},
+			},
+			j_hnds_cursed_doll = {
+				name = "Cursed Doll",
+				text = {
+					"{C:green}#1# in #2#{} chance to",
+					"destroy a random card",
+					"in hand when you use",
+					"a {C:attention}consumable card{}",
+				},
+			},
+			j_hnds_fun_pilled = {
+				name = "Fun Pilled",
+				text = {
+					"After {C:attention}#2#{} rounds,",
+					"sell this card to",
+					"give adjacent Jokers",
+					"random {C:dark_edition}Editions{}",
+					"{C:inactive}(Currently #1#/#2#){}",
+				},
+			},
+			j_dark_pact = {
+				name = "Dark Pact",
+				text = {
+					"{C:green}#1# in #2#{} chance to use",
+					"a random {C:spectral}Spectral{} card",
+					"if played hand contains",
+					"a {C:attention}Three of a Kind 6s{}",
+				},
+			},
+			j_hnds_handicap_placard = {
+				name = "Handicap Placard",
+				text = {
+					"Debuffs Jokers to",
+					"the right and gives",
+					"{C:chips}+#1#{} Chips for each",
+					"{C:inactive}(Currently {C:chips}+#2#{C:inactive} Chips){}",
+				},
+			},
 			j_hnds_ancestor = {
 				name = "The Ancestor",
 				text = {
 					"First Joker each",
 					"shop becomes {C:red}Cursed{}",
-					"{C:green}#1# in 4{} chance to",
+					"{C:green}#1# in #2#{} chance to",
 					"ignore its {C:red}price{}",
 				},
 				unlock = {
@@ -798,21 +853,6 @@ local localization = {
 					"in a row in {C:attention}one hand{}",
 				},
 			},
-			j_hnds_jigsaw_joker = {
-				name = "Jigsaw",
-				text = {
-					"After playing {C:attention}8{} unique",
-					"poker hands, sell this",
-					"card to upgrade every",
-					"{C:attention}poker hand{} by {C:attention}#3#{} levels",
-					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/8){}",
-				},
-				unlock = {
-					"Play {C:attention}8 unique{}",
-					"poker hands",
-					"in one Ante {C:inactive}(#1#)",
-				},
-			},
 			hnds_jigsaw_progress_empty = {
 				name = "Played Poker Hands",
 				text = {
@@ -983,10 +1023,10 @@ local localization = {
 			j_hnds_demented = {
 				name = "Demented Joker",
 				text = {
-					"When {C:attention}first hand{} of",
-					"round is played, randomize",
-					"{C:attention}Ranks{} and {C:attention}Suits{} of all",
-					"cards held in hand",
+					"{C:hnds_chaos_abilities}+9{} base card suits",
+					"Swap {C:attention}suit{} of scored",
+					"cards if played hand",
+					"contains a {C:attention}Flush{}",
 				},
 				unlock = {
 					"Change {C:attention}Ranks{} or",
@@ -1007,13 +1047,13 @@ local localization = {
 					"{C:inactive}(#1#)",
 				},
 			},
-			j_hnds_sarmenti = {
-				name = "Sarmenti",
+			j_billy = {
+				name = "Billy",
 				text = {
-					"Randomize {C:dark_edition}Editions{} of",
-					"Jokers to the right if",
-					"played hand contains",
-					"a {C:attention}Four of a Kind{}",
+					"Jokers may appear",
+					"as {C:attention}puzzle pieces{} in shop",
+					"Remove this card after",
+					"you complete a {C:attention}puzzle{}",
 				}
 			},
 			j_hnds_arthur = {
@@ -1028,9 +1068,10 @@ local localization = {
 			j_hnds_creepy = {
 				name = "Creepy Joker",
 				text = {
-					"{C:green}#1# in #2#{} chance",
-					"to steal face from",
-					"scored {C:attention}face{} cards",
+					"When you use a",
+					"{C:attention}consumable card{}",
+					"on a {C:attention}face card{},",
+					"steal its face",
 				},
 				unlock = {
 					"Have {C:attention}3{} copies of",
@@ -1065,14 +1106,14 @@ local localization = {
 				"{C:attention}enhanced Aces{}",
 			},
 		},
-			j_hnds_jodiac = {
+			j_jodiac = {
 				name = "Jodiac",
 				text = {
-					"Gains {C:mult}+#1#{} Mult per",
-					"card with unique {C:attention}rank{}",
-					"you score, reset scored",
-					"ranks at end of Ante",
-					"{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult){}",
+					"After playing {C:attention}#2#{} unique",
+					"poker hands, sell this",
+					"card to upgrade every",
+					"{C:attention}poker hand{} by {C:attention}#3#{} levels",
+					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/#2#){}",
 				},
 			unlock = {
 			    "Score a card of",
@@ -1166,10 +1207,10 @@ local localization = {
 			b_hnds_cursed = {
 				name = "Cursed Deck",
 				text = {
-					"Defeat the {C:attention}first",
-					"{C:attention}Boss Blind{} to open",
-					"an {C:red}unskippable{}",
-					"{C:red,T:p_hnds_cursed_pack}Cursed Pack{}",
+					"{C:attention}+1{} slot for {C:attention}Booster Packs{}",
+					"but they are {C:red}unskippable{}",
+					"Open a {C:red,T:p_hnds_cursed_pack}Cursed Pack{} at",
+					"the start of Ante {C:attention}2{}",
 				},
 				unlock = {
 					"Win a run with any",
@@ -1472,8 +1513,10 @@ local localization = {
             hnds_suit_wraiths = {
                 name = "Wraiths",
                 text = {
-                    "Debuffs cards",
-					"{C:attention}adjacent{} to this"
+                    "Retrigger {C:attention}1{} time",
+                    "Debuffs {C:attention}adjacent{}",
+                    "cards with a",
+					"different suit"
                 },
             },
 
@@ -1532,16 +1575,17 @@ local localization = {
             hnds_suit_free_parking_spots = {
                 name = "Parking Spots",
                 text = {
-                    "{C:green}#1# in #2#{} chance to",
-                    "give {C:money}$1{} when a hand",
-                    "is played while held",
+                    "{C:green}#1# in #2#{} chance for",
+                    "{C:money}$1{} per hand played",
+                    "while this card",
+					"stays in hand"
                 },
             },
 
             hnds_jack_of_lanterns_headless = {
                 name = "Jack of Lanterns",
                 text = {
-                    "{X:mult,C:white}X3{} Mult",
+                    "{X:mult,C:white}X4{} Mult",
                     "Removed when you",
                     "lose {C:attention}Headless Joker{}",
                 },
@@ -1550,7 +1594,7 @@ local localization = {
 			hnds_jack_of_lanterns = {
                 name = "Jack of Lanterns",
                 text = {
-                    "{X:mult,C:white}X3{} Mult",
+                    "{X:mult,C:white}X4{} Mult",
                     "Removed when you",
                     "lose {C:attention}Headless Joker{}",
                 },
@@ -1597,6 +1641,16 @@ local localization = {
                 },
             },
 
+            hnds_puzzle_piece = {
+                name = "Puzzle Piece",
+                text = {
+                    "Debuffed in {C:attention}2{} {C:inactive}[#1#]{}",
+                    "rounds if incomplete,",
+                    "reset timer when you",
+                    "add another piece",
+                },
+            },
+
             hnds_jevil_wild = {
                 name = "Chaos! Chaos!",
                 text = {
@@ -1615,7 +1669,7 @@ local localization = {
                 },
             },
 
-            hnds_jigsaw_checklist = {
+            hnds_jodiac_checklist = {
                 name = "Poker Hands",
                 text = {},
             },
@@ -1894,8 +1948,8 @@ local localization = {
 			hnds_cursed = {
 				name = "Cursed",
 				text = {
-					"Extra {C:green}power{} but",
-					"at what {C:red}cost{}?",
+					"Extra {C:green}power{}",
+					"for a {C:red}price{}?",
 				}
 			},
 
@@ -2480,13 +2534,13 @@ local localization = {
 	},
 	misc = {
 		dictionary = {
-			k_hnds_jigsaw_poker_hands = "Poker Hands",
 			k_hnds_be_not_afraid = "Holy trinity!",
+			k_hnds_spaghettified = "Spaghettified!",
 		k_hnds_spread = "Spread!",
-		k_hnds_war = "War!",
-		k_hnds_war_changed = "Changed!",
+		k_hnds_war = "Fight!",
+		k_hnds_war_changed = "Rally!",
 		k_hnds_copied = "Copied!",
-		k_hnds_head_added = "Head added!",
+		k_hnds_head_added = "Head ahead!",
 			k_hnds_krusty_voucher_tag = "Voucher Tag",
 			k_hnds_krusty_voucher_tags = "Voucher Tags",
 			hnds_upgrade_blind = "Upgrade Blind",
@@ -2523,9 +2577,9 @@ local localization = {
 			k_hnds_magic_pack = "Magic Pack",
 			k_hnds_cursed_pack = "Cursed Pack",
 			hnds_cursed_pack = "Cursed Pack",
-			k_hnds_sarmenti_active = "active",
-			k_hnds_sarmenti_inactive = "inactive",
-			k_hnds_sarmenti_enhanced = "Enhanced!",
+			k_hnds_billy_active = "active",
+			k_hnds_billy_inactive = "inactive",
+			k_hnds_billy_enhanced = "Enhanced!",
 			k_hnds_free_reroll = "+1 Free Reroll",
 			k_hnds_arthurs_suit = " ",
 			k_hnds_enhancements = "Enhancements",

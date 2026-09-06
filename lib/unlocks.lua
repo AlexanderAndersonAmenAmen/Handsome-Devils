@@ -52,7 +52,6 @@ local TARGETS = {
     last_laugh = 150,
 
     coffee_break = 2,
-    jigsaw_joker = 8,
     most_wanted = 5,
     wait_what = 4,
 
@@ -106,8 +105,6 @@ local function run_state()
     state.round_serial = math.max(0, tonumber(state.round_serial) or 0)
     state.supersuit_flushes = state.supersuit_flushes or {Spades = false, Hearts = false, Clubs = false, Diamonds = false}
     state.coffee_break_skips = state.coffee_break_skips or {}
-    state.jigsaw_hands = state.jigsaw_hands or {}
-    state.jigsaw_count = math.max(0, tonumber(state.jigsaw_count) or 0)
     state.ecg_heart_round_streak = math.max(0, tonumber(state.ecg_heart_round_streak) or 0)
     state.ecg_run_heart_every_round = state.ecg_run_heart_every_round == true
     state.ecg_heart_round_current = state.ecg_heart_round_current == true
@@ -219,13 +216,17 @@ end
 
 local CHAOS_UNLOCK_IGNORED = {
     b_hnds_abstract = true,
-    j_hnds_fun_pilled = true,
-    j_hnds_cursed_doll = true,
-    j_hnds_error = true,
-    j_hnds_handicap_placard = true,
+}
+
+local HNDS_UNPREFIXED_CENTERS = {
+    j_billy = true,
+    j_jodiac = true,
+    j_grim_jester = true,
+    j_dark_pact = true,
 }
 
 local function is_handsome_devils_center(key)
+    if HNDS_UNPREFIXED_CENTERS[key] then return true end
     return type(key) == "string" and string.find(key, "_hnds_", 1, true) ~= nil
 end
 
@@ -560,11 +561,6 @@ local function coffee_break_complete(state)
 end
 
 local function reset_ante_tracking(state, ante)
-    if state.jigsaw_ante ~= ante then
-        state.jigsaw_ante = ante
-        state.jigsaw_hands = {}
-        state.jigsaw_count = 0
-    end
     if state.supersuit_ante ~= ante then
         state.supersuit_ante = ante
         state.supersuit_flushes = {Spades = false, Hearts = false, Clubs = false, Diamonds = false}
@@ -601,8 +597,7 @@ end
 function HNDS.joker_unlock_progress(key)
     local state = run_state()
 
-    if key == "jigsaw_joker" then return state and state.jigsaw_count or 0, TARGETS[key]
-    elseif key == "wait_what" then return HNDS.unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT), TARGETS[key]
+    if key == "wait_what" then return HNDS.unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT), TARGETS[key]
     elseif key == "jester_in_yellow" then return HNDS.unlock_career_stat(STAT_NEGATIVE_JOKERS), TARGETS[key]
     elseif key == "demented" then return HNDS.unlock_career_stat(STAT_CARD_IDENTITY_CHANGES), TARGETS[key]
     elseif key == "imposter" then return state and state.imposter_streak or 0, TARGETS[key]
@@ -676,7 +671,6 @@ function HNDS.joker_unlock_condition_met(key, args)
     end
 
     if key == "coffee_break" then return coffee_break_complete(state)
-    elseif key == "jigsaw_joker" then return state and state.jigsaw_count >= TARGETS[key] or false
     elseif key == "most_wanted" then return rare_joker_count() >= TARGETS[key]
     elseif key == "wait_what" then return HNDS.unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT) >= TARGETS[key]
     elseif key == "dark_humor" then return state and state.has_selected_blind and deck_size() > 0 and deck_size() <= 25 or false
@@ -896,7 +890,6 @@ function HNDS.track_unlock_context(context)
             changed = true
         end
 
-
         local ante = current_ante()
         if state.jodiac_ante ~= ante then
             state.jodiac_ante = ante
@@ -913,7 +906,6 @@ function HNDS.track_unlock_context(context)
             end
             changed = true
         end
-
     end
 
     if context.before and not context.blueprint then
@@ -1059,12 +1051,6 @@ function HNDS.track_unlock_context(context)
 
         local ante = current_ante()
         reset_ante_tracking(state, ante)
-
-        if context.scoring_name and not state.jigsaw_hands[context.scoring_name] then
-            state.jigsaw_hands[context.scoring_name] = true
-            state.jigsaw_count = state.jigsaw_count + 1
-            changed = true
-        end
 
         if context.scoring_name == "Flush" then
             local suit = current_flush_suit(context.scoring_hand or cards)
@@ -1526,9 +1512,9 @@ local JOKER_CONDITION_LOCK_KEYS = {
     "j_hnds_occultist", "j_hnds_clown_devil", "j_hnds_balloons", "j_hnds_creepy",
     "j_hnds_seismic_activity", "j_hnds_angry_mob", "j_hnds_supersuit", "j_hnds_jokes_aside",
     "j_hnds_jackpot", "j_hnds_banana_split", "j_hnds_dynamic_duos", "j_hnds_energized",
-    "j_hnds_last_laugh", "j_hnds_coffee_break", "j_hnds_jigsaw_joker",
+    "j_hnds_last_laugh", "j_hnds_coffee_break",
     "j_hnds_dallas", "j_hnds_hoxton", "j_hnds_wolf", "j_hnds_chains",
-    "j_hnds_ecg", "j_hnds_spaghettified_joker", "j_hnds_jodiac",
+    "j_hnds_ecg", "j_hnds_spaghettified_joker", "j_jodiac",
     "j_hnds_jack_in_the_box", "j_hnds_jevil", "j_hnds_headless_joker",
     "j_hnds_time_fcked_joker",
     "j_hnds_most_wanted", "j_hnds_wait_what", "j_hnds_dark_humor",
@@ -1538,7 +1524,7 @@ local JOKER_CONDITION_LOCK_KEYS = {
     "j_hnds_joker_reverse",
 }
 local LEGENDARY_LOCK_KEYS = {
-    "j_hnds_pennywise", "j_hnds_art", "j_hnds_krusty", "j_hnds_sarmenti", "j_hnds_arthur",
+    "j_hnds_pennywise", "j_hnds_art", "j_hnds_krusty", "j_billy", "j_hnds_arthur",
 }
 
 function HNDS.apply_unlock_state_migration()

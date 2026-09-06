@@ -20,22 +20,6 @@ SMODS.Joker {
 
         info_queue[#info_queue + 1] = { set = "Other", key = "hnds_soul", vars = {} }
 
-        if G and G.GAME and G.GAME.blind and HNDS and HNDS.get_blind_souls then
-            for _, soul in ipairs(HNDS.get_blind_souls(G.GAME.blind, "hnds_pennywise_preview") or {}) do
-
-
-                if type(soul) == "table" and soul.key then
-                    local preview_center = G and G.P_CENTERS and G.P_CENTERS[soul.key]
-                    if preview_center then
-
-
-                        info_queue[#info_queue + 1] = preview_center
-                    elseif G and G.P_CENTERS and G.P_CENTERS.j_joker then
-                        info_queue[#info_queue + 1] = G.P_CENTERS.j_joker
-                    end
-                end
-            end
-        end
         if G and G.P_CENTERS and G.P_CENTERS.e_negative then
             info_queue[#info_queue + 1] = G.P_CENTERS.e_negative
         end

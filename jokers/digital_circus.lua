@@ -8,7 +8,7 @@ local RARITY = {
 SMODS.Joker({
 	key = "digital_circus",
 	config = { extra = { max_rounds = 2, current_rounds = 0, current_rarity = 1 } },
-	rarity = 3,
+	rarity = 2,
 	loc_vars = function(self, info_queue, card)
 		local r = math.min(3, card.ability.extra.current_rarity)
 		return {

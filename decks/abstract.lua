@@ -18,6 +18,7 @@ local function abstract_suit_pool_enabled(args)
     if args and args.initial_deck then return false end
     if not (G and G.STAGES and G.STAGE == G.STAGES.RUN and G.GAME) then return false end
     if hnds_config and hnds_config.enableChaosSuits == true then return true end
+    if HNDS.demented_chaos_active and HNDS.demented_chaos_active() then return true end
     return G.GAME.modifiers ~= nil and G.GAME.modifiers.hnds_abstract_deck == true or false
 end
 
@@ -137,6 +138,13 @@ local function active_suit(card, suit_key)
 end
 
 local abstract_suit_bridge_runtime = nil
+local abstract_suit_bridge_cache = {
+    cards = setmetatable({}, { __mode = 'v' }),
+    suits = {},
+    debuffs = {},
+    no_suits = {},
+    state = nil,
+}
 
 local function abstract_has_no_suit(card)
     if HNDS.safe_has_no_suit then return HNDS.safe_has_no_suit(card) end
@@ -166,6 +174,43 @@ local function abstract_bridge_state(played)
     return state
 end
 
+local function abstract_cached_bridge_state(played)
+    played = played or {}
+    local cache = abstract_suit_bridge_cache
+    local unchanged = #cache.cards == #played
+    if unchanged then
+        for i, card in ipairs(played) do
+            local source = abstract_ability_source(card)
+            local suit = source and source.base and source.base.suit
+            local debuffed = card and card.debuff == true
+            local no_suit = abstract_has_no_suit(card)
+            if cache.cards[i] ~= card or cache.suits[i] ~= suit
+                or cache.debuffs[i] ~= debuffed or cache.no_suits[i] ~= no_suit
+            then
+                unchanged = false
+                break
+            end
+        end
+    end
+    if unchanged then return cache.state end
+
+    for i = #cache.cards, #played + 1, -1 do
+        cache.cards[i] = nil
+        cache.suits[i] = nil
+        cache.debuffs[i] = nil
+        cache.no_suits[i] = nil
+    end
+    for i, card in ipairs(played) do
+        local source = abstract_ability_source(card)
+        cache.cards[i] = card
+        cache.suits[i] = source and source.base and source.base.suit
+        cache.debuffs[i] = card and card.debuff == true
+        cache.no_suits[i] = abstract_has_no_suit(card)
+    end
+    cache.state = abstract_bridge_state(played)
+    return cache.state
+end
+
 local function abstract_bridge_matches(card, suit, first, second, trigger_suit)
     local source = abstract_ability_source(card)
     local printed = source and source.base and source.base.suit
@@ -175,10 +220,10 @@ end
 
 local function abstract_current_bridge_state()
     if G and G.play and type(G.play.cards) == 'table' and #G.play.cards > 0 then
-        return abstract_bridge_state(G.play.cards)
+        return abstract_cached_bridge_state(G.play.cards)
     end
     if G and G.hand and type(G.hand.highlighted) == 'table' and #G.hand.highlighted > 0 then
-        return abstract_bridge_state(G.hand.highlighted)
+        return abstract_cached_bridge_state(G.hand.highlighted)
     end
 end
 
@@ -202,10 +247,10 @@ if type(evaluate_poker_hand) == 'function' and not HNDS._abstract_evaluate_poker
     local abstract_evaluate_poker_hand_ref = evaluate_poker_hand
     function evaluate_poker_hand(hand, ...)
         local previous = abstract_suit_bridge_runtime
-        abstract_suit_bridge_runtime = abstract_bridge_state(hand)
-        local results = HNDS.pack(abstract_evaluate_poker_hand_ref(hand, ...))
+        abstract_suit_bridge_runtime = abstract_cached_bridge_state(hand)
+        local result = abstract_evaluate_poker_hand_ref(hand, ...)
         abstract_suit_bridge_runtime = previous
-        return unpack(results, 1, results.n)
+        return result
     end
 end
 
@@ -218,11 +263,12 @@ then
         local previous = abstract_suit_bridge_runtime
         local selected = select(1, ...)
         if type(selected) == 'table' then
-            abstract_suit_bridge_runtime = abstract_bridge_state(selected)
+            abstract_suit_bridge_runtime = abstract_cached_bridge_state(selected)
         end
-        local results = HNDS.pack(abstract_get_poker_hand_info_ref(...))
+        local text, loc_disp_text, poker_hands, scoring_hand, disp_text =
+            abstract_get_poker_hand_info_ref(...)
         abstract_suit_bridge_runtime = previous
-        return unpack(results, 1, results.n)
+        return text, loc_disp_text, poker_hands, scoring_hand, disp_text
     end
 end
 
@@ -234,7 +280,7 @@ then
     function G.FUNCS.evaluate_play(...)
         local previous = abstract_suit_bridge_runtime
         local played = G and G.play and G.play.cards or {}
-        abstract_suit_bridge_runtime = abstract_bridge_state(played)
+        abstract_suit_bridge_runtime = abstract_cached_bridge_state(played)
         local results = HNDS.pack(abstract_evaluate_play_ref(...))
         abstract_suit_bridge_runtime = previous
         return unpack(results, 1, results.n)
@@ -296,6 +342,12 @@ function HNDS.calculate_abstract_suits(context)
         end
     end
 
+    if context.repetition and context.cardarea == G.play and context.other_card
+        and active_suit(context.other_card, ABSTRACT_SUIT.wraiths)
+    then
+        return { repetitions = 1 }
+    end
+
     if context.individual and context.cardarea == G.play and context.other_card and not context.repetition then
         local card = context.other_card
 
@@ -354,7 +406,8 @@ function HNDS.calculate_abstract_suits(context)
         and SMODS and type(SMODS.pseudorandom_probability) == 'function'
         and SMODS.pseudorandom_probability(context.other_card, 'hnds_abstract_free_parking', 1, 2)
     then
-        return { dollars = 1 }
+        SMODS.calculate_effect({ dollars = 1 }, context.other_card)
+        return
     end
 end
 
@@ -371,42 +424,35 @@ local function abstract_recalc_debuff(card)
     SMODS.recalc_debuff(card)
 end
 
-local function abstract_card_id(card, fallback)
-    return tostring(card and (card.playing_card or card.sort_id or card.ID) or fallback)
-end
-
-local function abstract_area_signature(area)
-    if not (area and type(area.cards) == 'table') then return '' end
-    local parts = {}
-    for i, card in ipairs(area.cards) do
-        parts[i] = abstract_card_id(card, i)
-    end
-    return table.concat(parts, '|')
-end
-
 local function abstract_build_wraith_state(area)
     local state = abstract_wraith_state[area] or {}
     local adjacent = setmetatable({}, { __mode = 'k' })
+    local order = setmetatable({}, { __mode = 'v' })
     local cards = area and area.cards or {}
     local has_wraith = false
     for i, card in ipairs(cards) do
+        order[i] = card
         if base_suit(card, ABSTRACT_SUIT.wraiths) then has_wraith = true end
-        if base_suit(cards[i - 1], ABSTRACT_SUIT.wraiths) or base_suit(cards[i + 1], ABSTRACT_SUIT.wraiths) then
+        local beside_wraith = base_suit(cards[i - 1], ABSTRACT_SUIT.wraiths)
+            or base_suit(cards[i + 1], ABSTRACT_SUIT.wraiths)
+        if beside_wraith and not base_suit(card, ABSTRACT_SUIT.wraiths) then
             adjacent[card] = true
         end
     end
     state.adjacent = adjacent
     state.has_wraith = has_wraith
-    state.signature = has_wraith and abstract_area_signature(area) or ''
+    state.order = order
     abstract_wraith_state[area] = state
     return state
 end
 
-local function abstract_needs_order_tracking(area)
-    local state = abstract_wraith_state[area]
-    if state and state.has_wraith then return true end
-    for _, card in ipairs(area and area.cards or {}) do
-        if base_suit(card, ABSTRACT_SUIT.wraiths) then return true end
+local function abstract_wraith_order_changed(area, state)
+    if not (state and state.has_wraith) then return false end
+    local cards = area and area.cards or {}
+    local order = state.order or {}
+    if #cards ~= #order then return true end
+    for i, card in ipairs(cards) do
+        if order[i] ~= card then return true end
     end
     return false
 end
@@ -520,13 +566,13 @@ if CardArea and type(CardArea.align_cards) == 'function' and not HNDS._abstract_
     HNDS._abstract_area_align_hook = true
     local abstract_align_ref = CardArea.align_cards
     function CardArea:align_cards(...)
-        local results = HNDS.pack(abstract_align_ref(self, ...))
-        if self == (G and G.hand) and abstract_needs_order_tracking(self) then
+        local result = abstract_align_ref(self, ...)
+        if self == (G and G.hand) then
             local state = abstract_wraith_state[self]
-            local signature = abstract_area_signature(self)
-            if not state or state.signature ~= signature then schedule_abstract_area_refresh(self) end
+            if not state then state = abstract_build_wraith_state(self) end
+            if abstract_wraith_order_changed(self, state) then schedule_abstract_area_refresh(self) end
         end
-        return ((table and table.unpack) or unpack)(results, 1, results.n)
+        return result
     end
 end
 
@@ -940,17 +986,27 @@ local function abstract_cards_present()
     return false
 end
 
+local function chaos_joker_deck_display_active()
+    if not (G and G.GAME) then return false end
+    return HNDS.demented_chaos_active and HNDS.demented_chaos_active() or false
+end
+
 function HNDS.is_abstract_deck()
     return selected_abstract_back()
 end
 
 function HNDS.is_abstract_preview_active()
-    return selected_abstract_back() or abstract_cards_present()
+    return selected_abstract_back() or abstract_cards_present() or chaos_joker_deck_display_active()
 end
 
 function HNDS.is_abstract_config_view_active(list)
     if selected_abstract_back() then return false end
-    if not (hnds_config and hnds_config.enableChaosSuits == true) then return false end
+    -- A Demented/Chaos deck must use Steamodded's normal, live suit pages. The
+    -- special config page separates classic and chaos suits, which can hide the
+    -- actual replacement suits and leave empty classic rows behind.
+    if chaos_joker_deck_display_active() then return false end
+    local global_chaos = hnds_config and hnds_config.enableChaosSuits == true
+    if not global_chaos then return false end
     if type(list) == 'table' and HNDS.has_abstract_suit_in_list(list) then return true end
     return abstract_cards_present()
 end
@@ -996,8 +1052,21 @@ end
 
 function HNDS.hide_unused_abstract_preview_suits(hidden_suits, suit_tallies)
     if selected_abstract_back() or type(hidden_suits) ~= 'table' then return end
+
+    -- Steamodded deliberately keeps the four vanilla suit rows available even
+    -- at zero. While Demented enables Chaos suits, only rows represented in the
+    -- current tally belong in either deck-stat display.
+    if chaos_joker_deck_display_active() and type(suit_tallies) == 'table' then
+        for suit_key, count in pairs(suit_tallies) do
+            if (tonumber(count) or 0) <= 0 then hidden_suits[suit_key] = true end
+        end
+        return
+    end
+
     for suit_key in pairs(ABSTRACT_SUIT_SET) do
-        if not abstract_deck_owns_suit(suit_key) then
+        if (type(suit_tallies) == 'table' and (tonumber(suit_tallies[suit_key]) or 0) <= 0)
+            or not abstract_deck_owns_suit(suit_key)
+        then
             hidden_suits[suit_key] = true
         end
     end
@@ -1259,6 +1328,30 @@ function HNDS.append_abstract_config_tally_rows(tally_ui, suit_tallies, mod_suit
         end
     end
     return added
+end
+
+function HNDS.cleanup_abstract_runtime()
+    abstract_suit_bridge_runtime = nil
+    abstract_suit_bridge_cache.state = nil
+    for _, values in ipairs({
+        abstract_suit_bridge_cache.cards,
+        abstract_suit_bridge_cache.suits,
+        abstract_suit_bridge_cache.debuffs,
+        abstract_suit_bridge_cache.no_suits,
+    }) do
+        for key in pairs(values) do values[key] = nil end
+    end
+    abstract_wraith_state = setmetatable({}, { __mode = 'k' })
+    abstract_wraith_refresh_pending = setmetatable({}, { __mode = 'k' })
+end
+
+if Game and type(Game.main_menu) == 'function' and not Game._hnds_abstract_cleanup_wrapped then
+    Game._hnds_abstract_cleanup_wrapped = true
+    local abstract_main_menu_ref = Game.main_menu
+    function Game:main_menu(...)
+        HNDS.cleanup_abstract_runtime()
+        return abstract_main_menu_ref(self, ...)
+    end
 end
 
 SMODS.Back {

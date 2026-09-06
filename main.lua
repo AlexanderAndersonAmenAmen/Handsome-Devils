@@ -120,7 +120,7 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
         'j_hnds_pennywise',
         'j_hnds_art',
         'j_hnds_krusty',
-        'j_hnds_sarmenti',
+        'j_billy',
         'j_hnds_arthur',
     }
     local hnds_legendary_collection_lookup = {}
@@ -305,12 +305,7 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
             rows = { 4, 4 }
         elseif pools then
             if pool == pools.Joker then
-                local ok, result = pcall(hnds_legendary_joker_collection_UIBox, pool, args)
-                if ok and result then return result end
-                if sendDebugMessage and not ok then
-                    sendDebugMessage('Legendary collection layout fallback: '..tostring(result), 'HandsomeDevils')
-                end
-                return hnds_card_collection_UIBox(pool, rows, args)
+                rows = { 5, 5, 5 }
             elseif pool == pools.Seal then
                 rows = { 3, 3, 3 }
             elseif pool == pools.Edition then
@@ -602,6 +597,9 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.card_added and context.card and HNDS.ms_fortune_obtained then
 		HNDS.ms_fortune_obtained(context.card, false)
 	end
+	if context.card_added and context.card and HNDS.joker_mld_obtained then
+		HNDS.joker_mld_obtained(context.card)
+	end
 
 
 
@@ -813,16 +811,22 @@ local files = {
 			"chains",
 
 			"spaghettified_joker",
-			"ecg",
 			"jevil",
-			"jodiac",
+			"ecg",
+			"grim_jester",
 			"jack_in_the_box",
 
+			"error",
 			"water_slide",
+			"handicap_placard",
+			"fun_pilled",
+			"cursed_doll",
+
+			"dark_pact",
 			"be_not_afraid",
 			"time_fcked_joker",
 			"joker_reverse",
-			"jigsaw_joker",
+			"jodiac",
 
 			"banana_split",
 			"supersuit",
@@ -836,20 +840,20 @@ local files = {
 			"stone_mask",
 			"head_of_medusa",
 
-		    "deep_pockets",
-			"color_of_madness",
-			"dark_idol",
-			"perfectionist",
-			"one_punchline_man",
-
 			"conquest",
 			"plague",
 			"war",
 			"famine",
 			"death",
 
+		    "deep_pockets",
+			"color_of_madness",
+			"dark_idol",
+			"perfectionist",
+			"one_punchline_man",
+
 			"dark_humor",
-			"demented",
+			"digital_circus",
 			"ancestor",
 			"fregoli",
 			"ms_fortune",
@@ -861,7 +865,7 @@ local files = {
 			"last_laugh",
 
 			"walking_joke",
-			"digital_circus",
+			"demented",
 			"excommunicado",
 			"meme",
 			"handsome",
@@ -869,7 +873,7 @@ local files = {
 			"pennywise",
 			"art",
 			"krusty",
-			"sarmenti",
+			"billy",
 			"arthur",
 		},
 		directory = "jokers/",
@@ -1018,10 +1022,10 @@ SMODS.Sound({ key = "jokestone", path = "Jokestone_sfx.ogg", })
 SMODS.Sound({ key = "jiy_common_sfx", path = "JIY_common_sfx.ogg", })
 SMODS.Sound({ key = "jiy_superrare_sfx", path = "JIY_superrare_sfx.ogg", })
 SMODS.Sound({ key = "krusty_laugh", path = "krusty-the-clown-laughing-faded-in-0-5-out-1_a7FQtVJx.ogg", })
-SMODS.Sound({ key = "sarmenti_common_tune1", path = "Sarmenti_common_tune1.ogg", })
-SMODS.Sound({ key = "sarmenti_common_tune2", path = "Sarmenti_common_tune2.ogg", })
-SMODS.Sound({ key = "sarmenti_rare_tune1", path = "Sarmenti_rare_tune1.ogg", })
-SMODS.Sound({ key = "sarmenti_rare_tune2", path = "Sarmenti_rare_tune2.ogg", })
+SMODS.Sound({ key = "billy_common_tune1", path = "Billy_common_tune1.ogg", })
+SMODS.Sound({ key = "billy_common_tune2", path = "Billy_common_tune2.ogg", })
+SMODS.Sound({ key = "billy_rare_tune1", path = "Billy_rare_tune1.ogg", })
+SMODS.Sound({ key = "billy_rare_tune2", path = "Billy_rare_tune2.ogg", })
 SMODS.Sound({ key = "one_punchline_man", path = "voicy-one-punch-man_Eznpw2Sl-faded-in-0-5-out-1.ogg", })
 SMODS.Sound({ key = "wp_buy_inshop", path = "WP_buy_inshop.ogg", })
 SMODS.Sound({ key = "creepy_1", path = "Creepy_1.ogg", })
@@ -1041,6 +1045,7 @@ SMODS.Atlas({ key = "Vouchers",    path = "VHD.png",     px = 71, py = 95 })
 SMODS.Atlas({ key = "Extras",      path = "EHD.png",     px = 71, py = 95 })
 SMODS.Atlas({ key = "Stakes", path = "HDstakes.png", px = 29, py = 29 })
 SMODS.Atlas({ key = "Stickers", path = "HDstickers.png", px = 71, py = 95 })
+SMODS.Atlas({ key = "PuzzleUnderlay", path = "PuzzleUnderlay.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "hnds_sleeves", path = "HDS.png", px = 73, py = 95 })
 
 
@@ -1152,5 +1157,6 @@ assert(SMODS.load_file("lib/challenge_rules.lua"))()
 
 
 assert(SMODS.load_file("lib/time_fcked.lua"))()
+assert(SMODS.load_file("lib/billy_puzzle.lua"))()
 
 if HNDS.apply_unlock_state_migration then HNDS.apply_unlock_state_migration() end

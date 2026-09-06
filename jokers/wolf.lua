@@ -55,7 +55,11 @@ SMODS.Joker({
                 extra.mult = extra.mult + extra.mult_gain
 
                 return {
-                    message = localize("k_mult"),
+                    message = localize({
+                        type = "variable",
+                        key = "a_mult",
+                        vars = { extra.mult_gain },
+                    }),
                     colour = G.C.MULT,
                 }
             end

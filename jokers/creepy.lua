@@ -561,14 +561,12 @@ local function hnds_wrap_faceless_card_method(method_name, flag_name)
                 then
                     local native_xmult = HNDS.jack_of_lanterns_native_xmult
                         and HNDS.jack_of_lanterns_native_xmult(target)
-                    if native_xmult == 5 then
-                        packed[1] = 5
-                    elseif native_xmult == 3 then
+                    if type(native_xmult) == 'number' then
                         local value = packed[1]
                         if type(value) == 'number' and value ~= 0 then
-                            packed[1] = value * 3
+                            packed[1] = value + native_xmult
                         else
-                            packed[1] = 3
+                            packed[1] = native_xmult
                         end
                     end
                 end
@@ -973,6 +971,44 @@ if Card and type(Card.generate_UIBox_ability_table) == 'function' and not HNDS._
     end
 end
 
+
+local function hnds_creepy_snapshot_targets()
+    local snapshot = {}
+    local highlighted = G and G.hand and G.hand.highlighted
+    if type(highlighted) ~= 'table' then return snapshot end
+
+    for _, target in ipairs(highlighted) do
+        local eligible = false
+        if target and not target.removed and not target.REMOVED
+            and not target.debuff and not HNDS.is_faceless(target)
+            and type(target.is_face) == 'function'
+        then
+            local ok, is_face = pcall(target.is_face, target)
+            eligible = ok and is_face == true
+        end
+        snapshot[#snapshot + 1] = { card = target, eligible = eligible }
+    end
+    return snapshot
+end
+
+if Card and type(Card.use_consumeable) == 'function' and not HNDS._creepy_consumable_face_hook then
+    HNDS._creepy_consumable_face_hook = true
+    local use_consumeable_ref = Card.use_consumeable
+
+    function Card:use_consumeable(area, copier, ...)
+        local snapshot = hnds_creepy_snapshot_targets()
+        local previous_snapshot = HNDS._creepy_consumable_targets
+        HNDS._creepy_consumable_targets = snapshot
+        self.hnds_creepy_consumable_targets = snapshot
+        self.hnds_creepy_consumable_queued = nil
+
+        local results = HNDS.pack(pcall(use_consumeable_ref, self, area, copier, ...))
+        HNDS._creepy_consumable_targets = previous_snapshot
+        if not results[1] then error(results[2], 0) end
+        return ((table and table.unpack) or unpack)(results, 2, results.n)
+    end
+end
+
 SMODS.Joker({
     key = 'creepy',
     atlas = 'Jokers',
@@ -991,48 +1027,63 @@ SMODS.Joker({
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
-    config = { extra = { odds = 4 } },
     loc_vars = function(self, info_queue, card)
         if info_queue then
             info_queue[#info_queue + 1] = { set = 'Other', key = 'hnds_faceless' }
         end
-        local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, 'hnds_creepy')
-        return { vars = { numerator, denominator } }
+        return { vars = {} }
     end,
     calculate = function(self, card, context)
-        local target = context and context.other_card
-        if not (context and context.individual and context.cardarea == G.play and target)
-            or target.debuff or HNDS.is_faceless(target)
-            or not (target.is_face and target:is_face())
-        then
+        if not (context and context.using_consumeable) or context.retrigger_joker then return end
+
+        local source = context.consumeable or context.consumable
+        local snapshot = source and source.hnds_creepy_consumable_targets
+            or HNDS._creepy_consumable_targets
+        if type(snapshot) ~= 'table' or #snapshot == 0 then return end
+
+        if source and source.hnds_creepy_consumable_queued then return end
+        if source then source.hnds_creepy_consumable_queued = true end
+
+        local targets = {}
+        for _, entry in ipairs(snapshot) do
+            local target = entry.card
+            if entry.eligible and target and not target.removed and not target.REMOVED
+                and not HNDS.is_faceless(target)
+            then
+                targets[#targets + 1] = target
+            end
+        end
+        if #targets == 0 then
+            if source then source.hnds_creepy_consumable_queued = nil end
             return
         end
 
+        local function steal_faces_after_consumable()
+            for _, target in ipairs(targets) do
+                if target and not target.removed and not target.REMOVED and not HNDS.is_faceless(target) then
+                    if HNDS.apply_faceless(target) and target.juice_up then
+                        target:juice_up(0.35, 0.35)
+                    end
+                end
+            end
+            if source then
+                if source.hnds_creepy_consumable_targets == snapshot then
+                    source.hnds_creepy_consumable_targets = nil
+                end
+                source.hnds_creepy_consumable_queued = nil
+            end
+            return true
+        end
 
-        local identity = target.playing_card or target.sort_id or target.ID or 0
-        if SMODS.pseudorandom_probability(card, 'hnds_creepy', 1, card.ability.extra.odds,
-                'hnds_creepy_' .. tostring(identity))
-        then
-            target.hnds_creepy_pending_faceless = true
+        if G and G.E_MANAGER and Event then
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                delay = 0,
+                func = steal_faces_after_consumable,
+            }))
+        else
+            steal_faces_after_consumable()
         end
     end,
-    joker_display_def = function(JokerDisplay)
-        return {
-            text = {},
-            extra = {
-                {
-                    { text = '(' },
-                    { ref_table = 'card.joker_display_values', ref_value = 'odds' },
-                    { text = ')' },
-                },
-            },
-            calc_function = function(card)
-                card.joker_display_values.odds = localize {
-                    type = 'variable', key = 'jdis_odds',
-                    vars = { (G.GAME and G.GAME.probabilities.normal or 1), card.ability.extra.odds },
-                }
-            end,
-        }
-    end,
-    attributes = { 'chance', 'modify_card' },
+    attributes = { 'modify_card' },
 })

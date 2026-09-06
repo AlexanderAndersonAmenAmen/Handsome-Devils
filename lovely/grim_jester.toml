@@ -1,0 +1,20 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 40
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+            if card then
+                if from then card = from:remove_card(card) end
+'''
+position = "before"
+payload = '''
+            if from == G.deck and to == G.hand and HNDS and HNDS.grim_jester_next_card then
+                card = HNDS.grim_jester_next_card(from, discarded_only) or card
+            end
+'''
+match_indent = false
+times = 1

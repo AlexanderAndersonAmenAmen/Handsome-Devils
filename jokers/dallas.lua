@@ -58,7 +58,11 @@ SMODS.Joker({
             if SMODS.pseudorandom_probability(card, "hnds_dallas", 1, extra.odds) then
                 extra.xmult = extra.xmult + extra.xmult_gain
                 return {
-                    message = "X" .. extra.xmult_gain,
+                    message = localize({
+                        type = "variable",
+                        key = "a_xmult",
+                        vars = { extra.xmult_gain },
+                    }),
                     colour = G.C.MULT,
                 }
             end

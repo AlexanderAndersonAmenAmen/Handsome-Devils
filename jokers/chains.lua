@@ -55,7 +55,11 @@ SMODS.Joker({
                 extra.chips = extra.chips + extra.chips_gain
 
                 return {
-                    message = localize("k_chip"),
+                    message = localize({
+                        type = "variable",
+                        key = "a_chips",
+                        vars = { extra.chips_gain },
+                    }),
                     colour = G.C.CHIPS,
                 }
             end

@@ -1,5 +1,9 @@
 HNDS = HNDS or {}
 
+local function pack_results(...)
+    return { n = select('#', ...), ... }
+end
+
 local function shallow_copy(src)
     local out = {}
     if type(src) == 'table' then
@@ -57,6 +61,10 @@ function HNDS.capture_time_fcked_blind()
         blind_key = blind_key,
         blind_choices = shallow_copy(resets.blind_choices),
         blind_states = shallow_copy(resets.blind_states),
+        chips = HNDS.public_nuisance_is_active
+            and HNDS.public_nuisance_is_active()
+            and G.GAME.chips
+            or nil,
     }
     return true
 end
@@ -126,8 +134,32 @@ local function restore_replay_state(candidate)
     local blind_center = G.P_BLINDS and G.P_BLINDS[candidate.blind_key]
     if blind_center then resets.blind = blind_center end
 
+    G.GAME.hnds_time_fcked_replay_chips = candidate.chips
+
 
     G.GAME.hnds_time_fcked_candidate = nil
+end
+
+local function restore_replay_chips()
+    if not (G and G.GAME) then return end
+    local chips = G.GAME.hnds_time_fcked_replay_chips
+    if chips == nil then return end
+
+    G.GAME.hnds_time_fcked_replay_chips = nil
+    G.GAME.chips = chips
+end
+
+if Blind and type(Blind.set_blind) == 'function'
+    and not Blind._hnds_time_fcked_score_wrapped
+then
+    local set_blind_ref = Blind.set_blind
+    Blind._hnds_time_fcked_score_wrapped = true
+
+    function Blind:set_blind(...)
+        local returned = pack_results(set_blind_ref(self, ...))
+        restore_replay_chips()
+        return ((table and table.unpack) or unpack)(returned, 1, returned.n)
+    end
 end
 
 local function cash_out_to_replay(e, candidate)

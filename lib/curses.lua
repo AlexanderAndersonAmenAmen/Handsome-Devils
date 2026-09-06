@@ -795,7 +795,7 @@ local function hnds_run_defs(card, ctx, offer_def, price_def)
             local token = tostring(card.ID or card.sort_id or
                 (card.config and card.config.center and card.config.center.key) or 'joker')
             card.ability.hnds_ancestor_ignore_price =
-                pseudorandom('hnds_ancestor_ignore_price_' .. token) < 0.25
+                pseudorandom('hnds_ancestor_ignore_price_' .. token) < 0.5
         end
         if card.ability.hnds_ancestor_ignore_price then
             price_def = nil

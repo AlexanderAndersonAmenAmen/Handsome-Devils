@@ -1,5 +1,23 @@
 HNDS = HNDS or {}
 
+function HNDS.cursed_booster_is_unskippable(booster)
+    if not booster then return false end
+    if booster.hnds_forced_no_skip then return true end
+    local modifiers = G and G.GAME and G.GAME.modifiers
+    if not (modifiers and modifiers.hnds_cursed_deck_unskippable_boosters) then return false end
+    local center = booster.config and booster.config.center
+    local kind = booster.kind or (center and center.kind)
+    local group_key = booster.group_key or (center and center.group_key)
+    local joker_pack = kind == 'Joker' or kind == 'Buffoon' or group_key == 'k_buffoon_pack'
+    if joker_pack
+        and HNDS.joker_slots_full_of_unmovables
+        and HNDS.joker_slots_full_of_unmovables()
+    then
+        return false
+    end
+    return true
+end
+
 
 function HNDS.open_cursed_pack(opts)
     opts = opts or {}

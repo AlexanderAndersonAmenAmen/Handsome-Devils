@@ -195,7 +195,7 @@ return {
 				},
 			},
 			j_hnds_krusty = {
-				name = "Krusty el Payaso",
+				name = "Clown Krusty",
 				text = {
 					"Vende esta carta para crear {C:attention}#1#",
 					"{C:attention}#2#{} {C:inactive}(Máximo #3#)",
@@ -388,9 +388,10 @@ return {
 			j_hnds_demented = {
 				name = "Comodín Demente",
 				text = {
-					"La primera {C:attention}mano{} de la ronda,",
-					"cambia al azar las {C:attention}categorías{} y {C:attention}palos{}",
-					"de todas las cartas en mano",
+					"{C:hnds_chaos_abilities}+9{} palos base",
+					"Si la mano jugada contiene",
+					"un {C:attention}Color{}, cambia el palo",
+					"de las cartas puntuadas",
 				}
 			},
 			j_hnds_angry_mob = {
@@ -401,13 +402,13 @@ return {
 					"en la {C:money}Tienda{}"
 				}
 			},
-			j_hnds_sarmenti = {
-				name = "Sarmenti",
+			j_billy = {
+				name = "Billy",
 				text = {
-					"Cambia al azar las {C:dark_edition}Ediciones{}",
-					"de los comodines a la derecha si",
-					"la mano jugada contiene",
-					"un {C:attention}Póquer{}",
+					"Jokers may appear as",
+					"{C:attention}puzzle pieces{} in shop",
+					"Remove this after you",
+					"complete a {C:attention}puzzle{}",
 				}
 			},
 			j_hnds_creepy = {
@@ -426,15 +427,6 @@ return {
 					"cada {C:blue}mano{} que no usaste",
 					"al final de la ronda",
 					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
-				},
-			},
-			j_hnds_jigsaw_joker = {
-				name = "Comodín Jigsaw",
-				text = {
-					"Tras jugar {C:attention}8{} manos",
-					"de póquer {C:attention}únicas{}, vende esta",
-					"carta para subir {C:attention}#3#{} niveles",
-					"todas las {C:attention}manos de póquer{}",
 				},
 			},
 			j_hnds_dynamic_duos = {
@@ -481,14 +473,14 @@ return {
 					"{C:mult}+#1#{} Mult before scoring",
 				},
 			},
-			j_hnds_jodiac = {
+			j_jodiac = {
 				name = "Jodiac",
 				text = {
-					"Gains {C:mult}+#1#{} Mult per",
-					"card with {C:attention}unique rank{}",
-					"you score, reset scored",
-					"ranks at end of {C:attention}Ante{}",
-					"{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult){}",
+					"After playing {C:attention}#2#{} unique",
+					"poker hands, sell this",
+					"card to upgrade every",
+					"{C:attention}poker hand{} by {C:attention}#3#{} levels",
+					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/#2#){}",
 				},
 			},
 },
@@ -542,9 +534,10 @@ return {
 			b_hnds_cursed = {
 				name = "Baraja Maldita",
 				text = {
-					"Derrota la {C:attention}primera",
-					"{C:attention}Ciega Jefe{} para abrir un",
-					"{C:red,T:p_hnds_cursed_pack}Paquete Maldito Inevitable{}",
+					"{C:attention}+1{} espacio para {C:attention}Sobres{}",
+					"pero no se pueden {C:red}saltar{}",
+					"Abre un {C:red,T:p_hnds_cursed_pack}Paquete Maldito{} al",
+					"final de la {C:attention}Ante 1{}",
 				}
 			},
 		},
@@ -1553,9 +1546,9 @@ return {
 			k_hnds_magic_pack = "Paquete Mágico",
 			k_hnds_cursed_pack = "Paquete Maldito",
 			hnds_cursed_pack = "Paquete Maldito",
-			k_hnds_sarmenti_active = "Activo",
-			k_hnds_sarmenti_inactive = "Inactivo",
-			k_hnds_sarmenti_enhanced = "¡Mejorado!",
+			k_hnds_billy_active = "Activo",
+			k_hnds_billy_inactive = "Inactivo",
+			k_hnds_billy_enhanced = "¡Mejorado!",
 			k_hnds_free_reroll = "+1 Renovación gratis",
 			k_hnds_enhancements = "Mejoras",
 			k_hnds_creepy_1 = "Fue la Planta...",

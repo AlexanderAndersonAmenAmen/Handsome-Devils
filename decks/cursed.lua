@@ -6,6 +6,11 @@ SMODS.Back {
     check_for_unlock = function(self, args)
         return HNDS.unlock_condition_met("cursed", args)
     end,
+    apply = function(self, back)
+        G.GAME.modifiers = G.GAME.modifiers or {}
+        G.GAME.modifiers.hnds_cursed_deck_unskippable_boosters = true
+        SMODS.change_booster_limit(1)
+    end,
     calculate = function(self, back, context)
         if context.end_of_round and context.main_eval
             and HNDS.active_blind_is_real_ante_boss and HNDS.active_blind_is_real_ante_boss()

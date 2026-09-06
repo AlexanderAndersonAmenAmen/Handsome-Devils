@@ -43,3 +43,20 @@ position = "at"
 payload = '''return SMODS.card_collection_UIBox(SMODS.Stickers, { 4, 4 }, {'''
 match_indent = true
 times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''function create_UIBox_your_collection_tags_content(page)
+	page = page or 1
+	local tag_matrix = {}
+	local rows = 4
+	local cols = 6'''
+position = "at"
+payload = '''function create_UIBox_your_collection_tags_content(page)
+	page = page or 1
+	local tag_matrix = {}
+	local rows = 5
+	local cols = 6'''
+match_indent = false
+times = 1

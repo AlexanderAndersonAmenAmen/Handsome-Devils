@@ -49,7 +49,7 @@ SMODS.Joker {
             local hand = extra.last_hand
             extra.last_hand = nil
             local data = hnds_spag_hand_data(hand)
-            if not (data and (tonumber(data.level) or 1) > 1) then return end
+            if not (data and (tonumber(data.level) or 1) > 0) then return end
 
 
             local chip_gain = tonumber(data.l_chips) or 0

@@ -488,7 +488,7 @@ if Card and Card.redeem and not Card._hnds_wasted_wish_redeem then
 end
 
 local function hnds_update_ante_10_runtime()
-    if not (G and G.GAME) then return end
+    if not (G and G.GAME and G.STAGES and G.STAGE == G.STAGES.RUN) then return end
     local now = G.TIMERS and G.TIMERS.REAL or os.clock()
     if now < (G.GAME.hnds_ante_10_next_runtime_update or 0) then return end
     G.GAME.hnds_ante_10_next_runtime_update = now + 0.10

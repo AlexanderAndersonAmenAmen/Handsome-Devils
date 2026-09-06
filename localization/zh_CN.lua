@@ -157,14 +157,14 @@ return {
 					"{C:mult}+#1#{} Mult before scoring",
 				},
 			},
-			j_hnds_jodiac = {
+			j_jodiac = {
 				name = "Jodiac",
 				text = {
-					"Gains {C:mult}+#1#{} Mult per",
-					"card with {C:attention}unique rank{}",
-					"you score, reset scored",
-					"ranks at end of {C:attention}Ante{}",
-					"{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult){}",
+					"After playing {C:attention}#2#{} unique",
+					"poker hands, sell this",
+					"card to upgrade every",
+					"{C:attention}poker hand{} by {C:attention}#3#{} levels",
+					"{C:inactive}(Currently {C:attention}#1#{C:inactive}/#2#){}",
 				},
 			},
 },

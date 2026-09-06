@@ -39,7 +39,7 @@ SMODS.Joker({
 					return true
 				end,
 			}))
-			return { message = localize("k_hnds_coffee"), colour = G.C.CHIP, }
+			return { message = localize("k_hnds_coffee"), colour = G.C.CHIPS, }
 		end
 		local function advance_round()
 			card.ability.extra.coffee_rounds = card.ability.extra.coffee_rounds + 1

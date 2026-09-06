@@ -28,8 +28,7 @@ end
 
 function HNDS.jack_of_lanterns_native_xmult(card)
     if not HNDS.is_jack_of_lanterns(card) or hnds_jol_has_enhancement(card, 'm_stone') then return nil end
-    if hnds_jol_has_enhancement(card, 'm_glass') then return 5 end
-    return 3
+    return 4
 end
 
 local function hnds_card_identity(card)
@@ -206,10 +205,9 @@ if Card and type(Card.get_chip_x_mult) == 'function' and not HNDS._jol_xmult_hoo
         local value = get_chip_x_mult_ref(self, ...)
         if HNDS.is_jack_of_lanterns(self) and not self.debuff then
             local native_xmult = HNDS.jack_of_lanterns_native_xmult(self)
-            if native_xmult == 5 then return 5 end
-            if native_xmult == 3 then
-                if type(value) == 'number' and value ~= 0 then return value * 3 end
-                return 3
+            if type(native_xmult) == 'number' then
+                if type(value) == 'number' and value ~= 0 then return value + native_xmult end
+                return native_xmult
             end
         end
         return value
@@ -241,7 +239,7 @@ if Card and type(Card.generate_UIBox_ability_table) == 'function' and not HNDS._
 
     local function hnds_jol_enhancement_xmult(card)
         if not card or not card.ability then return 1 end
-        local xmult = tonumber(card.ability.x_mult) or 1
+        local xmult = tonumber(card.ability.Xmult or card.ability.x_mult) or 1
         local cfg = card.config and card.config.center and card.config.center.config
         local cfg_xmult = cfg and tonumber(cfg.Xmult or cfg.x_mult)
         if cfg_xmult and cfg_xmult ~= 1 then xmult = cfg_xmult end
@@ -255,7 +253,7 @@ if Card and type(Card.generate_UIBox_ability_table) == 'function' and not HNDS._
             set = 'Other',
             key = key,
             nodes = nodes,
-            vars = { xmult or 3 },
+            vars = { xmult or 4 },
         }
         return nodes
     end
@@ -275,7 +273,7 @@ if Card and type(Card.generate_UIBox_ability_table) == 'function' and not HNDS._
         local old_nominal = self.base.nominal
         local native_xmult = HNDS.jack_of_lanterns_native_xmult(self)
         local stone = native_xmult == nil
-        local glass = native_xmult == 5
+        local glass = hnds_jol_has_enhancement(self, 'm_glass')
         local enhancement_xmult = hnds_jol_enhancement_xmult(self)
         local folds_xmult = not stone and enhancement_xmult ~= 1
         local old_ability_xmult = self.ability and self.ability.x_mult
@@ -288,7 +286,7 @@ if Card and type(Card.generate_UIBox_ability_table) == 'function' and not HNDS._
 
         self.base.nominal = 0
         if folds_xmult then
-            local combined = glass and 5 or enhancement_xmult * 3
+            local combined = enhancement_xmult + (native_xmult or 4)
             if self.ability then
                 self.ability.x_mult = combined
                 self.ability.Xmult = combined
@@ -301,7 +299,7 @@ if Card and type(Card.generate_UIBox_ability_table) == 'function' and not HNDS._
                 center.loc_vars = function(center_self, info_queue, card)
                     local ret = old_loc_vars(center_self, info_queue, card) or {}
                     ret.vars = ret.vars or {}
-                    ret.vars[1] = 5
+                    ret.vars[1] = combined
                     return ret
                 end
             end
@@ -328,11 +326,11 @@ if Card and type(Card.generate_UIBox_ability_table) == 'function' and not HNDS._
             if not stone then
                 if folds_xmult then
                     hnds_jol_prepend(result.main,
-                        hnds_jol_localized_nodes('hnds_jack_of_lanterns_removed_only', glass and 5 or enhancement_xmult * 3),
+                        hnds_jol_localized_nodes('hnds_jack_of_lanterns_removed_only', enhancement_xmult + (native_xmult or 4)),
                         math.min(2, #result.main + 1))
                 else
                     hnds_jol_prepend(result.main,
-                        hnds_jol_localized_nodes('hnds_jack_of_lanterns_card', native_xmult or 3), 1)
+                        hnds_jol_localized_nodes('hnds_jack_of_lanterns_card', native_xmult or 4), 1)
                 end
             end
         end
@@ -431,7 +429,10 @@ if type(create_UIBox_customize_deck) == 'function' and not HNDS._jol_customize_d
                 if type(list) == 'table' then
                     local filtered = {}
                     for _, suit in ipairs(list) do
-                        if not (suit and suit.key == JOL_SUIT_KEY) then
+                        local suit_key = suit and suit.key
+                        local is_chaos_suit = suit_key and HNDS.is_abstract_suit_key
+                            and HNDS.is_abstract_suit_key(suit_key)
+                        if not (suit_key == JOL_SUIT_KEY or is_chaos_suit) then
                             filtered[#filtered + 1] = suit
                         end
                     end

@@ -49,7 +49,7 @@ SMODS.Seal {
     pos = { x = 2, y = 1 },
     atlas = "Extras",
     badge_colour = G.C.SECONDARY_SET.Spectral,
-    config = { extra = { hands = 4 } },
+    config = { extra = { hands = 3 } },
     unlocked = true,
 
     loc_vars = function(self, info_queue, card)

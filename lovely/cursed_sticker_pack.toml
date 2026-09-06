@@ -43,7 +43,8 @@ position = 'after'
 payload = '''
     if G and G.STATE == G.STATES.SMODS_BOOSTER_OPENED
       and SMODS and SMODS.OPENED_BOOSTER
-      and SMODS.OPENED_BOOSTER.hnds_forced_no_skip then
+      and HNDS and HNDS.cursed_booster_is_unskippable
+      and HNDS.cursed_booster_is_unskippable(SMODS.OPENED_BOOSTER) then
       e.config.colour = G.C.UI.BACKGROUND_INACTIVE
       e.config.button = nil
       return
@@ -59,7 +60,8 @@ position = 'after'
 payload = '''
     if G and G.STATE == G.STATES.SMODS_BOOSTER_OPENED
       and SMODS and SMODS.OPENED_BOOSTER
-      and SMODS.OPENED_BOOSTER.hnds_forced_no_skip then
+      and HNDS and HNDS.cursed_booster_is_unskippable
+      and HNDS.cursed_booster_is_unskippable(SMODS.OPENED_BOOSTER) then
       return
     end
 '''

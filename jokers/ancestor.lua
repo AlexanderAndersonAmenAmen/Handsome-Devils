@@ -57,7 +57,7 @@ SMODS.Joker {
     unlocked = false,
     discovered = false,
     config = {
-		extra = { odds = 4 }
+		extra = { odds = 2 }
 	},
     blueprint_compat = false,
     eternal_compat = true,
