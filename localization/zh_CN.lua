@@ -4,6 +4,25 @@ return {
 
 		Joker = {
 
+			j_idol = {
+				name = "The Idol",
+				text = {
+					"This Joker gains {X:mult,C:white}X#1#{}",
+					"Mult when each played",
+					"{C:attention}#2#{} of {V:1}#3#{} is scored",
+					"{s:0.8}Card changes every round",
+					"{C:inactive}(Currently {X:mult,C:white}X#4#{C:inactive} Mult)",
+				},
+			},
+
+			j_hnds_survey = {
+				name = "Survey",
+				text = {
+					"When you draw a",
+					"{C:attention}face{} card, gain {C:money}$1{}",
+				},
+			},
+
 			j_hnds_color_of_madness = {
 				name = "星之彩",
 				text = {
@@ -24,15 +43,13 @@ return {
 					"{C:tarot}吊饰{}或{C:spectral}空灵{}{C:attention}标签{}",
 				},
 			},
-			j_hnds_banana_split = {
-				name = "香蕉圣代",
-				text = {
-					"{X:mult,C:white}X#1#{}倍率",
-					"回合结束时",
-					"有{C:green}#2#/#3#{}的概率",
-					"{C:attention}复制{}这张牌",
-					"{C:inactive}(必须有空间){}",
-				},
+			j_hnds_sunny_side = {
+			    name = "Sunny Side",
+			    text = {
+			        "{C:attention}Seals{} on {C:attention}face{} cards",
+			        "trigger their effects",
+			        "an additional time",
+			    },
 			},
 			j_hnds_head_of_medusa = {
 				name = "美杜莎之首",
@@ -95,13 +112,15 @@ return {
 				},
 			},
 			j_hnds_stone_mask = {
-				name = "石鬼面",
-				text = {
-					"抽到{C:attention}石头牌{}时",
-					"使其获得随机的{C:dark_edition}版本{}",
-					"和随机的{C:attention}蜡封{}",
-					"直到回合结束",
-				},
+			    name = "Stone Mask",
+			    text = {
+			        "When you draw a",
+			        "{C:attention}face{} card, gain {C:money}$1{}",
+			    },
+			    unlock = {
+			        "Reach {X:mult,C:white}X5{} Mult",
+			        "with {C:attention}Vampire{}",
+			    },
 			},
 			j_hnds_jokestone = {
 				name = "丑石传说",
@@ -185,16 +204,16 @@ return {
 					"加上{C:green}绿色蜡封{}",
 				},
 			},
-			c_hnds_petrify = {
-				name = "石化",
+			c_hnds_gaze = {
+				name = "Gaze",
 				text = {
 					"将你手中所有的{C:attention}人头牌{}",
 					"变为{C:attention}石头牌{},",
 					"每石化一张牌便获得{C:money}$5{}",
 				},
 			},
-			c_hnds_exchange = {
-				name = "交易",
+			c_hnds_void = {
+				name = "Void",
 				text = {
 					"给{C:attention}2{}张所选卡牌",
 					"加上{C:dark_edition}负片{}",
@@ -322,16 +341,17 @@ return {
 			hnds_black_seal = {
 				name = "黑色蜡封",
 				text = {
-					"这张牌在手牌中时",
-					"也会参与计分",
+					"此牌打出并计分后，将相邻卡牌",
+					"放到牌堆{C:attention}顶部{}",
+					"{C:inactive}（黑色蜡封卡牌除外）",
 				},
 			},
 			hnds_green_seal = {
 				name = "绿色蜡封",
 				text = {
-					"当此卡被{C:attention}计分{}",
-					"或{C:attention}弃掉{}时",
-					"额外抽{C:attention}2{}张牌",
+					"After played or",
+					"discarded, draw",
+					"{C:attention}3{} extra cards",
 				},
 			},
 
@@ -542,9 +562,19 @@ return {
 				},
 			},
 		},
+		Blind = {
+			bl_serpent = {
+				name = "The Serpent",
+				text = {
+					"After Play or Discard,",
+					"draw up to 3 cards",
+				},
+			},
+		},
 	},
 	misc = {
 		dictionary = {
+			k_hnds_rank_up = "Rank Up!",
 			k_hnds_krusty_voucher_tag = "Voucher Tag",
 			k_hnds_krusty_voucher_tags = "Voucher Tags",
 			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
@@ -565,7 +595,7 @@ return {
 			k_hnds_awaken = "已苏醒！",
 			k_hnds_IPLAYPOTOFGREED = "我发动！...",
 			k_hnds_balloons = "全没了！",
-			k_hnds_banana_split = "分裂！",
+			k_hnds_sunny_side = "Sunny!",
 			k_hnds_color_of_madness = "疯狂！",
 			k_hnds_occultist = "研究！",
 		},

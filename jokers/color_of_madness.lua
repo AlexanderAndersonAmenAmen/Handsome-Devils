@@ -35,6 +35,7 @@ SMODS.Joker({
 	perishable_compat = true,
 	config = { extra = { suits_needed = 4, }, },
 	loc_vars = function(self, info_queue, card)
+		if info_queue then info_queue[#info_queue + 1] = G.P_CENTERS.m_wild end
 		return { vars = { card.ability.extra.suits_needed } }
 	end,
 	calculate = function(self, card, context)

@@ -1203,6 +1203,13 @@ if Card then
                     + (tonumber(snap.sell_cost_label) or tonumber(snap.sell_cost) or 0)
             end
 
+            local stolen = math.max(0,
+                tonumber(card.ability and card.ability.hnds_big_d_stolen_sell_value) or 0)
+            if stolen > 0 then
+                total_sell = math.max(0, total_sell - stolen)
+                total_label = math.max(0, total_label - stolen)
+            end
+
             card.sell_cost = total_sell
             card.sell_cost_label = total_label
             HNDS.sarmenti_refresh_visual_edition(card)

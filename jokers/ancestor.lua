@@ -1,4 +1,10 @@
+local hnds_ancestor_unlock_cache = { value = false, checked_at = -math.huge }
+
 local function hnds_ancestor_all_spectrals_discovered()
+    local now = G and G.TIMERS and G.TIMERS.REAL or 0
+    if now - hnds_ancestor_unlock_cache.checked_at < 1 then
+        return hnds_ancestor_unlock_cache.value
+    end
     local total, discovered = 0, 0
     for _, center in pairs((G and G.P_CENTERS) or {}) do
         if center and center.set == 'Spectral'
@@ -8,7 +14,9 @@ local function hnds_ancestor_all_spectrals_discovered()
             if center.discovered then discovered = discovered + 1 end
         end
     end
-    return total > 0 and discovered >= total
+    hnds_ancestor_unlock_cache.checked_at = now
+    hnds_ancestor_unlock_cache.value = total > 0 and discovered >= total
+    return hnds_ancestor_unlock_cache.value
 end
 
 local function hnds_ancestor_curse_first_shop_joker()
@@ -65,16 +73,12 @@ SMODS.Joker {
     unlock_condition = { type = 'hnds_discovery' },
 
     loc_vars = function(self, info_queue, card)
-
-
         local has_cursed = card and card.ability and card.ability.hnds_cursed
         if info_queue and not has_cursed then
-
-
-            _G.HNDS_CURRENT_CURSE_CARD = nil
             info_queue[#info_queue + 1] = { set = 'Other', key = 'hnds_cursed' }
         end
-        local numerator, denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, "hnds_ancestor")
+        local extra = card and card.ability and card.ability.extra or self.config.extra
+        local numerator, denominator = SMODS.get_probability_vars(card, 1, extra.odds, "hnds_ancestor")
         return { key = self.key, vars = { numerator, denominator } }
     end,
 

@@ -1,0 +1,13 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 10001
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if val.shattered then glass_cards = glass_cards + 1 end"
+position = "at"
+payload = "if val.shattered or (HNDS and HNDS.glass_joker_removed_card_counts and HNDS.glass_joker_removed_card_counts(val)) then glass_cards = glass_cards + 1 end"
+match_indent = true
+times = 1

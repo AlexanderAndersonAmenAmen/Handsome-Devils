@@ -474,6 +474,98 @@ take_vanilla_ownership(SMODS.Joker, 'matador', {
     end,
 })
 
+
+local function hnds_idol_extra(card)
+    local extra = card and card.ability and card.ability.extra
+    if type(extra) ~= 'table' then
+        extra = { gain = 0.25, xmult = 1 }
+        if card and card.ability then card.ability.extra = extra end
+    end
+    extra.gain = 0.25
+    extra.xmult = tonumber(extra.xmult) or 1
+    return extra
+end
+
+take_vanilla_ownership(SMODS.Joker, 'idol', {
+    blueprint_compat = true,
+    config = { extra = { gain = 0.25, xmult = 1 } },
+    loc_vars = function(self, info_queue, card)
+        local idol = G and G.GAME and G.GAME.current_round and G.GAME.current_round.idol_card
+            or { rank = 'Ace', suit = 'Spades', id = 14 }
+        local extra = hnds_idol_extra(card)
+        local colour = G and G.C and G.C.SUITS and G.C.SUITS[idol.suit]
+        return { vars = { extra.gain, localize(idol.rank, 'ranks'), localize(idol.suit, 'suits_plural'), extra.xmult, colours = { colour } } }
+    end,
+    calculate = function(self, card, context)
+        local extra = hnds_idol_extra(card)
+        local idol = G and G.GAME and G.GAME.current_round and G.GAME.current_round.idol_card
+        if context.individual and context.cardarea == G.play and not context.blueprint and idol and context.other_card then
+            local other = context.other_card
+            local id = idol.id or vanilla_rank_ids[idol.rank]
+            if type(other.get_id) == 'function' and type(other.is_suit) == 'function'
+                and other:get_id() == id and other:is_suit(idol.suit)
+            then
+                extra.xmult = extra.xmult + extra.gain
+                return { message = localize('k_upgrade_ex'), colour = G.C.MULT }
+            end
+        end
+        if context.joker_main and extra.xmult > 1 then return { xmult = extra.xmult } end
+    end,
+})
+
+function HNDS.serpent_hand_space(requested)
+    local amount = math.max(0, tonumber(requested) or 0)
+    if not (G and G.hand and G.hand.config) then return amount end
+    local hand_limit = tonumber(G.hand.config.card_limit) or 0
+    local cards_in_hand = G.hand.cards and #G.hand.cards or 0
+    return math.min(amount, math.max(0, hand_limit - cards_in_hand))
+end
+
+take_vanilla_ownership(SMODS.Blind, 'serpent', {
+    modifies_draw = true,
+    calculate = function(self, blind, context)
+        if context.drawing_cards and G and G.GAME and G.GAME.current_round and G.hand and G.hand.config
+            and ((G.GAME.current_round.hands_played or 0) ~= 0 or (G.GAME.current_round.discards_used or 0) ~= 0)
+        then
+            return { cards_to_draw = HNDS.serpent_hand_space(math.min(3, tonumber(context.amount) or 3)) }
+        end
+    end,
+})
+
+local function hnds_is_glass_card(card)
+    if not card then return false end
+    if card.config and card.config.center and card.config.center.key == 'm_glass' then return true end
+    if SMODS and type(SMODS.has_enhancement) == 'function' then
+        local ok, result = pcall(SMODS.has_enhancement, card, 'm_glass')
+        if ok and result then return true end
+    end
+    return false
+end
+
+function HNDS.glass_joker_removed_card_counts(card)
+    return hnds_is_glass_card(card)
+end
+
+if Card and type(Card.calculate_joker) == 'function' and not HNDS._glass_joker_removal_hooked then
+    HNDS._glass_joker_removal_hooked = true
+    local hnds_calculate_joker_ref = Card.calculate_joker
+    Card.calculate_joker = function(self, context, ...)
+        local temporarily_shattered = {}
+        local center = self and self.config and self.config.center
+        if center and center.key == 'j_glass' and context and context.remove_playing_cards and type(context.removed) == 'table' then
+            for _, removed in ipairs(context.removed) do
+                if hnds_is_glass_card(removed) and not removed.shattered then
+                    temporarily_shattered[#temporarily_shattered + 1] = { card = removed, value = removed.shattered }
+                    removed.shattered = true
+                end
+            end
+        end
+        local results = HNDS.pack(hnds_calculate_joker_ref(self, context, ...))
+        for _, entry in ipairs(temporarily_shattered) do entry.card.shattered = entry.value end
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
+    end
+end
+
 take_vanilla_ownership(SMODS.Joker, 'superposition', {
     blueprint_compat = true,
     calculate = function(self, card, context)
@@ -645,23 +737,6 @@ take_vanilla_ownership(SMODS.Joker, 'throwback', {
             return { message = localize({ type = 'variable', key = 'a_xmult', vars = { 1 + G.GAME.skips * gain } }) }
         end
         if context.joker_main then return { xmult = 1 + G.GAME.skips * gain } end
-    end,
-})
-
-take_vanilla_ownership(SMODS.Joker, 'seeing_double', {
-    blueprint_compat = true,
-    config = { extra = 1 },
-    loc_vars = function() return { vars = {} } end,
-    calculate = function(self, card, context)
-        if context.repetition
-            and (context.cardarea == G.play or context.cardarea == G.hand)
-            and context.other_card and HNDS.imposter_rank_match(context.other_card, 7, context)
-            and not context.other_card.debuff
-        then
-            local repetitions = extra_value(card, 'repetitions', 1)
-            if context.other_card:is_suit('Clubs') then repetitions = repetitions + 1 end
-            return { repetitions = repetitions }
-        end
     end,
 })
 

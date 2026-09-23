@@ -10,6 +10,7 @@ SMODS.Back({
     atlas = "Extras",
     apply = function(self,card)
         HNDS.ban_non_magic_boosters()
+        HNDS.enable_conjuring_replacements()
     end,
     pools = { RedeemableBacks = true }
 })

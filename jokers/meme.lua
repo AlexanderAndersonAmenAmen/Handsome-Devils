@@ -2,8 +2,8 @@ SMODS.Joker({
 	key = "meme",
 	atlas = "Jokers",
 	pos = { x = 0, y = 1 },
-	rarity = 3,
-	cost = 8,
+	rarity = 2,
+	cost = 7,
 	unlocked = false,
 	discovered = false,
 	unlock_condition = { type = "hnds_joker_unlock", key = "meme" },
@@ -19,12 +19,12 @@ SMODS.Joker({
 	perishable_compat = false,
 	config = {
 		extra = {
-			x_mult = 1,
-			scaling = 0.05,
+			chips = 0,
+			scaling = 5,
 		},
 	},
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.x_mult, card.ability.extra.scaling } }
+		return { vars = { card.ability.extra.chips, card.ability.extra.scaling } }
 	end,
 	calculate = function(self, card, context)
 		if context.before and not context.blueprint and not context.retrigger_joker then
@@ -32,7 +32,7 @@ SMODS.Joker({
 			if boost > 0 then
 				SMODS.scale_card(card, {
 					ref_table = card.ability.extra,
-					ref_value = "x_mult",
+					ref_value = "chips",
 					scalar_value = "scaling",
 					operation = function(ref_table, ref_value, initial, change)
 						ref_table[ref_value] = initial + boost * change
@@ -42,7 +42,7 @@ SMODS.Joker({
 			end
 		elseif context.joker_main or context.forcetrigger then
 			return {
-				xmult = card.ability.extra.x_mult,
+				xmult = card.ability.extra.chips,
 			}
 		end
 	end,
@@ -52,14 +52,14 @@ SMODS.Joker({
 				{
 					border_nodes = {
 						{ text = "X" },
-						{ ref_table = "card.joker_display_values", ref_value = "x_mult", retrigger_type = "exp" }
+						{ ref_table = "card.joker_display_values", ref_value = "chips", retrigger_type = "exp" }
 					}
 				}
 			},
 			calc_function = function(card)
-				card.joker_display_values.x_mult = card.ability.extra.x_mult
+				card.joker_display_values.chips = card.ability.extra.chips
 			end
 		}
 	end,
-	attributes = { "xmult", "scaling", "suit", }
+	attributes = { "chips", "scaling", "suit", }
 })

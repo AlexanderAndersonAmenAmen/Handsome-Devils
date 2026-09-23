@@ -1013,7 +1013,7 @@ SMODS.Joker({
     key = 'creepy',
     atlas = 'Jokers',
     pos = { x = 7, y = 3 },
-    rarity = 2,
+    rarity = 3,
     cost = 5,
     unlocked = false,
     discovered = false,

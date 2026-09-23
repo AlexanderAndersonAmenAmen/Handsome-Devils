@@ -716,45 +716,68 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 		local trailing = HNDS.pack(...)
 
 
-		if type(args) == 'table' and args.key == 'hnds_cursed' and args.type == 'other' then
-			local card = _G.HNDS_CURRENT_CURSE_CARD
-			if card and card.ability and G and G.localization and G.localization.descriptions then
-				local offer = card.ability.hnds_curse_offer
-				local price = card.ability.hnds_curse_price
-				local display_mode = card.ability.hnds_curse_display_mode
+		if type(args) == 'table' and args.key == 'hnds_cursed'
+			and (args.type == 'other' or (args.type == 'descriptions' and args.set == 'Other'))
+		then
+			local data = _G.HNDS_CURRENT_CURSE_DATA
+			_G.HNDS_CURRENT_CURSE_DATA = nil
+			if type(data) == 'table' and G and G.localization and G.localization.descriptions then
+				local offer = data.offer
+				local price = data.price
+				local display_mode = data.display_mode
 				local other = G.localization.descriptions.Other
 				local loc_entry = other and other.hnds_cursed
 
 
 				if (offer or price) and type(loc_entry) == 'table' and type(loc_parse_string) == 'function' then
-					local desc_lines, offer_lines_count = {}, 0
-					local function append_entry(key, count_offer)
-						local source = key and other and other[key]
-						if type(source) == 'table' and type(source.text) == 'table' then
-							for _, line in ipairs(source.text) do
-								desc_lines[#desc_lines + 1] = line
-								if count_offer then offer_lines_count = offer_lines_count + 1 end
+					HNDS._curse_loc_cache = HNDS._curse_loc_cache
+						or setmetatable({}, { __mode = 'k' })
+					local by_entry = HNDS._curse_loc_cache[loc_entry]
+					if not by_entry then
+						by_entry = {}
+						HNDS._curse_loc_cache[loc_entry] = by_entry
+					end
+					local cache_key = table.concat({
+						tostring(display_mode or ''), tostring(offer or ''), tostring(price or '')
+					}, '|')
+					local cached = by_entry[cache_key]
+					if not cached then
+						local desc_lines, offer_lines_count = {}, 0
+						local function append_entry(key, count_offer)
+							local source = key and other and other[key]
+							if type(source) == 'table' and type(source.text) == 'table' then
+								for _, line in ipairs(source.text) do
+									desc_lines[#desc_lines + 1] = line
+									if count_offer then offer_lines_count = offer_lines_count + 1 end
+								end
 							end
 						end
+
+						if display_mode == 'offer' and offer then
+							append_entry(offer, false)
+						elseif display_mode == 'price' and price then
+							append_entry(price, false)
+						else
+							append_entry(offer, true)
+							append_entry(price, false)
+						end
+
+						if #desc_lines > 0 then
+							local parsed = {}
+							for _, line in ipairs(desc_lines) do
+								parsed[#parsed + 1] = loc_parse_string(line)
+							end
+							cached = {text = desc_lines, parsed = parsed,
+								offer_lines_count = offer_lines_count}
+							by_entry[cache_key] = cached
+						end
 					end
 
-					if display_mode == 'offer' and offer then
-						append_entry(offer, false)
-					elseif display_mode == 'price' and price then
-						append_entry(price, false)
-					else
-						append_entry(offer, true)
-						append_entry(price, false)
-					end
-
-					if #desc_lines > 0 then
+					if cached then
 						local original_text = loc_entry.text
 						local original_text_parsed = loc_entry.text_parsed
-						loc_entry.text = desc_lines
-						loc_entry.text_parsed = {}
-						for _, line in ipairs(desc_lines) do
-							loc_entry.text_parsed[#loc_entry.text_parsed + 1] = loc_parse_string(line)
-						end
+						loc_entry.text = cached.text
+						loc_entry.text_parsed = cached.parsed
 
 						local packed = HNDS.pack(pcall(function()
 							return localize_ref(args, misc_cat, misc_loc, silent, unpack_values(trailing, 1, trailing.n))
@@ -762,22 +785,19 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 
 						loc_entry.text = original_text
 						loc_entry.text_parsed = original_text_parsed
-						if _G.HNDS_CURRENT_CURSE_CARD == card then _G.HNDS_CURRENT_CURSE_CARD = nil end
-
 						if not packed[1] then error(packed[2], 0) end
-						if offer_lines_count > 0 and type(args.nodes) == 'table'
+						if cached.offer_lines_count > 0 and type(args.nodes) == 'table'
 							and G.UIT and G.C and G.C.UI and G.C.UI.TEXT_INACTIVE
 						then
 							local separator_line = {
 								{ n = G.UIT.C, config = { align = 'cm', minh = 0.03, minw = 2.4, colour = G.C.UI.TEXT_INACTIVE } }
 							}
-							table.insert(args.nodes, math.min(offer_lines_count + 1, #args.nodes + 1), separator_line)
+							table.insert(args.nodes, math.min(cached.offer_lines_count + 1, #args.nodes + 1), separator_line)
 						end
 						return unpack_values(packed, 2, packed.n)
 					end
 				end
 			end
-			if _G.HNDS_CURRENT_CURSE_CARD == card then _G.HNDS_CURRENT_CURSE_CARD = nil end
 		end
 		return localize_ref(args, misc_cat, misc_loc, silent, unpack_values(trailing, 1, trailing.n))
 	end
@@ -1265,21 +1285,6 @@ if Card and Card.can_use_consumeable and not Card._hnds_wrapped_contagion_can_us
 end
 
 
-if Card and Card.set_seal and not Card._hnds_wrapped_spectral_progress then
-    Card._hnds_wrapped_spectral_progress = true
-    local set_seal_spectral_ref = Card.set_seal
-    function Card:set_seal(seal, silent, ...)
-        local old_seal = self.seal
-        local results = HNDS.pack(set_seal_spectral_ref(self, seal, silent, ...))
-        if old_seal == 'hnds_spectralseal' and self.seal ~= 'hnds_spectralseal' and self.ability then
-            self.ability.hnds_spectral_hands = nil
-            self.ability.hnds_spectral_last_token = nil
-        end
-        return ((table and table.unpack) or unpack)(results, 1, results.n)
-    end
-end
-
-
 local hnds_contagion_loc_targets = {
     c_talisman = 'Gold',
     c_deja_vu = 'Red',
@@ -1406,8 +1411,7 @@ HNDS.should_hand_destroy = function(card)
 	if not (card and type(card.get_seal) == 'function' and G and G.GAME) then return false end
 	local vouchers = G.GAME.used_vouchers or {}
 	local hand_cards = G.hand and G.hand.cards or {}
-	return card:get_seal() == "hnds_black"
-		or (vouchers.v_hnds_soaked and card == hand_cards[1])
+	return (vouchers.v_hnds_soaked and card == hand_cards[1])
 		or (vouchers.v_hnds_beyond and card == hand_cards[#hand_cards])
 end
 
@@ -1449,9 +1453,6 @@ local score_card_ref = SMODS.score_card
 function SMODS.score_card(card, context, ...)
 	if type(context) ~= 'table' then return score_card_ref(card, context, ...) end
 	if (not (G and G.scorehand)) and HNDS.should_hand_destroy(card) and G and context.cardarea == G.hand then
-		if card:get_seal() == "hnds_black" and HNDS.record_held_effects then
-			HNDS.record_held_effects(1, "hnds_black_seal")
-		end
 		local original_area = context.cardarea
 		G.scorehand = true
 		context.cardarea = G.play
@@ -1475,6 +1476,12 @@ function Card.set_cost(self, ...)
 
 	if key == "j_hnds_coffee_break" then self.sell_cost = 0 end
 	if key == "j_hnds_art" then self.sell_cost = -5 end
+	if key == "j_hnds_fun_police" then
+		local big_d_stole_value = self.ability
+			and self.ability.hnds_big_d_stolen_sell_value ~= nil
+		self.sell_cost = big_d_stole_value and 0 or -5
+		if self.sell_cost_label ~= '?' then self.sell_cost_label = self.sell_cost end
+	end
 
 
 	if set == "Joker"
@@ -1889,7 +1896,7 @@ function HNDS.update_excom()
 end
 
 
-_G.HNDS_CURRENT_CURSE_CARD = nil
+_G.HNDS_CURRENT_CURSE_DATA = nil
 
 
 local original_loc_vars = nil
@@ -1899,7 +1906,11 @@ function HNDS_setup_cursed_sticker_hook(sticker)
 	if not sticker then return end
 	original_loc_vars = sticker.loc_vars
 	sticker.loc_vars = function(self, info_queue, card)
-		_G.HNDS_CURRENT_CURSE_CARD = card
+		_G.HNDS_CURRENT_CURSE_DATA = card and card.ability and {
+			offer = card.ability.hnds_curse_offer,
+			price = card.ability.hnds_curse_price,
+			display_mode = card.ability.hnds_curse_display_mode,
+		} or nil
 		if original_loc_vars then
 			return original_loc_vars(self, info_queue, card)
 		end

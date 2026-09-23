@@ -467,15 +467,6 @@ local function have_three_copies_of_same_joker()
     return false
 end
 
-local function have_both_bananas()
-    local gros, cavendish = false, false
-    for _, card in ipairs((G and G.jokers and G.jokers.cards) or {}) do
-        local key = card_center_key(card)
-        if key == "j_gros_michel" then gros = true end
-        if key == "j_cavendish" then cavendish = true end
-    end
-    return gros and cavendish
-end
 
 local function odd_rank(rank)
     rank = tonumber(rank)
@@ -737,7 +728,6 @@ function HNDS.joker_unlock_condition_met(key, args)
     elseif key == "jevil" then return state and state.jevil_wild_flush or false
     elseif key == "headless_joker" then return HNDS.unlock_career_stat(STAT_HEADLESS_FACE_CARDS) >= TARGETS[key]
     elseif key == "time_fcked_joker" then return HNDS.unlock_career_stat(STAT_RUN_RESTARTS) >= TARGETS[key]
-    elseif key == "banana_split" then return have_both_bananas()
     elseif key == "dynamic_duos" then return state and state.flags.dynamic_duos or false
     elseif key == "energized" or key == "last_laugh" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED) >= TARGETS[key]
     end
@@ -1511,7 +1501,7 @@ local JOKER_CONDITION_LOCK_KEYS = {
     "j_hnds_color_of_madness", "j_hnds_deep_pockets", "j_hnds_head_of_medusa", "j_hnds_ms_fortune",
     "j_hnds_occultist", "j_hnds_clown_devil", "j_hnds_balloons", "j_hnds_creepy",
     "j_hnds_seismic_activity", "j_hnds_angry_mob", "j_hnds_supersuit", "j_hnds_jokes_aside",
-    "j_hnds_jackpot", "j_hnds_banana_split", "j_hnds_dynamic_duos", "j_hnds_energized",
+    "j_hnds_jackpot", "j_hnds_dynamic_duos", "j_hnds_energized",
     "j_hnds_last_laugh", "j_hnds_coffee_break",
     "j_hnds_dallas", "j_hnds_hoxton", "j_hnds_wolf", "j_hnds_chains",
     "j_hnds_ecg", "j_hnds_spaghettified_joker", "j_jodiac",

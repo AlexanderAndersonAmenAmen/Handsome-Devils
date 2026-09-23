@@ -55,7 +55,7 @@ SMODS.Joker {
     prefix_config = { key = { mod = false } },
     atlas = 'Jokers',
     pos = { x = 8, y = 4 },
-    rarity = 1,
+    rarity = 2,
     cost = 6,
     unlocked = true,
     discovered = false,

@@ -1,4 +1,30 @@
 
+function HNDS.count_drawn_suit(cards, suit)
+    if type(cards) ~= 'table' then return 0 end
+    local count = 0
+    for _, playing_card in ipairs(cards) do
+        if playing_card and not playing_card.debuff and type(playing_card.is_suit) == 'function' and playing_card:is_suit(suit) then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+function HNDS.threshold_gains(extra, amount)
+    local threshold = math.max(1, tonumber(extra and extra.cards_per_gain) or 1)
+    local before = tonumber(extra and extra.cards_drawn) or 0
+    local after = before + math.max(0, tonumber(amount) or 0)
+    extra.cards_drawn = after
+    return math.floor(after / threshold) - math.floor(before / threshold)
+end
+
+function HNDS.threshold_remaining(extra)
+    local threshold = math.max(1, tonumber(extra and extra.cards_per_gain) or 1)
+    local progress = (tonumber(extra and extra.cards_drawn) or 0) % threshold
+    return progress == 0 and threshold or threshold - progress
+end
+
+
 
 
 function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
@@ -228,22 +254,17 @@ end
 
 
 function reset_dark_idol()
-	G.GAME.current_round.dark_idol = { suit = 'Spades', rank = 'Ace' }
-	local valid_dark_idol_cards = {}
-	for _, v in ipairs((G and G.playing_cards) or {}) do
-		local no_suit = HNDS.safe_has_no_suit and HNDS.safe_has_no_suit(v) or false
-		local no_rank = HNDS.safe_has_no_rank and HNDS.safe_has_no_rank(v) or false
-		if not no_suit and not no_rank then
-			valid_dark_idol_cards[#valid_dark_idol_cards + 1] = v
-		end
-	end
-	if valid_dark_idol_cards[1] then
-		local dark_idol_card = pseudorandom_element(valid_dark_idol_cards,
-			pseudoseed('dark_idol' .. G.GAME.round_resets.ante))
-		G.GAME.current_round.dark_idol.suit = dark_idol_card.base.suit
-		G.GAME.current_round.dark_idol.rank = dark_idol_card.base.value
-		G.GAME.current_round.dark_idol.id = dark_idol_card.base.id
-	end
+	local ranks = {
+		{ rank = '2', id = 2 }, { rank = '3', id = 3 }, { rank = '4', id = 4 },
+		{ rank = '5', id = 5 }, { rank = '6', id = 6 }, { rank = '7', id = 7 },
+		{ rank = '8', id = 8 }, { rank = '9', id = 9 }, { rank = '10', id = 10 },
+		{ rank = 'Jack', id = 11 }, { rank = 'Queen', id = 12 }, { rank = 'King', id = 13 },
+		{ rank = 'Ace', id = 14 },
+	}
+	local ante = G.GAME.round_resets and G.GAME.round_resets.ante or 0
+	local round = G.GAME.round or 0
+	local picked = pseudorandom_element(ranks, pseudoseed('dark_idol_' .. tostring(ante) .. ':' .. tostring(round))) or ranks[#ranks]
+	G.GAME.current_round.dark_idol = { rank = picked.rank, id = picked.id, suit = 'Spades' }
 end
 
 HNDS.circus_joker_pool = {
@@ -269,13 +290,13 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
 		G.GAME.art_queue = 0
-		G.GAME.hnds_exchange_hand_penalty = 0
+		G.GAME.hnds_void_hand_penalty = 0
 	end
 
 
 	for _, card in ipairs((G and G.playing_cards) or {}) do
-		if card and card.ability and card.ability.hnds_exchange_draw then
-			card.ability.hnds_exchange_draw = nil
+		if card and card.ability and card.ability.hnds_void_draw then
+			card.ability.hnds_void_draw = nil
 			if not card.edition and card.set_edition then
 				card:set_edition("e_negative", true, true)
 			end

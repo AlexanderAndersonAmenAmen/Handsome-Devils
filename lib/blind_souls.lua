@@ -11,7 +11,7 @@ HNDS.blind_souls = {
 
     bl_wall = { "j_stone", "j_marble", "j_castle", "j_ancient", "j_bloodstone" },
 
-    bl_wheel = { "j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel", "j_hnds_banana_split", "j_hnds_energized", "j_hnds_jackpot", "j_hnds_ms_fortune", "j_oops" },
+    bl_wheel = { "j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel", "j_hnds_sunny_side", "j_hnds_energized", "j_hnds_jackpot", "j_hnds_ms_fortune", "j_oops" },
 
     bl_arm = { "j_juggler" },
 

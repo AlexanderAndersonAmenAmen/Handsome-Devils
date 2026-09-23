@@ -13,6 +13,7 @@ CardSleeves.Sleeve({
     end,
     apply = function(self)
         HNDS.ban_non_magic_boosters()
+        HNDS.enable_conjuring_replacements()
         if self.get_current_deck_key() == "b_hnds_conjuring" then
             HNDS.grant_vouchers({"v_hnds_stuffed", "v_hnds_wholesale"})
         end

@@ -7,10 +7,33 @@ priority = 0
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
-pattern = "if G.GAME.blind:get_type() == 'Boss' then"
+pattern = '''if G.GAME.blind:get_type() == 'Boss' then
+                    local _handname, _played, _order = 'High Card', -1, 100'''
+position = "at"
+match_indent = false
+times = 1
+payload = '''if G.GAME.blind_on_deck == 'Boss' then
+                    local _handname, _played, _order = 'High Card', -1, 100'''
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.blind:get_type() == 'Boss' and not G.GAME.seeded and not G.GAME.challenge  then"
 position = "at"
 match_indent = true
-payload = "if G.GAME.blind_on_deck == 'Boss' then"
+times = 1
+payload = "if G.GAME.blind_on_deck == 'Boss' and not G.GAME.seeded and not G.GAME.challenge  then"
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = '''if G.GAME.blind:get_type() == 'Boss' then
+                    G.GAME.voucher_restock = nil'''
+position = "at"
+match_indent = false
+times = 1
+payload = '''if G.GAME.blind_on_deck == 'Boss' then
+                    G.GAME.voucher_restock = nil'''
 
 [[patches]]
 [patches.pattern]
@@ -18,23 +41,68 @@ target = "functions/state_events.lua"
 pattern = "if G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then"
 position = "at"
 match_indent = true
+times = 1
 payload = "if G.GAME.round_resets.ante >= G.GAME.win_ante and G.GAME.blind_on_deck == 'Boss' then"
 
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
-pattern = "if G.GAME.round_resets.blind == G.P_BLINDS.bl_small then"
+pattern = '''
+if G.GAME.round_resets.blind == G.P_BLINDS.bl_small then
+                            G.GAME.round_resets.blind_states.Small = 'Defeated'
+'''
 position = "at"
-match_indent = true
-payload = "if G.GAME.blind_on_deck == 'Small' then"
+match_indent = false
+times = 1
+payload = '''
+if G.GAME.blind_on_deck == 'Small' then
+                            G.GAME.round_resets.blind_states.Small = 'Defeated'
+'''
 
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
-pattern = "elseif G.GAME.round_resets.blind == G.P_BLINDS.bl_big then"
+pattern = '''
+elseif G.GAME.round_resets.blind == G.P_BLINDS.bl_big then
+                            G.GAME.round_resets.blind_states.Big = 'Defeated'
+'''
 position = "at"
-match_indent = true
-payload = "elseif G.GAME.blind_on_deck == 'Big' then"
+match_indent = false
+times = 1
+payload = '''
+elseif G.GAME.blind_on_deck == 'Big' then
+                            G.GAME.round_resets.blind_states.Big = 'Defeated'
+'''
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = '''
+if G.GAME.round_resets.blind == G.P_BLINDS.bl_small then
+                G.GAME.round_resets.blind_states.Small = 'Current'
+'''
+position = "at"
+match_indent = false
+times = 1
+payload = '''
+if G.GAME.blind_on_deck == 'Small' then
+                G.GAME.round_resets.blind_states.Small = 'Current'
+'''
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = '''
+elseif G.GAME.round_resets.blind == G.P_BLINDS.bl_big then
+                G.GAME.round_resets.blind_states.Big = 'Current'
+'''
+position = "at"
+match_indent = false
+times = 1
+payload = '''
+elseif G.GAME.blind_on_deck == 'Big' then
+                G.GAME.round_resets.blind_states.Big = 'Current'
+'''
 
 
 [[patches]]

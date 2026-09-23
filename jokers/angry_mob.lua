@@ -1,6 +1,6 @@
 SMODS.Joker({
     key = "angry_mob",
-    rarity = 2,
+    rarity = 1,
     cost = 6,
     blueprint_compat = true,
     atlas = "Jokers",

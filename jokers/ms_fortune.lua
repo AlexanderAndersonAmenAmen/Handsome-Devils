@@ -131,7 +131,7 @@ SMODS.Joker({
         if in_collection and info_queue then
 
 
-            _G.HNDS_CURRENT_CURSE_CARD = nil
+            _G.HNDS_CURRENT_CURSE_DATA = nil
             info_queue[#info_queue + 1] = { set = 'Other', key = 'hnds_cursed' }
         end
         return { vars = { card.ability.extra.sell_gain } }

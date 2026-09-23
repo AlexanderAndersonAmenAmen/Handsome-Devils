@@ -44,6 +44,7 @@ SMODS.Joker {
         tags_given = false,
     } },
     loc_vars = function(self, info_queue, card)
+        if info_queue then info_queue[#info_queue + 1] = G.P_TAGS.tag_voucher end
         local extra = card and card.ability and card.ability.extra or self.config.extra
         local tags = tonumber(extra.tags) or 1
         local max_tags = tonumber(extra.max_tags) or 10

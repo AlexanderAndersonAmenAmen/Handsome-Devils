@@ -14,6 +14,9 @@ payload = '''
         local copies = card.ability.hnds_copies_to_create
         info_queue[#info_queue+1] = { set = "Other", key = "dna_tag_tooltip_"..(copies ~= 1 and "plural" or "singular"), vars = {copies}}
     end
+    if HNDS and HNDS.big_d_filter_stacked_tooltips then
+        HNDS.big_d_filter_stacked_tooltips(info_queue, card)
+    end
 '''
 match_indent = true
 

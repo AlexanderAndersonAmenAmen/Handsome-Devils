@@ -17,9 +17,10 @@ SMODS.Joker({
 	demicoloncompat = false,
 	eternal_compat = true,
 	perishable_compat = true,
-	config = { extra = { rounds = 6 } },
+	config = { extra = { rounds = 3 } },
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.rounds } }
+		if info_queue then info_queue[#info_queue + 1] = G.P_CENTERS.e_negative end
+		return { vars = { math.min(3, tonumber(card.ability.extra.rounds) or 3) } }
 	end,
 	calculate = function(self, card, context)
 
@@ -29,7 +30,7 @@ SMODS.Joker({
 			if target and target ~= card and not target.ability.hnds_jester_negative_rounds and not (target.edition and target.edition.negative) then
 				target:set_edition("e_negative")
 				target:juice_up(0.3, 0.5)
-				target.ability.hnds_jester_negative_rounds = card.ability.extra.rounds
+				target.ability.hnds_jester_negative_rounds = math.min(3, tonumber(card.ability.extra.rounds) or 3)
 				target:add_sticker('hnds_jester_temp_negative', true)
 				if hnds_config and hnds_config.enableCustomSounds then
 
@@ -89,7 +90,8 @@ SMODS.Sticker {
 	end,
 	calculate = function(self, card, context)
 		if context.end_of_round and context.main_eval then
-			card.ability.hnds_jester_negative_rounds = card.ability.hnds_jester_negative_rounds - 1
+			card.ability.hnds_jester_negative_rounds =
+				math.min(3, tonumber(card.ability.hnds_jester_negative_rounds) or 3) - 1
 			if card.ability.hnds_jester_negative_rounds <= 0 then
 				SMODS.calculate_effect({ message = localize("k_hnds_jester_fade") }, card)
 				SMODS.destroy_cards(card, {immediate = true, bypass_eternal = true})

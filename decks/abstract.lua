@@ -338,21 +338,25 @@ function HNDS.calculate_abstract_suits(context)
     if context.mod_probability then
         local count = count_active_dices(probability_dice_cards(context))
         if count > 0 then
-            return { numerator = (tonumber(context.numerator) or 0) + count }
+            return { numerator = (tonumber(context.numerator) or 0) + count, no_juice = true }
         end
     end
 
     if context.repetition and context.cardarea == G.play and context.other_card
         and active_suit(context.other_card, ABSTRACT_SUIT.wraiths)
     then
-        return { repetitions = 1 }
+        return {
+            repetitions = 1,
+            no_juice = true,
+            remove_default_message = true,
+        }
     end
 
     if context.individual and context.cardarea == G.play and context.other_card and not context.repetition then
         local card = context.other_card
 
         if active_suit(card, ABSTRACT_SUIT.bananas) then
-            return { mult = 3 }
+            return { mult = 3, no_juice = true }
         end
 
         if active_suit(card, ABSTRACT_SUIT.smiles) then
@@ -362,7 +366,7 @@ function HNDS.calculate_abstract_suits(context)
                     faces = faces + 1
                 end
             end
-            if faces > 0 then return { mult = faces } end
+            if faces > 0 then return { mult = faces, no_juice = true } end
         end
 
         if active_suit(card, ABSTRACT_SUIT.flowers) then
@@ -372,6 +376,7 @@ function HNDS.calculate_abstract_suits(context)
                 card.ability.perma_bonus = (tonumber(card.ability.perma_bonus) or 0) + gain
                 return {
                     chips = gain,
+                    no_juice = true,
                     remove_default_message = true,
                     message = localize('k_upgrade_ex'),
                     colour = G.C.CHIPS,
@@ -395,7 +400,7 @@ function HNDS.calculate_abstract_suits(context)
             and SMODS and type(SMODS.pseudorandom_probability) == 'function'
             and SMODS.pseudorandom_probability(context.destroy_card, 'hnds_abstract_bananas', 1, 6)
         then
-            return { remove = true }
+            return { remove = true, no_juice = true }
         end
     end
 
@@ -406,7 +411,7 @@ function HNDS.calculate_abstract_suits(context)
         and SMODS and type(SMODS.pseudorandom_probability) == 'function'
         and SMODS.pseudorandom_probability(context.other_card, 'hnds_abstract_free_parking', 1, 2)
     then
-        SMODS.calculate_effect({ dollars = 1 }, context.other_card)
+        SMODS.calculate_effect({ dollars = 1, no_juice = true }, context.other_card)
         return
     end
 end
@@ -703,6 +708,26 @@ local function chaos_tarot_valid_target(def, target)
     return false
 end
 
+local function chaos_tarot_is_collection_card(card)
+    local area = card and card.area
+    if not area then return false end
+    if area.config and area.config.collection then return true end
+    if G and type(G.your_collection) == 'table' then
+        for _, collection_area in ipairs(G.your_collection) do
+            if area == collection_area then return true end
+        end
+    end
+    return false
+end
+
+local function chaos_tarot_target(def, card)
+    if not def then return nil end
+    if card and card.ability and card.ability.hnds_chaos_tarot_suit then
+        return card.ability.hnds_chaos_tarot_suit
+    end
+    return card and card.hnds_chaos_tarot_suit or def.vanilla
+end
+
 local function chaos_tarot_roll_target(def)
     if not def then return nil end
     if type(pseudorandom_element) == 'function' and type(pseudoseed) == 'function' then
@@ -722,8 +747,9 @@ end
 local function chaos_tarot_refresh_ability(card, reroll)
     local def = chaos_tarot_definition(card)
     if not def or not card.ability then return end
-    if chaos_tarots_enabled() then
-        local target = card.ability.hnds_chaos_tarot_suit or card.hnds_chaos_tarot_suit
+    local active = chaos_tarots_enabled() and not chaos_tarot_is_collection_card(card)
+    if active then
+        local target = chaos_tarot_target(def, card)
         if reroll or not chaos_tarot_valid_target(def, target) then
             target = chaos_tarot_roll_target(def)
         end
@@ -752,23 +778,46 @@ local function chaos_tarot_sprite_pos_available(atlas, pos)
     return pos.x >= 0 and pos.x < 6 and pos.y >= 0 and pos.y < 4
 end
 
+local function chaos_tarot_apply_vanilla_sprite(card)
+    local sprite = card and card.children and card.children.center
+    local center = card and card.config and card.config.center
+    if not (sprite and center) then return end
+    local atlases = G and G.ASSET_ATLAS
+    local atlas = atlases and (atlases[center.atlas or center.set] or atlases.Tarot)
+    if atlas then sprite.atlas = atlas end
+    if center.pos and sprite.set_sprite_pos then sprite:set_sprite_pos(center.pos) end
+end
+
+local function chaos_tarot_visual_mode(def, card)
+    if not (def and chaos_tarots_enabled() and not chaos_tarot_is_collection_card(card)) then
+        return 'vanilla'
+    end
+    if chaos_tarot_target(def, card) == def.vanilla then return 'vanilla' end
+    local atlas = G and G.ASSET_ATLAS and (G.ASSET_ATLAS.hnds_Consumables or G.ASSET_ATLAS.Consumables)
+    if not chaos_tarot_sprite_pos_available(atlas, def.pos) then return 'vanilla' end
+    return 'chaos', atlas
+end
+
 local function chaos_tarot_apply_sprite(card)
     local def = chaos_tarot_definition(card)
-    if not (def and card and card.children and card.children.center) then return end
-    if not chaos_tarots_enabled() then return end
-    local atlas = G and G.ASSET_ATLAS and (G.ASSET_ATLAS.hnds_Consumables or G.ASSET_ATLAS.Consumables)
-    if not chaos_tarot_sprite_pos_available(atlas, def.pos) then return end
+    if not (def and card and card.children and card.children.center) then return 'vanilla' end
+    local visual, atlas = chaos_tarot_visual_mode(def, card)
+    if visual ~= 'chaos' then
+        chaos_tarot_apply_vanilla_sprite(card)
+        return 'vanilla'
+    end
     card.children.center.atlas = atlas
     if card.children.center.set_sprite_pos then
         card.children.center:set_sprite_pos(def.pos)
     end
+    return 'chaos'
 end
 
 local function chaos_tarot_loc_vars(center, card)
     local def = chaos_tarot_definition(center)
     if not def then return {} end
     local target = def.vanilla
-    if chaos_tarots_enabled() and card and card.ability then
+    if chaos_tarots_enabled() and not chaos_tarot_is_collection_card(card) and card and card.ability then
         target = card.ability.hnds_chaos_tarot_suit or target
     end
     local max_highlighted = center.config and center.config.max_highlighted or 3
@@ -808,29 +857,47 @@ then
                 return chaos_tarot_loc_vars(self, card)
             end,
             set_sprites = function(self, card, front)
-                chaos_tarot_apply_sprite(card)
-                card.hnds_chaos_tarot_visual = chaos_tarots_enabled()
+                card.hnds_chaos_tarot_visual = chaos_tarot_apply_sprite(card)
+                card.hnds_chaos_tarot_active = chaos_tarots_enabled()
+                    and not chaos_tarot_is_collection_card(card)
             end,
             load = function(self, card, card_table, other_card)
                 chaos_tarot_refresh_ability(card, false)
-                chaos_tarot_apply_sprite(card)
-                card.hnds_chaos_tarot_visual = chaos_tarots_enabled()
+                card.hnds_chaos_tarot_visual = chaos_tarot_apply_sprite(card)
+                card.hnds_chaos_tarot_active = chaos_tarots_enabled()
+                    and not chaos_tarot_is_collection_card(card)
             end,
             update = function(self, card, dt)
-                local active = chaos_tarots_enabled()
-                if card.hnds_chaos_tarot_visual ~= active then
+                local def = chaos_tarot_definition(self)
+                if not (def and card.ability) then return end
+                local active = chaos_tarots_enabled() and not chaos_tarot_is_collection_card(card)
+                local changed = false
+                if card.hnds_chaos_tarot_active ~= active then
                     chaos_tarot_refresh_ability(card, active)
-                    card.hnds_chaos_tarot_visual = active
+                    card.hnds_chaos_tarot_active = active
+                    changed = true
+                elseif active and not chaos_tarot_valid_target(def, chaos_tarot_target(def, card)) then
+                    chaos_tarot_refresh_ability(card, true)
+                    changed = true
+                elseif not active and (card.ability.hnds_chaos_tarot_suit ~= nil
+                    or card.hnds_chaos_tarot_suit ~= nil
+                    or card.ability.consumeable and card.ability.consumeable.suit_conv ~= def.vanilla)
+                then
+                    chaos_tarot_refresh_ability(card, false)
+                    changed = true
+                end
+
+                local visual = chaos_tarot_visual_mode(def, card)
+                if card.hnds_chaos_tarot_visual ~= visual then
                     if card.set_sprites and card.config and card.config.center then
                         card:set_sprites(card.config.center)
+                    else
+                        card.hnds_chaos_tarot_visual = chaos_tarot_apply_sprite(card)
                     end
-                    card.ability_UIBox_table = nil
-                    if card.config then
-                        card.config.h_popup = nil
-                        card.config.h_popup_config = nil
-                    end
-                elseif active and card.ability and not chaos_tarot_valid_target(chaos_tarot_definition(self), card.ability.hnds_chaos_tarot_suit) then
-                    chaos_tarot_refresh_ability(card, true)
+                    changed = true
+                end
+
+                if changed then
                     card.ability_UIBox_table = nil
                     if card.config then
                         card.config.h_popup = nil
@@ -1247,15 +1314,72 @@ local abstract_config_preview_groups = {
     { ABSTRACT_SUIT.free_parking_spots, ABSTRACT_SUIT.wraiths, ABSTRACT_SUIT.beans },
 }
 
+local function abstract_preview_copyable_card(card)
+    return type(card) == 'table'
+        and type(card.ability) == 'table'
+        and type(card.config) == 'table'
+        and type(card.config.center) == 'table'
+        and type(card.T) == 'table'
+end
+
+local function abstract_preview_card_lookup()
+    local lookup = {}
+    local seen = {}
+    local function add(card)
+        if not abstract_preview_copyable_card(card) or seen[card] then return end
+        seen[card] = true
+        for _, field in ipairs({ 'playing_card', 'sort_id', 'ID' }) do
+            local value = card[field]
+            if value ~= nil then
+                local key = tostring(value)
+                if lookup[key] == nil then lookup[key] = card end
+            end
+        end
+    end
+    local function add_cards(cards)
+        if type(cards) ~= 'table' then return end
+        for _, card in pairs(cards) do add(card) end
+    end
+
+    add_cards(G and G.playing_cards)
+    for _, area in ipairs({ G and G.deck, G and G.hand, G and G.play, G and G.discard }) do
+        add_cards(area and area.cards)
+    end
+    if G and G.I and type(G.I.CARD) == 'table' then
+        for key, value in pairs(G.I.CARD) do
+            add(key)
+            add(value)
+        end
+    end
+    return lookup
+end
+
+local function abstract_resolve_preview_card(value, lookup)
+    if abstract_preview_copyable_card(value) then return value, false end
+    if type(value) ~= 'string' and type(value) ~= 'number' then return nil, false end
+
+    local key = tostring(value)
+    local greyed = false
+    if type(value) == 'string' and key:sub(-6) == 'Greyed' then
+        key = key:sub(1, -7)
+        greyed = true
+    end
+    return lookup[key], greyed
+end
+
 local function append_abstract_card_rows(deck_tables, suit_cards, unplayed_only, groups)
     if type(deck_tables) ~= 'table' or type(suit_cards) ~= 'table' then return false end
     local before = #deck_tables
+    local card_lookup = abstract_preview_card_lookup()
     for _, group in ipairs(groups) do
         local cards = {}
         for _, suit_key in ipairs(group) do
             local source = suit_cards[suit_key]
             if type(source) == 'table' then
-                for _, card in ipairs(source) do cards[#cards + 1] = card end
+                for _, value in ipairs(source) do
+                    local card, greyed = abstract_resolve_preview_card(value, card_lookup)
+                    if card then cards[#cards + 1] = { card = card, greyed = greyed } end
+                end
             end
         end
         if #cards > 0 then
@@ -1276,16 +1400,19 @@ local function append_abstract_card_rows(deck_tables, suit_cards, unplayed_only,
             deck_tables[#deck_tables + 1] = { n = G.UIT.R, config = { align = 'cm', padding = 0 }, nodes = {
                 { n = G.UIT.O, config = { object = view_deck } }
             } }
-            for _, original in ipairs(cards) do
-                local greyed = nil
+            for _, entry in ipairs(cards) do
+                local original = entry.card
+                local greyed = entry.greyed or nil
                 if unplayed_only and not ((original.area and original.area == G.deck) or original.ability.wheel_flipped) then greyed = true end
                 local copy = copy_card(original, nil, 0.7)
-                copy.greyed = greyed
-                if HNDS.abstract_wraith_adjacent(original) then copy.debuff = false end
-                copy.T.x = view_deck.T.x + view_deck.T.w / 2
-                copy.T.y = view_deck.T.y
-                copy:hard_set_T()
-                view_deck:emplace(copy)
+                if type(copy) == 'table' and type(copy.T) == 'table' then
+                    copy.greyed = greyed
+                    if HNDS.abstract_wraith_adjacent(original) then copy.debuff = false end
+                    copy.T.x = view_deck.T.x + view_deck.T.w / 2
+                    copy.T.y = view_deck.T.y
+                    if type(copy.hard_set_T) == 'function' then copy:hard_set_T() end
+                    view_deck:emplace(copy)
+                end
             end
         end
     end

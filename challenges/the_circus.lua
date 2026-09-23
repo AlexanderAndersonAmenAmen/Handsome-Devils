@@ -27,7 +27,7 @@ SMODS.Challenge {
 			{ id = 'j_hnds_fregoli' },
 			{ id = 'j_hnds_pennywise' },
 			{ id = 'j_hnds_krusty' },
-			{ id = 'j_hnds_banana_split' },
+			{ id = 'j_hnds_sunny_side' },
 			{ id = 'j_invisible' },
 			{ id = 'c_judgement' },
 			{ id = 'c_wraith' },

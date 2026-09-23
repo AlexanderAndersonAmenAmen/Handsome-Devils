@@ -508,7 +508,11 @@ SMODS.Sticker {
         if card and card.ability and card.ability.hnds_curse_offer == 'offer_spectral_gen' then
             card.ability.hnds_curse_offer = 'offer_interest_cap'
         end
-        _G.HNDS_CURRENT_CURSE_CARD = card
+        _G.HNDS_CURRENT_CURSE_DATA = card and card.ability and {
+            offer = card.ability.hnds_curse_offer,
+            price = card.ability.hnds_curse_price,
+            display_mode = card.ability.hnds_curse_display_mode,
+        } or nil
         return { vars = {} }
     end,
 

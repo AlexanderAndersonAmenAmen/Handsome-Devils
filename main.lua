@@ -585,6 +585,11 @@ end
 
 SMODS.current_mod.calculate = function(self, context)
 	if type(context) ~= 'table' then return end
+	if HNDS.install_green_seal_draw_hook then HNDS.install_green_seal_draw_hook() end
+	if context.setting_blind and G and G.GAME then G.GAME.hnds_green_seal_pending = 0 end
+	if context.end_of_round and G and G.GAME then G.GAME.hnds_green_seal_pending = 0 end
+	if context.before and context.full_hand and HNDS.queue_green_seal_cards then HNDS.queue_green_seal_cards(context.full_hand, false) end
+	if context.pre_discard and context.full_hand and HNDS.queue_green_seal_cards then HNDS.queue_green_seal_cards(context.full_hand, false) end
 	if HNDS.calculate_vanilla_tweaks then HNDS.calculate_vanilla_tweaks(context) end
 	if HNDS.calculate_aberrant then HNDS.calculate_aberrant(context) end
 
@@ -806,38 +811,38 @@ local files = {
 
 			"dallas",
 			"hoxton",
-			"bizzare_joker",
+			"fun_police",
 			"wolf",
 			"chains",
 
-			"spaghettified_joker",
 			"jevil",
-			"ecg",
-			"grim_jester",
-			"jack_in_the_box",
-
 			"error",
-			"water_slide",
-			"handicap_placard",
-			"fun_pilled",
+			"ecg",
+			"jack_in_the_box",
 			"cursed_doll",
 
-			"dark_pact",
+			"headless_joker",
+			"survey",
+		    "angry_mob",
+			"one_punchline_man",
+			"stone_mask",
+
+			"grim_jester",
+			"spaghettified_joker",
+			"handicap_placard",
+			"water_slide",
+			"fun_pilled",
+
+			"sunny_side",
 			"be_not_afraid",
 			"time_fcked_joker",
 			"joker_reverse",
 			"jodiac",
 
-			"banana_split",
-			"supersuit",
-			"jokes_aside",
-		    "headless_joker",
-		    "angry_mob",
-
 		    "seismic_activity",
-	        "creepy",
+			"bad_time",
+			"jokes_aside",
 			"imposter",
-			"stone_mask",
 			"head_of_medusa",
 
 			"conquest",
@@ -850,24 +855,30 @@ local files = {
 			"color_of_madness",
 			"dark_idol",
 			"perfectionist",
-			"one_punchline_man",
+			"supersuit",
 
-			"dark_humor",
-			"digital_circus",
 			"ancestor",
+			"digital_circus",
+			"dark_pact",
 			"fregoli",
 			"ms_fortune",
 
 			"jester_in_yellow",
-			"occultist",
+			"dark_humor",
 			"contagion",
 			"energized",
 			"last_laugh",
 
 			"walking_joke",
 			"demented",
-			"excommunicado",
 			"meme",
+			"excommunicado",
+			"occultist",
+
+			"creepy",
+			"big_d",
+			"bizzare_joker",
+			"superstition",
 			"handsome",
 
 			"pennywise",
@@ -875,23 +886,24 @@ local files = {
 			"krusty",
 			"billy",
 			"arthur",
+
 		},
 		directory = "jokers/",
 	},
 	seals = {
 		list = {
 			"black_seal",
-			"spectralseal"
+			"green_seal"
 		},
 		directory = "seals/",
 	},
 	spectrals = {
 		list = {
 			"abyss",
-			"possess",
-			"exchange",
+			"rebirth",
+			"void",
 			"cycle",
-			"petrify",
+			"gaze",
 			"gateway",
 			"collision",
 			"dream",
@@ -1035,6 +1047,8 @@ SMODS.Sound({ key = "creepy_4", path = "Creepy_4.ogg", })
 
 SMODS.Atlas({ key = "HDtags", path = "HDtags.png", px = 34, py = 34, })
 SMODS.Atlas({ key = "Jokers",      path = "Jokers.png", px = 71, py = 95 })
+SMODS.Atlas({ key = "SunnySide", path = "SunnySide.png", px = 71, py = 95 })
+SMODS.Atlas({ key = "BadTime", path = "bad_time.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "JackOfLanterns", path = "JackOfLanterns.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "Faceless_opt1", path = "Faceless_opt1.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "Faceless_opt2", path = "Faceless_opt2.png", px = 71, py = 95 })
@@ -1109,6 +1123,7 @@ function Game:init_game_object(...)
 	ret.hnds_ms_fortune_sell_bonus = ret.hnds_ms_fortune_sell_bonus or 0
 	ret.hnds_ms_fortune_shop_active = ret.hnds_ms_fortune_shop_active or false
 	ret.hnds_ms_fortune_obtained = ret.hnds_ms_fortune_obtained or {}
+	ret.hnds_big_d_name_serial = ret.hnds_big_d_name_serial or 0
 	return ret
 end
 
@@ -1140,6 +1155,7 @@ assert(SMODS.load_file("lib/vanilla_investment_tag.lua"))()
 assert(SMODS.load_file("lib/conquest_tracker.lua"))()
 assert(SMODS.load_file("lib/blind_souls.lua"))()
 assert(SMODS.load_file("lib/utils.lua"))()
+assert(SMODS.load_file("lib/conjuring_replacements.lua"))()
 assert(SMODS.load_file("lib/headless_jack.lua"))()
 assert(SMODS.load_file("lib/cursed_pack.lua"))()
 
@@ -1158,5 +1174,7 @@ assert(SMODS.load_file("lib/challenge_rules.lua"))()
 
 assert(SMODS.load_file("lib/time_fcked.lua"))()
 assert(SMODS.load_file("lib/billy_puzzle.lua"))()
+if HNDS.install_big_d_hooks then HNDS.install_big_d_hooks() end
+if HNDS.install_dark_pact_hooks then HNDS.install_dark_pact_hooks() end
 
 if HNDS.apply_unlock_state_migration then HNDS.apply_unlock_state_migration() end

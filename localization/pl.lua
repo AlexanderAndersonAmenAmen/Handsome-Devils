@@ -4,6 +4,25 @@ return {
 
 		Joker = {
 
+			j_idol = {
+				name = "The Idol",
+				text = {
+					"This Joker gains {X:mult,C:white}X#1#{}",
+					"Mult when each played",
+					"{C:attention}#2#{} of {V:1}#3#{} is scored",
+					"{s:0.8}Card changes every round",
+					"{C:inactive}(Currently {X:mult,C:white}X#4#{C:inactive} Mult)",
+				},
+			},
+
+			j_hnds_survey = {
+				name = "Survey",
+				text = {
+					"When you draw a",
+					"{C:attention}face{} card, gain {C:money}$1{}",
+				},
+			},
+
 			j_hnds_color_of_madness = {
 				name = "Kolor szaleństwa",
 				text = {
@@ -24,15 +43,13 @@ return {
 					"{C:tarot}amultet{} lub {C:spectral}eteryczny{} {C:attention}znacznik{}",
 				},
 			},
-			j_hnds_banana_split = {
-				name = "Podział banana",
-				text = {
-					"Mnoż. {X:mult,C:white}X#1#{}",
-					"{C:green}#2# na #3#{} szans by",
-					"{C:attention}Utworzyć kopie{} tej",
-					"karty na końcu rundy",
-					"{C:inactive}(wymaga miejsca){}",
-				},
+			j_hnds_sunny_side = {
+			    name = "Sunny Side",
+			    text = {
+			        "{C:attention}Seals{} on {C:attention}face{} cards",
+			        "trigger their effects",
+			        "an additional time",
+			    },
 			},
 			j_hnds_head_of_medusa = {
 				name = "Głowa Meduzy",
@@ -98,13 +115,15 @@ return {
 				},
 			},
 			j_hnds_stone_mask = {
-				name = "Kamienna maska",
-				text = {
-					"Gdy dobierasz {C:attention}Kamienną kartę{},",
-					"otrzymuje losową {C:dark_edition}Wersję{}",
-					"i losową {C:attention}Pieczęć{}",
-					"do końca rundy",
-				},
+			    name = "Stone Mask",
+			    text = {
+			        "When you draw a",
+			        "{C:attention}face{} card, gain {C:money}$1{}",
+			    },
+			    unlock = {
+			        "Reach {X:mult,C:white}X5{} Mult",
+			        "with {C:attention}Vampire{}",
+			    },
 			},
 			j_hnds_jokestone = {
 				name = "Żartokamień",
@@ -200,16 +219,16 @@ return {
 					"karty w ręce",
 				},
 			},
-			c_hnds_petrify = {
-				name = "Skamienienie",
+			c_hnds_gaze = {
+				name = "Gaze",
 				text = {
 					"Wszystkie karty {C:attention}figur{}",
 					"w ręce stają się {C:attention}kamienne{},",
 					"zyskujesz {C:money}#1#${} za każdą skamieniałą kartę",
 				},
 			},
-			c_hnds_exchange = {
-				name = "Wymiana",
+			c_hnds_void = {
+				name = "Void",
 				text = {
 					"Dodaj {C:dark_edition}negatyw{} do",
 					"{C:attention}#1#{} wybranych kart",
@@ -363,16 +382,18 @@ return {
 			hnds_black_seal = {
 				name = "Czarna Pieczęć",
 				text = {
-					"Ta karta liczy się w punktowaniu",
-					"jeśli jest w ręce",
+					"Po zagraniu i punktowaniu",
+					"połóż sąsiednie karty",
+					"na {C:attention}wierzchu talii{}",
+					"{C:inactive}(bez kart z Czarną Pieczęcią)",
 				},
 			},
 			hnds_green_seal = {
 				name = "Zielona Pieczęć",
 				text = {
-					"Dobierasz {C:attention}2{} dodatkowe",
-					"karty gdy ta karta jest {C:attention}punktowana",
-					"lub {C:attention}odrzucona",
+					"After played or",
+					"discarded, draw",
+					"{C:attention}3{} extra cards",
 				},
 			},
 			p_hnds_cursed_pack = {
@@ -666,9 +687,19 @@ return {
 				},
 			},
 		},
+		Blind = {
+			bl_serpent = {
+				name = "The Serpent",
+				text = {
+					"After Play or Discard,",
+					"draw up to 3 cards",
+				},
+			},
+		},
 	},
 	misc = {
 		dictionary = {
+			k_hnds_rank_up = "Rank Up!",
 			k_hnds_krusty_voucher_tag = "Voucher Tag",
 			k_hnds_krusty_voucher_tags = "Voucher Tags",
 			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
@@ -691,7 +722,7 @@ return {
 			k_hnds_awaken = "Wstań!",
 			k_hnds_IPLAYPOTOFGREED = "JA GRAM!...",
 			k_hnds_balloons = "Wszystkie stracone!",
-			k_hnds_banana_split = "Podzielone!",
+			k_hnds_sunny_side = "Sunny!",
 			k_hnds_color_of_madness = "Szaleństwo!",
 			k_hnds_occultist = "Ucz się!",
 			k_hnds_cursed_pack = "Przeklęta paczka",

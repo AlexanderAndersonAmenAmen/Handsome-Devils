@@ -1,0 +1,13 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 10000
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "hand_space = math.min(#G.deck.cards, 3)"
+position = "at"
+payload = "hand_space = HNDS and HNDS.serpent_hand_space and HNDS.serpent_hand_space(math.min(#G.deck.cards, 3)) or math.min(#G.deck.cards, 3)"
+match_indent = true
+times = 1

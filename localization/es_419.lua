@@ -1,6 +1,25 @@
 return {
 	descriptions = {
 		Joker = {
+			j_idol = {
+				name = "The Idol",
+				text = {
+					"This Joker gains {X:mult,C:white}X#1#{}",
+					"Mult when each played",
+					"{C:attention}#2#{} of {V:1}#3#{} is scored",
+					"{s:0.8}Card changes every round",
+					"{C:inactive}(Currently {X:mult,C:white}X#4#{C:inactive} Mult)",
+				},
+			},
+
+			j_hnds_survey = {
+				name = "Survey",
+				text = {
+					"When you draw a",
+					"{C:attention}face{} card, gain {C:money}$1{}",
+				},
+			},
+
 			j_hnds_color_of_madness = {
 				name = "El Color de la Locura",
 				text = {
@@ -28,13 +47,12 @@ return {
 				},
 			},
 			j_hnds_dark_idol = {
-				name = "Ídolo Oscuro",
+				name = "Ídolo Falso",
 				text = {
-					"Gana {X:mult,C:white}X#1#{} Multi por",
-					"cada {C:attention}#2#{} de {V:1}#3#{}",
-					"anotado y los {C:red}destruye{}",
-					"{s:0.8}(Cambia al final de la ronda)",
-					"{C:inactive}(Actualmente {X:mult,C:white}X#4#{C:inactive} Multi)"
+					"When you draw",
+					"#1# {C:attention}#2#{}, gain {C:mult}+#3#{} Mult",
+					"{s:0.8}Rank changes every round{}",
+					"{C:inactive}(Currently {C:mult}+#4#{C:inactive} Mult)",
 				},
 			},
 			j_hnds_perfectionist = {
@@ -46,15 +64,13 @@ return {
 					"{C:mult}+#1#{} Multi y {C:chips}+#2#{} Fichas",
 				},
 			},
-			j_hnds_banana_split = {
-				name = "Banana Split",
-				text = {
-					"{X:mult,C:white}X#1#{} Multi",
-					"prob. de {C:green}#2# en #3#{} de",
-					"{C:attention}Duplicar{} esta carta",
-					"al final de la ronda",
-					"{C:inactive}(Debe haber espacio){}",
-				},
+			j_hnds_sunny_side = {
+			    name = "Sunny Side",
+			    text = {
+			        "{C:attention}Seals{} on {C:attention}face{} cards",
+			        "trigger their effects",
+			        "an additional time",
+			    },
 			},
 			j_hnds_head_of_medusa = {
 				name = "Cabeza de Medusa",
@@ -124,17 +140,15 @@ return {
 				},
 			},
 			j_hnds_stone_mask = {
-				name = "Máscara de Piedra",
-				text = {
-					"Cuando robas una",
-					"{C:attention}Carta de Piedra{}, obtiene una",
-					"{C:dark_edition}Edición{} y un {C:attention}Sello{} aleatorios",
-					"hasta el final de la ronda",
-				},
-				unlock = {
-					"Alcanza {X:mult,C:white}X5{} Multi",
-					"con {C:attention}Vampiro{}",
-				}
+			    name = "Stone Mask",
+			    text = {
+			        "When you draw a",
+			        "{C:attention}face{} card, gain {C:money}$1{}",
+			    },
+			    unlock = {
+			        "Reach {X:mult,C:white}X5{} Mult",
+			        "with {C:attention}Vampire{}",
+			    },
 			},
 			j_hnds_jokestone = {
 				name = "Jokestone",
@@ -421,13 +435,16 @@ return {
 				}
 			},
 			j_hnds_one_punchline_man = {
-				name = "One Punchline Man",
-				text = {
-					"Gana {X:mult,C:white}X0.25{} Multi por",
-					"cada {C:blue}mano{} que no usaste",
-					"al final de la ronda",
-					"{C:inactive}(Actualmente {X:mult,C:white}X#1#{C:inactive} Multi)",
-				},
+			    name = "One Punchline Man",
+			    text = {
+			        "After hand is played,",
+			        "put {C:attention}first{} scored card",
+			        "on top of your deck",
+			    },
+			    unlock = {
+			        "Beat {C:attention}3{} Boss Blinds",
+			        "in a row in {C:attention}one hand{}",
+			    },
 			},
 			j_hnds_dynamic_duos = {
 				name = "Dúo Dinámico",
@@ -506,10 +523,9 @@ return {
 			b_hnds_conjuring = {
 				name = "Baraja Conjuradora",
 				text = {
-					"La {C:money}Tienda{} reemplaza",
-					"los {C:attention}Paquetes Potenciadores{}",
-					"por {C:attention,T:p_hnds_magic_1}Paquetes Mágicos{}",
-					"que contienen {C:dark_edition,E:1}cartas al azar{}",
+					"Todos los {C:attention}Paquetes Potenciadores{}",
+					"se reemplazan por",
+					"{C:attention,T:p_hnds_magic_1}Paquetes Mágicos{}",
 				}
 			},
 			b_hnds_circus = {
@@ -534,10 +550,10 @@ return {
 			b_hnds_cursed = {
 				name = "Baraja Maldita",
 				text = {
-					"{C:attention}+1{} espacio para {C:attention}Sobres{}",
-					"pero no se pueden {C:red}saltar{}",
-					"Abre un {C:red,T:p_hnds_cursed_pack}Paquete Maldito{} al",
-					"final de la {C:attention}Ante 1{}",
+					"Cada {C:attention}2{} Antes",
+					"abre un {C:red,T:p_hnds_cursed_pack}Paquete Maldito{}",
+					"Los {C:attention}Sobres{}",
+					"no se pueden {C:red}saltar{}",
 				}
 			},
 		},
@@ -612,10 +628,9 @@ return {
 			sleeve_hnds_conjuring_sleeve = {
 				name = "Funda de Conjuradora",
 				text = {
-					"La {C:money}Tienda{} reemplaza",
-					"los {C:attention}Paquetes Potenciadores{}",
-					"por {C:attention,T:p_hnds_magic_1}Paquetes Mágicos{}",
-					"que contienen {C:dark_edition,E:1}cartas al azar{}",
+					"Todos los {C:attention}Paquetes Potenciadores{}",
+					"se reemplazan por",
+					"{C:attention,T:p_hnds_magic_1}Paquetes Mágicos{}",
 				}
 			},
 			sleeve_hnds_conjuring_sleeve_alt = {
@@ -689,8 +704,8 @@ return {
                     "en tu mano",
 				},
 			},
-			c_hnds_exchange_contagion = {
-				name = "Intercambio",
+			c_hnds_void_contagion = {
+				name = "Void",
 				text = {
 					"Otorga edición {C:dark_edition}Negativa{}",
 					"a {C:attention}#1#{} cartas seleccionadas,",
@@ -707,31 +722,33 @@ return {
 			c_hnds_cycle = {
 				name = "Ciclo",
 				text = {
-					"Transforma todos tus {C:attention}Comodines{}",
-					"en otros de la misma {C:attention}rareza{}",
+					"Add a {V:1}Green Seal{}",
+					"to {C:attention}#1#{} selected",
+					"card in your hand",
 				},
 			},
-			c_hnds_petrify = {
-				name = "Petrificación",
+			c_hnds_gaze = {
+				name = "Gaze",
 				text = {
 					"Convierte las cartas de {C:attention}figura{}",
 					"en {C:attention}piedra{} y ganas {C:money}$#1#{}",
 					"por carta petrificada",
 				},
 			},
-			c_hnds_exchange = {
-				name = "Intercambio",
+			c_hnds_void = {
+				name = "Void",
 				text = {
 					"Otorga edición {C:dark_edition}Negativa{}",
 					"a {C:attention}#1#{} carta seleccionada,",
 					"y pierdes {C:blue}#2#{} mano",
 				},
 			},
-			c_hnds_possess = {
-				name = "Poseción",
+			c_hnds_rebirth = {
+				name = "Rebirth",
 				text = {
-					"Otorga un {C:spectral}Sello Espectral{}",
-					"a {C:attention}#1#{} carta seleccionada",
+					"Replace your {C:attention}Jokers{}",
+					"with new ones of",
+					"the {C:attention}same rarity{}",
 				},
 			},
 			c_hnds_dream = {
@@ -777,6 +794,15 @@ return {
 		},
 
 		Other = {
+			hnds_green_seal = {
+				name = "Green Seal",
+				text = {
+					"After played or",
+					"discarded, draw",
+					"{C:attention}3{} extra cards",
+				},
+			},
+
             hnds_jigsaw_progress_empty = {
                 name = "Played Poker Hands",
                 text = {
@@ -878,59 +904,10 @@ return {
 			hnds_black_seal = {
 				name = "Sello Negro",
 				text = {
-					"Al estar en mano,",
-					"se considera que",
-					"está {C:attention}anotando{}",
-				},
-			},
-			hnds_spectralseal_seal = {
-				name = "Sello Espectral",
-				text = {
-					"Crea una carta {C:spectral}Espectral{}",
-					"cada {C:attention}#1#{} {C:inactive}[#2#]{} manos de",
-					"póker {C:attention}únicas{} que esta carta jugó",
-					"{C:inactive}(Debe haber espacio){}",
-				}
-			},
-			hnds_spectralseal_progress_empty = {
-				name = "Manos de Póker Anotadas",
-				text = {
-					"Actualmente: {C:attention}#1#{}",
-					"{C:inactive}(#2#/#3# manos únicas){}",
-				},
-			},
-			hnds_spectralseal_progress_1 = {
-				name = "Manos de Póker Anotadas",
-				text = {
-					"{C:attention}#1#{}",
-					"{C:inactive}(#2#/#3# manos únicas){}",
-				},
-			},
-			hnds_spectralseal_progress_2 = {
-				name = "Manos de Póker Anotadas",
-				text = {
-					"{C:attention}#1#{}",
-					"{C:attention}#2#{}",
-					"{C:inactive}(#3#/#4# manos únicas){}",
-				},
-			},
-			hnds_spectralseal_progress_3 = {
-				name = "Manos de Póker Anotadas",
-				text = {
-					"{C:attention}#1#{}",
-					"{C:attention}#2#{}",
-					"{C:attention}#3#{}",
-					"{C:inactive}(#4#/#5# manos únicas){}",
-				},
-			},
-			hnds_spectralseal_progress_4 = {
-				name = "Manos de Póker Anotadas",
-				text = {
-					"{C:attention}#1#{}",
-					"{C:attention}#2#{}",
-					"{C:attention}#3#{}",
-					"{C:attention}#4#{}",
-					"{C:inactive}(#5#/#6# manos únicas){}",
+					"Pon cartas adyacentes",
+					"encima del {C:attention}mazo{} cuando",
+					"esta carta se juega y anota",
+					"{C:inactive}(salvo las de Sello Negro)",
 				},
 			},
 			p_hnds_spectral_ultra = {
@@ -1474,6 +1451,14 @@ return {
 			}
 		},
 		Blind = {
+			bl_serpent = {
+				name = "The Serpent",
+				text = {
+					"After Play or Discard,",
+					"draw up to 3 cards",
+				},
+			},
+
 			bl_hnds_blind_devil = {
 				name = "El Diablo",
 				text = {
@@ -1514,6 +1499,7 @@ return {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_rank_up = "Rank Up!",
 			k_hnds_krusty_voucher_tag = "Etiqueta de Vale",
 			k_hnds_krusty_voucher_tags = "Etiquetas de Vale",
 			hnds_upgrade_blind = "Mejorar Ciega",
@@ -1536,7 +1522,7 @@ return {
 			k_hnds_IPLAYPOTOFGREED = "¡YO JUEGO!...",
 			k_hnds_extint = "¡Extinto!",
 			k_hnds_balloons = "¡Sin Globos!",
-			k_hnds_banana_split = "¡Split!",
+			k_hnds_sunny_side = "Sunny!",
 			k_hnds_color_of_madness = "¡Locura!",
 			k_hnds_occultist = "¡Estudio!",
 			k_hnds_splashed = "¡Salpicado!",
@@ -1587,9 +1573,9 @@ return {
 			k_hnds_water_slide_discard = "+1 Discard",
 		},
 		labels = {
+			hnds_green_seal = "Green Seal",
 			hnds_vintage = "Vintage",
 			hnds_black_seal = "Sello Negro",
-			hnds_spectralseal_seal = "Sello Espectral",
 			hnds_jester_temp_negative = "Iluminado",
 			hnds_soul = "Alma",
 			hnds_cursed = "Maldito",
