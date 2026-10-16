@@ -37,17 +37,14 @@ local TARGETS = {
     fregoli = 3,
     excommunicado = 100,
     one_punchline_man = 3,
-    perfectionist = 10,
     dark_idol = 50,
     deep_pockets = 5,
     ms_fortune = 100,
-    occultist = 150,
     clown_devil = 100,
     balloons = 50,
     seismic_activity = 30,
     angry_mob = 10,
     jokes_aside = 15,
-    jackpot = 50,
     energized = 100,
     last_laugh = 150,
 
@@ -55,10 +52,6 @@ local TARGETS = {
     most_wanted = 5,
     wait_what = 4,
 
-    dallas = 1000,
-    hoxton = 1000,
-    wolf = 1000,
-    chains = 1000,
     spaghettified_joker = 25,
     headless_joker = 30,
     time_fcked_joker = 10,
@@ -103,7 +96,6 @@ local function run_state()
     state.consumables_created_round = math.max(0, tonumber(state.consumables_created_round) or 0)
     state.money_gained_round = math.max(0, tonumber(state.money_gained_round) or 0)
     state.round_serial = math.max(0, tonumber(state.round_serial) or 0)
-    state.supersuit_flushes = state.supersuit_flushes or {Spades = false, Hearts = false, Clubs = false, Diamonds = false}
     state.coffee_break_skips = state.coffee_break_skips or {}
     state.ecg_heart_round_streak = math.max(0, tonumber(state.ecg_heart_round_streak) or 0)
     state.ecg_run_heart_every_round = state.ecg_run_heart_every_round == true
@@ -121,8 +113,6 @@ local function run_state()
     state.famine_round_high_card_only = state.famine_round_high_card_only == true
     state.death_unlock = state.death_unlock == true
     state.be_not_afraid_unlock = state.be_not_afraid_unlock == true
-    state.joker_reverse_rare_sold = state.joker_reverse_rare_sold == true
-    state.joker_reverse_common_bought = state.joker_reverse_common_bought == true
     return state
 end
 
@@ -221,7 +211,6 @@ local CHAOS_UNLOCK_IGNORED = {
 local HNDS_UNPREFIXED_CENTERS = {
     j_billy = true,
     j_jodiac = true,
-    j_grim_jester = true,
     j_dark_pact = true,
 }
 
@@ -551,21 +540,6 @@ local function coffee_break_complete(state)
     return state and state.coffee_break_skips["8:Small"] and state.coffee_break_skips["8:Big"] or false
 end
 
-local function reset_ante_tracking(state, ante)
-    if state.supersuit_ante ~= ante then
-        state.supersuit_ante = ante
-        state.supersuit_flushes = {Spades = false, Hearts = false, Clubs = false, Diamonds = false}
-    end
-end
-
-local function four_distinct_flush_suits(state)
-    local count = 0
-    for _, suit in ipairs({"Spades", "Hearts", "Clubs", "Diamonds"}) do
-        if state and state.supersuit_flushes[suit] then count = count + 1 end
-    end
-    return count >= 4
-end
-
 function HNDS.mark_jevil_unlock()
     local state = run_state()
     if not state or state.jevil_wild_flush then return false end
@@ -609,20 +583,14 @@ function HNDS.joker_unlock_progress(key)
     elseif key == "water_slide" then
         return HNDS.unlock_career_stat(STAT_WATER_SLIDE_EIGHTS), TARGETS[key]
     elseif key == "one_punchline_man" then return state and state.boss_one_hand_streak or 0, TARGETS[key]
-    elseif key == "perfectionist" then return HNDS.unlock_career_stat(STAT_ENHANCEMENT_CHANGES), TARGETS[key]
     elseif key == "dark_idol" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED), TARGETS[key]
     elseif key == "deep_pockets" then return state and state.consumables_created_round or 0, TARGETS[key]
     elseif key == "ms_fortune" then return HNDS.unlock_career_stat(STAT_PROBABILITY_FAILURES), TARGETS[key]
-    elseif key == "occultist" or key == "clown_devil" or key == "balloons" then
+    elseif key == "clown_devil" or key == "balloons" then
         return HNDS.unlock_career_stat(STAT_TAGS_CREATED), TARGETS[key]
     elseif key == "seismic_activity" then return state and state.stone_scored or 0, TARGETS[key]
     elseif key == "angry_mob" then return state and state.no_joker_buy_streak or 0, TARGETS[key]
     elseif key == "jokes_aside" then return state and state.jokers_sold or 0, TARGETS[key]
-    elseif key == "jackpot" then return state and state.money_gained_round or 0, TARGETS[key]
-    elseif key == "dallas" then return HNDS.unlock_career_stat(STAT_HEART_CARDS_SCORED), TARGETS[key]
-    elseif key == "hoxton" then return HNDS.unlock_career_stat(STAT_DIAMOND_CARDS_SCORED), TARGETS[key]
-    elseif key == "wolf" then return HNDS.unlock_career_stat(STAT_CLUB_CARDS_SCORED), TARGETS[key]
-    elseif key == "chains" then return HNDS.unlock_career_stat(STAT_SPADE_CARDS_SCORED), TARGETS[key]
     elseif key == "headless_joker" then return HNDS.unlock_career_stat(STAT_HEADLESS_FACE_CARDS), TARGETS[key]
     elseif key == "time_fcked_joker" then return HNDS.unlock_career_stat(STAT_RUN_RESTARTS), TARGETS[key]
     elseif key == "ecg" then return state and state.ecg_heart_hand_streak or 0, 10
@@ -681,24 +649,17 @@ function HNDS.joker_unlock_condition_met(key, args)
     elseif key == "one_punchline_man" then return state and state.boss_one_hand_streak >= TARGETS[key] or false
     elseif key == "digital_circus" then return distinct_joker_rarity_count() >= 4
     elseif key == "handsome" then return distinct_joker_edition_count() >= 4
-    elseif key == "perfectionist" then return HNDS.unlock_career_stat(STAT_ENHANCEMENT_CHANGES) >= TARGETS[key]
     elseif key == "dark_idol" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED) >= TARGETS[key]
     elseif key == "color_of_madness" then return deck_enhancement_count("m_wild") >= 10
     elseif key == "deep_pockets" then return state and state.consumables_created_round >= TARGETS[key] or false
     elseif key == "head_of_medusa" then return deck_enhancement_count("m_stone") >= 10
     elseif key == "ms_fortune" then return HNDS.unlock_career_stat(STAT_PROBABILITY_FAILURES) >= TARGETS[key]
-    elseif key == "occultist" or key == "clown_devil" or key == "balloons" then
+    elseif key == "clown_devil" or key == "balloons" then
         return HNDS.unlock_career_stat(STAT_TAGS_CREATED) >= TARGETS[key]
     elseif key == "creepy" then return have_three_copies_of_same_joker()
     elseif key == "seismic_activity" then return state and state.stone_scored >= TARGETS[key] or false
     elseif key == "angry_mob" then return state and state.no_joker_buy_streak >= TARGETS[key] or false
-    elseif key == "supersuit" then return state and state.flags.supersuit or false
     elseif key == "jokes_aside" then return state and state.jokers_sold >= TARGETS[key] or false
-    elseif key == "jackpot" then return state and state.money_gained_round >= TARGETS[key] or false
-    elseif key == "dallas" then return HNDS.unlock_career_stat(STAT_HEART_CARDS_SCORED) >= TARGETS[key]
-    elseif key == "hoxton" then return HNDS.unlock_career_stat(STAT_DIAMOND_CARDS_SCORED) >= TARGETS[key]
-    elseif key == "wolf" then return HNDS.unlock_career_stat(STAT_CLUB_CARDS_SCORED) >= TARGETS[key]
-    elseif key == "chains" then return HNDS.unlock_career_stat(STAT_SPADE_CARDS_SCORED) >= TARGETS[key]
     elseif key == "conquest" then
         return finish_unlock("j_hnds_conquest", HNDS.unlock_career_stat(STAT_BOSSES_DEFEATED) >= TARGETS[key])
     elseif key == "war" then
@@ -715,8 +676,6 @@ function HNDS.joker_unlock_condition_met(key, args)
         return finish_unlock("j_hnds_death", state and state.death_unlock or false)
     elseif key == "be_not_afraid" then
         return finish_unlock("j_hnds_be_not_afraid", state and state.be_not_afraid_unlock or false)
-    elseif key == "joker_reverse" then
-        return finish_unlock("j_hnds_joker_reverse", state and state.joker_reverse_rare_sold and state.joker_reverse_common_bought or false)
     elseif key == "spaghettified_joker" then
         if state and state.spaghettified_max_level >= TARGETS[key] then return true end
         for _, hand in pairs((G and G.GAME and G.GAME.hands) or {}) do
@@ -920,10 +879,7 @@ function HNDS.track_unlock_context(context)
             state.has_selected_blind = true
         end
         state.joker_bought_round = false
-        state.joker_reverse_rare_sold = false
-        state.joker_reverse_common_bought = false
         reset_round_tracking(state)
-        reset_ante_tracking(state, current_ante())
         changed = true
     end
 
@@ -948,14 +904,6 @@ function HNDS.track_unlock_context(context)
             end
 
 
-            local rarity = center and normalize_rarity(center.rarity)
-            if rarity == 1 then
-                state.joker_reverse_common_bought = true
-            end
-            if state.joker_reverse_rare_sold and state.joker_reverse_common_bought then
-                HNDS.joker_unlock_condition_met("joker_reverse", { type = "hnds_joker_reverse" })
-            end
-
             changed = true
         end
     end
@@ -965,15 +913,6 @@ function HNDS.track_unlock_context(context)
     then
         context.card.hnds_unlock_sale_counted = true
         state.jokers_sold = state.jokers_sold + 1
-
-        local sold_center = context.card.config and context.card.config.center
-        local sold_rarity = sold_center and normalize_rarity(sold_center.rarity)
-        if sold_rarity == 3 then
-            state.joker_reverse_rare_sold = true
-        end
-        if state.joker_reverse_rare_sold and state.joker_reverse_common_bought then
-            HNDS.joker_unlock_condition_met("joker_reverse", { type = "hnds_joker_reverse" })
-        end
 
         changed = true
     end
@@ -1039,17 +978,7 @@ function HNDS.track_unlock_context(context)
             end
         end
 
-        local ante = current_ante()
-        reset_ante_tracking(state, ante)
 
-        if context.scoring_name == "Flush" then
-            local suit = current_flush_suit(context.scoring_hand or cards)
-            if suit and state.supersuit_flushes[suit] ~= nil and not state.supersuit_flushes[suit] then
-                state.supersuit_flushes[suit] = true
-                if four_distinct_flush_suits(state) then state.flags.supersuit = true end
-                changed = true
-            end
-        end
     end
 
     if context.individual and context.cardarea == G.play and context.other_card
@@ -1064,7 +993,7 @@ function HNDS.track_unlock_context(context)
         changed = true
     end
 
-    if context.hand_drawn
+    if context.hand_drawn and not context.hnds_booster_pack_drawn
         and state.round_serial > 0
         and G.deck and G.deck.cards and #G.deck.cards == 0
     then
@@ -1497,13 +1426,13 @@ local CONDITION_LOCK_KEYS = {
 local JOKER_CONDITION_LOCK_KEYS = {
     "j_hnds_jester_in_yellow", "j_hnds_demented", "j_hnds_imposter", "j_hnds_contagion",
     "j_hnds_fregoli", "j_hnds_excommunicado", "j_hnds_meme", "j_hnds_one_punchline_man",
-    "j_hnds_digital_circus", "j_hnds_handsome", "j_hnds_perfectionist", "j_hnds_dark_idol",
+    "j_hnds_digital_circus", "j_hnds_handsome", "j_hnds_dark_idol",
     "j_hnds_color_of_madness", "j_hnds_deep_pockets", "j_hnds_head_of_medusa", "j_hnds_ms_fortune",
-    "j_hnds_occultist", "j_hnds_clown_devil", "j_hnds_balloons", "j_hnds_creepy",
-    "j_hnds_seismic_activity", "j_hnds_angry_mob", "j_hnds_supersuit", "j_hnds_jokes_aside",
-    "j_hnds_jackpot", "j_hnds_dynamic_duos", "j_hnds_energized",
-    "j_hnds_last_laugh", "j_hnds_coffee_break",
-    "j_hnds_dallas", "j_hnds_hoxton", "j_hnds_wolf", "j_hnds_chains",
+    "j_hnds_clown_devil", "j_hnds_balloons", "j_hnds_creepy",
+    "j_hnds_seismic_activity", "j_hnds_angry_mob", "j_hnds_jokes_aside",
+    "j_hnds_dynamic_duos", "j_hnds_energized",
+    "j_hnds_last_laugh", 
+    
     "j_hnds_ecg", "j_hnds_spaghettified_joker", "j_jodiac",
     "j_hnds_jack_in_the_box", "j_hnds_jevil", "j_hnds_headless_joker",
     "j_hnds_time_fcked_joker",
@@ -1511,7 +1440,7 @@ local JOKER_CONDITION_LOCK_KEYS = {
     "j_hnds_public_nuisance", "j_hnds_pot_of_greed", "j_hnds_ancestor",
     "j_hnds_conquest", "j_hnds_war", "j_hnds_water_slide", "j_hnds_ecg",
     "j_hnds_plague", "j_hnds_famine", "j_hnds_death", "j_hnds_be_not_afraid",
-    "j_hnds_joker_reverse",
+    
 }
 local LEGENDARY_LOCK_KEYS = {
     "j_hnds_pennywise", "j_hnds_art", "j_hnds_krusty", "j_billy", "j_hnds_arthur",

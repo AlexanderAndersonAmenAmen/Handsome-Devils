@@ -1,7 +1,68 @@
+local banned_tags = {
+	{ id = 'tag_d_six' },
+	{ id = 'tag_boss' }, -- Boss Reroll Tag stays banned, but is hidden from the Restrictions tab.
+	{ id = 'tag_investment' },
+	{ id = 'tag_economy' },
+	{ id = 'tag_skip' },
+	{ id = 'tag_hnds_dna_tag' },
+	{ id = 'tag_foil' },
+	{ id = 'tag_holo' },
+	{ id = 'tag_polychrome' },
+	{ id = 'tag_negative' },
+	{ id = 'tag_hnds_vintage_tag' },
+	{ id = 'tag_coupon' }, -- Actually banned; still displayed as the Vintage replacement.
+	{ id = 'tag_handy' },
+	{ id = 'tag_garbage' },
+	{ id = 'tag_speed' },
+	{ id = 'tag_hnds_extinction_tag' },
+	{ id = 'tag_rare' },
+	{ id = 'tag_uncommon' },
+}
+
+
+-- Keep the gameplay ban set independent from the display-only replacement
+-- list. This is also consulted when a tag is generated outside the normal
+-- blind-pool code (e.g. Mystery Tag).
+HNDS = HNDS or {}
+HNDS.art_gallery_banned_tags = {}
+for _, entry in ipairs(banned_tags) do
+    HNDS.art_gallery_banned_tags[entry.id] = true
+    for _, key in ipairs(entry.ids or {}) do
+        HNDS.art_gallery_banned_tags[key] = true
+    end
+end
+
+local visible_tags = {
+    tag_hnds_dna_tag = true,
+    tag_foil = true,
+    tag_holo = true,
+    tag_polychrome = true,
+    tag_negative = true,
+    tag_hnds_vintage_tag = true,
+    tag_rare = true,
+    tag_uncommon = true,
+}
+
+-- The Art Gallery Restrictions tab uses display-only substitutes for two
+-- banned tags. The gameplay ban list above is intentionally unchanged.
+local display_tag_replacements = {
+    tag_hnds_dna_tag = 'tag_d_six',
+    tag_hnds_vintage_tag = 'tag_coupon',
+}
+
+local displayed_tags = {}
+for _, tag in ipairs(banned_tags) do
+    if visible_tags[tag.id] then
+        displayed_tags[#displayed_tags + 1] = {
+            id = display_tag_replacements[tag.id] or tag.id,
+        }
+    end
+end
+
 SMODS.Challenge {
 	key = 'dark_ritual',
 	loc_txt = {
-		name = 'Dark Ritual',
+		name = 'Art Gallery',
 	},
 	rules = {
 		custom = {
@@ -11,8 +72,8 @@ SMODS.Challenge {
 		},
 	},
 	jokers = {
-		{ id = 'j_hnds_occultist', eternal = true, edition = 'negative' },
-		{ id = 'j_hnds_occultist', eternal = true, edition = 'negative' },
+		{ id = 'j_hnds_artistic_joker', eternal = true, edition = 'negative' },
+		{ id = 'j_hnds_artistic_joker', eternal = true, edition = 'negative' },
 	},
 	consumeables = {
 	},
@@ -47,7 +108,6 @@ SMODS.Challenge {
 			{ id = 'j_rough_gem' },
 			{ id = 'j_rocket' },
 			{ id = 'j_satellite' },
-			{ id = 'j_hnds_coffee_break' },
 			{ id = 'j_astronomer' },
 			{ id = 'j_chaos' },
 			{ id = 'j_flash' },
@@ -64,13 +124,9 @@ SMODS.Challenge {
 			{ id = 'v_seed_money' },
 			{ id = 'v_money_tree' },
 		},
-		banned_tags = {
-			{ id = 'tag_d_six' },
-			{ id = 'tag_investment' },
-			{ id = 'tag_economy' },
-			{ id = 'tag_skip' },
-			{ id = 'tag_hnds_dna_tag' },
-		},
+		banned_tags = function()
+            return HNDS.challenge_restrictions_ui and displayed_tags or banned_tags
+        end,
 		banned_other = {
 		},
 	},

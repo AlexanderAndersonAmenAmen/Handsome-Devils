@@ -97,6 +97,36 @@ if type(get_next_tag_key) == 'function' and not HNDS._conjuring_next_tag_wrapped
     end
 end
 
+-- Blind-skip reward generation can bypass a challenge's banned-key checks
+-- in some Steamodded/vanilla paths. Validate the final generated tag after
+-- Conjuring replacements, and repoll from an allowed pool when necessary.
+if type(get_next_tag_key) == 'function' and not HNDS._banned_blind_tag_poll_wrapped then
+    HNDS._banned_blind_tag_poll_wrapped = true
+    local next_tag_ref = get_next_tag_key
+    function get_next_tag_key(...)
+        local key = next_tag_ref(...)
+        if not (HNDS.is_tag_banned and HNDS.is_tag_banned(key)) then return key end
+        if not (G and G.GAME and G.P_TAGS and type(get_current_pool) == 'function') then return nil end
+
+        local allowed = {}
+        for _, raw_key in ipairs(get_current_pool('Tag') or {}) do
+            if raw_key ~= 'UNAVAILABLE' then
+                local effective_key = HNDS.conjuring_tag_key(raw_key)
+                if G.P_TAGS[effective_key]
+                    and not HNDS.is_tag_banned(raw_key)
+                    and not HNDS.is_tag_banned(effective_key)
+                then
+                    allowed[#allowed + 1] = effective_key
+                end
+            end
+        end
+        if #allowed == 0 then return nil end
+        local seed = 'hnds_allowed_blind_tag_' .. tostring(G.GAME.round_resets and G.GAME.round_resets.ante or 0)
+            .. '_' .. tostring(G.GAME.tag_tally or 0)
+        return pseudorandom_element(allowed, pseudoseed(seed))
+    end
+end
+
 -- Change the actual pack immediately before it is used, including packs from
 -- effects that request a specific key and bypass the shop's banned pool.
 if G and G.FUNCS and type(G.FUNCS.use_card) == 'function'

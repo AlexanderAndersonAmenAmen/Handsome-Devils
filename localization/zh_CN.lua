@@ -3,6 +3,140 @@ return {
 
 
 		Joker = {
+			j_hnds_head_of_medusa = {
+				name = "美杜莎之首",
+				text = {
+					"每当{C:attention}人头牌{}计分时",
+					"这张小丑牌获得{X:mult,C:white}X#2#{}倍率",
+					"将计分的{C:attention}人头牌{}变为{C:attention}石头牌{}",
+					"{C:inactive}(当前为{X:mult,C:white}X#1#{C:inactive}倍率)",
+				},
+			},
+			j_hnds_angry_mob = {
+				name = "Angry Mob",
+				text = {
+					"{X:mult,C:white}X#1#{} Mult",
+					"Jokers don't",
+					"appear in shop"
+				},
+				unlock = {
+					"Don't buy Jokers",
+					"{C:attention}10{} rounds in a row",
+					"{C:inactive}(#1#)",
+				},
+			},
+            j_hnds_pluck_of_the_draw = {
+                name = "Pluck of the Draw",
+                text = {
+                    "Each discarded {C:attention}Enhanced{}",
+                    "card, draws {C:attention}2{} extra cards",
+                },
+            },
+            j_hnds_coffee_break = {
+                name = "Cup of Joe",
+                text = {
+                    "Retrigger {C:attention}Joker{} to",
+                    "the right and take",
+                    "one sip of Coffee",
+                    "{C:inactive}({C:attention}#1#{}{C:inactive}/#2# sips left)",
+                },
+            },
+            j_hnds_sunny_side = {
+                name = "Sunny Side",
+                text = {
+                    "{C:mult}+#1#{} Mult",
+                    "Each played {C:attention}face card{}",
+                    "steals {C:mult}+#2#{} Mult from this",
+                    "Joker when scored",
+                },
+            },
+            j_hnds_blueberries = {
+                name = "Blueberries",
+                text = {
+                    "If this is {C:attention}leftmost{}",
+                    "Joker, add {C:chips}+#1#{} Chips",
+                    "to played hand's score",
+                    "and eat one Blueberry",
+                    "{C:inactive}({C:attention}#2#{}{C:inactive}/#3# Blueberries left){}",
+                },
+            },
+            j_hnds_loaded_die = {
+                name = "Loaded Die",
+                text = {
+                    "Each scoring {C:attention}7{}",
+                    "increases all {C:attention}listed{}",
+                    "{C:green}probabilities{} by {C:attention}1{}",
+                    "for played hand",
+                },
+            },
+            j_hnds_miner_joker = {
+                name = "Miner",
+                text = {
+                    "Each played {C:attention}Stone card{}",
+                    "gets destroyed and creates",
+                    "a {C:attention}Joker{} with random {C:dark_edition}Edition{}",
+                    "{C:inactive}(Must have room)",
+                },
+            },
+            j_hnds_formosana = {
+                name = "Formosana",
+                text = {
+                    "This Joker gains {X:mult,C:white}X#1#{} Mult",
+                    "per {C:attention}Joker{} card destroyed",
+                    "{C:inactive}(This can't be destroyed)",
+                    "{C:inactive}(Currently {X:mult,C:white}X#2#{C:inactive} Mult)",
+                },
+            },
+            j_hnds_wild_order = {
+                name = "Wild Order",
+                text = {
+                    "Cards with",
+                    "{V:1}#1#{} suit are",
+                    "always drawn first",
+                    "{s:0.8}Suit changes every round",
+                },
+            },
+            j_hnds_trump_suit = {
+                name = "Trump Suit",
+                text = {
+                    "Retrigger all cards",
+                    "with {V:1}#1#{} suit",
+                    "{s:0.8}Suit changes every round",
+                },
+            },
+            j_hnds_artistic_joker = {
+                name = "Artistic Joker",
+                text = {
+                    "If {C:attention}first hand{} of round",
+                    "scores {C:attention}4{} different suits,",
+                    "create a random {C:attention}Tag{}",
+                },
+            },
+            j_hnds_cursed_doll = {
+                name = "Cursed Doll",
+                text = {
+                    "Destroy a random card",
+                    "in hand when you use",
+                    "a {C:attention}consumable card{}",
+                },
+            },
+            j_hnds_joker_recycler = {
+                name = "Joker Recycler",
+                text = {
+                    "When you sell a {C:attention}Joker{}",
+                    "while in {C:attention}Blind{}, gain",
+                    "{C:attention}+1{} Hand and discard",
+                },
+            },
+            j_hnds_laugh_preserver = {
+                name = "Laugh Preserver",
+                text = {
+                    "Each {C:attention}2{} held",
+                    "in hand gives",
+                    "{C:attention}+1{} hand size",
+                },
+            },
+
 
 			j_idol = {
 				name = "The Idol",
@@ -34,32 +168,6 @@ return {
 
 
 			},
-			j_hnds_occultist = {
-				name = "神秘学家",
-				text = {
-					"如果{C:attention}第一次出牌{}",
-					"包含{C:attention}4{}种不同的花色",
-					"则创造一个{C:planet}流星{},",
-					"{C:tarot}吊饰{}或{C:spectral}空灵{}{C:attention}标签{}",
-				},
-			},
-			j_hnds_sunny_side = {
-			    name = "Sunny Side",
-			    text = {
-			        "{C:attention}Seals{} on {C:attention}face{} cards",
-			        "trigger their effects",
-			        "an additional time",
-			    },
-			},
-			j_hnds_head_of_medusa = {
-				name = "美杜莎之首",
-				text = {
-					"每当{C:attention}人头牌{}计分时",
-					"这张小丑牌获得{X:mult,C:white}X#2#{}倍率",
-					"将计分的{C:attention}人头牌{}变为{C:attention}石头牌{}",
-					"{C:inactive}(当前为{X:mult,C:white}X#1#{C:inactive}倍率)",
-				},
-			},
 			j_hnds_deep_pockets = {
 				name = "财布鼓鼓",
 				text = {
@@ -75,26 +183,6 @@ return {
 					"带有随机{C:attention}版本{}的{V:1}#1#{}小丑牌",
 					"每{C:attention}#3#{}个回合都会提升其稀有度",
 					"{C:inactive}(当前为第{C:attention}#2#{C:inactive}/#3#个回合)",
-				},
-			},
-			j_hnds_coffee_break = {
-				name = "咖啡小憩",
-				text = {
-					"{C:attention}2{}个回合后",
-					"售出此卡可获得{C:money}$#3#{}",
-					"你每打出一张牌",
-					"此金额减少{C:money}$1{}",
-					"{C:inactive}(当前为第{C:attention}#2#{C:inactive}/#1#个回合)",
-				},
-			},
-			j_hnds_jackpot = {
-				name = "头奖",
-				text = {
-					"回合结束时",
-					"这张牌有{C:green}#1#/#2#{}的几率",
-					"赢得{C:money}$#3#{}并{C:red}自毁{}",
-					"每当一张打出的{C:attention}7{}计分时",
-					"此{C:green}概率{}增加{C:green}#4#/#2#{} ",
 				},
 			},
 			j_hnds_pot_of_greed = {
@@ -212,14 +300,14 @@ return {
 					"每石化一张牌便获得{C:money}$5{}",
 				},
 			},
-			c_hnds_void = {
-				name = "Void",
-				text = {
-					"给{C:attention}2{}张所选卡牌",
-					"加上{C:dark_edition}负片{}",
-					"{C:blue}-#2#{}出牌次数",
+				c_hnds_void = {
+					name = "Void",
+					text = {
+						"使{C:attention}1{}张选中的牌获得",
+						"{C:dark_edition}负片{}效果，",
+						"{C:red}摧毁所有其他卡牌{}",
+					},
 				},
-			},
 			c_hnds_hallows = {
 				name = "圣徒",
 				text = {
@@ -338,14 +426,14 @@ return {
                     "{C:inactive}(#9#/#10# unique hands){}",
                 },
             },
-			hnds_black_seal = {
-				name = "黑色蜡封",
-				text = {
-					"此牌打出并计分后，将相邻卡牌",
-					"放到牌堆{C:attention}顶部{}",
-					"{C:inactive}（黑色蜡封卡牌除外）",
+				hnds_black_seal = {
+					name = "黑色蜡封",
+					text = {
+						"手持此牌抽取{C:attention}#1#{} [{C:attention}#2#{}]张牌后",
+						"生成一张{C:dark_edition}负片小丑牌{}",
+						"{C:inactive}仅本回合有效{}",
+					},
 				},
-			},
 			hnds_green_seal = {
 				name = "绿色蜡封",
 				text = {
@@ -574,19 +662,25 @@ return {
 	},
 	misc = {
 		dictionary = {
+            k_hnds_consumed = "Eaten!",
+            k_hnds_destroyed = "Eaten!",
+            k_hnds_tag = "+1 Tag",
+
 			k_hnds_rank_up = "Rank Up!",
 			k_hnds_krusty_voucher_tag = "Voucher Tag",
 			k_hnds_krusty_voucher_tags = "Voucher Tags",
 			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
-			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade button",
+			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade Mechanic (Blue Stake/Nightmare Stake)",
 			hnds_config_CustomMenu = "Enable custom main menu",
+			hnds_config_PeakMainMenuOST = "Peak Main Menu OST",
 			hnds_config_ChaosSuits = "Chaos suits",
 			k_hnds_water_slide_discard = "+1 Discard",
 			k_hnds_petrified = "石化！",
 			k_hnds_goldfish = "金鱼！",
 			k_hnds_jevil_chaos = "Chaos! Chaos!",
 			k_hnds_cursed_offers = "诅咒馈赠",
-			k_hnds_cursed_prices = "诅咒代价",
+			k_hnds_chaos_suits = "Chaos Suits",
+            k_hnds_cursed_prices = "诅咒代价",
 			k_hnds_green = "抽牌！",
 			k_hnds_jackpot = "头奖！",
 			k_hnds_probinc = "增加！",

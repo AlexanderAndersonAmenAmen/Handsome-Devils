@@ -3,6 +3,141 @@ return {
 
 
 		Joker = {
+			j_hnds_head_of_medusa = {
+				name = "Głowa Meduzy",
+				text = {
+					"Ten joker zdobywa {X:mult,C:white}X#2#{} do mnoż,",
+					"za każdą punktowaną kartę {C:attention}figur{}",
+					"Wszystkie zagrane karty figur",
+					"stają się {C:attention}kamiennymi{} kartami",
+					"{C:inactive}(obecny mnoż.: {X:mult,C:white}X#1#{}",
+				},
+			},
+			j_hnds_angry_mob = {
+				name = "Angry Mob",
+				text = {
+					"{X:mult,C:white}X#1#{} Mult",
+					"Jokers don't",
+					"appear in shop"
+				},
+				unlock = {
+					"Don't buy Jokers",
+					"{C:attention}10{} rounds in a row",
+					"{C:inactive}(#1#)",
+				},
+			},
+            j_hnds_pluck_of_the_draw = {
+                name = "Pluck of the Draw",
+                text = {
+                    "Each discarded {C:attention}Enhanced{}",
+                    "card, draws {C:attention}2{} extra cards",
+                },
+            },
+            j_hnds_coffee_break = {
+                name = "Cup of Joe",
+                text = {
+                    "Retrigger {C:attention}Joker{} to",
+                    "the right and take",
+                    "one sip of Coffee",
+                    "{C:inactive}({C:attention}#1#{}{C:inactive}/#2# sips left)",
+                },
+            },
+            j_hnds_sunny_side = {
+                name = "Sunny Side",
+                text = {
+                    "{C:mult}+#1#{} Mult",
+                    "Each played {C:attention}face card{}",
+                    "steals {C:mult}+#2#{} Mult from this",
+                    "Joker when scored",
+                },
+            },
+            j_hnds_blueberries = {
+                name = "Blueberries",
+                text = {
+                    "If this is {C:attention}leftmost{}",
+                    "Joker, add {C:chips}+#1#{} Chips",
+                    "to played hand's score",
+                    "and eat one Blueberry",
+                    "{C:inactive}({C:attention}#2#{}{C:inactive}/#3# Blueberries left){}",
+                },
+            },
+            j_hnds_loaded_die = {
+                name = "Loaded Die",
+                text = {
+                    "Each scoring {C:attention}7{}",
+                    "increases all {C:attention}listed{}",
+                    "{C:green}probabilities{} by {C:attention}1{}",
+                    "for played hand",
+                },
+            },
+            j_hnds_miner_joker = {
+                name = "Miner",
+                text = {
+                    "Each played {C:attention}Stone card{}",
+                    "gets destroyed and creates",
+                    "a {C:attention}Joker{} with random {C:dark_edition}Edition{}",
+                    "{C:inactive}(Must have room)",
+                },
+            },
+            j_hnds_formosana = {
+                name = "Formosana",
+                text = {
+                    "This Joker gains {X:mult,C:white}X#1#{} Mult",
+                    "per {C:attention}Joker{} card destroyed",
+                    "{C:inactive}(This can't be destroyed)",
+                    "{C:inactive}(Currently {X:mult,C:white}X#2#{C:inactive} Mult)",
+                },
+            },
+            j_hnds_wild_order = {
+                name = "Wild Order",
+                text = {
+                    "Cards with",
+                    "{V:1}#1#{} suit are",
+                    "always drawn first",
+                    "{s:0.8}Suit changes every round",
+                },
+            },
+            j_hnds_trump_suit = {
+                name = "Trump Suit",
+                text = {
+                    "Retrigger all cards",
+                    "with {V:1}#1#{} suit",
+                    "{s:0.8}Suit changes every round",
+                },
+            },
+            j_hnds_artistic_joker = {
+                name = "Artistic Joker",
+                text = {
+                    "If {C:attention}first hand{} of round",
+                    "scores {C:attention}4{} different suits,",
+                    "create a random {C:attention}Tag{}",
+                },
+            },
+            j_hnds_cursed_doll = {
+                name = "Cursed Doll",
+                text = {
+                    "Destroy a random card",
+                    "in hand when you use",
+                    "a {C:attention}consumable card{}",
+                },
+            },
+            j_hnds_joker_recycler = {
+                name = "Joker Recycler",
+                text = {
+                    "When you sell a {C:attention}Joker{}",
+                    "while in {C:attention}Blind{}, gain",
+                    "{C:attention}+1{} Hand and discard",
+                },
+            },
+            j_hnds_laugh_preserver = {
+                name = "Laugh Preserver",
+                text = {
+                    "Each {C:attention}2{} held",
+                    "in hand gives",
+                    "{C:attention}+1{} hand size",
+                },
+            },
+
 
 			j_idol = {
 				name = "The Idol",
@@ -34,33 +169,6 @@ return {
 
 
 			},
-			j_hnds_occultist = {
-				name = "Occultist",
-				text = {
-					"Jeśli {C:attention}pierwsza ręka{} w",
-					"rundzie posiada {C:attention}4{} różne",
-					"kolory, stwórz {C:planet}meteorowy{},",
-					"{C:tarot}amultet{} lub {C:spectral}eteryczny{} {C:attention}znacznik{}",
-				},
-			},
-			j_hnds_sunny_side = {
-			    name = "Sunny Side",
-			    text = {
-			        "{C:attention}Seals{} on {C:attention}face{} cards",
-			        "trigger their effects",
-			        "an additional time",
-			    },
-			},
-			j_hnds_head_of_medusa = {
-				name = "Głowa Meduzy",
-				text = {
-					"Ten joker zdobywa {X:mult,C:white}X#2#{} do mnoż,",
-					"za każdą punktowaną kartę {C:attention}figur{}",
-					"Wszystkie zagrane karty figur",
-					"stają się {C:attention}kamiennymi{} kartami",
-					"{C:inactive}(obecny mnoż.: {X:mult,C:white}X#1#{}",
-				},
-			},
 			j_hnds_deep_pockets = {
 				name = "Głębokie kieszenie",
 				text = {
@@ -78,26 +186,6 @@ return {
 					"z losową {C:dark_edition}wersją",
 					"{s:0.8}Ulepsza się co {s:0.8}{C:attention}#3#{} {s:0.8}rundy",
 					"{C:inactive}(obecnie {C:attention}#2#{C:inactive}/#3#)",
-				},
-			},
-			j_hnds_coffee_break = {
-				name = "Przerwa na kawę",
-				text = {
-					"Po {C:attention}2{} rundach sprzedaj",
-					"tą kartę, by zyskać {C:money}#3#${}",
-					"Wypłata maleje o {C:money}1${}",
-					"za każdą zagraną kartę",
-					"{C:inactive}({C:attention}#2#{C:inactive}/#1#)",
-				},
-			},
-			j_hnds_jackpot = {
-				name = "Pula",
-				text = {
-					"{C:green}#1# na #2#{} szans",
-					"wygrania {C:money}#3#${} i {C:red}zniszczenia{}",
-					"tej karty na końcu rundy,",
-					"zwiększa {C:attention}podane{} {C:green}prawdopodobieństwo{}",
-					"o {C:attention}#4#{} za każdą punktowaną {C:attention}7{}",
 				},
 			},
 			j_hnds_pot_of_greed = {
@@ -227,14 +315,14 @@ return {
 					"zyskujesz {C:money}#1#${} za każdą skamieniałą kartę",
 				},
 			},
-			c_hnds_void = {
-				name = "Void",
-				text = {
-					"Dodaj {C:dark_edition}negatyw{} do",
-					"{C:attention}#1#{} wybranych kart",
-					"{C:blue}-#2#{} rąk na rundę",
+				c_hnds_void = {
+					name = "Void",
+					text = {
+						"Nadaj {C:dark_edition}Negatyw{}",
+						"{C:attention}1{} wybranej karcie,",
+						"{C:red}zniszcz pozostałe karty{}",
+					},
 				},
-			},
 			c_hnds_hallows = {
 				name = "Hallows",
 				text = {
@@ -262,14 +350,14 @@ return {
 					"{C:dark_edition}#2#s",
 				},
 			},
-			c_hnds_gateway = {
-				name = "Wejście",
-				text = {
-					"Ulepsza {C:attention}#1#{} wybrane",
-					"karty do:",
-					"{C:dark_edition}#2#s",
+				c_hnds_gateway = {
+					name = "Wejście",
+					text = {
+						"Dodaj {C:dark_edition}Bound{} do",
+						"{C:attention}1{} wybranej karty",
+						"w ręce",
+					},
 				},
-			},
 		},
 
 		Other = {
@@ -373,21 +461,21 @@ return {
                 },
             },
 			hnds_jester_temp_negative = {
-				name = "Wybrany przez Carcosę",
+				name = "Stressed",
 				text = {
 					"Ten joker znika za",
 					"{C:attention}#1#{} rund",
 				}
 			},
-			hnds_black_seal = {
-				name = "Czarna Pieczęć",
-				text = {
-					"Po zagraniu i punktowaniu",
-					"połóż sąsiednie karty",
-					"na {C:attention}wierzchu talii{}",
-					"{C:inactive}(bez kart z Czarną Pieczęcią)",
+				hnds_black_seal = {
+					name = "Czarna Pieczęć",
+					text = {
+						"Tworzy {C:dark_edition}Negatywnego Jokera{}",
+						"tylko na tę rundę po",
+						"dobraniu {C:attention}#1#{} [{C:attention}#2#{}] kart",
+						"gdy trzymana w ręce",
+					},
 				},
-			},
 			hnds_green_seal = {
 				name = "Zielona Pieczęć",
 				text = {
@@ -603,15 +691,6 @@ return {
 					"{C:red}Trzecie niszczy kartę{}",
 				},
 			},
-			m_hnds_obsidian = {
-				name = "Obsidianowa karta",
-				text = {
-					"Strać {C:red}#1#${},",
-					"{C:green}#2# na #3#{} szans by",
-					"stworzyć {C:dark_edition}negatywm",
-					"kartę zużywalną",
-				},
-			},
 		},
 		Voucher = {
 			v_hnds_tag_hunter = {
@@ -699,12 +778,17 @@ return {
 	},
 	misc = {
 		dictionary = {
+            k_hnds_consumed = "Eaten!",
+            k_hnds_destroyed = "Eaten!",
+            k_hnds_tag = "+1 Tag",
+
 			k_hnds_rank_up = "Rank Up!",
 			k_hnds_krusty_voucher_tag = "Voucher Tag",
 			k_hnds_krusty_voucher_tags = "Voucher Tags",
 			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
-			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade button",
+			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade Mechanic (Blue Stake/Nightmare Stake)",
 			hnds_config_CustomMenu = "Enable custom main menu",
+			hnds_config_PeakMainMenuOST = "Peak Main Menu OST",
 			hnds_config_ChaosSuits = "Chaos suits",
 			k_hnds_water_slide_discard = "+1 Discard",
 			k_hnds_petrified = "Skamieniały!",
@@ -713,7 +797,8 @@ return {
 			k_hnds_jester_negative = "Negatywny!",
 			k_hnds_jester_fade = "Negatyw zanikł!",
 			k_hnds_cursed_offers = "Przeklęte oferty",
-			k_hnds_cursed_prices = "Przeklęte ceny",
+			k_hnds_chaos_suits = "Chaos Suits",
+            k_hnds_cursed_prices = "Przeklęte ceny",
 			k_hnds_green = "Dobierasz!",
 			k_hnds_jackpot = "Jackpot!",
 			k_hnds_probinc = "Powiększono!",

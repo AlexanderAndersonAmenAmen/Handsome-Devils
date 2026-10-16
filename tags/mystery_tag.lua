@@ -8,10 +8,10 @@ SMODS.Tag {
             local lock = tag.ID
             G.CONTROLLER.locks[lock] = true
             tag:yep('+', G.C.DARK_EDITION, function()
-                local tag1 = Tag(get_next_tag_key("mystery_tag"))
-                local tag2 = Tag(get_next_tag_key("mystery_tag"))
-                add_tag(tag1)
-                add_tag(tag2)
+                for _ = 1, 2 do
+                    local new_tag = HNDS.poll_allowed_tag("mystery_tag")
+                    if new_tag then add_tag(new_tag) end
+                end
                 G.CONTROLLER.locks[lock] = nil
                 return true
             end)

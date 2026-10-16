@@ -240,6 +240,8 @@ local function hnds_atlas(name)
     return G.ASSET_ATLAS[name] or G.ASSET_ATLAS['hnds_' .. name]
 end
 
+local hnds_tile_quads = setmetatable({}, { __mode = 'k' })
+
 local function hnds_source_tile(layer)
     local atlas = layer and hnds_atlas(layer.atlas)
     if not (atlas and atlas.image and love and love.graphics) then return nil end
@@ -249,7 +251,17 @@ local function hnds_source_tile(layer)
     local iw, ih = atlas.image:getDimensions()
     local x, y = (tonumber(pos.x) or 0) * px, (tonumber(pos.y) or 0) * py
     if x + px > iw or y + py > ih then return nil end
-    local quad = love.graphics.newQuad(x, y, px, py, iw, ih)
+    local quads = hnds_tile_quads[atlas.image]
+    if not quads then
+        quads = {}
+        hnds_tile_quads[atlas.image] = quads
+    end
+    local key = table.concat({ x, y, px, py, iw, ih }, ':')
+    local quad = quads[key]
+    if not quad then
+        quad = love.graphics.newQuad(x, y, px, py, iw, ih)
+        quads[key] = quad
+    end
     return atlas.image, quad, px, py
 end
 
@@ -267,6 +279,13 @@ local function hnds_runtime_atlas_name(card)
 end
 
 local hnds_composite_cards = setmetatable({}, { __mode = 'k' })
+local hnds_composite_owners = setmetatable({}, { __mode = 'v' })
+
+local function hnds_collection_preview(card)
+    local config = card and card.area and card.area.config
+    return config and config.collection == true
+end
+
 
 local function hnds_release_graphics_object(object)
     if not object or type(object.release) ~= 'function' then return end
@@ -302,6 +321,19 @@ function HNDS.sarmenti_release_composite(card)
     hnds_release_graphics_object(canvas)
     card.hnds_sarmenti_composite_canvas = nil
     hnds_composite_cards[card] = nil
+    if hnds_composite_owners[atlas_name] == card then
+        hnds_composite_owners[atlas_name] = nil
+    end
+end
+
+function HNDS.sarmenti_cleanup_orphaned_runtime_atlases()
+    if not (G and G.ASSET_ATLAS) then return end
+    for key, atlas in pairs(G.ASSET_ATLAS) do
+        if hnds_is_runtime_atlas_name(key) and not hnds_composite_owners[key] then
+            hnds_release_graphics_object(atlas and atlas.image)
+            G.ASSET_ATLAS[key] = nil
+        end
+    end
 end
 
 function HNDS.sarmenti_cleanup_runtime_atlases()
@@ -313,6 +345,7 @@ function HNDS.sarmenti_cleanup_runtime_atlases()
         if hnds_is_runtime_atlas_name(key) then
             hnds_release_graphics_object(atlas and atlas.image)
             G.ASSET_ATLAS[key] = nil
+            hnds_composite_owners[key] = nil
         end
     end
 end
@@ -320,6 +353,7 @@ end
 function HNDS.sarmenti_rebuild_composite(card)
     local puzzle = hnds_puzzle(card)
     if not (puzzle and card and card.children and card.children.center and love and love.graphics) then return false end
+    if hnds_collection_preview(card) then return false end
     local shader = hnds_mask_shader()
     local first_mask = hnds_mask_atlas(1)
     if not (shader and first_mask and first_mask.image) then return false end
@@ -407,6 +441,7 @@ function HNDS.sarmenti_rebuild_composite(card)
     G.ASSET_ATLAS[atlas_name] = runtime_atlas
     card.hnds_sarmenti_composite_canvas = final
     hnds_composite_cards[card] = true
+    hnds_composite_owners[atlas_name] = card
     card.children.center.atlas = runtime_atlas
     if card.children.center.set_sprite_pos then
         card.children.center:set_sprite_pos({ x = 0, y = 0 })
@@ -959,6 +994,7 @@ if Card then
         Card._hnds_sarmenti_draw_wrapped = true
         local draw_ref = Card.draw
         function Card:draw(...)
+            if hnds_collection_preview(self) then return draw_ref(self, ...) end
             if HNDS.is_sarmenti_piece(self) then
                 if self.hnds_sarmenti_composite_dirty or not self.hnds_sarmenti_composite_canvas then
                     HNDS.sarmenti_rebuild_composite(self)
@@ -989,7 +1025,7 @@ if Card then
                 local art = hnds_snapshot_art(self)
                 if snap and type(art) == 'table' and #art > 0 then snap.art = art end
                 self.hnds_sarmenti_component_visual_dirty = true
-            elseif HNDS.is_sarmenti_piece(self) then
+            elseif HNDS.is_sarmenti_piece(self) and not hnds_collection_preview(self) then
                 local puzzle = hnds_puzzle(self)
                 local art = hnds_snapshot_art(self)
                 if puzzle and type(art) == 'table' and #art > 0 then puzzle.primary_art = art end
@@ -1005,7 +1041,7 @@ if Card then
         Card._hnds_sarmenti_update_wrapped = true
         local update_ref = Card.update
         function Card:update(dt, ...)
-            if self.hnds_sarmenti_component_guard or not HNDS.is_sarmenti_piece(self) then
+            if hnds_collection_preview(self) or self.hnds_sarmenti_component_guard or not HNDS.is_sarmenti_piece(self) then
                 return update_ref(self, dt, ...)
             end
 

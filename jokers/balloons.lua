@@ -29,6 +29,7 @@ SMODS.Joker({
         if context.end_of_round and context.main_eval
             and not context.game_over
             and not context.blueprint
+            and not card.ability.hnds_balloons_popped
             and G and G.GAME and G.GAME.current_round
             and G.GAME.current_round.hands_played == 1
         then
@@ -53,10 +54,13 @@ SMODS.Joker({
             card.ability.extra.balloons = card.ability.extra.balloons - 1
 
             if card.ability.extra.balloons <= 0 then
+                card.ability.hnds_balloons_popped = true
                 G.E_MANAGER:add_event(Event({
                     func = function()
-                        play_sound('tarot1')
-                        card:start_dissolve()
+                        if card and not card.removed and not card.REMOVED then
+                            play_sound('tarot1')
+                            SMODS.destroy_cards({ card }, { pinch_anim = true })
+                        end
                         return true
                     end
                 }))

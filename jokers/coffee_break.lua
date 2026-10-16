@@ -1,129 +1,38 @@
 SMODS.Joker({
-	key = "coffee_break",
-	atlas = "Jokers",
-	pos = { x = 3, y = 2 },
-	rarity = 1,
-	cost = 5,
-	unlocked = false,
-	discovered = false,
-	unlock_condition = { type = "hnds_joker_unlock", key = "coffee_break" },
-	locked_loc_vars = function(self)
-		return HNDS.joker_locked_loc_vars("coffee_break")
-	end,
-	check_for_unlock = function(self, args)
-		return HNDS.joker_unlock_condition_met("coffee_break", args)
-	end,
-	blueprint_compat = false,
-	demicoloncompat = true,
-	eternal_compat = false,
-	perishable_compat = true,
-	config = {
-		extra = { money = 35, coffee_rounds = 0, target = 2, money_loss = 1, active = false },
-	},
-	pools = { Food = true },
-	loc_vars = function(self, info_queue, card)
-		return {
-			vars = {
-				card.ability.extra.target,
-				card.ability.extra.coffee_rounds,
-				card.ability.extra.money,
-				card.ability.extra.money_loss,
-			},
-		}
-	end,
-	calculate = function(self, card, context)
-		local function dissolve_and_pop()
-			G.E_MANAGER:add_event(Event({
-				func = function()
-					card:start_dissolve({ G.C.GOLD })
-					return true
-				end,
-			}))
-			return { message = localize("k_hnds_coffee"), colour = G.C.CHIPS, }
-		end
-		local function advance_round()
-			card.ability.extra.coffee_rounds = card.ability.extra.coffee_rounds + 1
-			if card.ability.extra.coffee_rounds >= card.ability.extra.target and not card.ability.extra.active then
-				card.ability.extra.active = true
-				local eval = function()
-					return card.ability.extra.active
-				end
-				juice_card_until(card, eval, true)
-			end
-		end
-
-		if context.before then
-			for _, played_card in pairs(context.full_hand) do
-				SMODS.scale_card(card, {
-					ref_table = card.ability.extra,
-					ref_value = "money",
-					scalar_value = "money_loss",
-					operation = "-",
-					scaling_message = {
-						message = "-$" .. card.ability.extra.money_loss,
-						colour = G.C.RED,
-						message_card = played_card,
-					},
-				})
-			end
-		end
-		if context.after and card.ability.extra.money <= 0 then
-			return dissolve_and_pop()
-		end
-
-		if (context.end_of_round and context.main_eval) or context.skip_blind then
-			advance_round()
-			return {
-				message = card.ability.extra.active and localize("k_active_ex")
-					or card.ability.extra.coffee_rounds .. "/" .. card.ability.extra.target,
-				colour = G.C.FILTER,
-			}
-		end
-		if context.selling_self and card.ability.extra.active then
-			return { dollars = card.ability.extra.money, }
-		end
-
-		if context.forcetrigger then
-			SMODS.scale_card(card, {
-				ref_table = card.ability.extra,
-				ref_value = "money",
-				scalar_value = "money_loss",
-				operation = "-",
-				scaling_message = {
-					message = "-$" .. card.ability.extra.money_loss,
-					colour = G.C.RED,
-				},
-			})
-			if card.ability.extra.money <= 0 then
-				return dissolve_and_pop()
-			end
-			advance_round()
-			return { dollars = card.ability.extra.money, }
-		end
-	end,
-
-	joker_display_def = function(JokerDisplay)
-		return {
-			text = {
-				{ text = "-$" },
-				{ ref_table = "card.joker_display_values", ref_value = "money_loss" },
-				{ text = " | +$" },
-				{ ref_table = "card.joker_display_values", ref_value = "money" }
-			},
-			reminder_text = {
-				{ text = "(" },
-				{ ref_table = "card.joker_display_values", ref_value = "coffee_rounds" },
-				{ text = "/" },
-				{ ref_table = "card.joker_display_values", ref_value = "target" },
-				{ text = ")" }
-			},
-			calc_function = function(card)
-				card.joker_display_values.money_loss = card.ability.extra.money_loss
-				card.joker_display_values.money = card.ability.extra.money
-				card.joker_display_values.coffee_rounds = card.ability.extra.coffee_rounds
-				card.joker_display_values.target = card.ability.extra.target
-			end
-		}
-	end,
-	attributes = { "economy", "on_sell", "scaling", "food" }
+    key = "coffee_break",
+    atlas = "Jokers", pos = { x = 3, y = 2 },
+    rarity = 1, cost = 5, unlocked = true, discovered = false,
+    blueprint_compat = true, eternal_compat = false, perishable_compat = true,
+    pools = { Food = true },
+    config = { extra = { sips = 5, total = 5 } },
+    loc_vars = function(self, info_queue, card)
+        local extra = card.ability.extra
+        return { vars = { extra.sips, extra.total } }
+    end,
+    calculate = function(self, card, context)
+        if not context.retrigger_joker_check or context.retrigger_joker
+            or card.ability.extra.sips <= 0 or not context.other_ret
+            or not next(context.other_ret) then return end
+        local source = context.blueprint_card or card
+        local target
+        for i, joker in ipairs(G.jokers.cards) do
+            if joker == source then target = G.jokers.cards[i + 1]; break end
+        end
+        if not target or target == card or target ~= context.other_card then return end
+        if not context.blueprint then
+            card.ability.extra.sips = card.ability.extra.sips - 1
+            if card.ability.extra.sips == 0 then
+                G.E_MANAGER:add_event(Event({ func = function()
+                    if not card.getting_sliced and not card.removed and not card.REMOVED then
+                        card_eval_status_text(card, "extra", nil, nil, nil,
+                            { message = localize("k_hnds_consumed"), colour = G.C.FILTER })
+                        SMODS.destroy_cards({ card }, { pinch_anim = true })
+                    end
+                    return true
+                end }))
+            end
+        end
+        return { repetitions = 1, message = localize("k_again_ex"), card = source }
+    end,
+    attributes = { "retrigger", "food" },
 })

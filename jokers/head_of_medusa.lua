@@ -35,7 +35,7 @@ SMODS.Joker({
 		return { vars = { card.ability.extra.x_mult, card.ability.extra.scaling } }
 	end,
 	atlas = "Jokers",
-	pos = { x = 6, y = 0 },
+	pos = { x = 2, y = 9 },
 	cost = 8,
 	unlocked = false,
 	discovered = false,

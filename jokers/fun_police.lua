@@ -26,6 +26,10 @@ then
     local animated_sprite_animate_ref = AnimatedSprite.animate
     function AnimatedSprite:animate(...)
         if not hnds_is_fun_police_atlas(self.atlas) then return animated_sprite_animate_ref(self, ...) end
+        -- Collection previews have no gameplay animation state; skip the 24 FPS
+        -- viewport churn when this Joker is displayed in a collection grid.
+        local major = self.role and self.role.draw_major
+        if major and major.area and major.area.config and major.area.config.collection then return end
         if not (self.sprite and self.atlas and self.atlas.image) then return end
         local now = G and G.TIMERS and G.TIMERS.REAL or 0
         local start = tonumber(self.offset_seconds) or now
@@ -71,95 +75,169 @@ local function hnds_fun_police_reset_animation(card)
     if sprite.current_animation then sprite.current_animation.current = 0 end
 end
 
-local FUN_POLICE_RANKS = {
-    { id = 2, label = '2s' },
-    { id = 3, label = '3s' },
-    { id = 4, label = '4s' },
-    { id = 5, label = '5s' },
-    { id = 6, label = '6s' },
-    { id = 7, label = '7s' },
-    { id = 8, label = '8s' },
-    { id = 9, label = '9s' },
-    { id = 10, label = '10s' },
-    { id = 11, label = 'Jacks' },
-    { id = 12, label = 'Queens' },
-    { id = 13, label = 'Kings' },
-    { id = 14, label = 'Aces' },
-}
-
-local function hnds_fun_police_extra(card)
-    local extra = card and card.ability and card.ability.extra
-    if type(extra) ~= 'table' then
-        extra = {}
-        if card and card.ability then card.ability.extra = extra end
-    end
-    extra.rank_index = math.floor(tonumber(extra.rank_index) or 1)
-    if extra.rank_index < 1 or extra.rank_index > #FUN_POLICE_RANKS then extra.rank_index = 1 end
-    extra.cards_drawn = tonumber(extra.cards_drawn) or 0
-    extra.cards_per_rank = 4
-    return extra
+-- Five actual Joker slots are added by each Fun Police. The original five
+-- occupied positions are always safe, even with fewer than five Jokers.
+local FP_SLOTS = 5
+local function fp_is(card)
+    return card and card.config and card.config.center
+        and card.config.center.key == 'j_hnds_fun_police'
 end
 
-local function hnds_fun_police_rank(extra)
-    return FUN_POLICE_RANKS[extra.rank_index]
-end
+local fp_reserved_index
+local fp_previous_membership = setmetatable({}, { __mode = 'k' })
 
-local function hnds_fun_police_matches(card, rank)
-    return card and not card.debuff and type(card.get_id) == 'function' and card:get_id() == rank.id
-end
-
-local function hnds_fun_police_destroy_rank(rank)
-    if not (G and G.hand and type(G.hand.cards) == 'table') then return 0 end
-    local targets = {}
-    for _, playing_card in ipairs(G.hand.cards) do
-        if hnds_fun_police_matches(playing_card, rank) then targets[#targets + 1] = playing_card end
-    end
-    if #targets > 0 and SMODS and type(SMODS.destroy_cards) == 'function' then SMODS.destroy_cards(targets) end
-    return #targets
-end
-
-SMODS.Joker {
-    key = 'fun_police',
-    atlas = 'fun_police',
-    pos = { x = 0, y = 0 },
-    sprite_args = { start_pos = { x = 0, y = 0 }, frames = 180, fps = 24 },
-    pixel_size = { w = 95, h = 71 },
-    display_size = { w = 95, h = 71 },
-    rarity = 3,
-    cost = 8,
-    unlocked = true,
-    discovered = false,
-    blueprint_compat = false,
-    eternal_compat = true,
-    perishable_compat = true,
-    config = { extra = { rank_index = 1, cards_drawn = 0, cards_per_rank = 4 } },
-    loc_vars = function(self, info_queue, card)
-        local extra = hnds_fun_police_extra(card)
-        local rank = hnds_fun_police_rank(extra)
-        local remaining = math.max(1, extra.cards_per_rank - extra.cards_drawn)
-        return { vars = { rank.label, extra.cards_per_rank, remaining } }
-    end,
-    set_sprites = function(self, card, front) hnds_fun_police_reset_animation(card) end,
-    set_ability = function(self, card, initial, delay_sprites) hnds_fun_police_reset_animation(card) end,
-    load = function(self, card, card_table, other_card) hnds_fun_police_reset_animation(card) end,
-    calculate = function(self, card, context)
-        if context.hand_drawn and type(context.hand_drawn) == 'table' and not context.blueprint then
-            local extra = hnds_fun_police_extra(card)
-            local rank = hnds_fun_police_rank(extra)
-            local count = 0
-            for _, playing_card in ipairs(context.hand_drawn) do
-                if hnds_fun_police_matches(playing_card, rank) then count = count + 1 end
+local function fp_refresh()
+    if not (G and G.jokers and G.jokers.cards and SMODS and SMODS.recalc_debuff) then return end
+    if HNDS._fp_refreshing then return end
+    HNDS._fp_refreshing = true
+    -- Snapshot the remaining resources before *all* debuffs are recalculated.
+    -- In particular, a Joker leaving a debuffed slot must not instantly refund
+    -- hands/discards that were already unavailable during the current round.
+    local round = G.GAME and G.GAME.current_round
+    local hands_before = round and tonumber(round.hands_left)
+    local discards_before = round and tonumber(round.discards_left)
+    local ok, err = pcall(function()
+        for _, joker in ipairs(G.jokers.cards) do
+            -- Only refresh cards whose Fun Police slot status actually changed.
+            -- Blindly recalculating all debuffs each move replays add/remove
+            -- aura hooks (hands, discards, etc.), causing exploits and stutter.
+            local reserved = fp_reserved_index(joker)
+            if fp_previous_membership[joker] == nil
+                or fp_previous_membership[joker] ~= reserved then
+                fp_previous_membership[joker] = reserved
+                SMODS.recalc_debuff(joker)
             end
-            if count > 0 then
-                extra.cards_drawn = extra.cards_drawn + count
-                if extra.cards_drawn >= extra.cards_per_rank then
-                    extra.cards_drawn = 0
-                    hnds_fun_police_destroy_rank(rank)
-                    extra.rank_index = extra.rank_index % #FUN_POLICE_RANKS + 1
-                    return { message = localize('k_hnds_rank_up'), colour = G.C.RED }
+            -- Defend against debuff hooks that grant resources immediately,
+            -- including chained hooks from third-party aura Jokers.
+            if round then
+                if hands_before and tonumber(round.hands_left)
+                    and round.hands_left > hands_before then
+                    round.hands_left = hands_before
+                end
+                if discards_before and tonumber(round.discards_left)
+                    and round.discards_left > discards_before then
+                    round.discards_left = discards_before
                 end
             end
         end
+    end)
+    HNDS._fp_refreshing = false
+    if not ok then error(err, 0) end
+end
+
+local function fp_refresh_after_removal()
+    if HNDS._fp_refresh_after_removal then return end
+    HNDS._fp_refresh_after_removal = true
+    if G and G.E_MANAGER and Event then
+        G.E_MANAGER:add_event(Event({ trigger = 'after', delay = 0, func = function()
+            HNDS._fp_refresh_after_removal = false
+            fp_refresh()
+            return true
+        end }))
+    else
+        HNDS._fp_refresh_after_removal = false
+        fp_refresh()
+    end
+end
+
+local function fp_active_count()
+    local total = 0
+    for _, joker in ipairs((G and G.jokers and G.jokers.cards) or {}) do
+        if fp_is(joker) then total = total + 1 end
+    end
+    return total
+end
+
+fp_reserved_index = function(joker)
+    local cards = G and G.jokers and G.jokers.cards or {}
+    local limit = G and G.jokers and G.jokers.config and tonumber(G.jokers.config.card_limit) or 0
+    local reserved = fp_active_count() * FP_SLOTS
+    if reserved == 0 or #cards <= 5 then return false end
+    local safe_slots = math.max(5, limit - reserved)
+    for i, current in ipairs(cards) do
+        if current == joker then return i > safe_slots end
+    end
+    return false
+end
+
+local prior_debuff = SMODS.current_mod.set_debuff
+SMODS.current_mod.set_debuff = function(card)
+    if prior_debuff then
+        local state = prior_debuff(card)
+        if state == true or state == 'prevent_debuff' then return state end
+    end
+    if card and card.area == (G and G.jokers) and fp_reserved_index(card) then
+        return true
+    end
+end
+
+local function fp_sync_slots(card)
+    if not (card and G and G.jokers and G.jokers.config and card.ability) then return end
+    local desired = card.area == G.jokers and FP_SLOTS or 0
+    local current = tonumber(card.ability.hnds_fun_police_slots_applied) or 0
+    if desired ~= current then
+        G.jokers.config.card_limit = math.max(0, G.jokers.config.card_limit + desired - current)
+        card.ability.hnds_fun_police_slots_applied = desired
+        fp_refresh()
+    end
+end
+
+local function fp_destroy_reserve(card)
+    if not (G and G.jokers and G.jokers.cards) then return end
+    local cards = G.jokers.cards
+    local start = math.max(1, (G.jokers.config.card_limit or #cards) - FP_SLOTS + 1)
+    local victims = {}
+    for i = start, #cards do
+        if cards[i] and cards[i] ~= card then victims[#victims+1] = cards[i] end
+    end
+    for _, target in ipairs(victims) do
+        if SMODS and SMODS.destroy_cards then SMODS.destroy_cards(target)
+        elseif target.start_dissolve then target:start_dissolve() end
+    end
+end
+
+SMODS.Joker {
+    key = 'fun_police', atlas = 'fun_police', pos = { x = 0, y = 0 },
+    sprite_args = { start_pos = { x = 0, y = 0 }, frames = 180, fps = 24 },
+    pixel_size = { w = 95, h = 71 }, display_size = { w = 95, h = 71 },
+    rarity = 3, cost = 10, unlocked = true, discovered = false,
+    blueprint_compat = false, eternal_compat = true, perishable_compat = true,
+    config = { extra = {} },
+    loc_vars = function(self, info_queue, card) return { vars = { FP_SLOTS } } end,
+    set_sprites = function(self, card) hnds_fun_police_reset_animation(card) end,
+    set_ability = function(self, card) hnds_fun_police_reset_animation(card) end,
+    load = function(self, card)
+        hnds_fun_police_reset_animation(card)
+        -- Save state carries the existing card_limit; restore the applied flag.
+        card.ability.hnds_fun_police_slots_applied = tonumber(card.ability.hnds_fun_police_slots_applied) or 0
     end,
-    attributes = { 'rank', 'destroy' },
+    add_to_deck = function(self, card, from_debuff)
+        fp_sync_slots(card)
+    end,
+    remove_from_deck = function(self, card, from_debuff)
+        -- Debuff transitions are not loss of the source Joker: keep its slots
+        -- reserved until it actually leaves the Joker area.
+        if from_debuff then return end
+        fp_destroy_reserve(card)
+        local applied = card.ability and tonumber(card.ability.hnds_fun_police_slots_applied) or 0
+        if G and G.jokers and G.jokers.config then
+            G.jokers.config.card_limit = math.max(0, G.jokers.config.card_limit - applied)
+        end
+        if card.ability then card.ability.hnds_fun_police_slots_applied = 0 end
+        fp_refresh_after_removal()
+    end,
+    update = function(self, card, dt)
+        if not (G and G.jokers and card.area == G.jokers) then return end
+        fp_sync_slots(card)
+        local ids = {}
+        for i, joker in ipairs(G.jokers.cards) do
+            ids[#ids+1] = tostring(joker.sort_id or joker.ID or joker) .. ':' .. tostring(joker.debuff)
+        end
+        local signature = table.concat(ids, '|')
+        if card.ability.hnds_fp_signature ~= signature then
+            card.ability.hnds_fp_signature = signature
+            fp_refresh()
+        end
+    end,
+    attributes = { 'debuff', 'destroy' },
 }

@@ -164,11 +164,6 @@ function Card:set_ability(center, initial, delay_sprites, ...)
     end
 
 
-    if new_key == "m_hnds_obsidian"
-        and HNDS.is_bound_card and HNDS.is_bound_card(self)
-    then
-        return set_ability_ref(self, center, initial, delay_sprites, ...)
-    end
 
 
     if not initial
@@ -310,11 +305,33 @@ if Card.should_hide_front then
     end
 end
 
+-- Stone suppresses rank-based chips, but must not erase extra or permanent
+-- chips (for example from a second fused enhancement or Hiker).
+-- Temporarily clearing nominal keeps the normal scoring and tooltip logic
+-- intact, without altering the card's stored rank or its save data.
+local function aberrant_without_rank_chips(card, fn, ...)
+    if not (is_aberrant(card) and has_fusion(card, 'm_stone') and card.base) then
+        return fn(card, ...)
+    end
+    local saved_nominal = card.base.nominal
+    card.base.nominal = 0
+    local results = HNDS.pack(pcall(fn, card, ...))
+    card.base.nominal = saved_nominal
+    if not results[1] then error(results[2], 0) end
+    return ((table and table.unpack) or unpack)(results, 2, results.n)
+end
+
 if Card.get_chip_bonus then
     local get_chip_bonus_ref = Card.get_chip_bonus
     function Card:get_chip_bonus(...)
-        if is_aberrant(self) and has_fusion(self, "m_stone") then return 0 end
-        return get_chip_bonus_ref(self, ...)
+        return aberrant_without_rank_chips(self, get_chip_bonus_ref, ...)
+    end
+end
+
+if Card.generate_UIBox_ability_table then
+    local generate_ability_ui_ref = Card.generate_UIBox_ability_table
+    function Card:generate_UIBox_ability_table(...)
+        return aberrant_without_rank_chips(self, generate_ability_ui_ref, ...)
     end
 end
 
@@ -342,7 +359,6 @@ local ABERRANT_INDICATOR_POS = {
     steel = { top = { x = 2, y = 2 }, bottom = { x = 1, y = 3 } },
     wild = { top = { x = 3, y = 2 }, bottom = { x = 2, y = 3 } },
     lucky = { top = { x = 4, y = 2 }, bottom = { x = 3, y = 3 } },
-    obsidian = { top = { x = 5, y = 2 }, bottom = { x = 4, y = 3 } },
 }
 
 local ABERRANT_INDICATOR_KIND = {
@@ -354,112 +370,183 @@ local ABERRANT_INDICATOR_KIND = {
     m_steel = "steel",
     m_wild = "wild",
     m_lucky = "lucky",
-    m_hnds_obsidian = "obsidian",
 }
+
 
 
 local ABERRANT_TOP_PRIORITY = {
     stone = true, mult = true, bonus = true, glass = true,
 }
 
-local function aberrant_indicator_kind(key)
-    return ABERRANT_INDICATOR_KIND[key] or "unknown"
-end
-
-local function aberrant_indicator_slots(card)
+local function aberrant_visual_parts(card)
     local fusions = aberrant_fusions(card)
-    if #fusions == 0 then return nil, nil end
-
-    local first = aberrant_indicator_kind(fusions[1])
-    if #fusions == 1 then return first, nil end
-
-    local second = aberrant_indicator_kind(fusions[2])
-    if first == second then
-        return first, second
+    local first = fusions[1] and (ABERRANT_INDICATOR_KIND[fusions[1]] or 'unknown')
+    local second = fusions[2] and (ABERRANT_INDICATOR_KIND[fusions[2]] or 'unknown')
+    -- Wild always occupies the top half when fused with another enhancement,
+    -- regardless of which one was fused first or their normal priorities.
+    if first and second then
+        if first == 'wild' then return first, second end
+        if second == 'wild' then return second, first end
+        if ABERRANT_TOP_PRIORITY[second] and not ABERRANT_TOP_PRIORITY[first] then
+            return second, first
+        end
     end
-
-    local first_priority = ABERRANT_TOP_PRIORITY[first]
-    local second_priority = ABERRANT_TOP_PRIORITY[second]
-
-
-    if first_priority and second_priority then
-        return first, second
-    elseif first_priority then
-        return first, second
-    elseif second_priority then
-        return second, first
-    end
-
-
     return first, second
 end
 
+-- Use the atlases already supplied by Handsome Devils: HDstickers for the
+-- enhancement parts, EHD for the Aberrant base, collection art and rift.
+-- These sprites are shared rather than created for every card or frame.
+local ABERRANT_PART_SPRITES = {}
+local ABERRANT_NO_FUSION_BASE_SPRITE
+local ABERRANT_NO_FUSION_BASE_ATLAS
+local ABERRANT_SINGLE_FUSION_BASE_SPRITE
+local ABERRANT_SINGLE_FUSION_BASE_ATLAS
+local ABERRANT_COLLECTION_SPRITE
+local ABERRANT_COLLECTION_ATLAS
+local ABERRANT_OVERLAY_SPRITE
+local ABERRANT_OVERLAY_ATLAS
 
-local ABERRANT_INDICATOR_ATLAS = "hnds_Stickers"
-local ABERRANT_INDICATOR_SPRITES = {}
-
-local function aberrant_indicator_sprite(kind, slot)
-    local cache_key = kind .. "_" .. slot
-    if ABERRANT_INDICATOR_SPRITES[cache_key] then
-        return ABERRANT_INDICATOR_SPRITES[cache_key]
-    end
-
-    local positions = ABERRANT_INDICATOR_POS[kind]
-    local pos = positions and positions[slot]
-    if not pos or not (G and G.ASSET_ATLAS and G.ASSET_ATLAS[ABERRANT_INDICATOR_ATLAS]) then
-        return nil
-    end
-
-    local sprite = SMODS.create_sprite(
-        0, 0, G.CARD_W, G.CARD_H,
-        ABERRANT_INDICATOR_ATLAS, pos
-    )
-    ABERRANT_INDICATOR_SPRITES[cache_key] = sprite
-    return sprite
+local function aberrant_atlas(key)
+    if not (G and G.ASSET_ATLAS) then return nil end
+    return G.ASSET_ATLAS['hnds_' .. key] or G.ASSET_ATLAS[key]
+        or (SMODS.get_atlas and SMODS.get_atlas(key))
 end
 
-local function draw_aberrant_indicator(card, kind, slot)
-    local sprite = aberrant_indicator_sprite(kind, slot)
-    if not sprite or not card.children or not card.children.center then return end
-
-    sprite.role.draw_major = card
-
-
-    sprite:draw_shader('dissolve', nil, nil, nil, card.children.center)
+local function is_in_aberrant_collection(card)
+    return card and card.area and card.area.config and card.area.config.collection == true
 end
 
+local function draw_aberrant_part(card, kind, half)
+    if not (card.children and card.children.center and G and G.CARD_W and G.CARD_H) then return end
+    local part_pos = ABERRANT_INDICATOR_POS[kind]
+    local pos = part_pos and part_pos[half]
+    local atlas = aberrant_atlas('Stickers')
+    if not (pos and atlas and atlas.image) then return end
+    local cache_key = kind .. '_' .. half
+    local entry = ABERRANT_PART_SPRITES[cache_key]
+    if not entry or entry.atlas ~= atlas then
+        entry = {
+            atlas = atlas,
+            sprite = Sprite(0, 0, G.CARD_W, G.CARD_H, atlas, pos),
+        }
+        ABERRANT_PART_SPRITES[cache_key] = entry
+    end
+    entry.sprite.role.draw_major = card
+    entry.sprite:draw_shader('dissolve', nil, nil, nil, card.children.center)
+end
+
+local function draw_aberrant_no_fusion_base(card)
+    if not (card.children and card.children.center and G and G.CARD_W and G.CARD_H) then return end
+    local atlas = aberrant_atlas('Extras')
+    if not (atlas and atlas.image) then return end
+    if not ABERRANT_NO_FUSION_BASE_SPRITE or ABERRANT_NO_FUSION_BASE_ATLAS ~= atlas then
+        ABERRANT_NO_FUSION_BASE_SPRITE = Sprite(0, 0, G.CARD_W, G.CARD_H, atlas, { x = 4, y = 3 })
+        ABERRANT_NO_FUSION_BASE_ATLAS = atlas
+    end
+    ABERRANT_NO_FUSION_BASE_SPRITE.role.draw_major = card
+    ABERRANT_NO_FUSION_BASE_SPRITE:draw_shader('dissolve', nil, nil, nil, card.children.center)
+end
+
+local function draw_aberrant_single_fusion_base(card)
+    if not (card.children and card.children.center and G and G.CARD_W and G.CARD_H) then return end
+    local atlas = aberrant_atlas('Extras')
+    if not (atlas and atlas.image) then return end
+    if not ABERRANT_SINGLE_FUSION_BASE_SPRITE or ABERRANT_SINGLE_FUSION_BASE_ATLAS ~= atlas then
+        ABERRANT_SINGLE_FUSION_BASE_SPRITE = Sprite(0, 0, G.CARD_W, G.CARD_H, atlas, { x = 3, y = 3 })
+        ABERRANT_SINGLE_FUSION_BASE_ATLAS = atlas
+    end
+    ABERRANT_SINGLE_FUSION_BASE_SPRITE.role.draw_major = card
+    ABERRANT_SINGLE_FUSION_BASE_SPRITE:draw_shader('dissolve', nil, nil, nil, card.children.center)
+end
+
+-- When Aberrant has no fused enhancements yet, render EHD (4,3)
+-- as the bottom-most Aberrant layer under every other Aberrant visual.
 SMODS.DrawStep({
-    key = "hnds_aberrant_fusion_indicators",
-    order = 35,
+    key = 'hnds_aberrant_no_fusion_base',
+    order = -12,
+    conditions = { vortex = false, facing = 'front' },
     func = function(card, layer)
-        if not is_aberrant(card) then return end
+        if not is_aberrant(card) or is_in_aberrant_collection(card) then return end
+        if #aberrant_fusions(card) ~= 0 then return end
+        draw_aberrant_no_fusion_base(card)
+    end,
+})
 
+-- When exactly one enhancement is fused into Aberrant, render EHD (3,3)
+-- as the bottom-most Aberrant layer under every other Aberrant visual.
+SMODS.DrawStep({
+    key = 'hnds_aberrant_single_fusion_base',
+    order = -11,
+    conditions = { vortex = false, facing = 'front' },
+    func = function(card, layer)
+        if not is_aberrant(card) or is_in_aberrant_collection(card) then return end
+        if #aberrant_fusions(card) ~= 1 then return end
+        draw_aberrant_single_fusion_base(card)
+    end,
+})
 
-        if card.facing ~= "front" or card.sprite_facing ~= "front" then return end
+-- In Steamodded, center/base is drawn at -10 and front/rank/suit at 0.
+-- Drawing at -5 places the enhancement parts over the base card art but
+-- under its rank and suit. This must run on real cards, not collections.
+SMODS.DrawStep({
+    key = 'hnds_aberrant_enhancement_parts',
+    order = -5,
+    conditions = { vortex = false, facing = 'front' },
+    func = function(card, layer)
+        if not is_aberrant(card) or is_in_aberrant_collection(card) then return end
+        local top, bottom = aberrant_visual_parts(card)
+        if top then draw_aberrant_part(card, top, 'top') end
+        if bottom then draw_aberrant_part(card, bottom, 'bottom') end
+    end,
+})
 
-        local top_kind, bottom_kind = aberrant_indicator_slots(card)
-        if not top_kind then return end
+local function draw_aberrant_collection_art(card)
+    if not (is_in_aberrant_collection(card) and card.children and card.children.center) then return end
+    local atlas = aberrant_atlas('Extras')
+    if not (atlas and atlas.image) then return end
+    if not ABERRANT_COLLECTION_SPRITE or ABERRANT_COLLECTION_ATLAS ~= atlas then
+        ABERRANT_COLLECTION_SPRITE = Sprite(0, 0, G.CARD_W, G.CARD_H, atlas, { x = 2, y = 3 })
+        ABERRANT_COLLECTION_ATLAS = atlas
+    end
+    ABERRANT_COLLECTION_SPRITE.role.draw_major = card
+    ABERRANT_COLLECTION_SPRITE:draw_shader('dissolve', nil, nil, nil, card.children.center)
+end
 
-        draw_aberrant_indicator(card, top_kind, "top")
-        if bottom_kind then
-            draw_aberrant_indicator(card, bottom_kind, "bottom")
+-- EHD (2,0) supplies the persistent rift overlay. Do not apply it to the
+-- collection preview (EHD 2,3). No extra rift texture/atlas is necessary.
+SMODS.DrawStep({
+    key = 'hnds_aberrant_rift_overlay',
+    order = 60,
+    conditions = { vortex = false, facing = 'front' },
+    func = function(card, layer)
+        if not (is_aberrant(card) and not is_in_aberrant_collection(card)
+            and card.children and card.children.center) then return end
+        local atlas = aberrant_atlas('Extras')
+        if not (atlas and atlas.image) then return end
+        if not ABERRANT_OVERLAY_SPRITE or ABERRANT_OVERLAY_ATLAS ~= atlas then
+            ABERRANT_OVERLAY_SPRITE = Sprite(0, 0, G.CARD_W, G.CARD_H, atlas, { x = 2, y = 0 })
+            ABERRANT_OVERLAY_ATLAS = atlas
         end
+        ABERRANT_OVERLAY_SPRITE.role.draw_major = card
+        ABERRANT_OVERLAY_SPRITE:draw_shader('dissolve', nil, nil, nil, card.children.center)
     end,
 })
 
 SMODS.Enhancement({
     key = "aberrant",
     atlas = "Extras",
-    pos = { x = 2, y = 0 },
+    pos = { x = 1, y = 3 },
+    draw = function(self, card, layer)
+        draw_aberrant_collection_art(card)
+    end,
     config = {},
     weight = 2.5,
 
     loc_vars = function(self, info_queue, card)
         local seen = {}
         for _, key in ipairs(aberrant_fusions(card)) do
-            local completed_obsidian = key == "m_hnds_obsidian"
-                and HNDS.is_bound_card and HNDS.is_bound_card(card)
-            if not seen[key] and G.P_CENTERS[key] and not completed_obsidian then
+            if not seen[key] and G.P_CENTERS[key] then
                 info_queue[#info_queue + 1] = G.P_CENTERS[key]
                 seen[key] = true
             end

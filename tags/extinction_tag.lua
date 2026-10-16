@@ -5,7 +5,7 @@ SMODS.Tag {
     pos = { x = 4, y = 0 },
     discovered = false,
     in_pool = function(self, args)
-        return false
+        return HNDS and HNDS._extinction_native_skip_choice == true
     end,
     apply = function(self, tag, context)
         if context.type == 'new_blind_choice' then

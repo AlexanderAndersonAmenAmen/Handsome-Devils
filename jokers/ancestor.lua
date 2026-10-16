@@ -19,41 +19,62 @@ local function hnds_ancestor_all_spectrals_discovered()
     return hnds_ancestor_unlock_cache.value
 end
 
-local function hnds_ancestor_curse_first_shop_joker()
-    if not (G and G.shop_jokers and G.shop_jokers.cards) then return true end
-
-    local target
-    for _, shop_card in ipairs(G.shop_jokers.cards) do
-        local center = shop_card and shop_card.config and shop_card.config.center
-        local set = (shop_card and shop_card.ability and shop_card.ability.set)
-            or (center and center.set)
-        if set == 'Joker' then
-            target = shop_card
-            break
+-- Replaces exactly one of the two normal shop pack slots, not a third slot.
+local function hnds_ancestor_owned()
+    for _, joker in ipairs((G and G.jokers and G.jokers.cards) or {}) do
+        if joker and joker.config and joker.config.center
+            and joker.config.center.key == 'j_hnds_ancestor' and not joker.debuff then
+            return true
         end
     end
+    return false
+end
 
-    if not target then return true end
-    target.ability = target.ability or {}
-
-
-    if target.ability.hnds_ancestor_cursed then return true end
-
-    if type(apply_curse) == 'function' then
-        apply_curse(target)
-    elseif HNDS and type(HNDS.assign_curse_data) == 'function' then
-        HNDS.assign_curse_data(target)
-        if target.add_sticker and not target.ability.hnds_cursed then
-            target:add_sticker('hnds_cursed', true)
-        end
-    else
-        return true
+function HNDS.ancestor_starting_shop()
+    if not (G and G.GAME) then return end
+    local game = G.GAME
+    game.hnds_ancestor_shop_number = (game.hnds_ancestor_shop_number or 0) + 1
+    game.hnds_ancestor_slot_used = false
+    game.hnds_ancestor_shop_active = hnds_ancestor_owned()
+    if not game.hnds_ancestor_shop_active then return end
+    local chance = pseudorandom('hnds_ancestor_forced_' .. game.hnds_ancestor_shop_number)
+    game.hnds_ancestor_shop_forced = chance < ((game.probabilities and game.probabilities.normal or 1) / 3)
+    -- Handle versions or other mods that generate shop packs before firing
+    -- starting_shop, as well as the normal later CardArea:emplace pathway.
+    if G.shop_booster and G.shop_booster.cards and G.shop_booster.cards[1] then
+        HNDS.ancestor_process_shop_pack(G.shop_booster.cards[1])
     end
+end
 
+function HNDS.ancestor_process_shop_pack(pack)
+    local game = G and G.GAME
+    if not (game and game.hnds_ancestor_shop_active and not game.hnds_ancestor_slot_used
+        and G.shop_booster and pack and pack.area == G.shop_booster
+        and G.P_CENTERS and G.P_CENTERS.p_hnds_cursed_pack) then return end
+    -- Mark slot before changing the center, to prevent recursive callbacks.
+    game.hnds_ancestor_slot_used = true
+    if pack.set_ability then pack:set_ability(G.P_CENTERS.p_hnds_cursed_pack) end
+    pack.cost = 0
+    pack.ability = pack.ability or {}
+    pack.ability.couponed = true
+    pack.hnds_forced_no_skip = game.hnds_ancestor_shop_forced == true
+    pack.hnds_cursed_pack_source = 'ancestor'
+    if pack.set_cost then pack:set_cost() end
+    pack.cost = 0
+end
 
-    target.ability = target.ability or {}
-    target.ability.hnds_ancestor_cursed = true
-    return true
+-- Shop booster objects are not guaranteed to exist when starting_shop fires.
+-- Intercept their insertion instead, so one real pack slot is replaced.
+if CardArea and CardArea.emplace and not CardArea._hnds_ancestor_pack_wrapped then
+    CardArea._hnds_ancestor_pack_wrapped = true
+    local emplace_ref = CardArea.emplace
+    function CardArea:emplace(card, ...)
+        local result = emplace_ref(self, card, ...)
+        if G and self == G.shop_booster then
+            HNDS.ancestor_process_shop_pack(card)
+        end
+        return result
+    end
 end
 
 SMODS.Joker {
@@ -64,22 +85,18 @@ SMODS.Joker {
     cost = 8,
     unlocked = false,
     discovered = false,
-    config = {
-		extra = { odds = 2 }
-	},
+    config = { extra = { odds = 3 } },
     blueprint_compat = false,
-    eternal_compat = true,
+    eternal_compat = false,
     perishable_compat = true,
     unlock_condition = { type = 'hnds_discovery' },
 
     loc_vars = function(self, info_queue, card)
-        local has_cursed = card and card.ability and card.ability.hnds_cursed
-        if info_queue and not has_cursed then
-            info_queue[#info_queue + 1] = { set = 'Other', key = 'hnds_cursed' }
+        if info_queue and G and G.P_CENTERS and G.P_CENTERS.p_hnds_cursed_pack then
+            info_queue[#info_queue + 1] = G.P_CENTERS.p_hnds_cursed_pack
         end
-        local extra = card and card.ability and card.ability.extra or self.config.extra
-        local numerator, denominator = SMODS.get_probability_vars(card, 1, extra.odds, "hnds_ancestor")
-        return { key = self.key, vars = { numerator, denominator } }
+        local numerator, denominator = SMODS.get_probability_vars(card, 1, 3, 'hnds_ancestor')
+        return { vars = { numerator, denominator } }
     end,
 
     check_for_unlock = function(self, args)
@@ -87,16 +104,8 @@ SMODS.Joker {
     end,
 
     calculate = function(self, card, context)
-        if context.starting_shop and context.main_eval
-            and not context.repetition and not context.blueprint
-            and G and G.E_MANAGER and Event
-        then
-            G.E_MANAGER:add_event(Event({
-                trigger = 'after',
-                delay = 0,
-                func = hnds_ancestor_curse_first_shop_joker,
-            }))
-        end
+        -- Shop pack replacement is handled once through the mod's
+        -- starting_shop context and CardArea insertion hook.
     end,
 
     attributes = { 'joker', 'passive' },

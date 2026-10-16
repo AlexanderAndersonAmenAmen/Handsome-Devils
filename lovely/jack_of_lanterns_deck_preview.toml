@@ -342,3 +342,24 @@ payload = '''
 '''
 match_indent = false
 times = 1
+
+# Some mods return a string/nil placeholder from copy_card during View Deck.
+# Never dereference T on non-card preview results.
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''copy.greyed = greyed'''
+position = 'before'
+payload = '''if type(copy) ~= 'table' or type(copy.T) ~= 'table' then copy = nil end
+if copy then'''
+match_indent = true
+times = 2
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''view_deck:emplace(copy)'''
+position = 'after'
+payload = '''end -- valid copy_card preview result'''
+match_indent = true
+times = 2

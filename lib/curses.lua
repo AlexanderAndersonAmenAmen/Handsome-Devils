@@ -206,6 +206,21 @@ G.CURSE_OFFERS = {
                     trigger = 'after',
                     delay = 0.2,
                     func = function()
+                        -- A queued copy must not exceed the current Joker
+                        -- limit, even if other effects filled the last slot
+                        -- after this Cursed Offer was first triggered.
+                        local area = G and G.jokers
+                        if not (area and area.cards and area.config
+                            and #area.cards < (tonumber(area.config.card_limit) or 0)) then
+                            if G and G.GAME then
+                                G.GAME.joker_buffer = math.max(0, (tonumber(G.GAME.joker_buffer) or 1) - 1)
+                            end
+                            if card_eval_status_text and c and G and G.C then
+                                card_eval_status_text(c, 'extra', nil, nil, nil,
+                                    {message = localize('k_no_room_ex'), colour = G.C.RED})
+                            end
+                            return true
+                        end
                         local copy = copy_card(c)
                         if copy then
                             copy.ability = copy.ability or {}
@@ -494,7 +509,8 @@ SMODS.Sticker {
     apply = function(self, card, val)
         card.ability = card.ability or {}
         card.ability[self.key] = val or nil
-        if val and HNDS and HNDS.assign_curse_data
+        if val and not card.ability.hnds_curse_preview
+            and HNDS and HNDS.assign_curse_data
             and not (card.ability.hnds_curse_offer and card.ability.hnds_curse_price)
         then
             HNDS.assign_curse_data(card)
@@ -553,12 +569,51 @@ if not _G.HNDS_curse_collections then
         return {
             UIBox_button({button = 'your_collection_hnds_curse_offers', label = {localize('k_hnds_cursed_offers')}, minw = 5, minh = 1, id = 'your_collection_hnds_curse_offers', focus_args = {snap_to = true}}),
             UIBox_button({button = 'your_collection_hnds_curse_prices', label = {localize('k_hnds_cursed_prices')}, minw = 5, minh = 1, id = 'your_collection_hnds_curse_prices', focus_args = {snap_to = true}}),
+            UIBox_button({button = 'your_collection_hnds_chaos_suits', label = {localize('k_hnds_chaos_suits')}, minw = 5, minh = 1, id = 'your_collection_hnds_chaos_suits', focus_args = {snap_to = true}}),
         }
+    end
+
+    -- Nine Chaos Aces, arranged in 5 + 4 rows. Use live preview cards with
+    -- the suit's regular base descriptor so normal rank/suit artwork appears.
+    local chaos_preview_order = {
+        'hnds_smiles', 'hnds_bananas', 'hnds_dices', 'hnds_rubies',
+        'hnds_flowers', 'hnds_petals', 'hnds_free_parking_spots',
+        'hnds_wraiths', 'hnds_beans',
+    }
+    -- SMODS.Suit.loc_vars already queues the proper Chaos suit tooltip for
+    -- preview Aces. Do not append the same tooltip a second time here.
+
+    create_UIBox_your_collection_hnds_chaos_suits = function()
+        local pool = {}
+        for i, suit in ipairs(chaos_preview_order) do
+            pool[i] = { id = suit, order = i, mod = SMODS.current_mod }
+        end
+        return SMODS.card_collection_UIBox(pool, {5,4}, {
+            snap_back = true, hide_single_page = true, collapse_single_page = true,
+            no_materialize = true,
+            center = 'c_base', h_mod = 1.03,
+            back_func = 'your_collection_other_gameobjects',
+            modify_card = function(card, entry)
+                local suit = entry and entry.id
+                local suit_obj = SMODS and SMODS.Suits and SMODS.Suits[suit]
+                local card_key = suit_obj and suit_obj.card_key
+                local ace = card_key and G and G.P_CARDS and G.P_CARDS[card_key .. '_A']
+                if ace and card.set_base then card:set_base(ace, true) end
+                card.hnds_chaos_preview_suit = suit
+                card.ignore_pinned = true
+            end,
+        })
+    end
+
+    G.FUNCS.your_collection_hnds_chaos_suits = function(e)
+        G.SETTINGS.paused = true
+        G.FUNCS.overlay_menu{ definition = create_UIBox_your_collection_hnds_chaos_suits() }
     end
 
     create_UIBox_your_collection_hnds_curse_offers = function()
         return SMODS.card_collection_UIBox(HNDS.CURSE_OFFERS_COLLECTION, {4,4}, {
             snap_back = true,
+            no_materialize = true,
             hide_single_page = true,
             collapse_single_page = true,
             center = 'c_base',
@@ -566,12 +621,15 @@ if not _G.HNDS_curse_collections then
             back_func = 'your_collection_other_gameobjects',
             modify_card = function(card, center)
                 card.ignore_pinned = true
-                if card.add_sticker then card:add_sticker('hnds_cursed', true) end
+                -- Mark previews before adding the sticker. Otherwise its
+                -- apply hook rolls a randomized gameplay curse for every
+                -- collection thumbnail, only to overwrite it immediately.
                 card.ability = card.ability or {}
                 card.ability.hnds_curse_preview = true
                 card.ability.hnds_curse_offer = center.id
                 card.ability.hnds_curse_price = nil
                 card.ability.hnds_curse_display_mode = 'offer'
+                if card.add_sticker then card:add_sticker('hnds_cursed', true) end
             end,
         })
     end
@@ -579,6 +637,7 @@ if not _G.HNDS_curse_collections then
     create_UIBox_your_collection_hnds_curse_prices = function()
         return SMODS.card_collection_UIBox(HNDS.CURSE_PRICES_COLLECTION, {4,4}, {
             snap_back = true,
+            no_materialize = true,
             hide_single_page = true,
             collapse_single_page = true,
             center = 'c_base',
@@ -586,12 +645,15 @@ if not _G.HNDS_curse_collections then
             back_func = 'your_collection_other_gameobjects',
             modify_card = function(card, center)
                 card.ignore_pinned = true
-                if card.add_sticker then card:add_sticker('hnds_cursed', true) end
+                -- Mark previews before adding the sticker. Otherwise its
+                -- apply hook rolls a randomized gameplay curse for every
+                -- collection thumbnail, only to overwrite it immediately.
                 card.ability = card.ability or {}
                 card.ability.hnds_curse_preview = true
                 card.ability.hnds_curse_offer = nil
                 card.ability.hnds_curse_price = center.id
                 card.ability.hnds_curse_display_mode = 'price'
+                if card.add_sticker then card:add_sticker('hnds_cursed', true) end
             end,
         })
     end

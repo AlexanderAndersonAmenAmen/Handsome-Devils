@@ -723,6 +723,7 @@ for key, suit in pairs(suit_jokers) do
     })
 end
 
+if not (hnds_config and hnds_config.enableBlindUpgradeButton) then
 take_vanilla_ownership(SMODS.Joker, 'throwback', {
     blueprint_compat = true,
     config = { extra = 0.5, x_mult = 1 },
@@ -739,6 +740,7 @@ take_vanilla_ownership(SMODS.Joker, 'throwback', {
         if context.joker_main then return { xmult = 1 + G.GAME.skips * gain } end
     end,
 })
+end
 
 take_vanilla_ownership(SMODS.Joker, 'ring_master', {
     blueprint_compat = false,
@@ -787,68 +789,6 @@ take_vanilla_ownership(SMODS.Joker, 'hiker', {
         end
     end,
 })
-
-
-local HNDS_BLUE_STAKE_HAND_VALUES = {
-    ['High Card']       = { mult = 1,  chips = 1,   l_mult = 1, l_chips = 5  },
-    ['Pair']            = { mult = 1,  chips = 10,  l_mult = 1, l_chips = 10 },
-    ['Two Pair']        = { mult = 2,  chips = 10,  l_mult = 1, l_chips = 15 },
-    ['Three of a Kind'] = { mult = 3,  chips = 20,  l_mult = 2, l_chips = 15 },
-    ['Straight']        = { mult = 4,  chips = 25,  l_mult = 3, l_chips = 25 },
-    ['Flush']           = { mult = 4,  chips = 30,  l_mult = 2, l_chips = 10 },
-    ['Full House']      = { mult = 4,  chips = 30,  l_mult = 4, l_chips = 25 },
-    ['Four of a Kind']  = { mult = 6,  chips = 60,  l_mult = 3, l_chips = 25 },
-    ['Straight Flush']  = { mult = 7,  chips = 100, l_mult = 6, l_chips = 50 },
-    ['Five of a Kind']  = { mult = 11, chips = 110, l_mult = 3, l_chips = 30 },
-    ['Flush House']     = { mult = 13, chips = 130, l_mult = 5, l_chips = 40 },
-    ['Flush Five']      = { mult = 15, chips = 150, l_mult = 3, l_chips = 40 },
-    ['hnds_stone_ocean']= { mult = 1,  chips = 200, l_mult = 1, l_chips = 40 },
-}
-
-function HNDS.apply_blue_stake_hand_rework()
-    if not (G and G.GAME and G.GAME.hands and G.GAME.modifiers
-        and G.GAME.modifiers.hnds_blue_stake_rework)
-    then
-        return
-    end
-
-    for hand_key, values in pairs(HNDS_BLUE_STAKE_HAND_VALUES) do
-        local hand = G.GAME.hands[hand_key]
-        if hand then
-            local level = math.max(1, tonumber(hand.level) or 1)
-            hand.l_mult = values.l_mult
-            hand.l_chips = values.l_chips
-
-
-            hand.mult = values.mult + (level - 1) * values.l_mult
-            hand.chips = values.chips + (level - 1) * values.l_chips
-        end
-    end
-end
-
-
-if not (HNDS.mod_loaded and HNDS.mod_loaded('allinjest')) then
-    take_vanilla_ownership(SMODS.Stake, 'blue', {
-        modifiers = function(self)
-            G.GAME.modifiers = G.GAME.modifiers or {}
-            G.GAME.modifiers.hnds_blue_stake_rework = true
-            HNDS.apply_blue_stake_hand_rework()
-        end,
-    })
-end
-
-
-if Game and type(Game.start_run) == 'function' and not HNDS._blue_stake_start_run_hook then
-    HNDS._blue_stake_start_run_hook = true
-    local hnds_blue_stake_start_run_ref = Game.start_run
-    function Game:start_run(...)
-        local pack = HNDS.pack
-        local unpack_values = table.unpack or unpack
-        local result = pack(hnds_blue_stake_start_run_ref(self, ...))
-        HNDS.apply_blue_stake_hand_rework()
-        return unpack_values(result, 1, result.n)
-    end
-end
 
 
 take_vanilla_ownership(SMODS.Consumable, 'black_hole', {

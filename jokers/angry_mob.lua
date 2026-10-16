@@ -4,7 +4,7 @@ SMODS.Joker({
     cost = 6,
     blueprint_compat = true,
     atlas = "Jokers",
-    pos = { x = 8, y = 3 },
+    pos = { x = 3, y = 9 },
     unlocked = false,
     discovered = false,
     unlock_condition = { type = "hnds_joker_unlock", key = "angry_mob" },

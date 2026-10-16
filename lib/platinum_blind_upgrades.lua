@@ -4,7 +4,7 @@
 HNDS = HNDS or {}
 
 local function blind_raiser_active()
-    if not (G and G.GAME) then return false end
+    if not HNDS.blind_upgrade_active() then return false end
     G.GAME.hnds_upgraded_blinds = G.GAME.hnds_upgraded_blinds or {}
     G.GAME.hnds_platinum_blind_replacements =
         G.GAME.hnds_platinum_blind_replacements or {}
@@ -13,7 +13,7 @@ local function blind_raiser_active()
 end
 
 local function nightmare_active()
-    return G and G.GAME and G.GAME.modifiers
+    return HNDS.blind_upgrade_active() and G.GAME.modifiers
         and G.GAME.modifiers.hnds_nightmare_stake == true
 end
 
@@ -82,7 +82,8 @@ local function blind_was_upgraded(blind_choice)
 end
 
 local function can_upgrade(blind_choice)
-    return blind_is_current(blind_choice)
+    return (blind_choice == 'Small' or blind_choice == 'Big')
+        and blind_is_current(blind_choice)
         and not blind_was_upgraded(blind_choice)
 end
 
@@ -110,7 +111,7 @@ end
 
 
 HNDS.restore_stale_platinum_blind_slots = function()
-    if not blind_raiser_active() then return end
+    if not (G and G.GAME) then return end
     if not (G.GAME.round_resets and G.GAME.round_resets.blind_choices) then return end
 
     local ante = current_ante()
@@ -196,31 +197,8 @@ end
 
 HNDS.platinum_skip_is_locked = function(blind_choice)
     return blind_raiser_active()
-        and blind_choice ~= nil
-        and blind_was_upgraded(blind_choice)
+        and (blind_choice == 'Small' or blind_choice == 'Big')
 end
-
-local function set_runtime_button(button, active, callback)
-    if not (button and button.config) then return end
-
-    button.config.button = active and callback or nil
-    button.config.hover = active
-    button.config.colour = active and G.C.RED or G.C.UI.BACKGROUND_INACTIVE
-    if active then button.disable_button = nil end
-
-
-    if button.states then
-        if button.states.collide then button.states.collide.can = active end
-        if button.states.click then button.states.click.can = active end
-        if button.states.hover then button.states.hover.can = active end
-    end
-
-    local label = button.children and button.children[1]
-    if label and label.config then
-        label.config.colour = active and G.C.UI.TEXT_LIGHT or G.C.UI.TEXT_INACTIVE
-    end
-end
-
 
 local function set_upgrade_runtime_button(button, active)
     if not (button and button.config) then return end
@@ -327,25 +305,8 @@ HNDS.sync_platinum_blind_tag_ui = function(e)
 
     set_upgrade_runtime_button(upgrade_button, current and not upgraded)
 
-    local skip_button = get_runtime_element(
-        e,
-        blind_choice,
-        'hnds_skip_blind_button_' .. blind_choice
-    )
-    set_runtime_button(skip_button, current and not upgraded, 'skip_blind')
 end
 
-
-G.FUNCS.hnds_update_skip_blind_button = function(e)
-    if not (e and e.config) then return end
-
-    local blind_choice = e.config.hnds_blind_choice
-    local active = blind_choice
-        and blind_is_current(blind_choice)
-        and not blind_was_upgraded(blind_choice)
-    set_runtime_button(e, active, 'skip_blind')
-    if G.FUNCS.hover_tag_proxy then G.FUNCS.hover_tag_proxy(e) end
-end
 
 G.FUNCS.hnds_update_upgrade_blind_button = function(e)
     if not (e and e.config) then return end
@@ -359,9 +320,7 @@ G.FUNCS.hnds_update_upgrade_blind_button = function(e)
 
     e.config.hover = true
     if e.states and e.states.hover then e.states.hover.can = true end
-    e.config.tooltip = HNDS.platinum_upgrade_button_tooltip
-        and HNDS.platinum_upgrade_button_tooltip(blind_choice)
-        or nil
+    e.config.tooltip = nil
 end
 
 
@@ -466,8 +425,6 @@ function create_UIBox_blind_tag(blind_choice, run_info, ...)
     end
 
     local upgrade_active = can_upgrade(blind_choice)
-    local skip_active = blind_is_current(blind_choice)
-        and not blind_was_upgraded(blind_choice)
 
 
     return {
@@ -517,37 +474,6 @@ function create_UIBox_blind_tag(blind_choice, run_info, ...)
                     {
                         n = G.UIT.R,
                         config = {
-                            id = 'hnds_skip_blind_button_' .. blind_choice,
-                            align = 'cm',
-                            colour = skip_active and G.C.RED or G.C.UI.BACKGROUND_INACTIVE,
-                            minh = 0.6,
-                            minw = 2,
-                            maxw = 2,
-                            padding = 0.07,
-                            r = 0.1,
-                            shadow = true,
-                            hover = skip_active,
-                            one_press = true,
-                            button = skip_active and 'skip_blind' or nil,
-                            func = 'hnds_update_skip_blind_button',
-                            insta_func = true,
-                            ref_table = reward_tag,
-                            hnds_blind_choice = blind_choice,
-                        },
-                        nodes = {
-                            {
-                                n = G.UIT.T,
-                                config = {
-                                    text = localize('b_skip_blind'),
-                                    scale = 0.4,
-                                    colour = skip_active and G.C.UI.TEXT_LIGHT or G.C.UI.TEXT_INACTIVE,
-                                },
-                            },
-                        },
-                    },
-                    {
-                        n = G.UIT.R,
-                        config = {
                             id = 'hnds_upgrade_blind_button_' .. blind_choice,
                             align = 'cm',
                             colour = upgrade_active and G.C.RED or G.C.UI.BACKGROUND_INACTIVE,
@@ -566,9 +492,6 @@ function create_UIBox_blind_tag(blind_choice, run_info, ...)
                             insta_func = true,
                             ref_table = reward_tag,
                             hnds_blind_choice = blind_choice,
-                            tooltip = HNDS.platinum_upgrade_button_tooltip
-                                and HNDS.platinum_upgrade_button_tooltip(blind_choice)
-                                or nil,
                         },
                         nodes = {
                             {
@@ -631,66 +554,6 @@ local function hnds_rebuild_upgraded_blind_option(blind_choice, boss)
         config = { id = blind_choice },
         UIBox = new_option,
     })
-end
-
-
-local function hnds_rebuild_remaining_blind_score_option(blind_choice)
-    if not (G and G.blind_select and G.GAME and G.GAME.round_resets) then return end
-    local state = G.GAME.round_resets.blind_states
-        and G.GAME.round_resets.blind_states[blind_choice]
-    if state == 'Defeated' or state == 'Skipped' then return end
-
-    local blind_key = G.GAME.round_resets.blind_choices
-        and G.GAME.round_resets.blind_choices[blind_choice]
-    if not (blind_key and G.P_BLINDS and G.P_BLINDS[blind_key]) then return end
-
-    local current_option = G.blind_select_opts
-        and G.blind_select_opts[blind_choice:lower()]
-    local current_parent = blind_option_parent(current_option)
-    if not (current_option and current_parent) then return end
-
-    current_option:remove()
-    G.blind_select_opts[blind_choice:lower()] = UIBox({
-        T = { current_parent.T.x, 0, 0, 0 },
-        definition = {
-            n = G.UIT.ROOT,
-            config = { align = 'cm', colour = G.C.CLEAR },
-            nodes = {
-                UIBox_dyn_container(
-                    { create_UIBox_blind_choice(blind_choice) },
-                    false,
-                    get_blind_main_colour(blind_key),
-                    mix_colours(G.C.BLACK, get_blind_main_colour(blind_key), 0.8)
-                ),
-            },
-        },
-        config = {
-            align = 'bmi',
-            offset = { x = 0, y = G.ROOM.T.y + 9 },
-            major = current_parent,
-            xy_bond = 'Weak',
-        },
-    })
-
-    local new_option = G.blind_select_opts[blind_choice:lower()]
-    current_parent.config.object = new_option
-    current_parent.config.object:recalculate()
-    new_option.parent = current_parent
-    new_option.alignment.offset.y = 0
-
-    HNDS.sync_platinum_blind_tag_ui({
-        config = { id = blind_choice },
-        UIBox = new_option,
-    })
-end
-
-local function hnds_refresh_undefeated_blind_scores(except_choice)
-    for _, choice in ipairs({ 'Small', 'Big' }) do
-        if choice ~= except_choice then
-            hnds_rebuild_remaining_blind_score_option(choice)
-        end
-    end
-    if HNDS.rebuild_platinum_boss_option then HNDS.rebuild_platinum_boss_option() end
 end
 
 
@@ -782,31 +645,23 @@ HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
 
     local current_upgrade_key = upgrade_key(blind_choice)
     local actual_upgrade_count = (G.GAME.hnds_blind_upgrades or 0) + 1
-    local upgrade_index = HNDS.platinum_next_upgrade_exponent
-        and HNDS.platinum_next_upgrade_exponent() or actual_upgrade_count
     replacement_records()[current_upgrade_key] = {
         ante = current_ante(),
         blind_choice = blind_choice,
         original = choices[blind_choice],
         boss = boss,
-        upgrade_index = upgrade_index,
+        upgrade_index = actual_upgrade_count,
     }
 
     upgraded_blinds()[current_upgrade_key] = true
     G.GAME.hnds_blind_upgrades = actual_upgrade_count
-    if HNDS.set_platinum_blind_raiser_applied_step then
-        HNDS.set_platinum_blind_raiser_applied_step(upgrade_index)
-    end
-    if HNDS.set_platinum_next_upgrade_exponent then
-        HNDS.set_platinum_next_upgrade_exponent(upgrade_index + 1)
-    end
     choices[blind_choice] = boss
     if HNDS.record_platinum_boss_effect then
         HNDS.record_platinum_boss_effect(boss, current_ante())
     end
 
     hnds_rebuild_upgraded_blind_option(blind_choice, boss)
-    hnds_refresh_undefeated_blind_scores(blind_choice)
+    if HNDS.rebuild_platinum_boss_option then HNDS.rebuild_platinum_boss_option() end
 
     if SMODS and SMODS.calculate_context then
         SMODS.calculate_context({
@@ -927,14 +782,12 @@ G.FUNCS.hnds_upgrade_blind = function(e)
 
     local current_upgrade_key = upgrade_key(blind_choice)
     local actual_upgrade_count = (G.GAME.hnds_blind_upgrades or 0) + 1
-    local upgrade_index = HNDS.platinum_next_upgrade_exponent
-        and HNDS.platinum_next_upgrade_exponent() or actual_upgrade_count
     replacement_records()[current_upgrade_key] = {
         ante = current_ante(),
         blind_choice = blind_choice,
         original = G.GAME.round_resets.blind_choices[blind_choice],
         boss = boss,
-        upgrade_index = upgrade_index,
+        upgrade_index = actual_upgrade_count,
     }
 
 
@@ -944,24 +797,12 @@ G.FUNCS.hnds_upgrade_blind = function(e)
 
     upgraded_blinds()[current_upgrade_key] = true
     G.GAME.hnds_blind_upgrades = actual_upgrade_count
-    if HNDS.set_platinum_blind_raiser_applied_step then
-        HNDS.set_platinum_blind_raiser_applied_step(upgrade_index)
-    end
-    if HNDS.set_platinum_next_upgrade_exponent then
-        HNDS.set_platinum_next_upgrade_exponent(upgrade_index + 1)
-    end
     if HNDS.record_platinum_boss_effect then
         HNDS.record_platinum_boss_effect(boss, current_ante())
     end
 
 
     set_upgrade_runtime_button(e, false)
-    local skip_button = get_runtime_element(
-        e,
-        blind_choice,
-        'hnds_skip_blind_button_' .. blind_choice
-    )
-    set_runtime_button(skip_button, false, 'skip_blind')
 
 
     local preexisting_tags = {}
@@ -1040,7 +881,7 @@ G.FUNCS.hnds_upgrade_blind = function(e)
 
                 hnds_rebuild_upgraded_blind_option(blind_choice, boss)
             end
-            hnds_refresh_undefeated_blind_scores(blind_choice)
+            if HNDS.rebuild_platinum_boss_option then HNDS.rebuild_platinum_boss_option() end
 
             if SMODS and SMODS.calculate_context then
                 SMODS.calculate_context({

@@ -230,6 +230,12 @@ end
 local abstract_is_suit_ref = Card.is_suit
 if abstract_is_suit_ref and not HNDS._abstract_is_suit_hook then
     function Card:is_suit(suit, bypass_debuff, flush_calc, ...)
+        -- Collections have static suit descriptors and are not part of a run.
+        -- Avoid rebuilding/scanning the active poker-hand suit bridge for
+        -- every collection-card query or tooltip render.
+        if self.area and self.area.config and self.area.config.collection then
+            return abstract_is_suit_ref(self, suit, bypass_debuff, flush_calc, ...)
+        end
         local state = abstract_suit_bridge_runtime or abstract_current_bridge_state()
         if state and state.cards[self] and not abstract_has_no_suit(self)
             and (not self.debuff or bypass_debuff or flush_calc)

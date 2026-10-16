@@ -387,15 +387,21 @@ hnds_config = SMODS.current_mod.config
 
 
 local function config_toggle_row(label, config_key, subtitle)
-	local label_nodes = {
-		{
+	local label_lines = { label }
+	if config_key == "enableBlindUpgradeButton" then
+		local title, stakes = label:match("^(.-) (%(.*%))$")
+		if title and stakes then label_lines = { title, stakes } end
+	end
+	local label_nodes = {}
+	for _, line in ipairs(label_lines) do
+		label_nodes[#label_nodes + 1] = {
 			n = G.UIT.R,
 			config = { padding = 0, align = "l", minh = 0 },
 			nodes = {
-				{ n = G.UIT.T, config = { text = label, scale = 0.4, colour = G.C.UI.TEXT_LIGHT } },
+				{ n = G.UIT.T, config = { text = line, scale = 0.4, colour = G.C.UI.TEXT_LIGHT } },
 			},
-		},
-	}
+		}
+	end
 	if subtitle then
 		label_nodes[#label_nodes + 1] = {
 			n = G.UIT.R,
@@ -529,6 +535,7 @@ SMODS.current_mod.config_tab = function()
 			config_toggle_row(localize("hnds_config_MagicPack"), "enableMagicPackSpawning"),
 			config_toggle_row(localize("hnds_config_CursedPack"), "enableCursedPackSpawning"),
 			config_toggle_row(localize("hnds_config_CustomSounds"), "enableCustomSounds"),
+			config_toggle_row(localize("hnds_config_PeakMainMenuOST"), "enablePeakMainMenuOST"),
 			config_toggle_row(localize("hnds_config_VanillaTweaks"), "enableVanillaTweaks", localize("hnds_require_restart")),
 			config_toggle_row(localize("hnds_config_BlindUpgradeButton"), "enableBlindUpgradeButton", localize("hnds_require_restart")),
 			config_toggle_row(localize("hnds_config_CustomMenu"), "enableCustomMenu", localize("hnds_require_restart")),
@@ -585,11 +592,28 @@ end
 
 SMODS.current_mod.calculate = function(self, context)
 	if type(context) ~= 'table' then return end
+    if context.before then G.GAME.hnds_scoring_sevens = HNDS.count_scoring_sevens(context.scoring_hand) end
+    if context.hand_drawn or context.setting_blind or context.end_of_round then G.GAME.hnds_scoring_sevens = nil end
+    if context.setting_blind and HNDS.advance_aura_blind_round then
+        HNDS.advance_aura_blind_round()
+    end
+    if context.end_of_round and context.main_eval and not context.individual and not context.repetition and not context.game_over then
+        HNDS.reset_wild_order_suit()
+        HNDS.reset_trump_suit()
+    end
+	if HNDS.install_pluck_refill_hook then HNDS.install_pluck_refill_hook() end
 	if HNDS.install_green_seal_draw_hook then HNDS.install_green_seal_draw_hook() end
+	if HNDS.install_bound_draw_hook then HNDS.install_bound_draw_hook() end
+	if HNDS.install_black_seal_draw_hook then HNDS.install_black_seal_draw_hook() end
 	if context.setting_blind and G and G.GAME then G.GAME.hnds_green_seal_pending = 0 end
+    if context.setting_blind and G and G.GAME then
+        G.GAME.hnds_pluck_pending_draws = 0
+        G.GAME.hnds_pluck_refill_queued = nil
+    end
 	if context.end_of_round and G and G.GAME then G.GAME.hnds_green_seal_pending = 0 end
 	if context.before and context.full_hand and HNDS.queue_green_seal_cards then HNDS.queue_green_seal_cards(context.full_hand, false) end
 	if context.pre_discard and context.full_hand and HNDS.queue_green_seal_cards then HNDS.queue_green_seal_cards(context.full_hand, false) end
+	if HNDS.process_black_seal_context then HNDS.process_black_seal_context(context) end
 	if HNDS.calculate_vanilla_tweaks then HNDS.calculate_vanilla_tweaks(context) end
 	if HNDS.calculate_aberrant then HNDS.calculate_aberrant(context) end
 
@@ -661,12 +685,6 @@ SMODS.current_mod.calculate = function(self, context)
 		G.GAME.ante_stones_scored = (tonumber(G.GAME.ante_stones_scored) or 0) + 1
 	end
 
-	if context.individual and context.cardarea == G.play and context.other_card
-		and not context.repetition and HNDS.card_has_obsidian
-		and HNDS.card_has_obsidian(context.other_card) and not context.other_card.debuff
-	then
-		context.other_card.ability.hnds_obsidian_scored_last_hand = true
-	end
 
 
 	if context.ante_change and context.ante_end and G and G.GAME then
@@ -675,6 +693,7 @@ SMODS.current_mod.calculate = function(self, context)
 
 
 	if context.starting_shop then
+		if HNDS.ancestor_starting_shop then HNDS.ancestor_starting_shop() end
 		if HNDS.abstract_force_first_shop_standard then
 			HNDS.abstract_force_first_shop_standard()
 		end
@@ -759,14 +778,6 @@ SMODS.current_mod.calculate = function(self, context)
 	end
 
 
-	if context.before and HNDS.reset_obsidian_hand_marks then
-		HNDS.reset_obsidian_hand_marks()
-	end
-	if context.after and SMODS.last_hand_oneshot
-		and HNDS.complete_obsidian_final_hand
-	then
-		HNDS.complete_obsidian_final_hand()
-	end
 
 	local abstract_result = HNDS.calculate_abstract_suits and HNDS.calculate_abstract_suits(context) or nil
 	if abstract_result and boss_stack_result and type(abstract_result) == 'table' and type(boss_stack_result) == 'table' then
@@ -800,50 +811,44 @@ local files = {
 			"balloons",
 			"coffee_break",
 			"most_wanted",
-			"jackpot",
+			"ecg",
 			"pot_of_greed",
 
 			"dynamic_duos",
 			"wait_what",
+			"jevil",
 			"jokestone",
 			"clown_devil",
-			"public_nuisance",
 
-			"dallas",
-			"hoxton",
-			"fun_police",
-			"wolf",
-			"chains",
-
-			"jevil",
-			"error",
-			"ecg",
 			"jack_in_the_box",
-			"cursed_doll",
-
-			"headless_joker",
 			"survey",
-		    "angry_mob",
-			"one_punchline_man",
-			"stone_mask",
-
-			"grim_jester",
-			"spaghettified_joker",
-			"handicap_placard",
-			"water_slide",
-			"fun_pilled",
-
+			"blueberries",
 			"sunny_side",
-			"be_not_afraid",
-			"time_fcked_joker",
-			"joker_reverse",
-			"jodiac",
+			"one_punchline_man",
+			
+			"bizzare_joker",
+			"joker_recycler",
+			"angry_mob",
+			"public_nuisance",
+			"error",
 
+			"laugh_preserver",
+			"pluck_of_the_draw",
+			"loaded_die",
+			"handicap_placard",
+			"jokes_aside",
+
+		    "cursed_doll",
+			"headless_joker",
+			"meme",
+			"fun_pilled",
+			"be_not_afraid",
+
+			"time_fcked_joker",
+			"stone_mask",
+			"jodiac",
 		    "seismic_activity",
 			"bad_time",
-			"jokes_aside",
-			"imposter",
-			"head_of_medusa",
 
 			"conquest",
 			"plague",
@@ -851,35 +856,41 @@ local files = {
 			"famine",
 			"death",
 
-		    "deep_pockets",
+			"water_slide",
+			"imposter",
+			"dark_pact",
 			"color_of_madness",
 			"dark_idol",
-			"perfectionist",
-			"supersuit",
-
-			"ancestor",
+		    
 			"digital_circus",
-			"dark_pact",
+		    "deep_pockets",
+			"trump_suit",
 			"fregoli",
-			"ms_fortune",
+			"miner_joker",
 
+			"handsome",
+			"head_of_medusa",
+			"wild_order",
+			"spaghettified_joker",
+			"formosana",
+			
+			"artistic_joker",
 			"jester_in_yellow",
+			"fun_police",
+			"ancestor",
+			"ms_fortune",
+			
 			"dark_humor",
 			"contagion",
 			"energized",
 			"last_laugh",
-
 			"walking_joke",
+			
 			"demented",
-			"meme",
 			"excommunicado",
-			"occultist",
-
 			"creepy",
 			"big_d",
-			"bizzare_joker",
 			"superstition",
-			"handsome",
 
 			"pennywise",
 			"art",
@@ -936,7 +947,7 @@ local files = {
 	},
 	enhancements = {
 		list = {
-			"obsidian",
+			"bound",
 			"aberrant",
 		},
 		directory = "enhancements/",
@@ -981,7 +992,6 @@ local files = {
 			"draw_2_cards",
 			"dark_ritual",
 			"the_circus",
-			"gambling_opportunity",
 		},
 		directory = "challenges/"
 	},
@@ -1028,6 +1038,24 @@ G.C.HNDS_CHAOS_ABILITIES = SMODS.Gradients.hnds_chaos_abilities
 G.C.HNDS_CARCOSA = HEX('C9A227')
 G.C.hnds_carcosa = G.C.HNDS_CARCOSA
 
+-- Use Steamodded's streamed music system so this loops, obeys the music
+-- volume slider and fades back to the usual soundtrack outside the menu.
+SMODS.Sound({
+    key = "music_peak_main_menu",
+    path = "peak_main_menu_music.ogg",
+    pitch = 1,
+    volume = 0.65,
+    sync = false,
+    select_music_track = function(self)
+        if hnds_config.enablePeakMainMenuOST == false then return nil end
+        if not (G and G.STAGES and G.STATES) then return nil end
+        -- Exclude gameplay and the splash screen; keep music in menu options.
+        if G.STAGE == G.STAGES.MAIN_MENU and G.STATE == G.STATES.MENU then
+            return 1000
+        end
+    end,
+})
+
 SMODS.Sound({ key = "madnesscolor", path = "madnesscolor.ogg", })
 SMODS.Sound({ key = "vintage", path = "vintage.ogg", })
 SMODS.Sound({ key = "jokestone", path = "Jokestone_sfx.ogg", })
@@ -1047,7 +1075,6 @@ SMODS.Sound({ key = "creepy_4", path = "Creepy_4.ogg", })
 
 SMODS.Atlas({ key = "HDtags", path = "HDtags.png", px = 34, py = 34, })
 SMODS.Atlas({ key = "Jokers",      path = "Jokers.png", px = 71, py = 95 })
-SMODS.Atlas({ key = "SunnySide", path = "SunnySide.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "BadTime", path = "bad_time.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "JackOfLanterns", path = "JackOfLanterns.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "Faceless_opt1", path = "Faceless_opt1.png", px = 71, py = 95 })
@@ -1146,6 +1173,10 @@ for _, set_key in ipairs(hnds_content_load_order) do
 end
 assert(SMODS.load_file("lib/hooks.lua"))()
 if hnds_config.enableVanillaTweaks then assert(SMODS.load_file("lib/vanilla_tweaks.lua"))() end
+assert(SMODS.load_file("lib/blind_upgrade_stakes.lua"))()
+if hnds_config.enableBlindUpgradeButton then
+    assert(SMODS.load_file("lib/blind_upgrade_reworks.lua"))()
+end
 if hnds_config.enableBlindUpgradeButton then
 	assert(SMODS.load_file("lib/platinum_blind_upgrades.lua"))()
 end
@@ -1174,6 +1205,8 @@ assert(SMODS.load_file("lib/challenge_rules.lua"))()
 
 assert(SMODS.load_file("lib/time_fcked.lua"))()
 assert(SMODS.load_file("lib/billy_puzzle.lua"))()
+assert(SMODS.load_file("lib/slot_aura_resource_guard.lua"))()
+assert(SMODS.load_file("lib/booster_draw_bridge.lua"))()
 if HNDS.install_big_d_hooks then HNDS.install_big_d_hooks() end
 if HNDS.install_dark_pact_hooks then HNDS.install_dark_pact_hooks() end
 

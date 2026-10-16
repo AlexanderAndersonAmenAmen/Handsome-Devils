@@ -531,7 +531,8 @@ end
 
 
 local function hnds_nightmare_stake_active()
-    return G and G.GAME and G.GAME.modifiers
+    return hnds_config and hnds_config.enableBlindUpgradeButton
+        and G and G.GAME and G.GAME.modifiers
         and G.GAME.modifiers.hnds_nightmare_stake == true
 end
 
@@ -1043,6 +1044,24 @@ if Card and Card.update and not Card._hnds_wrapped_update_runtime then
     Card._hnds_wrapped_update_runtime = true
     local card_update_ref = Card.update
     function Card:update(dt, ...)
+        -- Migrates pre-fix Throwback cards BEFORE vanilla Card:update, which
+        -- multiplies ability.extra and crashes when it contains round data.
+        -- This also protects saves opened with Upgrade Blind disabled.
+        if self.config and self.config.center
+            and self.config.center.key == 'j_throwback' and self.ability
+            and type(self.ability.extra) == 'table'
+        then
+            local previous = self.ability.extra
+            self.ability.hnds_throwback_rounds = math.max(
+                tonumber(self.ability.hnds_throwback_rounds) or 0,
+                tonumber(previous.rounds) or 0
+            )
+            local original_extra = self.config.center.config
+                and tonumber(self.config.center.config.extra) or 0.5
+            self.ability.extra = (hnds_config and hnds_config.enableBlindUpgradeButton)
+                and 0 or original_extra
+            self.ability.x_mult = 1
+        end
         local ret = card_update_ref(self, dt, ...)
 
 
@@ -1079,10 +1098,17 @@ if Game and Game.update and not Game._hnds_wrapped_update_runtime then
     Game._hnds_wrapped_update_runtime = true
     local game_update_runtime_ref = Game.update
     local hnds_runtime_game_ref = nil
+    local hnds_next_atlas_cleanup = 0
     function Game:update(dt, ...)
         local ret = game_update_runtime_ref(self, dt, ...)
         hnds_update_ante_10_runtime()
-
+        local now = G and G.TIMERS and G.TIMERS.REAL
+        if type(now) == 'number' and now >= hnds_next_atlas_cleanup then
+            hnds_next_atlas_cleanup = now + 3
+            if HNDS and HNDS.sarmenti_cleanup_orphaned_runtime_atlases then
+                HNDS.sarmenti_cleanup_orphaned_runtime_atlases()
+            end
+        end
 
         if hnds_runtime_game_ref ~= (G and G.GAME) then
             hnds_runtime_game_ref = G and G.GAME or nil
@@ -1476,12 +1502,8 @@ function Card.set_cost(self, ...)
 
 	if key == "j_hnds_coffee_break" then self.sell_cost = 0 end
 	if key == "j_hnds_art" then self.sell_cost = -5 end
-	if key == "j_hnds_fun_police" then
-		local big_d_stole_value = self.ability
-			and self.ability.hnds_big_d_stolen_sell_value ~= nil
-		self.sell_cost = big_d_stole_value and 0 or -5
-		if self.sell_cost_label ~= '?' then self.sell_cost_label = self.sell_cost end
-	end
+    -- Fun Police now has an ordinary positive sell value. set_cost_ref
+    -- recalculates it normally (also repairs older negative-sell saves).
 
 
 	if set == "Joker"
@@ -1686,7 +1708,12 @@ if G and G.UIDEF and G.UIDEF.challenge_description_tab and not G.UIDEF._hnds_wra
 	G.UIDEF._hnds_wrapped_challenge_description_tab = true
 	local challenge_description_tab_ref = G.UIDEF.challenge_description_tab
 	function G.UIDEF.challenge_description_tab(args, ...)
-		local ret = challenge_description_tab_ref(args, ...)
+        local previous = HNDS.challenge_restrictions_ui
+        HNDS.challenge_restrictions_ui = args and args._tab == 'Restrictions' or false
+        local result = HNDS.pack(pcall(challenge_description_tab_ref, args, ...))
+        HNDS.challenge_restrictions_ui = previous
+        if not result[1] then error(result[2], 0) end
+        local ret = result[2]
 		if not (args and args._tab == 'Restrictions') then
 			return ret
 		end
@@ -1919,76 +1946,6 @@ function HNDS_setup_cursed_sticker_hook(sticker)
 end
 
 
-if Card and Card.set_ability and not Card._hnds_perfectionist_reenhance then
-    Card._hnds_perfectionist_reenhance = true
-    local hnds_perfectionist_set_ability_ref = Card.set_ability
-
-    local function hnds_resolve_center(center)
-        if type(center) == 'string' then
-            return G and G.P_CENTERS and G.P_CENTERS[center] or nil
-        end
-        return center
-    end
-
-    local function hnds_perfectionists()
-        if not (SMODS and type(SMODS.find_card) == 'function') then return {} end
-        local ok, cards = pcall(SMODS.find_card, 'j_hnds_perfectionist')
-        return ok and type(cards) == 'table' and cards or {}
-    end
-
-
-    local function hnds_add_permanent_stat(current, amount)
-        if current == nil then return amount end
-        local ok, result = pcall(function() return current + amount end)
-        if ok then return result end
-        return (tonumber(current) or 0) + amount
-    end
-
-    function Card:set_ability(center, initial, delay_sprites, ...)
-        local old_center = self and self.config and self.config.center
-        local new_center = hnds_resolve_center(center)
-        local internal_swap = HNDS and HNDS._aberrant_internal_center_swap
-        local ortalab_rolling = G and G._ortalab_bottle_rolling
-
-        if not initial and not internal_swap and not ortalab_rolling
-            and old_center and old_center.set == 'Enhanced'
-            and new_center and new_center.set == 'Enhanced'
-            and old_center.key ~= new_center.key
-        then
-            local owners = hnds_perfectionists()
-            if #owners > 0 and self.ability then
-                local total_mult, total_chips = 0, 0
-                for _, joker in ipairs(owners) do
-                    if joker and not joker.debuff and joker.ability and joker.ability.extra then
-                        total_mult = total_mult + (tonumber(joker.ability.extra.mult) or 4)
-                        total_chips = total_chips + (tonumber(joker.ability.extra.chips) or 30)
-                    end
-                end
-
-                if total_mult ~= 0 or total_chips ~= 0 then
-                    self.ability.perma_mult = hnds_add_permanent_stat(self.ability.perma_mult, total_mult)
-                    self.ability.perma_bonus = hnds_add_permanent_stat(self.ability.perma_bonus, total_chips)
-                    if self.juice_up then self:juice_up(0.3, 0.25) end
-                    for _, joker in ipairs(owners) do
-                        if joker and not joker.debuff and type(card_eval_status_text) == 'function' then
-                            card_eval_status_text(joker, 'extra', nil, nil, nil, {
-                                message = localize('k_upgrade_ex'),
-                                colour = G.C.FILTER,
-                            })
-                        end
-                    end
-
-
-                    return self
-                end
-            end
-        end
-
-        return hnds_perfectionist_set_ability_ref(self, center, initial, delay_sprites, ...)
-    end
-end
-
-
 local get_blind_amount_ref = get_blind_amount
 function get_blind_amount(ante, ...)
 	local amount = get_blind_amount_ref(ante, ...)
@@ -2009,6 +1966,9 @@ if Card and Card.align_h_popup and not HNDS._stable_hnds_tooltip_align_v3 then
 
     local function hnds_uses_custom_tooltip(card)
         if not card then return false end
+        -- Collection pages contain many temporary preview cards. Preserve
+        -- vanilla positioning and skip this per-hover custom ability scan.
+        if card.area and card.area.config and card.area.config.collection then return false end
         local center = card.config and card.config.center
         if center and center.mod and center.mod.id == 'HandsomeDevils' then return true end
         local key = center and tostring(center.key or '') or ''

@@ -5,6 +5,7 @@ local configDefinition = {
 	["enableMagicPackSpawning"] = false,
 	["enableCursedPackSpawning"] = false,
 	["enableCustomSounds"] = true,
+	["enablePeakMainMenuOST"] = true,
 	["enableVanillaTweaks"] = true,
 	["enableBlindUpgradeButton"] = true,
 	["enableCustomMenu"] = true,

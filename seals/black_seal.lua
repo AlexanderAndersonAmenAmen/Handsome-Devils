@@ -1,120 +1,150 @@
 HNDS = HNDS or {}
 
--- Keep these card references out of G.GAME; they only describe the hand that
--- is currently scoring. The transfer itself uses the game's normal cleanup.
-HNDS.black_seal_pending = HNDS.black_seal_pending or setmetatable({}, { __mode = 'k' })
-HNDS.black_seal_returned = HNDS.black_seal_returned or setmetatable({}, { __mode = 'k' })
+local BLACK_DRAW_THRESHOLD = 10
 
-local function return_black_seal_neighbor(card, info)
-    if not (G and G.deck and G.deck.cards and card and info)
-        or card.destroyed or card.shattered or card.seal == 'hnds_black' then
-        return false
-    end
-    if card.area and card.area ~= G.play and card.area ~= G.discard then return false end
-
-    -- Usually vanilla's delayed play -> discard draw_card has already removed
-    -- the card from G.play. Handle a still-attached card without duplicating it.
-    local from = card.area
-    if from then
-        for _, candidate in ipairs(from.cards or {}) do
-            if candidate == card then
-                from:remove_card(card)
-                break
-            end
+local function reset_black_seal_progress()
+    for _, playing_card in ipairs((G and G.playing_cards) or {}) do
+        if playing_card and playing_card.ability then
+            playing_card.ability.hnds_black_drawn = nil
+            playing_card.ability.hnds_black_used = nil
+            playing_card.ability.hnds_black_armed = nil
         end
     end
-
-    if card.ability then card.ability.wheel_flipped = nil end
-    if card.facing == 'front' then card:flip() end
-    G.deck:emplace(card)
-
-    -- Deck draws from the end; the front is the visible card on the pile.
-    -- Put the returned neighbors at the draw end without sorting the deck.
-    -- Inserting later neighbors before earlier ones preserves played order.
-    if G.deck.cards[1] == card and #G.deck.cards > 1 then
-        table.remove(G.deck.cards, 1)
-        local index = #G.deck.cards + 1
-        local priority = G.GAME and G.GAME.hnds_one_punchline_next_draw
-        for i, existing in ipairs(G.deck.cards) do
-            local previous = HNDS.black_seal_returned[existing]
-            if existing == priority or (previous and previous.hand == info.hand
-                and previous.order < info.order) then
-                index = i
-                break
-            end
-        end
-        table.insert(G.deck.cards, index, card)
-    end
-
-    HNDS.black_seal_returned[card] = info
-    G.deck:set_ranks()
-    G.deck:align_cards()
-    -- Returned cards must not cover the View Deck click target, even when the
-    -- deck contained no other cards before they returned.
-    for _, returned in ipairs(G.deck.cards) do
-        local earlier = HNDS.black_seal_returned[returned]
-        if (earlier and earlier.hand == info.hand)
-            or (G.GAME and returned == G.GAME.hnds_one_punchline_next_draw) then
-            if returned.states and returned.states.collide then
-                returned.states.collide.can = false
-            end
-        end
-    end
-    -- Reuse the regular deck-return reveal at hand entry; the Blind can still
-    -- intentionally keep the next draw face down.
-    card.hnds_one_punchline_needs_reveal = true
-    return true
 end
 
-function HNDS.install_black_seal_return_hook()
-    if HNDS._black_seal_return_hook_version == 1 then return true end
-    if not (CardArea and type(CardArea.remove_card) == 'function'
-        and type(CardArea.emplace) == 'function') then return false end
+local function create_temporary_black_seal_joker()
+    if not (G and G.jokers and SMODS and type(SMODS.add_card) == 'function') then return end
+    local key
+    if type(SMODS.poll_object) == 'function' then
+        key = SMODS.poll_object({
+            type = 'Joker', append = 'hnds_black_seal', seed = 'hnds_black_seal_joker',
+            filter = function(pool)
+                local available = {}
+                for _, item in ipairs(pool or {}) do
+                    local candidate = type(item) == 'table' and item.key or item
+                    if candidate and candidate ~= 'j_hnds_formosana' and candidate ~= 'UNAVAILABLE'
+                        and G.P_CENTERS and G.P_CENTERS[candidate] then
+                        available[#available + 1] = item
+                    end
+                end
+                if #available == 0 then available[1] = { key = 'j_joker', type = 'Joker' } end
+                return available
+            end,
+        })
+    end
+    if type(key) == 'table' then key = key.key end
+    if not key or key == 'j_hnds_formosana' or key == 'UNAVAILABLE' then key = 'j_joker' end
+    local joker = SMODS.add_card({
+        set = 'Joker',
+        key = key,
+        area = G.jokers,
+        edition = 'e_negative',
+        key_append = 'hnds_black_seal',
+    })
+    if joker then
+        joker.ability = joker.ability or {}
+        joker.ability.hnds_black_temporary = true
+        if not (joker.edition and joker.edition.negative) and joker.set_edition then
+            joker:set_edition('e_negative', true, true)
+        end
+        if joker.add_sticker then joker:add_sticker('hnds_shadow', true) end
+        joker.ability.hnds_shadow = true
+    end
+end
 
-    local remove_ref = CardArea.remove_card
-    CardArea.remove_card = function(self, card, ...)
-        local candidate = card or (G and self == G.play and self.cards and self.cards[1])
-        local pending = candidate and HNDS.black_seal_pending[candidate]
-        local in_play = false
-        if pending and G and self == G.play then
-            for _, played in ipairs(self.cards or {}) do
-                if played == candidate then in_play = true; break end
+local function cleanup_temporary_black_seal_jokers()
+    if not (G and G.jokers and G.jokers.cards) then return end
+    local temporary = {}
+    for _, joker in ipairs(G.jokers.cards) do
+        if joker and joker.ability and joker.ability.hnds_black_temporary then
+            temporary[#temporary + 1] = joker
+        end
+    end
+    for _, joker in ipairs(temporary) do
+        if SMODS and type(SMODS.destroy_cards) == 'function' then
+            SMODS.destroy_cards(joker, { immediate = true, bypass_eternal = true })
+        elseif joker.start_dissolve then
+            joker:start_dissolve()
+        end
+    end
+end
+
+function HNDS.note_black_seal_card_drawn(drawn_card)
+    if not (drawn_card and drawn_card.playing_card and G and G.GAME and G.hand
+        and G.hand.cards and G.GAME.blind and drawn_card.area == G.hand)
+    then return end
+    for _, playing_card in ipairs(G.hand.cards) do
+        if playing_card and playing_card ~= drawn_card and playing_card.seal == 'hnds_black'
+            and playing_card.ability and playing_card.ability.hnds_black_armed
+            and not playing_card.debuff and not playing_card.ability.hnds_black_used then
+            local updated = math.min(BLACK_DRAW_THRESHOLD,
+                math.max(0, tonumber(playing_card.ability.hnds_black_drawn) or 0) + 1)
+            playing_card.ability.hnds_black_drawn = updated
+            if updated >= BLACK_DRAW_THRESHOLD then
+                playing_card.ability.hnds_black_used = true
+                if G.E_MANAGER and Event then
+                    G.E_MANAGER:add_event(Event({
+                        trigger = 'after',
+                        delay = 0.05,
+                        func = function()
+                            create_temporary_black_seal_joker()
+                            return true
+                        end,
+                    }))
+                else
+                    create_temporary_black_seal_joker()
+                end
+                if playing_card.juice_up then playing_card:juice_up(0.3, 0.5) end
             end
         end
-        local result = remove_ref(self, card, ...)
-        if in_play and result == candidate then pending.detached = true end
-        if G and self == G.deck then
-            -- Removing the first returned card re-ranks the deck. Keep any
-            -- remaining returned card from covering the View Deck target.
-            for _, remaining in ipairs(self.cards or {}) do
-                if HNDS.black_seal_returned[remaining]
-                    and remaining.states and remaining.states.collide then
-                    remaining.states.collide.can = false
-                end
-            end
+    end
+end
+
+function HNDS.install_black_seal_draw_hook()
+    if HNDS._black_seal_draw_hook_installed then return true end
+    if not (CardArea and type(CardArea.emplace) == 'function') then return false end
+    local emplace_ref = CardArea.emplace
+    function CardArea:emplace(card, ...)
+        local entering = card and G and self == G.hand and card.area ~= G.hand
+        local result = emplace_ref(self, card, ...)
+        if entering and card.area == G.hand and HNDS.note_black_seal_card_drawn then
+            HNDS.note_black_seal_card_drawn(card)
         end
         return result
     end
+    HNDS._black_seal_draw_hook_installed = true
+    return true
+end
 
-    local emplace_ref = CardArea.emplace
-    CardArea.emplace = function(self, card, location, stay_flipped)
-        local pending = card and HNDS.black_seal_pending[card]
-        if pending and G then
-            if self == G.discard and pending.detached then
-                HNDS.black_seal_pending[card] = nil
-                if card.area == G.deck or card.area == G.hand then return end
-                if card ~= (G.GAME and G.GAME.hnds_one_punchline_pending)
-                    and return_black_seal_neighbor(card, pending) then return end
-            elseif self == G.hand or self == G.deck then
-                -- Another effect already moved this card; do not return it twice.
-                HNDS.black_seal_pending[card] = nil
+function HNDS.process_black_seal_context(context)
+    if not (context and G and G.GAME) then return end
+    if context.setting_blind then
+        reset_black_seal_progress()
+        return
+    end
+    if type(context.hand_drawn) == 'table' and G.hand and G.hand.cards then
+        for _, drawn in ipairs(context.hand_drawn) do
+            if drawn and drawn.seal == 'hnds_black' and drawn.area == G.hand
+                and drawn.ability and not drawn.ability.hnds_black_used then
+                drawn.ability.hnds_black_armed = true
             end
         end
-        return emplace_ref(self, card, location, stay_flipped)
     end
-
-    HNDS._black_seal_return_hook_version = 1
-    return true
+    if context.end_of_round and context.main_eval and not context.individual and not context.repetition then
+        reset_black_seal_progress()
+        if G.E_MANAGER and Event then
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                delay = 0.1,
+                func = function()
+                    cleanup_temporary_black_seal_jokers()
+                    return true
+                end,
+            }))
+        else
+            cleanup_temporary_black_seal_jokers()
+        end
+    end
 end
 
 SMODS.Seal({
@@ -123,29 +153,23 @@ SMODS.Seal({
     atlas = 'Extras',
     pos = { x = 3, y = 1 },
     unlocked = true,
-    calculate = function(self, card, context)
-        HNDS.install_black_seal_return_hook()
-        if not (G and G.play and card and not card.debuff
-            and card.area == G.play and context.main_scoring
-            and context.cardarea == G.play and type(context.full_hand) == 'table') then return end
-
-        local hand = context.full_hand
-        for i, played in ipairs(hand) do
-            if played == card then
-                for _, offset in ipairs({ -1, 1 }) do
-                    local neighbor = hand[i + offset]
-                    if neighbor and neighbor.area == G.play and neighbor.seal ~= 'hnds_black'
-                        and not neighbor.destroyed and not neighbor.shattered then
-                        HNDS.black_seal_pending[neighbor] = {
-                            hand = G.GAME and G.GAME.hands_played or 0,
-                            order = i + offset,
-                        }
-                    end
-                end
-                break
-            end
-        end
+    loc_vars = function(self, info_queue, card)
+        local ability = card and card.ability or {}
+        local drawn = math.max(0, tonumber(ability.hnds_black_drawn) or 0)
+        return { vars = { BLACK_DRAW_THRESHOLD, math.max(0, BLACK_DRAW_THRESHOLD - drawn) } }
     end,
 })
 
-HNDS.install_black_seal_return_hook()
+SMODS.Sticker({
+    key = 'shadow',
+    no_collection = true,
+    atlas = 'Stickers',
+    pos = { x = 2, y = 1 },
+    badge_colour = HEX('545454'),
+    rate = 0,
+    default_compat = true,
+    sets = { Joker = true },
+    draw = function(self, card, layer) end,
+})
+
+HNDS.install_black_seal_draw_hook()

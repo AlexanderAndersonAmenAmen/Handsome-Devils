@@ -11,7 +11,7 @@ HNDS.blind_souls = {
 
     bl_wall = { "j_stone", "j_marble", "j_castle", "j_ancient", "j_bloodstone" },
 
-    bl_wheel = { "j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel", "j_hnds_sunny_side", "j_hnds_energized", "j_hnds_jackpot", "j_hnds_ms_fortune", "j_oops" },
+    bl_wheel = { "j_8_ball", "j_bloodstone", "j_hallucination", "j_reserved_parking", "j_space", "j_business", "j_gros_michel", "j_hnds_sunny_side", "j_hnds_energized", "j_hnds_loaded_die", "j_hnds_ms_fortune", "j_oops" },
 
     bl_arm = { "j_juggler" },
 
@@ -35,7 +35,7 @@ HNDS.blind_souls = {
 
     bl_plant = { "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_flower_pot", "j_faceless", "j_green_joker" },
 
-    bl_serpent = { "j_hnds_head_of_medusa" },
+    bl_serpent = { "j_hnds_miner_joker" },
 
     bl_pillar = { "j_obelisk" },
 
@@ -188,7 +188,7 @@ HNDS.get_blind_soul = function (blind, seed)
         else
             return { key = pseudorandom_element({"j_green_joker","j_faceless"}, seed.."_2")}
         end
-    elseif k == "bl_serpent" then return { key = "j_hnds_head_of_medusa" }
+    elseif k == "bl_serpent" then return { key = "j_hnds_miner_joker" }
     elseif k == "bl_pillar" then return { key = "j_obelisk" }
     elseif k == "bl_needle" then return { key = pseudorandom_element({"j_sixth_sense","j_dna"}, seed)}
     elseif k == "bl_head" then

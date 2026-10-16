@@ -131,7 +131,7 @@ match_indent = true
 target = "functions/button_callbacks.lua"
 pattern = "G.GAME.round_resets.blind_states[e.config.id] == 'Defeated' then"
 position = "before"
-payload = "(hnds_config and hnds_config.enableBlindUpgradeButton and (G.GAME.hnds_upgraded_blinds or {})[tostring(G.GAME.round_resets.ante)..':'..e.config.id]) or"
+payload = "(HNDS and HNDS.blind_upgrade_active and HNDS.blind_upgrade_active() and (G.GAME.hnds_upgraded_blinds or {})[tostring(G.GAME.round_resets.ante)..':'..e.config.id]) or"
 match_indent = true
 
 

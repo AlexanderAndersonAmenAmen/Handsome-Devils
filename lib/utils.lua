@@ -72,6 +72,116 @@ function HNDS.get_unique_suits(scoring_hand, bypass_debuff, flush_calc)
 end
 
 
+-- The normal get_next_tag_key call builds blind-skip rewards. All other
+-- calls to poll_tag/get_current_pool exclude Extinction, leaving Wait, What?'s
+-- direct Tag constructor as the sole non-skip generation path.
+if type(get_next_tag_key) == 'function' and not HNDS._extinction_skip_wrapped then
+    HNDS._extinction_skip_wrapped = true
+    local prior_next_tag = get_next_tag_key
+    function get_next_tag_key(...)
+        local previous = HNDS._extinction_native_skip_choice
+        HNDS._extinction_native_skip_choice = true
+        local result = { pcall(prior_next_tag, ...) }
+        HNDS._extinction_native_skip_choice = previous
+        if not result[1] then error(result[2], 0) end
+        return unpack(result, 2)
+    end
+end
+
+-- Challenge bans must apply to tags created by effects as well as the
+-- ordinary skip rewards. Some generation paths bypass the game's pool checks.
+function HNDS.is_tag_banned(key)
+    if not key or key == 'UNAVAILABLE' then return true end
+    if key == 'tag_hnds_extinction_tag' and not HNDS._extinction_native_skip_choice then return true end
+    local game = G and G.GAME
+    if not game then return false end
+    if game.banned_keys and game.banned_keys[key] then return true end
+    return game.challenge == 'c_hnds_dark_ritual'
+        and HNDS.art_gallery_banned_tags
+        and HNDS.art_gallery_banned_tags[key] == true or false
+end
+
+-- Art Gallery removes the normal tag availability gates (including
+-- min_ante and in_pool restrictions), but never its challenge bans. Build
+-- the pool from registered tags only for this challenge; other runs retain
+-- Steamodded's original get_current_pool logic and restrictions.
+if type(get_current_pool) == 'function' and not HNDS._art_gallery_tag_pool_wrapped then
+    HNDS._art_gallery_tag_pool_wrapped = true
+    local get_current_pool_ref = get_current_pool
+    function get_current_pool(_type, ...)
+        local pool, pool_key = get_current_pool_ref(_type, ...)
+        if _type ~= 'Tag' or not (G and G.GAME
+            and G.GAME.challenge == 'c_hnds_dark_ritual' and G.P_TAGS)
+        then
+            return pool, pool_key
+        end
+
+        local available, seen = {}, {}
+        local function add_tag_key(key)
+            if type(key) == 'string' and key ~= 'UNAVAILABLE'
+                and G.P_TAGS[key] and not seen[key]
+                and not HNDS.is_tag_banned(key)
+            then
+                seen[key] = true
+                available[#available + 1] = key
+            end
+        end
+
+        -- Retain native ordering for tags that are normally available.
+        for _, key in ipairs(type(pool) == 'table' and pool or {}) do
+            add_tag_key(key)
+        end
+
+        -- Append normally restricted tags in stable order. This deliberately
+        -- ignores min_ante and in_pool solely while playing Art Gallery.
+        local extra = {}
+        for key, tag in pairs(G.P_TAGS) do
+            if type(key) == 'string' and type(tag) == 'table'
+                and not seen[key] and not HNDS.is_tag_banned(key)
+            then
+                extra[#extra + 1] = key
+            end
+        end
+        table.sort(extra, function(a, b)
+            local a_order = tonumber(G.P_TAGS[a].order) or math.huge
+            local b_order = tonumber(G.P_TAGS[b].order) or math.huge
+            return a_order == b_order and a < b or a_order < b_order
+        end)
+        for _, key in ipairs(extra) do add_tag_key(key) end
+        return available, pool_key
+    end
+end
+
+function HNDS.poll_allowed_tag(seed, exclusions)
+    local pool, seen = {}, {}
+    for _, key in ipairs(get_current_pool('Tag', nil, nil, seed) or {}) do
+        local effective_key = HNDS.conjuring_tag_key and HNDS.conjuring_tag_key(key) or key
+        if key ~= 'UNAVAILABLE' and G.P_TAGS[effective_key]
+            and not HNDS.is_tag_banned(key) and not HNDS.is_tag_banned(effective_key)
+            and not (exclusions and (exclusions[key] or exclusions[effective_key]))
+            and not seen[effective_key]
+        then
+            pool[#pool + 1] = effective_key
+            seen[effective_key] = true
+        end
+    end
+    if #pool == 0 then return nil end
+
+    local key = pseudorandom_element(pool, pseudoseed(seed))
+    local tag = Tag(key)
+    if key == 'tag_orbital' then
+        local hands = {}
+        for name, hand in pairs(G.GAME.hands or {}) do
+            if hand.visible then hands[#hands + 1] = name end
+        end
+        table.sort(hands)
+        if #hands > 0 then
+            tag.ability.orbital_hand = pseudorandom_element(hands, pseudoseed(seed .. '_orbital'))
+        end
+    end
+    return tag
+end
+
 function HNDS.poll_tag(seed, options, exclusions)
 	if not exclusions and not options then exclusions = { 'tag_boss', 'tag_top_up', 'tag_speed' } end
 
@@ -82,6 +192,7 @@ function HNDS.poll_tag(seed, options, exclusions)
 	local pool = {}
 	for _, key in ipairs(type(source_pool) == 'table' and source_pool or {}) do
 		if key ~= 'UNAVAILABLE' and not excluded[key]
+            and not HNDS.is_tag_banned(key)
 			and (not G or not G.P_TAGS or G.P_TAGS[key])
 		then
 			pool[#pool + 1] = key
@@ -93,7 +204,11 @@ function HNDS.poll_tag(seed, options, exclusions)
 		local fallback = G and G.P_TAGS and (G.P_TAGS.tag_handy and 'tag_handy' or G.P_TAGS.tag_double and 'tag_double')
 
 
-		return Tag(fallback or 'tag_handy')
+		-- A banned Handy Tag must not be used as a fallback in Art Gallery.
+        if fallback and not HNDS.is_tag_banned(fallback) then
+            return Tag(fallback)
+        end
+        return HNDS.poll_allowed_tag(seed .. '_fallback')
 	end
 
 	local tag_key = pseudorandom_element(pool, pseudoseed(seed))
@@ -234,25 +349,6 @@ function HNDS.get_shop_joker_tags()
 end
 
 
-function reset_supersuit_card()
-	local supersuit_suits = {}
-	G.GAME.current_round.supersuit_card = G.GAME.current_round.supersuit_card or {}
-	for k, suit in pairs(SMODS.Suits) do
-		if
-			k ~= G.GAME.current_round.supersuit_card.suit
-			and (type(suit.in_pool) ~= "function" or suit:in_pool({ rank = "" }))
-		then
-			supersuit_suits[#supersuit_suits + 1] = k
-		end
-	end
-	local supersuit_card = #supersuit_suits > 0
-		and pseudorandom_element(supersuit_suits, pseudoseed("sup" .. G.GAME.round_resets.ante)) or nil
-
-
-	if supersuit_card then G.GAME.current_round.supersuit_card.suit = supersuit_card end
-end
-
-
 function reset_dark_idol()
 	local ranks = {
 		{ rank = '2', id = 2 }, { rank = '3', id = 3 }, { rank = '4', id = 4 },
@@ -281,7 +377,7 @@ HNDS.circus_joker_pool = {
 	'j_seance',
 	'j_hanging_chad',
 	'j_dusk',
-	'j_hnds_supersuit',
+	'j_hnds_trump_suit',
 	'j_hnds_pot_of_greed'
 }
 
@@ -290,7 +386,6 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
 		G.GAME.art_queue = 0
-		G.GAME.hnds_void_hand_penalty = 0
 	end
 
 
@@ -306,10 +401,10 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 
 	if G.GAME.current_round then
 		G.GAME.current_round.hnds_bound_cards_drawn = nil
+		G.GAME.current_round.hnds_bound_cards_prepared = nil
 	end
 
 
-	reset_supersuit_card()
 	reset_dark_idol()
 
 

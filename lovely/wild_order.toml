@@ -12,8 +12,8 @@ pattern = '''
 '''
 position = "before"
 payload = '''
-            if from == G.deck and to == G.hand and HNDS and HNDS.grim_jester_next_card then
-                card = HNDS.grim_jester_next_card(from, discarded_only) or card
+            if from == G.deck and to == G.hand and not (card and card.ability and card.ability.hnds_drawing) and HNDS and HNDS.wild_order_next_card then
+                card = HNDS.wild_order_next_card(from, discarded_only) or card
             end
 '''
 match_indent = false
