@@ -9,6 +9,108 @@ local function take_vanilla_ownership(class, key, definition)
     return class:take_ownership(key, definition, true)
 end
 
+local function adjust_discard_limit(delta)
+    local params = G.GAME.starting_params
+    params.discard_limit = (params.discard_limit or 5) + delta
+end
+
+take_vanilla_ownership(SMODS.Stake, 'blue', {
+    modifiers = function()
+        adjust_discard_limit(-1)
+    end,
+    process_loc_text = function(self)
+    SMODS.Stake.process_loc_text(self)
+    local text = G.localization.descriptions.Stake[self.key].text
+    text[#text] = '{s:0.8}'
+end,
+    loc_txt = {
+        name = 'Blue Stake',
+        text = {
+            '{C:red}-1{} card per discard',
+            '{s:0.8}Applies all previous Stakes',
+        },
+    },
+})
+
+local red_deck = G.P_CENTERS.b_red
+local red_deck_apply = red_deck and red_deck.apply
+take_vanilla_ownership(SMODS.Back, 'red', {
+    apply = function(self, ...)
+        if red_deck_apply then red_deck_apply(self, ...) end
+        adjust_discard_limit(1)
+    end,
+    loc_txt = {
+        name = 'Red Deck',
+        text = {
+            '{C:red}+1{} discard',
+            'every round',
+            '{C:attention}+1{} card per discard',
+        },
+    },
+})
+
+local function selection_limits()
+    local game = G.GAME
+    local params = game and game.starting_params
+    if not params or not G.hand then return end
+    return params.play_limit or 5, params.discard_limit or 5
+end
+
+local function discard_selection_active()
+    return G.STATE == G.STATES.SELECTING_HAND and not G.OVERLAY_MENU
+end
+
+local add_to_highlighted_ref = CardArea.add_to_highlighted
+function CardArea:add_to_highlighted(card, ...)
+    if self == G.hand and discard_selection_active() then
+        local play, discard = selection_limits()
+        if play and play ~= discard then
+            local limit = math.max(play, discard)
+            if #self.highlighted >= limit then return end
+            local previous = self.config.highlighted_limit
+            self.config.highlighted_limit = limit
+            local result = add_to_highlighted_ref(self, card, ...)
+            self.config.highlighted_limit = previous
+            return result
+        end
+    end
+    return add_to_highlighted_ref(self, card, ...)
+end
+
+local function action_exceeds_selection_limit(action)
+    local play, discard = selection_limits()
+    if not play or play == discard or not discard_selection_active() then return false end
+    return #G.hand.highlighted > (action == 'play' and play or discard)
+end
+
+local function guard_hand_button(callback, action)
+    local original = G.FUNCS[callback]
+    if type(original) ~= 'function' then return end
+    G.FUNCS[callback] = function(e, ...)
+        if action_exceeds_selection_limit(action) then
+            e.config.button = nil
+            e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+            return
+        end
+        return original(e, ...)
+    end
+end
+
+guard_hand_button('can_play', 'play')
+guard_hand_button('can_discard', 'discard')
+
+local play_highlighted_ref = G.FUNCS.play_cards_from_highlighted
+G.FUNCS.play_cards_from_highlighted = function(...)
+    if action_exceeds_selection_limit('play') then return end
+    return play_highlighted_ref(...)
+end
+
+local discard_highlighted_ref = G.FUNCS.discard_cards_from_highlighted
+G.FUNCS.discard_cards_from_highlighted = function(e, hook, ...)
+    if not hook and action_exceeds_selection_limit('discard') then return end
+    return discard_highlighted_ref(e, hook, ...)
+end
+
 local function is_playing_card(card)
     local set = card and card.ability and card.ability.set
     return set == 'Default' or set == 'Enhanced'
@@ -723,7 +825,6 @@ for key, suit in pairs(suit_jokers) do
     })
 end
 
-if not (hnds_config and hnds_config.enableBlindUpgradeButton) then
 take_vanilla_ownership(SMODS.Joker, 'throwback', {
     blueprint_compat = true,
     config = { extra = 0.5, x_mult = 1 },
@@ -740,7 +841,6 @@ take_vanilla_ownership(SMODS.Joker, 'throwback', {
         if context.joker_main then return { xmult = 1 + G.GAME.skips * gain } end
     end,
 })
-end
 
 take_vanilla_ownership(SMODS.Joker, 'ring_master', {
     blueprint_compat = false,

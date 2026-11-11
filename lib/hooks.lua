@@ -714,12 +714,10 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 
 	function localize(args, misc_cat, misc_loc, silent, ...)
 		HNDS_ensure_loc_colours()
-		local trailing = HNDS.pack(...)
-
-
 		if type(args) == 'table' and args.key == 'hnds_cursed'
 			and (args.type == 'other' or (args.type == 'descriptions' and args.set == 'Other'))
 		then
+			local trailing = HNDS.pack(...)
 			local data = _G.HNDS_CURRENT_CURSE_DATA
 			_G.HNDS_CURRENT_CURSE_DATA = nil
 			if type(data) == 'table' and G and G.localization and G.localization.descriptions then
@@ -800,7 +798,7 @@ if type(localize) == 'function' and not _G._hnds_wrapped_localize_colours then
 				end
 			end
 		end
-		return localize_ref(args, misc_cat, misc_loc, silent, unpack_values(trailing, 1, trailing.n))
+		return localize_ref(args, misc_cat, misc_loc, silent, ...)
 	end
 end
 
@@ -1044,37 +1042,33 @@ if Card and Card.update and not Card._hnds_wrapped_update_runtime then
     Card._hnds_wrapped_update_runtime = true
     local card_update_ref = Card.update
     function Card:update(dt, ...)
-        -- Migrates pre-fix Throwback cards BEFORE vanilla Card:update, which
-        -- multiplies ability.extra and crashes when it contains round data.
-        -- This also protects saves opened with Upgrade Blind disabled.
-        if self.config and self.config.center
-            and self.config.center.key == 'j_throwback' and self.ability
-            and type(self.ability.extra) == 'table'
+        local center = self.config and self.config.center
+        local ability = self.ability
+        if center and center.key == 'j_throwback' and ability
+            and (type(ability.extra) == 'table' or ability.extra == 0 or ability.hnds_throwback_rounds ~= nil)
         then
-            local previous = self.ability.extra
-            self.ability.hnds_throwback_rounds = math.max(
-                tonumber(self.ability.hnds_throwback_rounds) or 0,
-                tonumber(previous.rounds) or 0
-            )
-            local original_extra = self.config.center.config
-                and tonumber(self.config.center.config.extra) or 0.5
-            self.ability.extra = (hnds_config and hnds_config.enableBlindUpgradeButton)
-                and 0 or original_extra
-            self.ability.x_mult = 1
+            ability.extra = center.config.extra
+            ability.hnds_throwback_rounds = nil
         end
         local ret = card_update_ref(self, dt, ...)
-
+        if center and center.key == 'j_hnds_fun_police' and HNDS.animate_fun_police then
+            HNDS.animate_fun_police(self)
+        end
 
         local area_config = self.area and self.area.config
         if area_config and area_config.collection then
             return ret
         end
 
-        if hnds_card_has_cursed(self)
-            and hnds_runtime_maintenance_due(self, '_hnds_next_cursed_sticker_scan', 0.25)
-            and hnds_cursed_needs_strip(self)
-        then
-            hnds_strip_other_stickers(self)
+        if hnds_card_has_cursed(self) then
+            if hnds_runtime_maintenance_due(self, '_hnds_next_cursed_sticker_scan', 0.25)
+                and hnds_cursed_needs_strip(self)
+            then
+                hnds_strip_other_stickers(self)
+            end
+            if self.area and self.area == G.shop_jokers and not self.hnds_cursed_cost_current then
+                self:set_cost()
+            end
         end
 
 
@@ -1520,12 +1514,18 @@ function Card.set_cost(self, ...)
 			self.cost = math.max(0, math.floor(self.cost * G.GAME.hnds_price_multiplier))
 		end
 	end
+    self.hnds_cursed_cost_current = set == "Joker" and hnds_card_has_cursed(self) or nil
+    if self.hnds_cursed_cost_current and not self.ability.couponed then
+        self.cost = self.cost + 4
+    end
 	return unpack_values(results, 1, results.n)
 end
 
 
 local function hnds_finalize_generated_curse(card)
-	if hnds_card_has_cursed(card) then hnds_strip_other_stickers(card) end
+    if not hnds_card_has_cursed(card) then return end
+    if hnds_cursed_needs_strip(card) then hnds_strip_other_stickers(card) end
+    if card.set_cost then card:set_cost() end
 end
 
 HNDS.finalize_generated_curse = hnds_finalize_generated_curse
@@ -1924,26 +1924,6 @@ end
 
 
 _G.HNDS_CURRENT_CURSE_DATA = nil
-
-
-local original_loc_vars = nil
-
-
-function HNDS_setup_cursed_sticker_hook(sticker)
-	if not sticker then return end
-	original_loc_vars = sticker.loc_vars
-	sticker.loc_vars = function(self, info_queue, card)
-		_G.HNDS_CURRENT_CURSE_DATA = card and card.ability and {
-			offer = card.ability.hnds_curse_offer,
-			price = card.ability.hnds_curse_price,
-			display_mode = card.ability.hnds_curse_display_mode,
-		} or nil
-		if original_loc_vars then
-			return original_loc_vars(self, info_queue, card)
-		end
-		return { vars = {} }
-	end
-end
 
 
 local get_blind_amount_ref = get_blind_amount

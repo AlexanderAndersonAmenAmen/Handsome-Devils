@@ -19,7 +19,7 @@ SMODS.Joker {
 
         local target = pseudorandom_element(
             hand_cards,
-            pseudoseed('hnds_cursed_doll_target_' .. tostring(card.sort_id or card.ID or ''))
+            pseudoseed('hnds_cursed_doll_target')
         )
         if not target then return end
 

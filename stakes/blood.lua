@@ -1,3 +1,17 @@
+for _, key in ipairs({ 'buffoon_normal_1', 'buffoon_normal_2', 'buffoon_jumbo_1', 'buffoon_mega_1' }) do
+    local pack = G.P_CENTERS['p_' .. key]
+    local previous_weight = pack and pack.get_weight
+    SMODS.Booster:take_ownership(key, {
+        get_weight = function(self, weight, args)
+            local result = previous_weight and previous_weight(self, weight, args) or weight or self.weight
+            if G.GAME and G.GAME.modifiers and G.GAME.modifiers.hnds_blood_stake then
+                return result * 0.5
+            end
+            return result
+        end,
+    }, true)
+end
+
 SMODS.Stake {
     key = 'blood_stake',
     atlas = "Stakes",
@@ -16,9 +30,5 @@ SMODS.Stake {
     modifiers = function()
         G.GAME.modifiers.enable_curses = true
         G.GAME.modifiers.hnds_blood_stake = true
-
-        local cursed_pack = G.P_CENTERS
-            and G.P_CENTERS.p_hnds_cursed_pack
-        if cursed_pack then cursed_pack.weight = 1.6 end
     end,
 }

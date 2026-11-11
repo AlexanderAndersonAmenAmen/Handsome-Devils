@@ -423,17 +423,19 @@ local function draw_aberrant_part(card, kind, half)
     local pos = part_pos and part_pos[half]
     local atlas = aberrant_atlas('Stickers')
     if not (pos and atlas and atlas.image) then return end
-    local cache_key = kind .. '_' .. half
-    local entry = ABERRANT_PART_SPRITES[cache_key]
+    local entry = ABERRANT_PART_SPRITES[pos]
     if not entry or entry.atlas ~= atlas then
+        if entry then entry.sprite:remove() end
         entry = {
             atlas = atlas,
             sprite = Sprite(0, 0, G.CARD_W, G.CARD_H, atlas, pos),
         }
-        ABERRANT_PART_SPRITES[cache_key] = entry
+        ABERRANT_PART_SPRITES[pos] = entry
     end
+    local previous = entry.sprite.role.draw_major
     entry.sprite.role.draw_major = card
     entry.sprite:draw_shader('dissolve', nil, nil, nil, card.children.center)
+    entry.sprite.role.draw_major = previous
 end
 
 local function draw_aberrant_no_fusion_base(card)
@@ -441,11 +443,14 @@ local function draw_aberrant_no_fusion_base(card)
     local atlas = aberrant_atlas('Extras')
     if not (atlas and atlas.image) then return end
     if not ABERRANT_NO_FUSION_BASE_SPRITE or ABERRANT_NO_FUSION_BASE_ATLAS ~= atlas then
+        if ABERRANT_NO_FUSION_BASE_SPRITE then ABERRANT_NO_FUSION_BASE_SPRITE:remove() end
         ABERRANT_NO_FUSION_BASE_SPRITE = Sprite(0, 0, G.CARD_W, G.CARD_H, atlas, { x = 4, y = 3 })
         ABERRANT_NO_FUSION_BASE_ATLAS = atlas
     end
+    local previous = ABERRANT_NO_FUSION_BASE_SPRITE.role.draw_major
     ABERRANT_NO_FUSION_BASE_SPRITE.role.draw_major = card
     ABERRANT_NO_FUSION_BASE_SPRITE:draw_shader('dissolve', nil, nil, nil, card.children.center)
+    ABERRANT_NO_FUSION_BASE_SPRITE.role.draw_major = previous
 end
 
 local function draw_aberrant_single_fusion_base(card)
@@ -453,11 +458,14 @@ local function draw_aberrant_single_fusion_base(card)
     local atlas = aberrant_atlas('Extras')
     if not (atlas and atlas.image) then return end
     if not ABERRANT_SINGLE_FUSION_BASE_SPRITE or ABERRANT_SINGLE_FUSION_BASE_ATLAS ~= atlas then
+        if ABERRANT_SINGLE_FUSION_BASE_SPRITE then ABERRANT_SINGLE_FUSION_BASE_SPRITE:remove() end
         ABERRANT_SINGLE_FUSION_BASE_SPRITE = Sprite(0, 0, G.CARD_W, G.CARD_H, atlas, { x = 3, y = 3 })
         ABERRANT_SINGLE_FUSION_BASE_ATLAS = atlas
     end
+    local previous = ABERRANT_SINGLE_FUSION_BASE_SPRITE.role.draw_major
     ABERRANT_SINGLE_FUSION_BASE_SPRITE.role.draw_major = card
     ABERRANT_SINGLE_FUSION_BASE_SPRITE:draw_shader('dissolve', nil, nil, nil, card.children.center)
+    ABERRANT_SINGLE_FUSION_BASE_SPRITE.role.draw_major = previous
 end
 
 -- When Aberrant has no fused enhancements yet, render EHD (4,3)
@@ -506,11 +514,14 @@ local function draw_aberrant_collection_art(card)
     local atlas = aberrant_atlas('Extras')
     if not (atlas and atlas.image) then return end
     if not ABERRANT_COLLECTION_SPRITE or ABERRANT_COLLECTION_ATLAS ~= atlas then
+        if ABERRANT_COLLECTION_SPRITE then ABERRANT_COLLECTION_SPRITE:remove() end
         ABERRANT_COLLECTION_SPRITE = Sprite(0, 0, G.CARD_W, G.CARD_H, atlas, { x = 2, y = 3 })
         ABERRANT_COLLECTION_ATLAS = atlas
     end
+    local previous = ABERRANT_COLLECTION_SPRITE.role.draw_major
     ABERRANT_COLLECTION_SPRITE.role.draw_major = card
     ABERRANT_COLLECTION_SPRITE:draw_shader('dissolve', nil, nil, nil, card.children.center)
+    ABERRANT_COLLECTION_SPRITE.role.draw_major = previous
 end
 
 -- EHD (2,0) supplies the persistent rift overlay. Do not apply it to the
@@ -525,11 +536,14 @@ SMODS.DrawStep({
         local atlas = aberrant_atlas('Extras')
         if not (atlas and atlas.image) then return end
         if not ABERRANT_OVERLAY_SPRITE or ABERRANT_OVERLAY_ATLAS ~= atlas then
+            if ABERRANT_OVERLAY_SPRITE then ABERRANT_OVERLAY_SPRITE:remove() end
             ABERRANT_OVERLAY_SPRITE = Sprite(0, 0, G.CARD_W, G.CARD_H, atlas, { x = 2, y = 0 })
             ABERRANT_OVERLAY_ATLAS = atlas
         end
+        local previous = ABERRANT_OVERLAY_SPRITE.role.draw_major
         ABERRANT_OVERLAY_SPRITE.role.draw_major = card
         ABERRANT_OVERLAY_SPRITE:draw_shader('dissolve', nil, nil, nil, card.children.center)
+        ABERRANT_OVERLAY_SPRITE.role.draw_major = previous
     end,
 })
 

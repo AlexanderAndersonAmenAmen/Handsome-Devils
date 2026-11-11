@@ -1,0 +1,26 @@
+[manifest]
+version = "1.0.0"
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "local replace_card = Card(self.title_top.T.x, self.title_top.T.y, 1.2*G.CARD_W*SC_scale, 1.2*G.CARD_H*SC_scale, G.P_CARDS.S_A, G.P_CENTERS.c_base)"
+position = "at"
+payload = '''
+local hnds_title_joker = HNDS and HNDS.choose_title_joker and HNDS.choose_title_joker()
+local hnds_title_front
+if not hnds_title_joker then hnds_title_front = G.P_CARDS.S_A end
+local replace_card = Card(self.title_top.T.x, self.title_top.T.y, 1.2*G.CARD_W*SC_scale, 1.2*G.CARD_H*SC_scale,
+    hnds_title_front, hnds_title_joker or G.P_CENTERS.c_base,
+    hnds_title_joker and { bypass_discovery_center = true, bypass_discovery_ui = true, bypass_lock = true } or nil)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "if replace_card and (G.P_CENTERS.j_blueprint.unlocked) then"
+position = "at"
+payload = "if replace_card and not hnds_title_joker and (G.P_CENTERS.j_blueprint.unlocked) then"
+match_indent = true

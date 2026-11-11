@@ -43,31 +43,25 @@ local function hnds_handicap_refresh()
 end
 
 local function hnds_schedule_handicap_refresh()
-    if HNDS._handicap_refresh_pending or HNDS._handicap_refresh_running then return end
-    HNDS._handicap_refresh_pending = true
+    local area = G and G.jokers
+    if not area or area.hnds_handicap_refresh_pending or area.hnds_handicap_refresh_running then return end
+    area.hnds_handicap_refresh_pending = true
 
     local function refresh()
-        HNDS._handicap_refresh_pending = nil
-        HNDS._handicap_refresh_running = true
+        area.hnds_handicap_refresh_pending = nil
+        if G.jokers ~= area then return true end
+        area.hnds_handicap_refresh_running = true
         local result = hnds_handicap_refresh()
-        HNDS._handicap_refresh_running = nil
+        area.hnds_handicap_refresh_running = nil
         return result
     end
-    if G and G.E_MANAGER and Event then
+    if G.E_MANAGER and Event then
         G.E_MANAGER:add_event(Event {
             trigger = 'immediate', blockable = false, func = refresh,
         })
     else
         refresh()
     end
-end
-
-local function hnds_handicap_signature(card)
-    local parts = { card.debuff and '1' or '0' }
-    for index, joker in ipairs((G and G.jokers and G.jokers.cards) or {}) do
-        parts[index + 1] = tostring(joker and (joker.sort_id or joker.ID) or index)
-    end
-    return table.concat(parts, '|')
 end
 
 local previous_set_debuff = SMODS.current_mod.set_debuff
@@ -94,7 +88,7 @@ SMODS.Joker {
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
-    config = { extra = { chips_per_joker = 75, order_signature = '' } },
+    config = { extra = { chips_per_joker = 75 } },
     loc_vars = function(self, info_queue, card)
         local extra = card and card.ability and card.ability.extra or self.config.extra
         local gain = tonumber(extra.chips_per_joker) or 75
@@ -106,17 +100,38 @@ SMODS.Joker {
     remove_from_deck = function(self, card, from_debuff)
         hnds_schedule_handicap_refresh()
     end,
-    update = function(self, card, dt)
-        if not (card and card.ability and card.ability.extra
-            and G and G.jokers and card.area == G.jokers)
-        then
-            return
+    update = function(self, card)
+        local area = G and G.jokers
+        if not (area and area.cards and card.area == area) then return end
+
+        local now = G.TIMERS.REAL
+        if area.hnds_handicap_scan_time == now then return end
+        area.hnds_handicap_scan_time = now
+
+        local order = area.hnds_handicap_order
+        local sources = area.hnds_handicap_sources
+        if not order then
+            order = setmetatable({}, { __mode = 'v' })
+            sources = {}
+            area.hnds_handicap_order = order
+            area.hnds_handicap_sources = sources
         end
-        local signature = hnds_handicap_signature(card)
-        if card.ability.extra.order_signature ~= signature then
-            card.ability.extra.order_signature = signature
-            hnds_schedule_handicap_refresh()
+        local previous_count = area.hnds_handicap_count or 0
+        local changed = previous_count ~= #area.cards
+        for index, joker in ipairs(area.cards) do
+            local source = hnds_is_handicap_placard(joker) and not joker.debuff
+            if order[index] ~= joker or sources[index] ~= source then
+                order[index] = joker
+                sources[index] = source
+                changed = true
+            end
         end
+        for index = #area.cards + 1, previous_count do
+            order[index] = nil
+            sources[index] = nil
+        end
+        area.hnds_handicap_count = #area.cards
+        if changed then hnds_schedule_handicap_refresh() end
     end,
     calculate = function(self, card, context)
         if context.joker_main then

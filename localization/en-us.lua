@@ -2400,14 +2400,6 @@ local localization = {
 			},
 		},
 		Stake = {
-			stake_blue = {
-				name = "Blue Stake",
-				text = {
-					"{C:attention}Blinds{} can't be skipped",
-					"but can be {C:attention}upgraded{}",
-					"{s:0.8}Applies all previous Stakes",
-				},
-			},
 			stake_hnds_platinum = {
 				name = "Platinum Stake",
 				text = {
@@ -2579,7 +2571,7 @@ local localization = {
 			hnds_config_CursedPack = "Enable Cursed packs spawning",
 			hnds_config_CustomSounds = "Enable custom joker sounds",
 			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
-			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade Mechanic (Blue Stake/Nightmare Stake)",
+			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade Mechanic",
 			hnds_config_CustomMenu = "Enable custom main menu",
 			hnds_config_PeakMainMenuOST = "Peak Main Menu OST",
 			hnds_config_ChaosSuits = "Chaos suits",
@@ -2694,31 +2686,5 @@ if vanilla_tweaks_config and vanilla_tweaks_config.enableVanillaTweaks == false 
 	localization.descriptions.Tag.tag_boss = nil
 end
 
-local blind_upgrade_config = hnds_config
-    or (SMODS and SMODS.Mods and SMODS.Mods.HandsomeDevils and SMODS.Mods.HandsomeDevils.config)
-    or (SMODS and SMODS.current_mod and SMODS.current_mod.config)
-if blind_upgrade_config and blind_upgrade_config.enableBlindUpgradeButton == false then
-    localization.descriptions.Stake.stake_blue = nil
-end
-
-if blind_upgrade_config and blind_upgrade_config.enableBlindUpgradeButton then
-    localization.descriptions.Tag.tag_skip = {
-        name = "Speed Tag",
-        text = {
-            "Gives {C:money}$#1#{} per {C:attention}Blind{}",
-            "defeated in {C:attention}one hand{}",
-            "{C:inactive}(Will give {C:money}$#2#{C:inactive})",
-        },
-    }
-    localization.descriptions.Joker.j_throwback = {
-        name = "Throwback",
-        text = {
-            "After {C:attention}#1#{} rounds,",
-            "sell this card for",
-            "{C:attention}-1{} Ante and Hand",
-            "{C:inactive}(Currently {C:attention}#2#{C:inactive}/#1#)",
-        },
-    }
-end
 
 return localization

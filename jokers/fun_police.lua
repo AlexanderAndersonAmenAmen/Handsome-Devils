@@ -1,89 +1,109 @@
 SMODS.Atlas {
     key = 'fun_police',
-    path = 'FunPolice.png',
+    path = 'FunPoliceFrame.png',
     px = 95,
     py = 71,
-    frames = 180,
-    fps = 24,
-    atlas_table = 'ANIMATION_ATLAS',
+    disable_mipmap = true,
 }
 
-local FUN_POLICE_COLUMNS = 10
-local FUN_POLICE_ROWS = 18
-local FUN_POLICE_FRAMES = FUN_POLICE_COLUMNS * FUN_POLICE_ROWS
-local FUN_POLICE_FPS = 24
+local mod_path = SMODS.current_mod.path
+local FRAME_ASPECT = 95 / 71
+local set_sprites_ref = Card.set_sprites
 
-local function hnds_is_fun_police_atlas(atlas)
-    if not atlas then return false end
-    local name = tostring(atlas.name or atlas.key or ''):lower()
-    return name == 'hnds_fun_police' or name == 'fun_police' or name:find('hnds_fun_police', 1, true) ~= nil
-end
-
-if AnimatedSprite and type(AnimatedSprite.animate) == 'function'
-    and not AnimatedSprite._hnds_fun_police_multiline_animation
-then
-    AnimatedSprite._hnds_fun_police_multiline_animation = true
-    local animated_sprite_animate_ref = AnimatedSprite.animate
-    function AnimatedSprite:animate(...)
-        if not hnds_is_fun_police_atlas(self.atlas) then return animated_sprite_animate_ref(self, ...) end
-        -- Collection previews have no gameplay animation state; skip the 24 FPS
-        -- viewport churn when this Joker is displayed in a collection grid.
-        local major = self.role and self.role.draw_major
-        if major and major.area and major.area.config and major.area.config.collection then return end
-        if not (self.sprite and self.atlas and self.atlas.image) then return end
-        local now = G and G.TIMERS and G.TIMERS.REAL or 0
-        local start = tonumber(self.offset_seconds) or now
-        local elapsed = math.max(0, now - start)
-        local frame = math.floor(elapsed * FUN_POLICE_FPS) % FUN_POLICE_FRAMES
-        if self._hnds_fun_police_frame ~= frame then
-            self._hnds_fun_police_frame = frame
-            local x = frame % FUN_POLICE_COLUMNS
-            local y = math.floor(frame / FUN_POLICE_COLUMNS)
-            local w = self.animation and self.animation.w or self.scale and self.scale.x or self.atlas.px
-            local h = self.animation and self.animation.h or self.scale and self.scale.y or self.atlas.py
-            self.frame_offset = x * w
-            self.sprite:setViewport(x * w, y * h, w, h)
-            self.animation = self.animation or {}
-            self.animation.x = x
-            self.animation.y = y
-            self.animation.frames = FUN_POLICE_FRAMES
-            self.current_animation = self.current_animation or {}
-            self.current_animation.current = x
-            self.current_animation.frames = FUN_POLICE_FRAMES
-            self.current_animation.w = w
-            self.current_animation.h = h
+function Card:set_sprites(center, ...)
+    if center then
+        local landscape = center.key == 'j_hnds_fun_police'
+            and (center.discovered or self.bypass_discovery_center
+                or (self.params and self.params.bypass_discovery_center))
+        local transform = self.T
+        local ratio = transform.w / transform.h
+        if landscape and math.abs(ratio - FRAME_ASPECT) > 0.001 then
+            local height = transform.h
+            transform.w = height
+            transform.h = height / FRAME_ASPECT
+            self.hnds_fun_police_landscape = true
+        elseif not landscape and self.hnds_fun_police_landscape then
+            if math.abs(ratio - FRAME_ASPECT) < 0.001 then
+                transform.w, transform.h = transform.h, transform.w
+            end
+            self.hnds_fun_police_landscape = nil
         end
-        if self.float and G and G.TIMERS then
-            self.T.r = 0.02 * math.sin(2 * G.TIMERS.REAL + self.T.x)
-            self.offset = self.offset or { x = 0, y = 0 }
-            self.shadow_parrallax = self.shadow_parrallax or { x = 0, y = 0 }
-            self.offset.y = -(1 + 0.3 * math.sin(0.666 * G.TIMERS.REAL + self.T.y)) * self.shadow_parrallax.y
-            self.offset.x = -(0.7 + 0.2 * math.sin(0.666 * G.TIMERS.REAL + self.T.x)) * self.shadow_parrallax.x
+        if self.hnds_fun_police_landscape and self.VT then
+            self.VT.w, self.VT.h = transform.w, transform.h
         end
     end
+    return set_sprites_ref(self, center, ...)
 end
 
-local function hnds_fun_police_reset_animation(card)
-    local sprite = card and card.children and card.children.center
-    if not (sprite and hnds_is_fun_police_atlas(sprite.atlas)) then return end
-    sprite.offset_seconds = G and G.TIMERS and G.TIMERS.REAL or 0
-    sprite._hnds_fun_police_frame = nil
-    local w = sprite.animation and sprite.animation.w or sprite.scale and sprite.scale.x or sprite.atlas.px
-    local h = sprite.animation and sprite.animation.h or sprite.scale and sprite.scale.y or sprite.atlas.py
-    if sprite.sprite and w and h then sprite.sprite:setViewport(0, 0, w, h) end
-    if sprite.animation then sprite.animation.x = 0; sprite.animation.y = 0 end
-    if sprite.current_animation then sprite.current_animation.current = 0 end
+local function fun_police_renderer(atlas)
+    local width, height = atlas.image:getPixelDimensions()
+    local scale = width == 190 and 2 or 1
+    local filesystem = SMODS.NFS or NFS
+    local path = mod_path .. 'assets/' .. scale .. 'x/FunPolice.png'
+    local file = filesystem and filesystem.newFileData(path)
+    if not file then return end
+
+    local sheet = love.image.newImageData(file)
+    local sheet_width, sheet_height = sheet:getDimensions()
+    if sheet_width ~= width * 10 or sheet_height ~= height * 18 then return end
+
+    local renderer = {
+        image = atlas.image,
+        sheet = sheet,
+        frame_data = love.image.newImageData(width, height),
+        width = width,
+        height = height,
+        started = G.TIMERS.REAL,
+        frame = 0,
+    }
+    atlas.hnds_fun_police_renderer = renderer
+    return renderer
 end
 
--- Five actual Joker slots are added by each Fun Police. The original five
--- occupied positions are always safe, even with fewer than five Jokers.
+function HNDS.animate_fun_police(card)
+    local atlas = G.ASSET_ATLAS and G.ASSET_ATLAS.hnds_fun_police
+    local sprite = card.children and card.children.center
+    if not (atlas and atlas.image and sprite and sprite.atlas == atlas and card.area) then return end
+    if card.states.visible == false or card.sprite_facing == 'back' then return end
+
+    local now = G.TIMERS.REAL
+    local renderer = atlas.hnds_fun_police_renderer
+    if not renderer or renderer.image ~= atlas.image then
+        if atlas.hnds_fun_police_failed_image == atlas.image then return end
+        renderer = fun_police_renderer(atlas)
+        if not renderer then
+            atlas.hnds_fun_police_failed_image = atlas.image
+            return
+        end
+        atlas.hnds_fun_police_failed_image = nil
+    end
+    if now < renderer.started then renderer.started = now end
+    local frame = math.floor((now - renderer.started) * 24) % 180
+    if renderer.frame == frame then return end
+
+    local width, height = renderer.width, renderer.height
+    renderer.frame_data:paste(renderer.sheet, 0, 0,
+        frame % 10 * width, math.floor(frame / 10) * height, width, height)
+    renderer.image:replacePixels(renderer.frame_data, 1, 1, 0, 0, true)
+    renderer.frame = frame
+end
+
 local FP_SLOTS = 5
 local function fp_is(card)
     return card and card.config and card.config.center
         and card.config.center.key == 'j_hnds_fun_police'
 end
 
-local fp_reserved_index
+local function fp_safe_slots(area)
+    if #area.cards <= FP_SLOTS then return math.huge end
+    local reserved = 0
+    for _, joker in ipairs(area.cards) do
+        if fp_is(joker) then reserved = reserved + FP_SLOTS end
+    end
+    if reserved == 0 then return math.huge end
+    return math.max(FP_SLOTS, (tonumber(area.config.card_limit) or 0) - reserved)
+end
+
 local fp_previous_membership = setmetatable({}, { __mode = 'k' })
 
 local function fp_refresh()
@@ -97,11 +117,12 @@ local function fp_refresh()
     local hands_before = round and tonumber(round.hands_left)
     local discards_before = round and tonumber(round.discards_left)
     local ok, err = pcall(function()
-        for _, joker in ipairs(G.jokers.cards) do
+        local safe_slots = fp_safe_slots(G.jokers)
+        for index, joker in ipairs(G.jokers.cards) do
             -- Only refresh cards whose Fun Police slot status actually changed.
             -- Blindly recalculating all debuffs each move replays add/remove
             -- aura hooks (hands, discards, etc.), causing exploits and stutter.
-            local reserved = fp_reserved_index(joker)
+            local reserved = index > safe_slots
             if fp_previous_membership[joker] == nil
                 or fp_previous_membership[joker] ~= reserved then
                 fp_previous_membership[joker] = reserved
@@ -126,38 +147,19 @@ local function fp_refresh()
 end
 
 local function fp_refresh_after_removal()
-    if HNDS._fp_refresh_after_removal then return end
-    HNDS._fp_refresh_after_removal = true
+    local area = G and G.jokers
+    if not area or area.hnds_fp_refresh_pending then return end
+    area.hnds_fp_refresh_pending = true
     if G and G.E_MANAGER and Event then
         G.E_MANAGER:add_event(Event({ trigger = 'after', delay = 0, func = function()
-            HNDS._fp_refresh_after_removal = false
-            fp_refresh()
+            area.hnds_fp_refresh_pending = nil
+            if G.jokers == area then fp_refresh() end
             return true
         end }))
     else
-        HNDS._fp_refresh_after_removal = false
+        area.hnds_fp_refresh_pending = nil
         fp_refresh()
     end
-end
-
-local function fp_active_count()
-    local total = 0
-    for _, joker in ipairs((G and G.jokers and G.jokers.cards) or {}) do
-        if fp_is(joker) then total = total + 1 end
-    end
-    return total
-end
-
-fp_reserved_index = function(joker)
-    local cards = G and G.jokers and G.jokers.cards or {}
-    local limit = G and G.jokers and G.jokers.config and tonumber(G.jokers.config.card_limit) or 0
-    local reserved = fp_active_count() * FP_SLOTS
-    if reserved == 0 or #cards <= 5 then return false end
-    local safe_slots = math.max(5, limit - reserved)
-    for i, current in ipairs(cards) do
-        if current == joker then return i > safe_slots end
-    end
-    return false
 end
 
 local prior_debuff = SMODS.current_mod.set_debuff
@@ -166,8 +168,11 @@ SMODS.current_mod.set_debuff = function(card)
         local state = prior_debuff(card)
         if state == true or state == 'prevent_debuff' then return state end
     end
-    if card and card.area == (G and G.jokers) and fp_reserved_index(card) then
-        return true
+    local area = G and G.jokers
+    if not (card and area and card.area == area and area.cards) then return end
+    local safe_slots = fp_safe_slots(area)
+    for index = safe_slots + 1, #area.cards do
+        if area.cards[index] == card then return true end
     end
 end
 
@@ -198,16 +203,11 @@ end
 
 SMODS.Joker {
     key = 'fun_police', atlas = 'fun_police', pos = { x = 0, y = 0 },
-    sprite_args = { start_pos = { x = 0, y = 0 }, frames = 180, fps = 24 },
-    pixel_size = { w = 95, h = 71 }, display_size = { w = 95, h = 71 },
     rarity = 3, cost = 10, unlocked = true, discovered = false,
     blueprint_compat = false, eternal_compat = true, perishable_compat = true,
     config = { extra = {} },
     loc_vars = function(self, info_queue, card) return { vars = { FP_SLOTS } } end,
-    set_sprites = function(self, card) hnds_fun_police_reset_animation(card) end,
-    set_ability = function(self, card) hnds_fun_police_reset_animation(card) end,
     load = function(self, card)
-        hnds_fun_police_reset_animation(card)
         -- Save state carries the existing card_limit; restore the applied flag.
         card.ability.hnds_fun_police_slots_applied = tonumber(card.ability.hnds_fun_police_slots_applied) or 0
     end,
@@ -226,18 +226,33 @@ SMODS.Joker {
         if card.ability then card.ability.hnds_fun_police_slots_applied = 0 end
         fp_refresh_after_removal()
     end,
-    update = function(self, card, dt)
-        if not (G and G.jokers and card.area == G.jokers) then return end
+    update = function(self, card)
+        local area = G.jokers
+        if not (area and area.cards and card.area == area) then return end
         fp_sync_slots(card)
-        local ids = {}
-        for i, joker in ipairs(G.jokers.cards) do
-            ids[#ids+1] = tostring(joker.sort_id or joker.ID or joker) .. ':' .. tostring(joker.debuff)
+
+        local now = G.TIMERS.REAL
+        if area.hnds_fp_scan_time == now then return end
+        area.hnds_fp_scan_time = now
+        local cards = area.cards
+        local previous = area.hnds_fp_order
+        if not previous then
+            previous = setmetatable({}, { __mode = 'v' })
+            area.hnds_fp_order = previous
         end
-        local signature = table.concat(ids, '|')
-        if card.ability.hnds_fp_signature ~= signature then
-            card.ability.hnds_fp_signature = signature
-            fp_refresh()
+        local count = area.hnds_fp_count or 0
+        local limit = area.config.card_limit
+        local changed = count ~= #cards or area.hnds_fp_limit ~= limit
+        for i, joker in ipairs(cards) do
+            if previous[i] ~= joker then
+                previous[i] = joker
+                changed = true
+            end
         end
+        for i = #cards + 1, count do previous[i] = nil end
+        area.hnds_fp_count = #cards
+        area.hnds_fp_limit = limit
+        if changed then fp_refresh() end
     end,
     attributes = { 'debuff', 'destroy' },
 }

@@ -197,8 +197,31 @@ end
 
 HNDS.platinum_skip_is_locked = function(blind_choice)
     return blind_raiser_active()
-        and (blind_choice == 'Small' or blind_choice == 'Big')
+        and blind_choice ~= nil
+        and blind_was_upgraded(blind_choice)
 end
+
+local function set_runtime_button(button, active, callback)
+    if not (button and button.config) then return end
+
+    button.config.button = active and callback or nil
+    button.config.hover = active
+    button.config.colour = active and G.C.RED or G.C.UI.BACKGROUND_INACTIVE
+    if active then button.disable_button = nil end
+
+
+    if button.states then
+        if button.states.collide then button.states.collide.can = active end
+        if button.states.click then button.states.click.can = active end
+        if button.states.hover then button.states.hover.can = active end
+    end
+
+    local label = button.children and button.children[1]
+    if label and label.config then
+        label.config.colour = active and G.C.UI.TEXT_LIGHT or G.C.UI.TEXT_INACTIVE
+    end
+end
+
 
 local function set_upgrade_runtime_button(button, active)
     if not (button and button.config) then return end
@@ -304,9 +327,17 @@ HNDS.sync_platinum_blind_tag_ui = function(e)
     local current = blind_is_current(blind_choice)
 
     set_upgrade_runtime_button(upgrade_button, current and not upgraded)
-
 end
 
+G.FUNCS.hnds_update_skip_blind_button = function(e)
+    if not (e and e.config) then return end
+
+    local blind_choice = e.config.hnds_blind_choice
+    local active = blind_choice
+        and blind_is_current(blind_choice)
+        and not blind_was_upgraded(blind_choice)
+    set_runtime_button(e, active, 'skip_blind')
+end
 
 G.FUNCS.hnds_update_upgrade_blind_button = function(e)
     if not (e and e.config) then return end
@@ -408,7 +439,7 @@ end
 local create_UIBox_blind_tag_ref = create_UIBox_blind_tag
 
 function create_UIBox_blind_tag(blind_choice, run_info, ...)
-    if run_info or not blind_raiser_active() then
+    if run_info or (blind_choice ~= 'Small' and blind_choice ~= 'Big') or not blind_raiser_active() then
         return create_UIBox_blind_tag_ref(blind_choice, run_info, ...)
     end
 
@@ -420,11 +451,13 @@ function create_UIBox_blind_tag(blind_choice, run_info, ...)
     local tag_ui, tag_sprite = reward_tag:generate_UI()
 
 
-    if tag_sprite and tag_sprite.states and tag_sprite.states.collide then
-        tag_sprite.states.collide.can = false
+    if tag_sprite and tag_sprite.states then
+        if tag_sprite.states.collide then tag_sprite.states.collide.can = true end
+        if tag_sprite.states.hover then tag_sprite.states.hover.can = true end
     end
 
     local upgrade_active = can_upgrade(blind_choice)
+    local skip_active = blind_is_current(blind_choice) and not blind_was_upgraded(blind_choice)
 
 
     return {
@@ -454,12 +487,11 @@ function create_UIBox_blind_tag(blind_choice, run_info, ...)
                 n = G.UIT.R,
                 config = {
                     id = 'tag_' .. blind_choice,
+                    ref_table = tag_sprite,
                     align = 'cm',
                     r = 0.1,
                     padding = 0.1,
                     minw = 2.2,
-                    can_collide = true,
-                    ref_table = tag_sprite,
                 },
                 nodes = {
                     {
@@ -470,6 +502,37 @@ function create_UIBox_blind_tag(blind_choice, run_info, ...)
                             minh = 1,
                         },
                         nodes = { tag_ui },
+                    },
+                    {
+                        n = G.UIT.R,
+                        config = {
+                            id = 'hnds_skip_blind_button_' .. blind_choice,
+                            align = 'cm',
+                            colour = skip_active and G.C.RED or G.C.UI.BACKGROUND_INACTIVE,
+                            minh = 0.6,
+                            minw = 2,
+                            maxw = 2,
+                            padding = 0.07,
+                            r = 0.1,
+                            shadow = true,
+                            hover = skip_active,
+                            one_press = true,
+                            button = skip_active and 'skip_blind' or nil,
+                            func = 'hnds_update_skip_blind_button',
+                            insta_func = true,
+                            ref_table = reward_tag,
+                            hnds_blind_choice = blind_choice,
+                        },
+                        nodes = {
+                            {
+                                n = G.UIT.T,
+                                config = {
+                                    text = localize('b_skip_blind'),
+                                    scale = 0.4,
+                                    colour = skip_active and G.C.UI.TEXT_LIGHT or G.C.UI.TEXT_INACTIVE,
+                                },
+                            },
+                        },
                     },
                     {
                         n = G.UIT.R,
@@ -803,7 +866,8 @@ G.FUNCS.hnds_upgrade_blind = function(e)
 
 
     set_upgrade_runtime_button(e, false)
-
+    local skip_button = get_runtime_element(e, blind_choice, 'hnds_skip_blind_button_' .. blind_choice)
+    set_runtime_button(skip_button, false, 'skip_blind')
 
     local preexisting_tags = {}
     for _, tag in ipairs(G.GAME.tags or {}) do

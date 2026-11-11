@@ -101,12 +101,12 @@ G.CURSE_OFFERS = {
                 end
                 if #enhancement_keys == 0 then return end
                 for i = 1, to_enhance do
-                    local idx = pseudorandom('curse_enhance' .. tostring(card.ID or '') .. '_' .. i, 1, #pool)
+                    local idx = pseudorandom('hnds_curse_enhance', 1, #pool)
                     local target = pool[idx]
                     table.remove(pool, idx)
                     if target then
                         taken[target] = true
-                        local enhancement = pseudorandom_element(enhancement_keys, pseudoseed('curse_enhance_type' .. tostring(card.ID or '') .. '_' .. i))
+                        local enhancement = pseudorandom_element(enhancement_keys, pseudoseed('hnds_curse_enhance_type'))
                         local center = G.P_CENTERS[enhancement]
                         if center then
                             set_enhancement(target, enhancement)
@@ -295,7 +295,7 @@ G.CURSE_PRICES = {
 
                 local to_destroy = math.min(8, #pool)
                 for i = 1, to_destroy do
-                    local idx = pseudorandom('curse_destroy'..tostring(card.ID or '')..'_'..i, 1, #pool)
+                    local idx = pseudorandom('hnds_curse_destroy', 1, #pool)
                     local target = pool[idx]
                     table.remove(pool, idx)
                     if target then
@@ -515,6 +515,7 @@ SMODS.Sticker {
         then
             HNDS.assign_curse_data(card)
         end
+        if card.set_cost and not card.ability.hnds_curse_preview then card:set_cost() end
     end,
 
 
@@ -536,14 +537,10 @@ SMODS.Sticker {
         if card and card.ability and (card.ability.hnds_curse_offer or card.ability.hnds_curse_price) then
 
 
-            hnds_strip_foreign_stickers(card)
             return trigger_curse(card, context)
         end
     end,
 }
-
-HNDS_setup_cursed_sticker_hook(SMODS.Stickers['hnds_cursed'])
-
 
 if not _G.HNDS_curse_collections then
     _G.HNDS_curse_collections = true
@@ -583,11 +580,12 @@ if not _G.HNDS_curse_collections then
     -- SMODS.Suit.loc_vars already queues the proper Chaos suit tooltip for
     -- preview Aces. Do not append the same tooltip a second time here.
 
+    local pool = {}
+    for i, suit in ipairs(chaos_preview_order) do
+        pool[i] = { id = suit, order = i, mod = SMODS.current_mod }
+    end
+
     create_UIBox_your_collection_hnds_chaos_suits = function()
-        local pool = {}
-        for i, suit in ipairs(chaos_preview_order) do
-            pool[i] = { id = suit, order = i, mod = SMODS.current_mod }
-        end
         return SMODS.card_collection_UIBox(pool, {5,4}, {
             snap_back = true, hide_single_page = true, collapse_single_page = true,
             no_materialize = true,
@@ -595,9 +593,7 @@ if not _G.HNDS_curse_collections then
             back_func = 'your_collection_other_gameobjects',
             modify_card = function(card, entry)
                 local suit = entry and entry.id
-                local suit_obj = SMODS and SMODS.Suits and SMODS.Suits[suit]
-                local card_key = suit_obj and suit_obj.card_key
-                local ace = card_key and G and G.P_CARDS and G.P_CARDS[card_key .. '_A']
+                local ace = HNDS.get_front_for_suit_rank(suit, 'A')
                 if ace and card.set_base then card:set_base(ace, true) end
                 card.hnds_chaos_preview_suit = suit
                 card.ignore_pinned = true
@@ -723,8 +719,8 @@ local function hnds_assign_curse_data(card, attach_sticker)
     while attempt_count < 10 do
         attempt_count = attempt_count + 1
 
-        offer_index = pseudorandom('curse_offer'..(card.ID or '')..attempt_count, 1, #G.CURSE_OFFERS)
-        price_index = pseudorandom('curse_price'..(card.ID or '')..attempt_count, 1, #G.CURSE_PRICES)
+        offer_index = pseudorandom('hnds_curse_offer', 1, #G.CURSE_OFFERS)
+        price_index = pseudorandom('hnds_curse_price', 1, #G.CURSE_PRICES)
 
         local offer_entry = G.CURSE_OFFERS[offer_index]
         local price_entry = G.CURSE_PRICES[price_index]
@@ -789,6 +785,10 @@ SMODS.Booster{
     config = {extra = 4, choose = 1},
     cost = 6,
     weight = 0.8,
+    get_weight = function(self)
+        local modifiers = G.GAME and G.GAME.modifiers
+        return modifiers and modifiers.hnds_blood_stake and 1.6 or self.weight
+    end,
     ease_background_colour = function(self)
         local cursed_col = mix_colours(G.C.RED, G.C.BLACK, 0.75)
         ease_colour(G.C.DYN_UI.MAIN, cursed_col)
@@ -822,9 +822,6 @@ SMODS.Booster{
     end,
     in_pool = function (self, args)
         local game = G and G.GAME
-        local blood_active = game and game.modifiers
-            and game.modifiers.hnds_blood_stake == true
-        self.weight = blood_active and 1.6 or 0.8
         local ante = game and game.round_resets and tonumber(game.round_resets.ante) or 0
 
 
@@ -858,10 +855,8 @@ local function hnds_run_defs(card, ctx, offer_def, price_def)
         and card.ability.hnds_ancestor_cursed
     then
         if card.ability.hnds_ancestor_ignore_price == nil then
-            local token = tostring(card.ID or card.sort_id or
-                (card.config and card.config.center and card.config.center.key) or 'joker')
             card.ability.hnds_ancestor_ignore_price =
-                pseudorandom('hnds_ancestor_ignore_price_' .. token) < 0.5
+                pseudorandom('hnds_ancestor_ignore_price') < 0.5
         end
         if card.ability.hnds_ancestor_ignore_price then
             price_def = nil

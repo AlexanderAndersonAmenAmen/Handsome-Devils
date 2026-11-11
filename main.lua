@@ -8,10 +8,13 @@ function HNDS.draw_flat_sticker(sticker, card, layer)
         sprite = G.shared_stickers['hnds_' .. key]
     end
     if not (sprite and card) then return end
-    if sprite.role then sprite.role.draw_major = card end
+    local role = sprite.role
+    local previous = role and role.draw_major
+    if role then role.draw_major = card end
     if sprite.draw_shader then
         sprite:draw_shader('dissolve', nil, nil, nil, card.children and card.children.center)
     end
+    if role then role.draw_major = previous end
 end
 
 
@@ -435,63 +438,16 @@ local function config_toggle_row(label, config_key, subtitle)
 end
 
 
-if hnds_config.enableCustomMenu ~= false then
-SMODS.current_mod.menu_cards = function()
-
-
-    local roll = math.random(5)
-    local chosen_key
-
-    if roll <= 3 then
-        local hnds_jokers = {}
-        for key, center in pairs((G and G.P_CENTERS) or {}) do
-            if type(key) == 'string'
-                and key:match('^j_hnds_')
-                and center
-                and center.set == 'Joker'
-                and center.unlocked == true
-            then
-                hnds_jokers[#hnds_jokers + 1] = key
-            end
+function HNDS.choose_title_joker()
+    if hnds_config.enableCustomMenu == false then return end
+    local choices = {}
+    for _, center in ipairs(G.P_CENTER_POOLS.Joker or {}) do
+        if center.key and center.key:match('^j_hnds_') and center.unlocked ~= false then
+            choices[#choices + 1] = center
         end
-        table.sort(hnds_jokers)
-        if #hnds_jokers > 0 then
-            chosen_key = hnds_jokers[math.random(#hnds_jokers)]
-        end
-    elseif roll == 4 then
-        chosen_key = 'c_hnds_dream'
-    else
-        chosen_key = 'p_hnds_cursed_pack'
     end
-
-
-    chosen_key = chosen_key or 'c_devil'
-
-    return {
-        remove_original = true,
-        { key = chosen_key },
-        func = function()
-            if not (G and G.title_top and G.title_top.cards) then return end
-            local kept_hnds
-            for i = #G.title_top.cards, 1, -1 do
-                local card = G.title_top.cards[i]
-                local center = card and card.config and card.config.center
-                local key = center and center.key
-                local is_hnds = type(key) == 'string' and (key:match('^j_hnds_') or key:match('^c_hnds_') or key:match('^p_hnds_'))
-                if is_hnds then
-                    if not kept_hnds then
-                        kept_hnds = card
-                    else
-                        G.title_top:remove_card(card)
-                        if card.remove then card:remove() end
-                    end
-                end
-            end
-        end,
-    }
+    if #choices > 0 then return choices[math.random(#choices)] end
 end
-end
-
 
 --[[
 function Game:main_menu(change_context)
@@ -1174,9 +1130,6 @@ end
 assert(SMODS.load_file("lib/hooks.lua"))()
 if hnds_config.enableVanillaTweaks then assert(SMODS.load_file("lib/vanilla_tweaks.lua"))() end
 assert(SMODS.load_file("lib/blind_upgrade_stakes.lua"))()
-if hnds_config.enableBlindUpgradeButton then
-    assert(SMODS.load_file("lib/blind_upgrade_reworks.lua"))()
-end
 if hnds_config.enableBlindUpgradeButton then
 	assert(SMODS.load_file("lib/platinum_blind_upgrades.lua"))()
 end

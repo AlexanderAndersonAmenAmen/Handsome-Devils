@@ -72,8 +72,11 @@ local function hnds_draw_puzzle_underlay(card)
         )
     end
 
-    if puzzle_underlay_sprite.role then puzzle_underlay_sprite.role.draw_major = card end
+    local role = puzzle_underlay_sprite.role
+    local previous = role and role.draw_major
+    if role then role.draw_major = card end
     puzzle_underlay_sprite:draw_shader('dissolve', nil, nil, nil, card.children.center)
+    if role then role.draw_major = previous end
 end
 
 local function hnds_next_piece_order()

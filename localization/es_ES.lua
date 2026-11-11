@@ -1463,14 +1463,6 @@ local localization = {
 			},
 		},
 		Stake = {
-			stake_blue = {
-				name = "Blue Stake",
-				text = {
-					"Blinds can't be skipped",
-					"but can be {C:attention}upgraded{}",
-					"{s:0.8}Applies all previous Stakes",
-				},
-			},
 			stake_hnds_platinum = {
 				name = "Pozo de Platino",
 				text = {
@@ -1616,7 +1608,7 @@ local localization = {
 			hnds_config_CursedPack = "Habilitar Paquetes Malditos",
 			hnds_config_CustomSounds = "Habilitar sonidos personalizados",
 			hnds_config_VanillaTweaks = "Enable vanilla tweaks",
-			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade Mechanic (Blue Stake/Nightmare Stake)",
+			hnds_config_BlindUpgradeButton = "Enable Blind Upgrade Mechanic",
 			hnds_config_CustomMenu = "Habilitar menú principal personalizado",
 			hnds_config_PeakMainMenuOST = "Peak Main Menu OST",
 			hnds_config_ChaosSuits = "Chaos suits",
@@ -1653,11 +1645,5 @@ local localization = {
 	},
 }
 
-local blind_upgrade_config = hnds_config
-    or (SMODS and SMODS.Mods and SMODS.Mods.HandsomeDevils and SMODS.Mods.HandsomeDevils.config)
-    or (SMODS and SMODS.current_mod and SMODS.current_mod.config)
-if blind_upgrade_config and blind_upgrade_config.enableBlindUpgradeButton == false then
-    localization.descriptions.Stake.stake_blue = nil
-end
 
 return localization
