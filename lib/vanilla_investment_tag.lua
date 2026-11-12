@@ -29,6 +29,7 @@ local function current_physical_slot()
 end
 
 local function real_boss_slot(blind)
+    if HNDS.mp_is_pvp and HNDS.mp_is_pvp(blind) then return HNDS.mp_boss_reward_allowed() end
     if not blind then return false end
 
 

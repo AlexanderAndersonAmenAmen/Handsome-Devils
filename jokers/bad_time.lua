@@ -240,9 +240,17 @@ SMODS.Joker {
         if not context.blueprint then
             if context.setting_blind then
                 card.hnds_bad_time_round_ending = nil
+                card.hnds_mp_bad_time_cards = nil
                 bad_time_begin_flip(card, bad_time_is_boss_blind(context.blind))
             elseif context.end_of_round and context.main_eval then
                 card.hnds_bad_time_round_ending = true
+                if HNDS.mp_is_pvp and HNDS.mp_is_pvp() then
+                    if HNDS.mp_boss_reward_allowed() and G.GAME.current_round.hands_played == 1
+                        and card.hnds_mp_bad_time_cards then
+                        if bad_time_apply_red_seals(card.hnds_mp_bad_time_cards) > 0 then bad_time_report_red_seals(card) end
+                    end
+                    card.hnds_mp_bad_time_cards = nil
+                end
                 bad_time_begin_flip(card, false)
             end
         end
@@ -275,6 +283,10 @@ SMODS.Joker {
         if context.after and not context.blueprint then
             local pending = scored_nines[card]
             scored_nines[card] = nil
+            if HNDS.mp_is_pvp and HNDS.mp_is_pvp() then
+                card.hnds_mp_bad_time_cards = pending and pending.cards
+                return
+            end
             if not (pending and #pending.cards > 0 and SMODS.last_hand_oneshot
                 and bad_time_is_boss_blind())
             then

@@ -82,6 +82,7 @@ local function blind_was_upgraded(blind_choice)
 end
 
 local function can_upgrade(blind_choice)
+    if HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp(blind_choice) then return false end
     return (blind_choice == 'Small' or blind_choice == 'Big')
         and blind_is_current(blind_choice)
         and not blind_was_upgraded(blind_choice)
@@ -439,6 +440,9 @@ end
 local create_UIBox_blind_tag_ref = create_UIBox_blind_tag
 
 function create_UIBox_blind_tag(blind_choice, run_info, ...)
+    if HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp(blind_choice) then
+        return create_UIBox_blind_tag_ref(blind_choice, run_info, ...)
+    end
     if run_info or (blind_choice ~= 'Small' and blind_choice ~= 'Big') or not blind_raiser_active() then
         return create_UIBox_blind_tag_ref(blind_choice, run_info, ...)
     end
@@ -661,6 +665,7 @@ HNDS.upgrade_next_blind_from_nightmare = function(requested_blind_choice)
         end
     end
 
+    if HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp(blind_choice) then return "not_upgradable" end
     if not blind_choice then return nil end
     if blind_choice ~= 'Small' and blind_choice ~= 'Big' then
         return "not_upgradable"
@@ -809,6 +814,7 @@ G.FUNCS.hnds_upgrade_blind = function(e)
     end
 
 
+    if HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp(blind_choice) then return end
     local slot_is_current = blind_is_current(blind_choice)
         or (G.GAME.blind_on_deck == blind_choice)
         or (e.config.hnds_upgrade_ready == true)

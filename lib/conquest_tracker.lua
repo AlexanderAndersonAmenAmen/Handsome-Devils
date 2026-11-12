@@ -79,6 +79,7 @@ local function is_real_boss_blind(blind)
 end
 
 function HNDS.conquest_blind_counts(blind)
+    if HNDS.mp_is_pvp and HNDS.mp_is_pvp(blind) then return HNDS.mp_boss_reward_allowed() end
     return is_real_boss_blind(blind) or is_upgraded_boss_blind(blind)
 end
 

@@ -27,7 +27,7 @@ SMODS.Joker({
 		HNDS.update_excom()
 	end,
 	calculate = function(self, card, context)
-		if context.end_of_round and context.main_eval then
+		if context.end_of_round and context.main_eval and (not HNDS.mp_boss_reward_allowed or HNDS.mp_boss_reward_allowed()) then
 
 			add_tag(HNDS.poll_tag('hnds_excommunicado'))
 			card:juice_up()

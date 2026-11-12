@@ -14,8 +14,11 @@ SMODS.Stake({
     },
 
 
+    loc_vars = function(self)
+        if HNDS.mp_active and HNDS.mp_active() then return {key = 'stake_hnds_platinum_mp'} end
+    end,
     modifiers = function(self)
-        G.GAME.win_ante = 10
+        if not (HNDS.mp_active and HNDS.mp_active()) then G.GAME.win_ante = 10 end
         G.GAME.hnds_platinum_active = true
     end
 })

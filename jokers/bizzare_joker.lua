@@ -6,6 +6,7 @@ local BIZARRE_BANNED_KEYS = {
 }
 
 local function hnds_bizarre_key_allowed(key)
+    if HNDS.mp_active and HNDS.mp_active() and G.GAME and G.GAME.banned_keys and G.GAME.banned_keys[key] then return false end
     return key and key ~= "UNAVAILABLE" and not BIZARRE_BANNED_KEYS[key]
 end
 

@@ -654,6 +654,7 @@ function HNDS.attach_platinum_boss_tooltip(sprite, blind_config)
     local ante = current_ante()
     local key = blind_config and blind_config.key
     local qualifies = blind_raiser_active() and blind_config
+        and not (HNDS.mp_is_pvp and HNDS.mp_is_pvp(blind_config))
         and G and G.GAME and G.GAME.round_resets
         and key == boss_choice()
         and not is_devil_blind_key(key)
@@ -818,6 +819,7 @@ local function live_stack_matches(blind)
 end
 
 local function boss_stack_active(blind)
+    if HNDS.mp_is_pvp and HNDS.mp_is_pvp(blind) then return false end
     return blind_raiser_active()
         and G and G.GAME
         and G.GAME.blind_on_deck == "Boss"
@@ -1042,6 +1044,7 @@ function Blind:set_text(...)
 end
 
 function HNDS.sync_live_platinum_blind_score(blind)
+    if HNDS.mp_is_pvp and HNDS.mp_is_pvp(blind) then return false end
     if not (blind_raiser_active() and G and G.GAME and blind) then return false end
     local slot = G.GAME.blind_on_deck
     local ante = current_ante()

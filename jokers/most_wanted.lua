@@ -15,7 +15,8 @@ local function most_wanted_pool(previous_key)
     for _, center in ipairs((G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Joker) or {}) do
         if center and center.key and not center.hidden and center.key ~= 'j_hnds_most_wanted' then
             total = total + 1
-            if center.discovered and center.key ~= previous_key then
+            if center.discovered and center.key ~= previous_key
+                and not (G.GAME and G.GAME.banned_keys and G.GAME.banned_keys[center.key]) then
                 pool[#pool + 1] = center.key
             end
         end

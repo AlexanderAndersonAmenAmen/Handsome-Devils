@@ -27,7 +27,7 @@ CardSleeves.Sleeve({
     calculate = function(self, sleeve, context)
 
 
-        if self.get_current_deck_key() == "b_hnds_circus" and context.end_of_round and context.main_eval and context.beat_boss and not G.GAME.circus_copy_created then
+        if self.get_current_deck_key() == "b_hnds_circus" and context.end_of_round and context.main_eval and context.beat_boss and (not HNDS.mp_boss_reward_allowed or HNDS.mp_boss_reward_allowed()) and not G.GAME.circus_copy_created then
             if G.hnds_circus_joker and G.hnds_circus_joker.cards and #G.hnds_circus_joker.cards > 0 then
                 if #G.jokers.cards + (G.GAME.joker_buffer or 0) < G.jokers.config.card_limit then
                     G.GAME.circus_copy_created = true

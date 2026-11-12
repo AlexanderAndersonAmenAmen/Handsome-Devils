@@ -1164,3 +1164,5 @@ if HNDS.install_big_d_hooks then HNDS.install_big_d_hooks() end
 if HNDS.install_dark_pact_hooks then HNDS.install_dark_pact_hooks() end
 
 if HNDS.apply_unlock_state_migration then HNDS.apply_unlock_state_migration() end
+
+assert(SMODS.load_file("lib/multiplayer_compat.lua"))()

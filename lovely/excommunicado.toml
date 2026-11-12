@@ -12,8 +12,8 @@ position = "at"
 match_indent = true
 payload = '''
 if (HNDS and HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active()) then
-    self.GAME.round_resets.blind_choices.Small = HNDS.get_excommunicado_boss('excom_small')
-    self.GAME.round_resets.blind_choices.Big = HNDS.get_excommunicado_boss('excom_big')
+    if not (HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp('Small')) then self.GAME.round_resets.blind_choices.Small = HNDS.get_excommunicado_boss('excom_small') end
+    if not (HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp('Big')) then self.GAME.round_resets.blind_choices.Big = HNDS.get_excommunicado_boss('excom_big') end
     self.GAME.round_resets.blind_choices.Boss = get_new_boss()
 else
     self.GAME.round_resets.blind_choices.Boss = get_new_boss()
@@ -29,8 +29,8 @@ position = "at"
 match_indent = true
 payload = '''
 if (HNDS and HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active()) then
-    G.GAME.round_resets.blind_choices.Small = HNDS.get_excommunicado_boss('excom_small')
-    G.GAME.round_resets.blind_choices.Big = HNDS.get_excommunicado_boss('excom_big')
+    if not (HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp('Small')) then G.GAME.round_resets.blind_choices.Small = HNDS.get_excommunicado_boss('excom_small') end
+    if not (HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp('Big')) then G.GAME.round_resets.blind_choices.Big = HNDS.get_excommunicado_boss('excom_big') end
     G.GAME.round_resets.blind_choices.Boss = get_new_boss()
 else
     G.GAME.round_resets.blind_choices.Boss = get_new_boss()
@@ -45,7 +45,8 @@ pattern = "self.chips = get_blind_amount(G.GAME.round_resets.ante)*self.mult*G.G
 position = "at"
 match_indent = true
 payload = '''
-if (HNDS and HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active()) then
+if (HNDS and HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active())
+    and not (HNDS.mp_is_pvp and HNDS.mp_is_pvp(self)) then
     local base_score = get_blind_amount(G.GAME.round_resets.ante) * self.mult * G.GAME.starting_params.ante_scaling
     if G.GAME.blind_on_deck == 'Small' then
         self.chips = (function(v) return _G.type(v) == 'number' and math.floor(v) or v end)(base_score * 0.5)

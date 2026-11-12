@@ -6,6 +6,9 @@ SMODS.Back {
     check_for_unlock = function(self, args)
         return HNDS.unlock_condition_met("crystal", args)
     end,
+    loc_vars = function(self)
+        if HNDS.mp_active and HNDS.mp_active() then return {key = 'b_hnds_crystal_mp'} end
+    end,
     apply = function(self, back)
         G.GAME.modifiers.hnds_double_showdown = true
         G.GAME.modifiers.hnds_crystal_showdown = true

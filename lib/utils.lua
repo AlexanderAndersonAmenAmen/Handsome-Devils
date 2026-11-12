@@ -418,6 +418,11 @@ SMODS.current_mod.reset_game_globals = function(run_start)
 
 
 			local poolcopy = SMODS.shallow_copy(HNDS.circus_joker_pool)
+            if HNDS.mp_active and HNDS.mp_active() then
+                for i = #poolcopy, 1, -1 do
+                    if G.GAME.banned_keys[poolcopy[i]] then table.remove(poolcopy, i) end
+                end
+            end
 			if G.GAME.hnds_circus_joker_key then
 				local i = HNDS.get_key_for_value(poolcopy, G.GAME.hnds_circus_joker_key)
 				if i then table.remove(poolcopy, i) end

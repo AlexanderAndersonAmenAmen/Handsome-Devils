@@ -23,6 +23,7 @@ local function replay_token(ante, slot, blind_key)
 end
 
 function HNDS.capture_time_fcked_blind()
+    if HNDS.mp_active and HNDS.mp_active() then return false end
     if not (G and G.GAME and G.GAME.round_resets and G.GAME.blind) then return false end
 
     local resets = G.GAME.round_resets
@@ -81,6 +82,7 @@ local function eligible_time_jokers()
 end
 
 local function should_replay(candidate)
+    if HNDS.mp_active and HNDS.mp_active() then return false end
     if not (G and G.GAME and candidate and candidate.token) then return false end
     G.GAME.hnds_time_fcked_rolled = G.GAME.hnds_time_fcked_rolled or {}
     if G.GAME.hnds_time_fcked_rolled[candidate.token] then return false end

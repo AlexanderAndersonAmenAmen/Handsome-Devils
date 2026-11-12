@@ -1129,6 +1129,16 @@ local localization = {
 					"your collection",
 				},
 			},
+            b_hnds_crystal_mp = {
+                name = "Crystal Deck",
+                text = {
+                    "On Antes {C:attention}4{}, PvP gains",
+                    "a {C:attention}Showdown effect{} for both players",
+                    "{C:inactive,s:0.8}(Violet Vessel excluded)",
+                    "Win to open an",
+                    "{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
+                }
+            },
 			b_hnds_crystal = {
 				name = "Crystal Deck",
 				text = {
@@ -1248,6 +1258,16 @@ local localization = {
 					"opened only offers {C:red}Rare Jokers{}"
 				}
 			},
+            sleeve_hnds_crystal_sleeve_mp = {
+                name = "Crystal Sleeve",
+                text = {
+                    "On Antes {C:attention}4{}, PvP gains",
+                    "a {C:attention}Showdown effect{} for both players",
+                    "{C:inactive,s:0.8}(Violet Vessel excluded)",
+                    "Win to open an",
+                    "{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
+                }
+            },
 			sleeve_hnds_crystal_sleeve = {
 				name = "Crystal Sleeve",
 				text = {
@@ -1257,6 +1277,16 @@ local localization = {
 					"{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
 				}
 			},
+            sleeve_hnds_crystal_sleeve_alt_mp = {
+                name = "Crystal Sleeve",
+                text = {
+                    "On Antes {C:attention}2, 4 and 6{}, PvP gains",
+                    "a {C:attention}Showdown effect{} for both players",
+                    "{C:inactive,s:0.8}(Violet Vessel excluded)",
+                    "Win to open an",
+                    "{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
+                }
+            },
 			sleeve_hnds_crystal_sleeve_alt = {
 				name = "Crystal Sleeve",
 				text = {
@@ -2400,6 +2430,10 @@ local localization = {
 			},
 		},
 		Stake = {
+            stake_hnds_platinum_mp = {
+                name = "Platinum Stake",
+                text = {"Both players start with {C:attention}5 lives{}", "{s:0.8}Applies all previous Stakes"}
+            },
 			stake_hnds_platinum = {
 				name = "Platinum Stake",
 				text = {
@@ -2486,6 +2520,7 @@ local localization = {
 	},
 	misc = {
 		dictionary = {
+            hnds_mp_sync_timeout = "Handsome Devils sync timed out. All players need the same build.",
             k_hnds_consumed = "Eaten!",
             k_hnds_destroyed = "Eaten!",
             k_hnds_tag = "+1 Tag",

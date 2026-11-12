@@ -6,7 +6,9 @@ CardSleeves.Sleeve({
     unlocked = false,
     unlock_condition = {deck = "b_hnds_crystal", stake = "stake_green"},
     loc_vars = function(self)
-        return HNDS.sleeve_loc(self, "b_hnds_crystal")
+        local result = HNDS.sleeve_loc(self, "b_hnds_crystal")
+        if HNDS.mp_active and HNDS.mp_active() then result.key = result.key .. '_mp' end
+        return result
     end,
     apply = function(self)
         G.GAME.modifiers.hnds_double_showdown = true

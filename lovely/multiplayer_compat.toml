@@ -1,0 +1,37 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 100
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS Multiplayer "networking/action_handlers.lua"]'
+pattern = 'local function action_end_pvp(p)'
+position = "after"
+match_indent = true
+payload = '''
+if HNDS and HNDS.mp_record_legacy_result then HNDS.mp_record_legacy_result(p) end
+'''
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS MultiplayerPvP "networking/action_handlers.lua"]'
+pattern = 'local function action_end_pvp(p)'
+position = "after"
+match_indent = true
+payload = '''
+if HNDS and HNDS.mp_record_result then HNDS.mp_record_result(p.lost) end
+'''
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS MultiplayerPvP "pvp_api/actions/outcomes.lua"]'
+pattern = 'local lost = params.loser_id ~= nil and params.loser_id ~= "" and params.loser_id == sid'
+position = "after"
+match_indent = true
+payload = '''
+if HNDS and HNDS.mp_record_result then
+    HNDS.mp_record_result(lost, params.loser_id == nil or params.loser_id == '')
+    if G.GAME then G.GAME.hnds_mp_authoritative_result = true end
+end
+'''

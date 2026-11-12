@@ -39,6 +39,7 @@ local function get_ante_10_boss()
 end
 
 local function hnds_crystal_replaces_ante_8_showdown()
+    if HNDS.mp_active and HNDS.mp_active() then return false end
     if not (G and G.GAME and G.GAME.round_resets) then return false end
     local modifiers = G.GAME.modifiers or {}
     local selected_back = G.GAME.selected_back and G.GAME.selected_back.effect
@@ -1664,6 +1665,7 @@ end
 local get_new_boss_ref = get_new_boss
 
 local function hnds_crystal_forces_showdown(ante)
+    if HNDS.mp_active and HNDS.mp_active() then return false end
     if not (G and G.GAME and G.GAME.modifiers) then return false end
     local modifiers = G.GAME.modifiers
     if modifiers.crystal_sleeve_active then
@@ -1880,6 +1882,7 @@ function HNDS.replace_current_blinds_with_bosses()
 	end
 
 	local function replace_if_vanilla(blind_type, seed_key)
+        if HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp(blind_type) then return end
 		local choice = blind_choices[blind_type]
 		local state = blind_states[blind_type]
 		if not (choice and state ~= 'Defeated' and choice == 'bl_' .. blind_type:lower()) then return end
@@ -1917,8 +1920,11 @@ function HNDS.update_excom()
 	if HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active() then
 		HNDS.replace_current_blinds_with_bosses()
 	elseif G and G.GAME and G.GAME.round_resets and G.GAME.round_resets.blind_choices then
-		G.GAME.round_resets.blind_choices.Small = "bl_small"
-		G.GAME.round_resets.blind_choices.Big = "bl_big"
+		for _, slot in ipairs({"Small", "Big"}) do
+            if not (HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp(slot)) then
+                G.GAME.round_resets.blind_choices[slot] = "bl_" .. slot:lower()
+            end
+        end
 	end
 end
 

@@ -1060,6 +1060,7 @@ function HNDS.track_unlock_context(context)
         local is_boss = not upgraded_slot
             and ((context.beat_boss == true) or (active_blind and active_blind.boss == true))
         local round_serial = state.round_serial
+        is_boss = is_boss and (not HNDS.mp_boss_reward_allowed or HNDS.mp_boss_reward_allowed())
         if is_boss and state.boss_counted_serial ~= round_serial then
             state.boss_counted_serial = round_serial
             increment_career_stat(STAT_BOSSES_DEFEATED, 1)
