@@ -1,12 +1,35 @@
 SMODS.Atlas {
     key = 'fun_police',
-    path = 'FunPoliceFrame.png',
+    path = 'FunPolice.png',
     px = 95,
     py = 71,
     disable_mipmap = true,
+    inject = function(self)
+        SMODS.Atlas.inject(self)
+        local sheet = self.image_data
+        local sheet_width, sheet_height = sheet:getDimensions()
+        local width, height = sheet_width / 10, sheet_height / 18
+        local scale = self.image:getDPIScale()
+        assert(width == self.px * scale and height == self.py * scale,
+            'Invalid FunPolice.png animation sheet dimensions')
+        local frame_data = love.image.newImageData(width, height)
+        frame_data:paste(sheet, 0, 0, 0, 0, width, height)
+        local image = love.graphics.newImage(frame_data, {mipmaps = true, dpiscale = scale})
+        self.image:release()
+        self.image = image
+        self.image_data = frame_data
+        self.columns, self.rows = 1, 1
+        self.hnds_fun_police_renderer = {
+            image = image,
+            sheet = sheet,
+            frame_data = frame_data,
+            width = width,
+            height = height,
+            frame = 0,
+        }
+    end,
 }
 
-local mod_path = SMODS.current_mod.path
 local FRAME_ASPECT = 95 / 71
 local set_sprites_ref = Card.set_sprites
 
@@ -35,31 +58,6 @@ function Card:set_sprites(center, ...)
     return set_sprites_ref(self, center, ...)
 end
 
-local function fun_police_renderer(atlas)
-    local width, height = atlas.image:getPixelDimensions()
-    local scale = width == 190 and 2 or 1
-    local filesystem = SMODS.NFS or NFS
-    local path = mod_path .. 'assets/' .. scale .. 'x/FunPolice.png'
-    local file = filesystem and filesystem.newFileData(path)
-    if not file then return end
-
-    local sheet = love.image.newImageData(file)
-    local sheet_width, sheet_height = sheet:getDimensions()
-    if sheet_width ~= width * 10 or sheet_height ~= height * 18 then return end
-
-    local renderer = {
-        image = atlas.image,
-        sheet = sheet,
-        frame_data = love.image.newImageData(width, height),
-        width = width,
-        height = height,
-        started = G.TIMERS.REAL,
-        frame = 0,
-    }
-    atlas.hnds_fun_police_renderer = renderer
-    return renderer
-end
-
 function HNDS.animate_fun_police(card)
     local atlas = G.ASSET_ATLAS and G.ASSET_ATLAS.hnds_fun_police
     local sprite = card.children and card.children.center
@@ -68,15 +66,8 @@ function HNDS.animate_fun_police(card)
 
     local now = G.TIMERS.REAL
     local renderer = atlas.hnds_fun_police_renderer
-    if not renderer or renderer.image ~= atlas.image then
-        if atlas.hnds_fun_police_failed_image == atlas.image then return end
-        renderer = fun_police_renderer(atlas)
-        if not renderer then
-            atlas.hnds_fun_police_failed_image = atlas.image
-            return
-        end
-        atlas.hnds_fun_police_failed_image = nil
-    end
+    if not renderer or renderer.image ~= atlas.image then return end
+    if not renderer.started then renderer.started = now end
     if now < renderer.started then renderer.started = now end
     local frame = math.floor((now - renderer.started) * 24) % 180
     if renderer.frame == frame then return end
