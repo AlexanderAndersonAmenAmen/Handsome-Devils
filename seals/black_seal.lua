@@ -2,14 +2,63 @@ HNDS = HNDS or {}
 
 local BLACK_DRAW_THRESHOLD = 10
 
+local function set_black_seal_progress(ability, previous)
+    ability.hnds_black_drawn = previous and previous.hnds_black_drawn
+    ability.hnds_black_used = previous and previous.hnds_black_used
+    ability.hnds_black_armed = previous and previous.hnds_black_armed
+end
+
+local function arm_black_seal(card)
+    if card.seal == 'hnds_black' and card.ability then
+        card.ability.hnds_black_armed = true
+    end
+end
+
 local function reset_black_seal_progress()
     for _, playing_card in ipairs((G and G.playing_cards) or {}) do
         if playing_card and playing_card.ability then
-            playing_card.ability.hnds_black_drawn = nil
-            playing_card.ability.hnds_black_used = nil
-            playing_card.ability.hnds_black_armed = nil
+            set_black_seal_progress(playing_card.ability)
         end
     end
+end
+
+local unpack_values = table.unpack or unpack
+
+local set_seal_ref = Card.set_seal
+function Card:set_seal(...)
+    local results = HNDS.pack(set_seal_ref(self, ...))
+    arm_black_seal(self)
+    return unpack_values(results, 1, results.n)
+end
+
+local set_ability_ref = Card.set_ability
+function Card:set_ability(...)
+    local previous = self.ability
+    if not (previous and previous.hnds_black_armed) then
+        return set_ability_ref(self, ...)
+    end
+    local results = HNDS.pack(set_ability_ref(self, ...))
+    set_black_seal_progress(self.ability, previous)
+    return unpack_values(results, 1, results.n)
+end
+
+local copy_card_ref = copy_card
+function copy_card(source, target, ...)
+    local previous = target and target.ability
+    local copied = copy_card_ref(source, target, ...)
+    if copied and copied.ability then
+        set_black_seal_progress(copied.ability, previous)
+        arm_black_seal(copied)
+    end
+    return copied
+end
+
+local load_area_ref = CardArea.load
+function CardArea:load(...)
+    if not (G and self == G.hand) then return load_area_ref(self, ...) end
+    local results = HNDS.pack(load_area_ref(self, ...))
+    for _, card in ipairs(self.cards) do arm_black_seal(card) end
+    return unpack_values(results, 1, results.n)
 end
 
 local function create_temporary_black_seal_joker()
@@ -122,12 +171,10 @@ function HNDS.process_black_seal_context(context)
         reset_black_seal_progress()
         return
     end
-    if type(context.hand_drawn) == 'table' and G.hand and G.hand.cards then
-        for _, drawn in ipairs(context.hand_drawn) do
-            if drawn and drawn.seal == 'hnds_black' and drawn.area == G.hand
-                and drawn.ability and not drawn.ability.hnds_black_used then
-                drawn.ability.hnds_black_armed = true
-            end
+    local drawn = context.hand_drawn or context.other_drawn
+    if type(drawn) == 'table' and G.hand then
+        for _, card in ipairs(drawn) do
+            if card.area == G.hand then arm_black_seal(card) end
         end
     end
     if context.end_of_round and context.main_eval and not context.individual and not context.repetition then

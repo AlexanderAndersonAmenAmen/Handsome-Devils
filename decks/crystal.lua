@@ -16,6 +16,7 @@ SMODS.Back {
     end,
     calculate = function(self, back, context)
         if context.end_of_round and context.main_eval
+            and not (HNDS.mp_is_pvp and HNDS.mp_is_pvp())
             and HNDS.active_blind_is_real_ante_boss and HNDS.active_blind_is_real_ante_boss()
             and G.GAME.round_resets.ante == 4 then
             G.GAME.hnds_crystal_queued = true
@@ -25,21 +26,21 @@ SMODS.Back {
 }
 
 
-local function random_hidden_consumeable(seed)
+local function random_guaranteed_spectral(seed)
     local options = {}
-    local pool = G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Consumeables or {}
-    for _, center in ipairs(type(pool) == 'table' and pool or {}) do
-        if center and center.hidden and center.key then options[#options + 1] = center.key end
+    local pool = G.P_CENTER_POOLS.Consumeables or {}
+    local banned = G.GAME.banned_keys or {}
+    for _, center in ipairs(pool) do
+        local key = center.key
+        if center.hidden and key and not banned[key]
+            and key ~= 'c_hnds_dream' and key ~= 'c_hnds_spectrum'
+        then
+            options[#options + 1] = key
+        end
     end
-    local chosen = #options > 0 and pseudorandom_element(options, seed) or nil
-    if chosen then return chosen end
-
-
-    if G and G.P_CENTERS then
-        if G.P_CENTERS.c_soul then return 'c_soul' end
-        if G.P_CENTERS.c_black_hole then return 'c_black_hole' end
-    end
-    return nil
+    if #options > 0 then return pseudorandom_element(options, seed) end
+    if G.P_CENTERS.c_soul and not banned.c_soul then return 'c_soul' end
+    if G.P_CENTERS.c_black_hole and not banned.c_black_hole then return 'c_black_hole' end
 end
 
 SMODS.Booster {
@@ -76,23 +77,12 @@ SMODS.Booster {
     end,
     create_card = function(self, card, i)
         if i == 1 then
-            local hidden_key = random_hidden_consumeable("spe")
+            local hidden_key = random_guaranteed_spectral("spe")
             if hidden_key then
                 return { key = hidden_key, key_append = "spe", area = G.pack_cards, skip_materialize = true }
             end
-
-
-            return { set = "Spectral", area = G.pack_cards, skip_materialize = true, soulable = true, key_append = "spe" }
-        else
-            return {
-                set = "Spectral",
-                area = G.pack_cards,
-                skip_materialize = true,
-                soulable = true,
-                key_append =
-                "spe"
-            }
         end
+        return { set = "Spectral", area = G.pack_cards, skip_materialize = true, soulable = true, key_append = "spe" }
     end,
     in_pool = function(self, args)
         return hnds_config.enablePackSpawning and G.GAME.round_resets.ante >= 3
@@ -102,11 +92,11 @@ SMODS.Booster {
         loc_key = "k_plus_spectral",
         create = function ()
             if pseudorandom("diha_ultraspec") < 0.2 then
-                local hidden_key = random_hidden_consumeable("diha_spe")
+                local hidden_key = random_guaranteed_spectral("diha_spe")
                 SMODS.add_card({
                     key = hidden_key,
-                    set = hidden_key and nil or "Spectral",
-                    soulable = hidden_key and nil or true,
+                    set = "Spectral",
+                    soulable = not hidden_key,
                     key_append = "diha",
                     area = G.consumeables,
                     edition = "e_negative"

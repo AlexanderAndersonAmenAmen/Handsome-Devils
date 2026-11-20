@@ -58,7 +58,7 @@ SMODS.Joker {
             local id = tonumber(state.id) or HNDS_DARK_IDOL_RANK_IDS[state.rank] or 14
             local count = 0
             for _, drawn in ipairs(context.hand_drawn) do
-                if drawn and type(drawn.get_id) == 'function' and drawn:get_id() == id then count = count + 1 end
+                if HNDS.card_counts_as_rank(drawn, id) then count = count + 1 end
             end
             if count > 0 then
                 extra.mult = extra.mult + extra.gain * count

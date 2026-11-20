@@ -91,8 +91,8 @@ return {
                 name = "Wild Order",
                 text = {
                     "Cards with",
-                    "{V:1}#1#{} suit are",
-                    "always drawn first",
+                    "{V:1}#1#{} suit",
+                    "count as {C:attention}Wild{}",
                     "{s:0.8}Suit changes every round",
                 },
             },
@@ -256,12 +256,12 @@ return {
 				},
 			},
 			j_hnds_be_not_afraid = {
-				name = "Be not Afraid",
+				name = "Trinity",
 				text = {
 					"If played hand contains",
 					"a {C:attention}Three of a Kind{}, every",
-					"scoring card permanently gains",
-					"{C:mult}+#1#{} Mult before scoring",
+					"card permanently gains",
+					"{C:mult}+#1#{} Mult when scoring",
 				},
 			},
 			j_jodiac = {
@@ -331,7 +331,7 @@ return {
                 name = "Soul",
                 text = {
                     "No {C:attention}sell value",
-                    "Remove this when",
+                    "Destroy this when",
                     "you lose {C:legendary,E:1}Pennywise",
                 },
             },
@@ -662,6 +662,8 @@ return {
 	},
 	misc = {
 		dictionary = {
+            hnds_walking_joke_left = "左侧",
+            hnds_walking_joke_right = "右侧",
             k_hnds_consumed = "Eaten!",
             k_hnds_destroyed = "Eaten!",
             k_hnds_tag = "+1 Tag",

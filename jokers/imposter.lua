@@ -38,13 +38,22 @@ local RANK_FACE_NOMINAL_BY_ID = {
     [11] = 0.1, [12] = 0.2, [13] = 0.3, [14] = 0.4,
 }
 
-local function hnds_table_contains(t, value)
-    if type(t) ~= 'table' then return false end
-    for i = 1, #t do
-        if t[i] == value then return true end
-    end
-    return false
-end
+local VANILLA_RANKS = {
+    j_8_ball = {8},
+    j_baron = {13},
+    j_even_steven = {2, 4, 6, 8, 10},
+    j_fibonacci = {2, 3, 5, 8, 14},
+    j_hack = {2, 3, 4, 5},
+    j_hit_the_road = {11},
+    j_odd_todd = {3, 5, 7, 9, 14},
+    j_scholar = {14},
+    j_shoot_the_moon = {12},
+    j_sixth_sense = {6},
+    j_superposition = {14},
+    j_triboulet = {12, 13},
+    j_walkie_talkie = {4, 10},
+    j_wee = {2},
+}
 
 local function hnds_center_key(card)
     return card and card.config and card.config.center and card.config.center.key
@@ -111,6 +120,9 @@ function HNDS.imposter_card_is_wild_rank(card, context)
     return HNDS.imposter_effect_active() and hnds_card_is_face(card)
 end
 
+function HNDS.card_has_wild_rank(card, context)
+    return HNDS.imposter_card_is_wild_rank(card, context)
+end
 
 function HNDS.imposter_rank_match(card, required_id, context)
     if not card or type(required_id) ~= 'number' then return false end
@@ -121,35 +133,29 @@ function HNDS.imposter_rank_match(card, required_id, context)
     end
     if real_id == required_id then return true end
 
-    return HNDS.imposter_card_is_wild_rank(card, context)
+    return HNDS.card_has_wild_rank(card, context)
 end
 
-local function hnds_dynamic_required_rank(joker)
-    local key = hnds_center_key(joker)
-    if key == 'j_idol' then
-        local idol = G and G.GAME and G.GAME.current_round and G.GAME.current_round.idol_card
-        if idol then
-            if type(idol.id) == 'number' then return idol.id end
-            if idol.rank then
-                for id, value in pairs(RANK_VALUE_BY_ID) do
-                    if value == idol.rank then return id end
-                end
-            end
+local DYNAMIC_RANK_FIELDS = { j_idol = 'idol_card', j_mail = 'mail_card', j_hnds_dark_idol = 'dark_idol' }
+
+local function hnds_dynamic_required_rank(field)
+    local round = G and G.GAME and G.GAME.current_round
+    local choice = field and round and round[field]
+    if not choice then return end
+    local rank = choice.rank and SMODS.Ranks[choice.rank]
+    return tonumber(choice.id) or (rank and rank.id)
+end
+
+local function hnds_rank_for_joker(joker, target, key)
+    if DYNAMIC_RANK_FIELDS[key] then return hnds_dynamic_required_rank(DYNAMIC_RANK_FIELDS[key]) end
+    local real_id = target._hnds_imposter_real_id or target.base.id
+    local vanilla = VANILLA_RANKS[key]
+    if vanilla then
+        for _, rank in ipairs(vanilla) do
+            if rank == real_id then return rank end
         end
-    elseif key == 'j_hnds_dark_idol' then
-        local idol = G and G.GAME and G.GAME.current_round and G.GAME.current_round.dark_idol
-        if idol and type(idol.id) == 'number' then return idol.id end
+        return vanilla[1]
     end
-    return nil
-end
-
-local function hnds_rank_for_joker(joker, target)
-    if not hnds_has_attribute(joker, 'rank') then return nil end
-
-    local dynamic = hnds_dynamic_required_rank(joker)
-    if dynamic then return dynamic end
-
-    local real_id = target and target.base and target.base.id
     local first
     for i = 1, #RANK_ATTRIBUTE_ORDER do
         local attribute = RANK_ATTRIBUTE_ORDER[i]
@@ -162,14 +168,20 @@ local function hnds_rank_for_joker(joker, target)
     return first
 end
 
-local function hnds_pack(...)
-    return { n = select('#', ...), ... }
-end
-
 local hnds_unpack = (table and table.unpack) or unpack
 
+local function hnds_rank_definition(id)
+    local name = RANK_VALUE_BY_ID[id]
+    if name then return SMODS.Ranks[name] end
+    for _, key in ipairs(SMODS.Rank.obj_buffer) do
+        local rank = SMODS.Ranks[key]
+        if rank.id == id then return rank end
+    end
+end
+
 local function hnds_call_with_rank(card, rank_id, fn)
-    if not (card and card.base and RANK_VALUE_BY_ID[rank_id]) then
+    local rank = hnds_rank_definition(rank_id)
+    if not (card and card.base and rank) then
         return fn()
     end
 
@@ -189,19 +201,19 @@ local function hnds_call_with_rank(card, rank_id, fn)
     card._hnds_imposter_real_id = old_real_id or old_base_id
     card._hnds_imposter_spoof_id = rank_id
     base.id = rank_id
-    base.value = RANK_VALUE_BY_ID[rank_id]
-    base.nominal = RANK_NOMINAL_BY_ID[rank_id] or base.nominal
-    base.face_nominal = RANK_FACE_NOMINAL_BY_ID[rank_id] or 0
+    base.value = rank.key
+    base.nominal = rank.nominal or RANK_NOMINAL_BY_ID[rank_id] or base.nominal
+    base.face_nominal = rank.face_nominal or RANK_FACE_NOMINAL_BY_ID[rank_id] or 0
 
     card.get_id = function() return rank_id end
 
     card.is_face = function() return true end
-    card.get_original_rank = function() return RANK_VALUE_BY_ID[rank_id] end
+    card.get_original_rank = function() return rank.key end
 
     local results
     local traceback = (debug and debug.traceback) or function(err) return err end
     local ok, err = xpcall(function()
-        results = hnds_pack(fn())
+        results = HNDS.pack(fn())
     end, traceback)
 
     base.id = old_base_id
@@ -226,27 +238,25 @@ local function hnds_call_with_rank_cards(cards, rank_id, fn, index)
     end)
 end
 
-local function hnds_wild_scoring_cards(context)
+local function hnds_wild_cards(cards, context)
     local out = {}
-    if type(context) ~= 'table' or type(context.scoring_hand) ~= 'table' then return out end
-    for i = 1, #context.scoring_hand do
-        local playing_card = context.scoring_hand[i]
-        if HNDS.imposter_card_is_wild_rank(playing_card, context) then
+    for _, playing_card in ipairs(cards) do
+        if HNDS.card_has_wild_rank(playing_card, context) then
             out[#out + 1] = playing_card
         end
     end
     return out
 end
 
-
 if Card and type(Card.calculate_joker) == 'function' and not Card._hnds_imposter_rank_wrapper then
     Card._hnds_imposter_rank_wrapper = true
     local calculate_joker_ref = Card.calculate_joker
 
     function Card:calculate_joker(context, ...)
+        local key = hnds_center_key(self)
         if type(context) ~= 'table'
             or not (self.ability and self.ability.set == 'Joker')
-            or hnds_center_key(self) == 'j_hnds_imposter'
+            or key == 'j_hnds_imposter'
 
 
             or context.check_enhancement
@@ -256,27 +266,37 @@ if Card and type(Card.calculate_joker) == 'function' and not Card._hnds_imposter
             return calculate_joker_ref(self, context, ...)
         end
 
-        local args = hnds_pack(...)
+        local target = context.other_card or context.destroy_card or context.destroying_card
+        if type(target) ~= 'table' or not target.base then target = nil end
+        local cards = ((context.before or context.after or context.joker_main) and context.scoring_hand)
+            or (context.pre_discard and context.full_hand) or context.hand_drawn
+        if type(cards) ~= 'table' then cards = nil end
+
+        local check_ranks = (target or cards)
+            and (VANILLA_RANKS[key] or DYNAMIC_RANK_FIELDS[key] or hnds_has_attribute(self, 'rank'))
+        if not check_ranks then return calculate_joker_ref(self, context, ...) end
+
+        local args = HNDS.pack(...)
         local function run_original()
             return calculate_joker_ref(self, context, hnds_unpack(args, 1, args.n))
         end
 
-        local target = context.other_card
-        if target and HNDS.imposter_card_is_wild_rank(target, context) then
-            local rank_id = hnds_rank_for_joker(self, target)
-            if rank_id then return hnds_call_with_rank(target, rank_id, run_original) end
-        end
-
-
-        if context.joker_main or context.before or context.after then
-            local wild_cards = hnds_wild_scoring_cards(context)
-            if #wild_cards > 0 then
-                local rank_id = hnds_rank_for_joker(self, wild_cards[1])
-                if rank_id then return hnds_call_with_rank_cards(wild_cards, rank_id, run_original) end
+        local function run_with_rank()
+            if check_ranks and target and HNDS.card_has_wild_rank(target, context) then
+                local rank_id = hnds_rank_for_joker(self, target, key)
+                if rank_id then return hnds_call_with_rank(target, rank_id, run_original) end
             end
+            if check_ranks and cards then
+                local wild_cards = hnds_wild_cards(cards, context)
+                if wild_cards[1] then
+                    local rank_id = hnds_rank_for_joker(self, wild_cards[1], key)
+                    if rank_id then return hnds_call_with_rank_cards(wild_cards, rank_id, run_original) end
+                end
+            end
+            return run_original()
         end
 
-        return run_original()
+        return run_with_rank()
     end
 end
 

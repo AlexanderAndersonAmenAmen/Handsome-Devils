@@ -73,19 +73,20 @@ end
 
 function HNDS.open_pending_cursed_pack_at_shop()
     if not (G and G.GAME and G.E_MANAGER) then return false end
-    local pending = G.GAME.hnds_cursed_pack_pending
+    local game = G.GAME
+    local pending = game.hnds_cursed_pack_pending
     if not pending then return false end
 
 
-    G.GAME.hnds_cursed_pack_pending = nil
+    game.hnds_cursed_pack_pending = nil
     G.E_MANAGER:add_event(Event({
         trigger = 'immediate',
+        blocking = false,
         func = function()
-            if not HNDS.open_cursed_pack(pending) and G and G.GAME
-                and not G.GAME.hnds_cursed_pack_pending then
-
-
-                G.GAME.hnds_cursed_pack_pending = pending
+            if G.GAME ~= game then return true end
+            if game.PACK_INTERRUPT then return false end
+            if not HNDS.open_cursed_pack(pending) and not game.hnds_cursed_pack_pending then
+                game.hnds_cursed_pack_pending = pending
             end
             return true
         end,

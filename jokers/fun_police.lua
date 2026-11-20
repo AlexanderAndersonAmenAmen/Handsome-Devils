@@ -79,7 +79,7 @@ function HNDS.animate_fun_police(card)
     renderer.frame = frame
 end
 
-local FP_SLOTS = 5
+local FP_SLOTS = 4
 local function fp_is(card)
     return card and card.config and card.config.center
         and card.config.center.key == 'j_hnds_fun_police'
@@ -99,6 +99,8 @@ local fp_previous_membership = setmetatable({}, { __mode = 'k' })
 
 local function fp_refresh()
     if not (G and G.jokers and G.jokers.cards and SMODS and SMODS.recalc_debuff) then return end
+    local blind = G.GAME and G.GAME.blind
+    if type(blind) ~= 'table' or type(blind.debuff_card) ~= 'function' then return end
     if HNDS._fp_refreshing then return end
     HNDS._fp_refreshing = true
     -- Snapshot the remaining resources before *all* debuffs are recalculated.
@@ -155,6 +157,7 @@ end
 
 local prior_debuff = SMODS.current_mod.set_debuff
 SMODS.current_mod.set_debuff = function(card)
+    if fp_is(card) then return 'prevent_debuff' end
     if prior_debuff then
         local state = prior_debuff(card)
         if state == true or state == 'prevent_debuff' then return state end
@@ -195,12 +198,15 @@ end
 SMODS.Joker {
     key = 'fun_police', atlas = 'fun_police', pos = { x = 0, y = 0 },
     rarity = 3, cost = 10, unlocked = true, discovered = false,
-    blueprint_compat = false, eternal_compat = true, perishable_compat = true,
+    blueprint_compat = false, eternal_compat = true, perishable_compat = false,
     config = { extra = {} },
     loc_vars = function(self, info_queue, card) return { vars = { FP_SLOTS } } end,
-    load = function(self, card)
+    load = function(self, card, card_table)
         -- Save state carries the existing card_limit; restore the applied flag.
-        card.ability.hnds_fun_police_slots_applied = tonumber(card.ability.hnds_fun_police_slots_applied) or 0
+        local ability = card_table and card_table.ability or card.ability
+        ability.hnds_fun_police_slots_applied = tonumber(ability.hnds_fun_police_slots_applied) or 0
+        ability.perishable = nil
+        ability.perish_tally = nil
     end,
     add_to_deck = function(self, card, from_debuff)
         fp_sync_slots(card)
@@ -220,6 +226,7 @@ SMODS.Joker {
     update = function(self, card)
         local area = G.jokers
         if not (area and area.cards and card.area == area) then return end
+        if card.debuff then card:set_debuff(false) end
         fp_sync_slots(card)
 
         local now = G.TIMERS.REAL

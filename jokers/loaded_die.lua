@@ -3,7 +3,7 @@ local previewing = false
 function HNDS.count_scoring_sevens(cards, preview)
     local count = 0
     for _, card in ipairs(cards or {}) do
-        if not card.debuff and card:get_id() == 7 and not SMODS.has_no_rank(card)
+        if not card.debuff and HNDS.card_counts_as_rank(card, 7) and not SMODS.has_no_rank(card)
             and (not preview or card.facing ~= "back") then count = count + 1 end
     end
     return count

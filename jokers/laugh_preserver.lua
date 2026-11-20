@@ -1,7 +1,7 @@
 local function held_twos()
     local count = 0
     for _, held in ipairs((G and G.hand and G.hand.cards) or {}) do
-        if held and held.get_id and held:get_id() == 2
+        if HNDS.card_counts_as_rank(held, 2)
             and not (SMODS.has_no_rank and SMODS.has_no_rank(held))
         then
             count = count + 1

@@ -95,8 +95,8 @@ local localization = {
                 name = "Wild Order",
                 text = {
                     "Cards with",
-                    "{V:1}#1#{} suit are",
-                    "always drawn first",
+                    "{V:1}#1#{} suit",
+                    "count as {C:attention}Wild{}",
                     "{s:0.8}Suit changes every round",
                 },
             },
@@ -450,10 +450,11 @@ local localization = {
 			j_hnds_krusty = {
 				name = "Clown Krusty",
 				text = {
-					"Sell this card to create {C:attention}#1#",
-					"{C:attention}#2#{} {C:inactive}(Max of #3#)",
-					"Upgrades for every",
-					"{C:money}$#4#{} {C:inactive}[#5#]{} spent",
+					"{C:hnds_chaos_abilities}+9{} base card suits",
+					"Convert scored cards",
+					"to {V:1}#1#{} if played",
+					"hand contains a {C:attention}Flush{}",
+					"{s:0.8}Suit changes every round",
 				}
 			},
 			j_hnds_energized = {
@@ -755,6 +756,7 @@ local localization = {
 				text = {
 					"Retrigger all",
 					"cards with {C:dark_edition}Editions",
+					"{C:inactive}(Except Handsome Devil)"
 				},
 				unlock = {
 					"Have {C:attention}4{} Jokers",
@@ -765,10 +767,10 @@ local localization = {
 			j_hnds_art = {
 				name = "Art the Clown",
 				text = {
-					"Sell this card to add",
-					"Art the Clown to the next",
-					"{C:attention}Booster Pack{} you open and",
-					"create a random {C:attention}Tag"
+					"Sell or skip this card",
+					"to add a copy of it to the",
+					"next {C:attention}Booster Pack{} you open",
+					"Create #2# {C:dark_edition,E:1}#1#{} if sold",
 				}
 			},
 			j_hnds_public_nuisance = {
@@ -807,7 +809,7 @@ local localization = {
 				text = {
 					"When obtained,",
 					"create a {C:red}Rare Joker{}",
-					"Remove it when you",
+					"Destroy it when you",
 					"lose {C:attention}Bizarre Joker{}",
 				},
 				unlock = {
@@ -998,11 +1000,10 @@ local localization = {
 			j_hnds_demented = {
 				name = "Demented Joker",
 				text = {
-					"{C:hnds_chaos_abilities}+9{} base card suits",
-					"Convert scored cards",
-					"to {V:1}#1#{} if played",
-					"hand contains a {C:attention}Flush{}",
-					"{s:0.8}Suit changes every round",
+					"When you play your",
+					"{C:attention}first hand{} each round,",
+					"randomize {C:attention}Ranks{} and {C:attention}Suits{}",
+					"of cards held in hand",
 				},
 				unlock = {
 					"Change {C:attention}Ranks{} or",
@@ -1022,9 +1023,10 @@ local localization = {
 			j_hnds_fun_police = {
 				name = "Fun Police",
 				text = {
-				    "{C:attention}+5{} Debuffed Joker slots",
+				    "{C:attention}+#1#{} Debuffed Joker slots",
 				    "Destroy Jokers in them",
 				    "when you lose this",
+				    "{C:inactive}(Can't be debuffed){}",
 				},
 			},
 			j_billy = {
@@ -1039,19 +1041,18 @@ local localization = {
 			j_hnds_arthur = {
 				name = "Arthur",
 				text = {
-					"Destroy scored {V:1}#3#{}",
-					"cards and gain {C:attention}#2#{} {C:inactive}[#1#]{} free",
-					"{C:green}Reroll{} for each destroyed",
-					"{s:0.8}Suit changes every hand"
+					"Destroy scored {V:1}#1#{} cards",
+					"and create a {C:attention}Standard Tag{}",
+					"for every {C:attention}#2#{} {C:inactive}[#3#]{} destroyed",
+					"{s:0.8}Suit changes every round",
 				},
 			},
 			j_hnds_creepy = {
 				name = "Creepy Joker",
 				text = {
-					"When you use a",
-					"{C:attention}consumable card{}",
-					"on a {C:attention}face card{},",
-					"steal its face",
+					"{C:green}#1# in #2#{} chance to steal",
+					"face from a {C:attention}face card{}",
+					"when it gets flipped",
 				},
 				unlock = {
 					"Have {C:attention}3{} copies of",
@@ -1073,11 +1074,12 @@ local localization = {
 			},
 			},
 			j_hnds_be_not_afraid = {
-				name = "Be not Afraid",
+				name = "Trinity",
 				text = {
-					"When you draw an {C:attention}Ace{}, gains",
-					"a copy of its {C:chips}Chips{} and {C:mult}Mult{}",
-					"{C:inactive}(Currently {C:chips}+#1#{C:inactive} Chips, {C:mult}+#2#{C:inactive} Mult)",
+					"If played hand contains",
+					"a {C:attention}Three of a Kind{}, every",
+					"card permanently gains",
+					"{C:mult}+#1#{} Mult when scoring",
 				},
 			unlock = {
 				"Play a {C:attention}Three of a Kind{}",
@@ -1132,11 +1134,10 @@ local localization = {
             b_hnds_crystal_mp = {
                 name = "Crystal Deck",
                 text = {
-                    "On Antes {C:attention}4{}, PvP gains",
-                    "a {C:attention}Showdown effect{} for both players",
-                    "{C:inactive,s:0.8}(Violet Vessel excluded)",
-                    "Win to open an",
-                    "{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
+                    "{C:attention}3rd PvP Blind{} gains",
+                    "{C:attention}Showdown Boss{} effect",
+                    "After it resolves, open",
+                    "an {C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
                 }
             },
 			b_hnds_crystal = {
@@ -1261,11 +1262,10 @@ local localization = {
             sleeve_hnds_crystal_sleeve_mp = {
                 name = "Crystal Sleeve",
                 text = {
-                    "On Antes {C:attention}4{}, PvP gains",
-                    "a {C:attention}Showdown effect{} for both players",
-                    "{C:inactive,s:0.8}(Violet Vessel excluded)",
-                    "Win to open an",
-                    "{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
+                    "{C:attention}3rd PvP Blind{} gains",
+                    "{C:attention}Showdown Boss{} effect",
+                    "After it resolves, open",
+                    "an {C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
                 }
             },
 			sleeve_hnds_crystal_sleeve = {
@@ -1280,11 +1280,10 @@ local localization = {
             sleeve_hnds_crystal_sleeve_alt_mp = {
                 name = "Crystal Sleeve",
                 text = {
-                    "On Antes {C:attention}2, 4 and 6{}, PvP gains",
-                    "a {C:attention}Showdown effect{} for both players",
-                    "{C:inactive,s:0.8}(Violet Vessel excluded)",
-                    "Win to open an",
-                    "{C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
+                    "{C:attention}3rd PvP Blind{} gains",
+                    "{C:attention}Showdown Boss{} effect",
+                    "After it resolves, open",
+                    "an {C:legendary,T:p_hnds_spectral_ultra}Ultra Spectral Pack{}"
                 }
             },
 			sleeve_hnds_crystal_sleeve_alt = {
@@ -1572,7 +1571,7 @@ local localization = {
                 name = "Flowers",
                 text = {
                     "Permanently gains",
-					"{C:chips}+3{} Chips per unique",
+                    "{C:chips}+#1#{} Chips per unique",
                     "{C:attention}suit{} in played hand",
                 },
             },
@@ -1596,11 +1595,11 @@ local localization = {
             },
 
             hnds_suit_bananas = {
-                name = "Bananas",
+                name = "Magic Balls",
                 text = {
-                    "{C:mult}+3{} Mult",
-                    "{C:green}#1# in #2#{} chance to",
-                    "destroy card",
+                    "{C:green}#1# in #2#{} chance",
+                    "to create a",
+                    "{C:tarot}Tarot{} card",
                 },
             },
 
@@ -1625,7 +1624,7 @@ local localization = {
                 name = "Jack of Lanterns",
                 text = {
                     "{X:mult,C:white}X4{} Mult",
-                    "Removed when you",
+                    "Destroyed when you",
                     "lose {C:attention}Headless Joker{}",
                 },
             },
@@ -1634,7 +1633,7 @@ local localization = {
                 name = "Jack of Lanterns",
                 text = {
                     "{X:mult,C:white}X4{} Mult",
-                    "Removed when you",
+                    "Destroyed when you",
                     "lose {C:attention}Headless Joker{}",
                 },
             },
@@ -1643,7 +1642,7 @@ local localization = {
                 name = "Jack of Lanterns",
                 text = {
                     "{X:mult,C:white}X#1#{} Mult",
-                    "Removed when you",
+                    "Destroyed when you",
                     "lose {C:attention}Headless Joker{}",
                 },
             },
@@ -1651,7 +1650,7 @@ local localization = {
             hnds_jack_of_lanterns_removed_only = {
                 name = "Jack of Lanterns",
                 text = {
-                    "Removed when you",
+                    "Destroyed when you",
                     "lose {C:attention}Headless Joker{}",
                 },
             },
@@ -1675,7 +1674,7 @@ local localization = {
             hnds_fighting_spirit = {
                 name = "Fighting Spirit",
                 text = {
-                    "Removed when you",
+                    "Destroyed when you",
                     "lose {C:attention}Bizarre Joker{}",
                 },
             },
@@ -1870,7 +1869,7 @@ local localization = {
 				name = "Soul",
 				text = {
 					"No {C:attention}sell value",
-					"Remove this when",
+					"Destroy this when",
 				    "you lose {C:legendary,E:1}Pennywise",
 			 }
 			},
@@ -1988,8 +1987,8 @@ local localization = {
 			},
 			offer_free_rerolls = {
 				text = {
-					"Gives {C:attention}2{} free",
-					"{C:green}Rerolls{} per shop",
+					"Gives {C:attention}1{} free",
+					"{C:green}Reroll{} per shop",
 				},
 			},
 			offer_joker_copy = {
@@ -2432,7 +2431,7 @@ local localization = {
 		Stake = {
             stake_hnds_platinum_mp = {
                 name = "Platinum Stake",
-                text = {"Both players start with {C:attention}5 lives{}", "{s:0.8}Applies all previous Stakes"}
+                text = {"Both players start with {C:attention}5{} lives", "{s:0.8}Applies all previous Stakes"}
             },
 			stake_hnds_platinum = {
 				name = "Platinum Stake",
@@ -2520,6 +2519,9 @@ local localization = {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_art_random_tag = "random Tag",
+			k_hnds_art_article = "a",
+			k_hnds_art_article_vowel = "an",
             hnds_mp_sync_timeout = "Handsome Devils sync timed out. All players need the same build.",
             k_hnds_consumed = "Eaten!",
             k_hnds_destroyed = "Eaten!",
@@ -2539,6 +2541,8 @@ local localization = {
 			k_hnds_krusty_voucher_tag = "Voucher Tag",
 			k_hnds_krusty_voucher_tags = "Voucher Tags",
 			hnds_upgrade_blind = "Upgrade Blind",
+			hnds_walking_joke_left = "left",
+			hnds_walking_joke_right = "right",
 			k_hnds_petrified = "Petrified!",
 			k_hnds_goldfish = "Goldfish!",
 			k_hnds_jevil_chaos = "Chaos! Chaos!",
@@ -2646,7 +2650,7 @@ local localization = {
 		suits_singular = {
 			hnds_lanterns = "Lanterns",
 			hnds_smiles = "Smiles",
-			hnds_bananas = "Bananas",
+			hnds_bananas = "Magic Balls",
 			hnds_dices = "Dice",
 			hnds_rubies = "Rubies",
 			hnds_flowers = "Flowers",
@@ -2658,7 +2662,7 @@ local localization = {
 		suits_plural = {
 			hnds_lanterns = "Lanterns",
 			hnds_smiles = "Smiles",
-			hnds_bananas = "Bananas",
+			hnds_bananas = "Magic Balls",
 			hnds_dices = "Dice",
 			hnds_rubies = "Rubies",
 			hnds_flowers = "Flowers",

@@ -132,21 +132,27 @@ HNDS.restore_stale_platinum_blind_slots = function()
     local upgrades = upgraded_blinds()
     local records = replacement_records()
     local stale_slots = {}
+    local excom_records = G.GAME.hnds_excommunicado_blinds or {}
 
+    local function has_current_choice(slot)
+        local key = upgrade_key(slot)
+        local excom = excom_records[slot]
+        return upgrades[key] or records[key]
+            or (type(excom) == 'table' and tonumber(excom.ante) == ante and choices[slot] == excom.boss)
+            or choices[slot] == 'bl_mp_nemesis'
+            or (HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp(slot))
+    end
 
     for key, was_upgraded in pairs(upgrades) do
         local key_ante, blind_choice = parse_upgrade_key(key)
-        if was_upgraded and key_ante and key_ante ~= ante
-            and (blind_choice == 'Small' or blind_choice == 'Big')
-        then
-            stale_slots[blind_choice] = true
+        if key_ante and key_ante ~= ante then
+            if was_upgraded and (blind_choice == 'Small' or blind_choice == 'Big') then
+                stale_slots[blind_choice] = true
+            end
+            upgrades[key] = nil
         end
     end
 
-    local excom = excommunicado_active()
-
-
-    local stale_record_keys = {}
     for key, record in pairs(records) do
         local key_ante, key_choice = parse_upgrade_key(key)
         local blind_choice = type(record) == 'table' and record.blind_choice or key_choice
@@ -155,44 +161,47 @@ HNDS.restore_stale_platinum_blind_slots = function()
         if record_ante and record_ante ~= ante
             and (blind_choice == 'Small' or blind_choice == 'Big')
         then
-            if not excom and type(record) == 'table'
-                and choices[blind_choice] == record.boss
-            then
-                choices[blind_choice] = record.original
-                    or ('bl_' .. blind_choice:lower())
+            if type(record) == 'table' and record.boss then
+                stale_slots[blind_choice] = nil
+                if not has_current_choice(blind_choice) and choices[blind_choice] == record.boss then
+                    choices[blind_choice] = record.original or ('bl_' .. blind_choice:lower())
+                end
             end
-            stale_record_keys[#stale_record_keys + 1] = key
+            records[key] = nil
         end
     end
-    for _, key in ipairs(stale_record_keys) do
-        records[key] = nil
-    end
 
-
-    if not excom then
-        for _, blind_choice in ipairs({ 'Small', 'Big' }) do
+    if next(stale_slots) and not excommunicado_active() then
+        for blind_choice in pairs(stale_slots) do
             local choice = choices[blind_choice]
             local blind = choice and G.P_BLINDS and G.P_BLINDS[choice]
-            if stale_slots[blind_choice] and blind and blind.boss then
+            if blind and blind.boss and not has_current_choice(blind_choice) then
                 choices[blind_choice] = 'bl_' .. blind_choice:lower()
             end
         end
     end
 
-
-    local stale_upgrade_keys = {}
-    for key in pairs(upgrades) do
-        local key_ante = parse_upgrade_key(key)
-        if key_ante and key_ante ~= ante then
-            stale_upgrade_keys[#stale_upgrade_keys + 1] = key
-        end
-    end
-    for _, key in ipairs(stale_upgrade_keys) do
-        upgrades[key] = nil
-    end
-
     if HNDS.prune_platinum_boss_stack_records then
         HNDS.prune_platinum_boss_stack_records(ante)
+    end
+end
+
+if type(reset_blinds) == 'function' then
+    local reset_blinds_ref = reset_blinds
+    function reset_blinds(...)
+        local resets = G.GAME and G.GAME.round_resets
+        local rollover = resets and resets.blind_states and resets.blind_states.Boss == 'Defeated'
+        local results = HNDS.pack(reset_blinds_ref(...))
+        if rollover then HNDS.restore_stale_platinum_blind_slots() end
+        return (table.unpack or unpack)(results, 1, results.n)
+    end
+end
+
+if G.UIDEF and type(G.UIDEF.current_blinds) == 'function' then
+    local current_blinds_ref = G.UIDEF.current_blinds
+    function G.UIDEF.current_blinds(...)
+        if G.GAME and not G.GAME.facing_blind then HNDS.restore_stale_platinum_blind_slots() end
+        return current_blinds_ref(...)
     end
 end
 
@@ -278,6 +287,25 @@ local function get_runtime_element(e, blind_choice, id)
         end
     end
     return nil
+end
+
+local function slide_blind_tag_out(e, blind_choice)
+    local container = get_runtime_element(e, blind_choice, 'tag_container')
+    if not container then return end
+
+    local tag = container.config.ref_table
+    local sprite = tag and tag.tag_sprite
+    if sprite then
+        sprite:stop_hover()
+        sprite.config.force_focus = nil
+        sprite.states.hover.can = false
+        sprite.states.collide.can = false
+    end
+
+    for _, row in ipairs(container.children) do
+        row:set_role({ xy_bond = 'Weak' })
+        row:align(0, 10)
+    end
 end
 
 
@@ -446,6 +474,7 @@ function create_UIBox_blind_tag(blind_choice, run_info, ...)
     if run_info or (blind_choice ~= 'Small' and blind_choice ~= 'Big') or not blind_raiser_active() then
         return create_UIBox_blind_tag_ref(blind_choice, run_info, ...)
     end
+    if blind_was_upgraded(blind_choice) then return end
 
     G.GAME.round_resets.blind_tags = G.GAME.round_resets.blind_tags or {}
     local tag_key = G.GAME.round_resets.blind_tags[blind_choice]
@@ -461,7 +490,7 @@ function create_UIBox_blind_tag(blind_choice, run_info, ...)
     end
 
     local upgrade_active = can_upgrade(blind_choice)
-    local skip_active = blind_is_current(blind_choice) and not blind_was_upgraded(blind_choice)
+    local skip_active = blind_is_current(blind_choice)
 
 
     return {
@@ -835,9 +864,7 @@ G.FUNCS.hnds_upgrade_blind = function(e)
             and G.GAME.round_resets.blind_tags[blind_choice]
         if tag_key then reward_tag = Tag(tag_key, nil, blind_choice) end
     end
-
-    local blind_option = G.blind_select_opts and G.blind_select_opts[blind_choice:lower()]
-
+    if not (reward_tag and reward_tag.key) then return end
 
     local boss
     if HNDS.choose_platinum_upgrade_boss then
@@ -874,6 +901,11 @@ G.FUNCS.hnds_upgrade_blind = function(e)
     set_upgrade_runtime_button(e, false)
     local skip_button = get_runtime_element(e, blind_choice, 'hnds_skip_blind_button_' .. blind_choice)
     set_runtime_button(skip_button, false, 'skip_blind')
+    local select_button = get_runtime_element(e, blind_choice, 'select_blind_button')
+    if select_button then select_button.disable_button = true end
+    slide_blind_tag_out(e, blind_choice)
+    local upgrade_sound = G.F_SOUND_THREAD and 'hnds_blind_upgrade_negative' or 'negative'
+    play_sound(upgrade_sound, 0.5, 1)
 
     local preexisting_tags = {}
     for _, tag in ipairs(G.GAME.tags or {}) do
@@ -890,67 +922,10 @@ G.FUNCS.hnds_upgrade_blind = function(e)
     end
 
     G.E_MANAGER:add_event(Event({
-        trigger = 'immediate',
-        func = function()
-            play_sound('other1')
-
-            if blind_option and blind_option.set_role and blind_option.alignment then
-                blind_option:set_role({ xy_bond = 'Weak' })
-                blind_option.alignment.offset.y = 20
-            end
-
-            return true
-        end,
-    }))
-
-    G.E_MANAGER:add_event(Event({
         trigger = 'after',
         delay = 0.3,
         func = function()
-            local current_option = G.blind_select_opts
-                and G.blind_select_opts[blind_choice:lower()]
-            local current_parent = blind_option_parent(current_option)
-
-            if current_option and current_parent then
-                current_option:remove()
-                G.blind_select_opts[blind_choice:lower()] = UIBox({
-                    T = { current_parent.T.x, 0, 0, 0 },
-                    definition = {
-                        n = G.UIT.ROOT,
-                        config = { align = 'cm', colour = G.C.CLEAR },
-                        nodes = {
-                            UIBox_dyn_container(
-                                { create_UIBox_blind_choice(blind_choice) },
-                                false,
-                                get_blind_main_colour(boss),
-                                mix_colours(G.C.BLACK, get_blind_main_colour(boss), 0.8)
-                            ),
-                        },
-                    },
-                    config = {
-                        align = 'bmi',
-                        offset = { x = 0, y = G.ROOM.T.y + 9 },
-                        major = current_parent,
-                        xy_bond = 'Weak',
-                    },
-                })
-
-                local new_option = G.blind_select_opts[blind_choice:lower()]
-                current_parent.config.object = new_option
-                current_parent.config.object:recalculate()
-                new_option.parent = current_parent
-                new_option.alignment.offset.y = 0
-
-
-                HNDS.sync_platinum_blind_tag_ui({
-                    config = { id = blind_choice },
-                    UIBox = new_option,
-                })
-            else
-
-
-                hnds_rebuild_upgraded_blind_option(blind_choice, boss)
-            end
+            hnds_rebuild_upgraded_blind_option(blind_choice, boss)
             if HNDS.rebuild_platinum_boss_option then HNDS.rebuild_platinum_boss_option() end
 
             if SMODS and SMODS.calculate_context then

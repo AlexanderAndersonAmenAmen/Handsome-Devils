@@ -503,40 +503,29 @@ end
 
 local hnds_card_open = Card.open
 function Card:open(...)
-	local queued_art = G and G.GAME
-		and (tonumber(G.GAME.art_queue) or 0) > 0
-		and self.ability
-		and self.ability.set == 'Booster'
-		and not self.hnds_art_pending
-	local original_size = queued_art and tonumber(self.ability.extra) or nil
-
-	if not original_size then
-		return hnds_card_open(self, ...)
-	end
-
-	local size_mod = tonumber(G.GAME.modifiers and G.GAME.modifiers.booster_size_mod) or 0
-	self.hnds_art_pending = true
-	self.hnds_art_target_index = math.max(1, original_size + size_mod + 1)
-
-
-	self.ability.extra = original_size + 1
+	HNDS.prepare_art_booster(self)
 	return hnds_card_open(self, ...)
 end
 
 
-local function spawn_queued_booster(pack_key, pre_open_func)
-	if not (G and G.E_MANAGER and G.play and G.FUNCS and G.FUNCS.use_card
+function HNDS.open_crystal_pack(pre_open_func)
+	if not (G and G.GAME and G.E_MANAGER and G.play and G.FUNCS and G.FUNCS.use_card
 		and SMODS and type(SMODS.create_card) == 'function' and Event) then return false end
+	local game = G.GAME
 	G.E_MANAGER:add_event(Event({
+		blocking = false,
 		func = function()
-			local booster = SMODS.create_card { key = pack_key, area = G.play }
+			if G.GAME ~= game then return true end
+			if game.PACK_INTERRUPT then return false end
+			if pre_open_func then pre_open_func() end
+			local booster = SMODS.create_card { key = 'p_hnds_spectral_ultra', area = G.play }
+			if not booster then return true end
 			booster.T.x = G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2
 			booster.T.y = G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2
 			booster.T.w = G.CARD_W * 1.27
 			booster.T.h = G.CARD_H * 1.27
 			booster.cost = 0
 			booster.from_tag = true
-			if pre_open_func then pre_open_func(booster) end
 			G.FUNCS.use_card({ config = { ref_table = booster } })
 			booster:start_materialize()
 			return true
@@ -556,6 +545,7 @@ SMODS.current_mod.calculate = function(self, context)
     if context.end_of_round and context.main_eval and not context.individual and not context.repetition and not context.game_over then
         HNDS.reset_wild_order_suit()
         HNDS.reset_trump_suit()
+        HNDS.reset_arthur_suit()
     end
 	if HNDS.install_pluck_refill_hook then HNDS.install_pluck_refill_hook() end
 	if HNDS.install_green_seal_draw_hook then HNDS.install_green_seal_draw_hook() end
@@ -653,8 +643,7 @@ SMODS.current_mod.calculate = function(self, context)
 		if HNDS.abstract_force_first_shop_standard then
 			HNDS.abstract_force_first_shop_standard()
 		end
-		if G.GAME.hnds_crystal_queued then
-			spawn_queued_booster('p_hnds_spectral_ultra')
+		if G.GAME.hnds_crystal_queued and HNDS.open_crystal_pack() then
 			G.GAME.hnds_crystal_queued = nil
 		end
 		if HNDS.open_pending_cursed_pack_at_shop then
@@ -663,30 +652,9 @@ SMODS.current_mod.calculate = function(self, context)
 	end
 
 
-	if context.create_booster_card and context.booster
-		and context.booster.hnds_art_pending
-		and context.index == context.booster.hnds_art_target_index then
-		context.booster.hnds_art_pending = nil
-		context.booster.hnds_art_target_index = nil
-		G.GAME.art_queue = math.max(0, (tonumber(G.GAME.art_queue) or 1) - 1)
-		return {
-			booster_create_flags = {
-				key = "j_hnds_art",
-				area = G.pack_cards,
-				no_edition = true,
-				stickers = {},
-			}
-		}
-	end
-
-
-	if context.modify_booster_card and context.card
-		and context.card.config and context.card.config.center
-		and context.card.config.center.key == "j_hnds_art" then
-		context.card:set_edition(nil, true, true)
-		for sticker_key, _ in pairs(SMODS.Stickers or {}) do
-			context.card.ability[sticker_key] = nil
-		end
+	if context.create_booster_card or context.modify_booster_card then
+		local result = HNDS.art_booster_card(context)
+		if result then return result end
 	end
 
 	if context.buying_card then
@@ -826,7 +794,7 @@ local files = {
 
 			"handsome",
 			"head_of_medusa",
-			"wild_order",
+			"energized",
 			"spaghettified_joker",
 			"formosana",
 			
@@ -838,7 +806,7 @@ local files = {
 			
 			"dark_humor",
 			"contagion",
-			"energized",
+			"wild_order",
 			"last_laugh",
 			"walking_joke",
 			
@@ -979,7 +947,7 @@ SMODS.Gradient({
     key = "chaos_abilities",
     colours = {
         HEX('c9a500'),
-        HEX('9bb031'),
+        HEX('A782D1'),
         HEX('479d7a'),
         HEX('ff5d9b'),
         HEX('6CA2A6'),
@@ -1128,6 +1096,7 @@ for _, set_key in ipairs(hnds_content_load_order) do
     end
 end
 assert(SMODS.load_file("lib/hooks.lua"))()
+assert(SMODS.load_file("lib/excommunicado.lua"))()
 if hnds_config.enableVanillaTweaks then assert(SMODS.load_file("lib/vanilla_tweaks.lua"))() end
 assert(SMODS.load_file("lib/blind_upgrade_stakes.lua"))()
 if hnds_config.enableBlindUpgradeButton then
@@ -1166,3 +1135,13 @@ if HNDS.install_dark_pact_hooks then HNDS.install_dark_pact_hooks() end
 if HNDS.apply_unlock_state_migration then HNDS.apply_unlock_state_migration() end
 
 assert(SMODS.load_file("lib/multiplayer_compat.lua"))()
+
+for _, method in ipairs({'set_edition', 'set_seal'}) do
+    local ref = Card[method]
+    Card[method] = function(self, ...)
+        if self.params and self.params.hnds_title_display then return end
+        return ref(self, ...)
+    end
+end
+
+assert(SMODS.load_file('lib/ui_element_cleanup.lua'))()

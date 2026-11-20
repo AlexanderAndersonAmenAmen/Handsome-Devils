@@ -14,11 +14,15 @@ local ABSTRACT_SUIT = {
 
 HNDS.ABSTRACT_SUITS = ABSTRACT_SUIT
 
+local FLOWERS_CHIPS_PER_SUIT = 3
+local MAGIC_BALLS_ODDS = 4
+local MAGIC_BALLS_ROLL = 'hnds_abstract_magic_balls'
+
 local function abstract_suit_pool_enabled(args)
     if args and args.initial_deck then return false end
     if not (G and G.STAGES and G.STAGE == G.STAGES.RUN and G.GAME) then return false end
     if hnds_config and hnds_config.enableChaosSuits == true then return true end
-    if HNDS.demented_chaos_active and HNDS.demented_chaos_active() then return true end
+    if HNDS.krusty_chaos_active and HNDS.krusty_chaos_active() then return true end
     return G.GAME.modifiers ~= nil and G.GAME.modifiers.hnds_abstract_deck == true or false
 end
 
@@ -27,7 +31,7 @@ HNDS.is_abstract_run_active = abstract_suit_pool_enabled
 
 local suit_defs = {
     { key = 'smiles', card_key = 'M', y = 0, ui_x = 0, colour = 'c9a500', tooltip = 'hnds_suit_smiles' },
-    { key = 'bananas', card_key = 'B', y = 1, ui_x = 1, colour = '9bb031', tooltip = 'hnds_suit_bananas' },
+    { key = 'bananas', card_key = 'B', y = 1, ui_x = 1, colour = 'A782D1', tooltip = 'hnds_suit_bananas' },
     { key = 'dices', card_key = 'I', y = 2, ui_x = 2, colour = '479d7a', tooltip = 'hnds_suit_dices' },
     { key = 'rubies', card_key = 'R', y = 3, ui_x = 3, colour = 'ff5d9b', tooltip = 'hnds_suit_rubies' },
     { key = 'flowers', card_key = 'F', y = 4, ui_x = 4, colour = '6CA2A6', tooltip = 'hnds_suit_flowers' },
@@ -61,10 +65,12 @@ for _, def in ipairs(suit_defs) do
             loc_vars = function(self, info_queue, card)
                 if info_queue then
                     local vars = nil
-                    if suit_key == 'free_parking_spots' or suit_key == 'bananas' then
-                        local denominator = suit_key == 'bananas' and 6 or 2
+                    if suit_key == 'flowers' then
+                        vars = { FLOWERS_CHIPS_PER_SUIT }
+                    elseif suit_key == 'free_parking_spots' or suit_key == 'bananas' then
+                        local denominator = suit_key == 'bananas' and MAGIC_BALLS_ODDS or 2
                         local probability_key = suit_key == 'bananas'
-                            and 'hnds_abstract_bananas'
+                            and MAGIC_BALLS_ROLL
                             or 'hnds_abstract_free_parking'
                         local numerator = 1
                         if SMODS and type(SMODS.get_probability_vars) == 'function' then
@@ -128,13 +134,70 @@ local function abstract_ability_source(card)
     return card
 end
 
-local function base_suit(card, suit_key)
+local all_chaos_suits = {}
+
+local function abstract_ability_suit(card, chaos_active)
     local source = abstract_ability_source(card)
-    return source and source.base and source.base.suit == suit_key
+    local printed = source and source.base and source.base.suit
+    if not printed then return false end
+    if chaos_active and HNDS.wild_order_matches and HNDS.wild_order_matches(card) then
+        return all_chaos_suits
+    end
+    local center = chaos_active and source.config and source.config.center
+    if center and (center.key == 'm_wild'
+        or (center.key == 'm_hnds_aberrant' and HNDS.aberrant_has_fusion
+            and HNDS.aberrant_has_fusion(source, 'm_wild') and not HNDS.aberrant_has_fusion(source, 'm_stone')))
+    then
+        return all_chaos_suits
+    end
+    return printed
 end
 
-local function active_suit(card, suit_key)
-    return base_suit(card, suit_key) and not card.debuff
+local function has_suit_ability(suit, suit_key)
+    return suit == suit_key or suit == all_chaos_suits
+end
+
+local function active_suit(card, suit_key, chaos_active)
+    return card and not card.debuff and has_suit_ability(abstract_ability_suit(card, chaos_active), suit_key)
+end
+
+local function sync_bean_card(card, suit)
+    if not (card and card.ability) then return end
+    if suit == nil then suit = abstract_ability_suit(card, abstract_suit_pool_enabled()) end
+    local applied = card.ability.hnds_bean_card_limit and 1 or 0
+    local wanted = has_suit_ability(suit, ABSTRACT_SUIT.beans) and 1 or 0
+    card.ability.card_limit = (tonumber(card.ability.card_limit) or 0) + wanted - applied
+    card.ability.hnds_bean_card_limit = wanted == 1 or nil
+end
+
+function HNDS.filter_beans_hand_size_tooltip(info_queue, card)
+    local ability = card and card.ability
+    if not (ability and ability.hnds_bean_card_limit) then return end
+
+    local beans_tooltip, limit_index
+    for index, tooltip in ipairs(info_queue) do
+        if type(tooltip) == 'table' and tooltip.set == 'Other' then
+            if tooltip.key == 'hnds_suit_beans' then
+                beans_tooltip = true
+            elseif tooltip.key == 'generic_card_limit_pc' or tooltip.key == 'generic_card_limit_pc_plural' then
+                limit_index = index
+            end
+        end
+    end
+    if not (beans_tooltip and limit_index) then return end
+
+    local edition_limit = card.edition and card.edition.card_limit or 0
+    local remaining = (ability.card_limit or 0) - edition_limit - 1
+    if remaining == 0 then
+        table.remove(info_queue, limit_index)
+    else
+        info_queue[limit_index] = {
+            set = 'Other',
+            key = remaining == 1 and 'generic_card_limit_pc' or 'generic_card_limit_pc_plural',
+            vars = { localize { type = 'variable', key = remaining > 0 and 'a_chips' or 'a_chips_minus',
+                vars = { math.abs(remaining) } } },
+        }
+    end
 end
 
 local abstract_suit_bridge_runtime = nil
@@ -155,20 +218,19 @@ local function abstract_has_no_suit(card)
     return false
 end
 
-local function abstract_bridge_trigger(card, suit_key)
-    return active_suit(card, suit_key) and not abstract_has_no_suit(card)
-end
-
-local function abstract_bridge_state(played)
+local function abstract_bridge_state(played, cache)
     local state = {
         rubies = false,
         petals = false,
         cards = setmetatable({}, { __mode = 'k' }),
     }
-    for _, card in ipairs(played or {}) do
+    for i, card in ipairs(played) do
         state.cards[card] = true
-        if abstract_bridge_trigger(card, ABSTRACT_SUIT.rubies) then state.rubies = true end
-        if abstract_bridge_trigger(card, ABSTRACT_SUIT.petals) then state.petals = true end
+        if not (cache.debuffs[i] or cache.no_suits[i]) then
+            local suit = cache.suits[i]
+            if has_suit_ability(suit, ABSTRACT_SUIT.rubies) then state.rubies = true end
+            if has_suit_ability(suit, ABSTRACT_SUIT.petals) then state.petals = true end
+        end
     end
     if not state.rubies and not state.petals then return nil end
     return state
@@ -177,11 +239,11 @@ end
 local function abstract_cached_bridge_state(played)
     played = played or {}
     local cache = abstract_suit_bridge_cache
+    local chaos_active = abstract_suit_pool_enabled()
     local unchanged = #cache.cards == #played
     if unchanged then
         for i, card in ipairs(played) do
-            local source = abstract_ability_source(card)
-            local suit = source and source.base and source.base.suit
+            local suit = abstract_ability_suit(card, chaos_active)
             local debuffed = card and card.debuff == true
             local no_suit = abstract_has_no_suit(card)
             if cache.cards[i] ~= card or cache.suits[i] ~= suit
@@ -201,13 +263,12 @@ local function abstract_cached_bridge_state(played)
         cache.no_suits[i] = nil
     end
     for i, card in ipairs(played) do
-        local source = abstract_ability_source(card)
         cache.cards[i] = card
-        cache.suits[i] = source and source.base and source.base.suit
+        cache.suits[i] = abstract_ability_suit(card, chaos_active)
         cache.debuffs[i] = card and card.debuff == true
         cache.no_suits[i] = abstract_has_no_suit(card)
     end
-    cache.state = abstract_bridge_state(played)
+    cache.state = abstract_bridge_state(played, cache)
     return cache.state
 end
 
@@ -312,16 +373,11 @@ local function probability_dice_cards(context)
     return G and G.play and G.play.cards or {}
 end
 
-local function scoring_cards(context)
-    if context and type(context.scoring_hand) == 'table' then return context.scoring_hand end
-    return {}
-end
-
 local function unique_printed_suits(cards)
     local seen = {}
     for _, card in ipairs(cards or {}) do
         local source = abstract_ability_source(card)
-        if source and source.base and source.base.suit and not (SMODS and SMODS.has_no_suit and SMODS.has_no_suit(card)) then
+        if source and source.base and source.base.suit and not abstract_has_no_suit(card) then
             seen[source.base.suit] = true
         end
     end
@@ -331,15 +387,53 @@ local function unique_printed_suits(cards)
 end
 
 local function count_active_dices(cards)
+    local chaos_active = abstract_suit_pool_enabled()
     local count = 0
     for _, card in ipairs(cards or {}) do
-        if active_suit(card, ABSTRACT_SUIT.dices) then count = count + 1 end
+        if active_suit(card, ABSTRACT_SUIT.dices, chaos_active) then count = count + 1 end
     end
     return count
 end
 
+local function queue_magic_balls_tarot(card)
+    local game = G.GAME
+    local area = G.consumeables
+    if not (game and area and area.cards and area.config and G.E_MANAGER and Event
+        and SMODS and SMODS.pseudorandom_probability and SMODS.add_card and not SMODS.no_resolve)
+    then
+        return
+    end
+
+    local buffer = game.consumeable_buffer or 0
+    if #area.cards + buffer >= (area.config.card_limit or 0)
+        or not SMODS.pseudorandom_probability(card, MAGIC_BALLS_ROLL, 1, MAGIC_BALLS_ODDS)
+    then
+        return
+    end
+
+    game.consumeable_buffer = (game.consumeable_buffer or 0) + 1
+    G.E_MANAGER:add_event(Event({
+        func = function()
+            if G.GAME == game and G.consumeables == area and area.cards and area.config
+                and #area.cards < (area.config.card_limit or 0)
+            then
+                SMODS.add_card({ set = 'Tarot', area = area, key_append = MAGIC_BALLS_ROLL })
+            end
+            game.consumeable_buffer = math.max(0, (game.consumeable_buffer or 0) - 1)
+            return true
+        end,
+    }))
+end
+
 function HNDS.calculate_abstract_suits(context)
     if type(context) ~= 'table' then return nil end
+
+    if context.drawing_cards and G.deck and G.deck.cards then
+        local chaos_active = abstract_suit_pool_enabled()
+        for _, card in ipairs(G.deck.cards) do
+            sync_bean_card(card, abstract_ability_suit(card, chaos_active))
+        end
+    end
 
     if context.mod_probability then
         local count = count_active_dices(probability_dice_cards(context))
@@ -349,7 +443,7 @@ function HNDS.calculate_abstract_suits(context)
     end
 
     if context.repetition and context.cardarea == G.play and context.other_card
-        and active_suit(context.other_card, ABSTRACT_SUIT.wraiths)
+        and active_suit(context.other_card, ABSTRACT_SUIT.wraiths, abstract_suit_pool_enabled())
     then
         return {
             repetitions = 1,
@@ -358,62 +452,45 @@ function HNDS.calculate_abstract_suits(context)
         }
     end
 
-    if context.individual and context.cardarea == G.play and context.other_card and not context.repetition then
-        local card = context.other_card
-
-        if active_suit(card, ABSTRACT_SUIT.bananas) then
-            return { mult = 3, no_juice = true }
+    local card = context.other_card
+    if context.individual and context.cardarea == G.play and card and not (card.debuff or context.repetition) then
+        local suit = abstract_ability_suit(card, abstract_suit_pool_enabled())
+        if has_suit_ability(suit, ABSTRACT_SUIT.bananas)
+            and not context.retrigger_joker and not abstract_has_no_suit(card)
+        then
+            queue_magic_balls_tarot(card)
         end
 
-        if active_suit(card, ABSTRACT_SUIT.smiles) then
-            local faces = 0
+        local mult = 0
+        if has_suit_ability(suit, ABSTRACT_SUIT.smiles) then
             for _, played_card in ipairs(played_cards(context)) do
-                if played_card and not played_card.debuff and played_card.is_face and played_card:is_face() then
-                    faces = faces + 1
+                if played_card and not played_card.debuff and HNDS.card_counts_as_face(played_card) then
+                    mult = mult + 1
                 end
             end
-            if faces > 0 then return { mult = faces, no_juice = true } end
         end
 
-        if active_suit(card, ABSTRACT_SUIT.flowers) then
-            local gain = unique_printed_suits(played_cards(context)) * 3
-            if gain > 0 then
-                card.ability = card.ability or {}
-                card.ability.perma_bonus = (tonumber(card.ability.perma_bonus) or 0) + gain
-                return {
-                    chips = gain,
-                    no_juice = true,
-                    remove_default_message = true,
-                    message = localize('k_upgrade_ex'),
-                    colour = G.C.CHIPS,
-                }
-            end
+        local chips = has_suit_ability(suit, ABSTRACT_SUIT.flowers)
+            and unique_printed_suits(played_cards(context)) * FLOWERS_CHIPS_PER_SUIT or 0
+        if chips > 0 then
+            card.ability = card.ability or {}
+            card.ability.perma_bonus = (tonumber(card.ability.perma_bonus) or 0) + chips
+            return {
+                chips = chips,
+                mult = mult > 0 and mult or nil,
+                no_juice = true,
+                remove_default_message = true,
+                message = localize('k_upgrade_ex'),
+                colour = G.C.CHIPS,
+            }
         end
-    end
-
-    if context.destroy_card and active_suit(context.destroy_card, ABSTRACT_SUIT.bananas)
-        and type(context.scoring_hand) == 'table'
-        and not context.repetition
-    then
-        local scored = false
-        for _, scoring_card in ipairs(context.scoring_hand) do
-            if scoring_card == context.destroy_card then
-                scored = true
-                break
-            end
-        end
-        if scored
-            and SMODS and type(SMODS.pseudorandom_probability) == 'function'
-            and SMODS.pseudorandom_probability(context.destroy_card, 'hnds_abstract_bananas', 1, 6)
-        then
-            return { remove = true, no_juice = true }
-        end
+        if mult > 0 then return { mult = mult, no_juice = true } end
     end
 
     if context.individual and context.cardarea == G.hand and context.other_card and not context.repetition
         and not context.end_of_round
         and type(context.full_hand) == 'table' and #context.full_hand > 0
-        and active_suit(context.other_card, ABSTRACT_SUIT.free_parking_spots)
+        and active_suit(context.other_card, ABSTRACT_SUIT.free_parking_spots, abstract_suit_pool_enabled())
         and SMODS and type(SMODS.pseudorandom_probability) == 'function'
         and SMODS.pseudorandom_probability(context.other_card, 'hnds_abstract_free_parking', 1, 2)
     then
@@ -423,47 +500,96 @@ function HNDS.calculate_abstract_suits(context)
 end
 
 local abstract_wraith_state = setmetatable({}, { __mode = 'k' })
-local abstract_wraith_refresh_pending = setmetatable({}, { __mode = 'k' })
+local abstract_area_refreshing = setmetatable({}, { __mode = 'k' })
+local abstract_area_loading = setmetatable({}, { __mode = 'k' })
+local abstract_pending_debuffs = setmetatable({}, { __mode = 'k' })
+local abstract_external_debuffs = setmetatable({}, { __mode = 'k' })
+local abstract_local_debuff_update = setmetatable({}, { __mode = 'k' })
+
+if Card and type(Card.set_debuff) == 'function' then
+    local set_debuff_ref = Card.set_debuff
+    function Card:set_debuff(should_debuff, ...)
+        if not abstract_local_debuff_update[self] then
+            abstract_external_debuffs[self] = should_debuff == true
+        end
+        return set_debuff_ref(self, should_debuff, ...)
+    end
+end
+
 
 local function abstract_runtime_area(area)
     return area ~= nil and G ~= nil and ((G.hand ~= nil and area == G.hand) or (G.play ~= nil and area == G.play))
 end
 
+local function abstract_blind_ready()
+    local blind = G and G.GAME and G.GAME.blind
+    return type(blind) == 'table' and type(blind.debuff_card) == 'function'
+end
+
 local function abstract_recalc_debuff(card)
     if not (card and SMODS and type(SMODS.recalc_debuff) == 'function') then return end
-    if not (G and G.GAME and G.GAME.blind) then return end
-    SMODS.recalc_debuff(card)
+    if not abstract_blind_ready() then
+        abstract_pending_debuffs[card] = true
+        return
+    end
+    abstract_pending_debuffs[card] = nil
+    if card.removed or card.REMOVED then return end
+    local external = abstract_external_debuffs[card]
+    if external == nil or type(card.set_debuff) ~= 'function' then
+        SMODS.recalc_debuff(card)
+        if abstract_external_debuffs[card] == nil then
+            abstract_external_debuffs[card] = card.debuff == true
+        end
+    else
+        abstract_local_debuff_update[card] = true
+        local result = HNDS.pack(pcall(card.set_debuff, card, external))
+        abstract_local_debuff_update[card] = nil
+        if not result[1] then error(result[2], 0) end
+    end
+end
+
+local function abstract_flush_debuffs()
+    if not abstract_blind_ready() then return end
+    for card in pairs(abstract_pending_debuffs) do abstract_recalc_debuff(card) end
 end
 
 local function abstract_build_wraith_state(area)
     local state = abstract_wraith_state[area] or {}
-    local adjacent = setmetatable({}, { __mode = 'k' })
-    local order = setmetatable({}, { __mode = 'v' })
+    local adjacent = state.spare_adjacent or setmetatable({}, { __mode = 'k' })
+    for card in pairs(adjacent) do adjacent[card] = nil end
+    local order = state.order or setmetatable({}, { __mode = 'v' })
+    local suits = state.suits or {}
     local cards = area and area.cards or {}
-    local has_wraith = false
+    local chaos_active = abstract_suit_pool_enabled()
     for i, card in ipairs(cards) do
         order[i] = card
-        if base_suit(card, ABSTRACT_SUIT.wraiths) then has_wraith = true end
-        local beside_wraith = base_suit(cards[i - 1], ABSTRACT_SUIT.wraiths)
-            or base_suit(cards[i + 1], ABSTRACT_SUIT.wraiths)
-        if beside_wraith and not base_suit(card, ABSTRACT_SUIT.wraiths) then
+        suits[i] = abstract_ability_suit(card, chaos_active)
+    end
+    for i = #cards + 1, state.count or 0 do order[i] = nil; suits[i] = nil end
+    for i, card in ipairs(cards) do
+        if not has_suit_ability(suits[i], ABSTRACT_SUIT.wraiths)
+            and (has_suit_ability(suits[i - 1], ABSTRACT_SUIT.wraiths)
+                or has_suit_ability(suits[i + 1], ABSTRACT_SUIT.wraiths)) then
             adjacent[card] = true
         end
     end
+    state.spare_adjacent = state.adjacent
     state.adjacent = adjacent
-    state.has_wraith = has_wraith
     state.order = order
+    state.suits = suits
+    state.count = #cards
     abstract_wraith_state[area] = state
     return state
 end
 
 local function abstract_wraith_order_changed(area, state)
-    if not (state and state.has_wraith) then return false end
+    if not state then return true end
     local cards = area and area.cards or {}
     local order = state.order or {}
-    if #cards ~= #order then return true end
+    if #cards ~= state.count then return true end
+    local chaos_active = abstract_suit_pool_enabled()
     for i, card in ipairs(cards) do
-        if order[i] ~= card then return true end
+        if order[i] ~= card or state.suits[i] ~= abstract_ability_suit(card, chaos_active) then return true end
     end
     return false
 end
@@ -492,67 +618,55 @@ SMODS.current_mod.set_debuff = function(card)
     if HNDS.abstract_wraith_adjacent(card) then return true end
 end
 
-local function strip_legacy_bean_limit(card)
-    if not (card and card.ability and card.ability.hnds_bean_card_limit) then return end
-    local value = (tonumber(card.ability.card_limit) or 0) - 1
-    card.ability.card_limit = value ~= 0 and value or nil
-    card.ability.hnds_bean_card_limit = nil
-end
-
-local function set_bean_hand_bonus(card, enabled)
-    if not (card and G and G.hand and G.hand.config) then return end
-    card.ability = card.ability or {}
-    strip_legacy_bean_limit(card)
-    local applied = card.ability.hnds_bean_hand_bonus == true
-    enabled = enabled == true
-    if enabled == applied then return end
-    G.hand.config.card_limit = math.max(0, (tonumber(G.hand.config.card_limit) or 0) + (enabled and 1 or -1))
-    card.ability.hnds_bean_hand_bonus = enabled or nil
-end
-
-local function sync_bean_hand_bonus(card)
-    set_bean_hand_bonus(card, card and card.area == (G and G.hand) and base_suit(card, ABSTRACT_SUIT.beans))
+local function sync_bean_hand_bonus(area, suits)
+    if not (G and area == G.hand and area.config) then return end
+    if not area.config.hnds_bean_native_limit then
+        local old = tonumber(area.config.hnds_bean_hand_bonus)
+        if old == nil then
+            old = 0
+            for _, card in ipairs(area.cards or {}) do
+                if card.ability and card.ability.hnds_bean_hand_bonus then old = old + 1 end
+            end
+        end
+        if old ~= 0 then area:change_size(-old) end
+        area.config.hnds_bean_hand_bonus = nil
+        area.config.hnds_bean_native_limit = true
+    end
+    for i, card in ipairs(area.cards or {}) do
+        sync_bean_card(card, suits[i])
+        if card.ability then card.ability.hnds_bean_hand_bonus = nil end
+    end
 end
 
 function HNDS.refresh_abstract_area(area)
-    if not abstract_runtime_area(area) then return end
+    if not abstract_runtime_area(area) or abstract_area_loading[area] or abstract_area_refreshing[area] then return end
+    abstract_area_refreshing[area] = true
     local previous = abstract_wraith_state[area]
     local previous_adjacent = previous and previous.adjacent or {}
     local state = abstract_build_wraith_state(area)
-    if area == G.hand then
-        for _, card in ipairs(area.cards or {}) do sync_bean_hand_bonus(card) end
-    end
+    sync_bean_hand_bonus(area, state.suits)
     for _, card in ipairs(area.cards or {}) do
         if (previous_adjacent[card] == true) ~= (state.adjacent[card] == true) then
             abstract_recalc_debuff(card)
         end
     end
+    abstract_area_refreshing[area] = nil
 end
 
-local function schedule_abstract_area_refresh(area)
-    if area == nil or not abstract_runtime_area(area) or abstract_wraith_refresh_pending[area] then return end
-    abstract_wraith_refresh_pending[area] = true
-    local function refresh()
-        abstract_wraith_refresh_pending[area] = nil
-        HNDS.refresh_abstract_area(area)
-        return true
-    end
-    if G and G.E_MANAGER and Event then
-        G.E_MANAGER:add_event(Event({ trigger = 'immediate', blockable = false, func = refresh }))
-    else
-        refresh()
-    end
+local function refresh_abstract_runtime_area(area)
+    if abstract_runtime_area(area) then HNDS.refresh_abstract_area(area) end
 end
 
 if CardArea and type(CardArea.emplace) == 'function' and not HNDS._abstract_area_emplace_hook then
     HNDS._abstract_area_emplace_hook = true
     local abstract_emplace_ref = CardArea.emplace
     function CardArea:emplace(card, ...)
-        local bean_bonus = self == (G and G.hand) and base_suit(card, ABSTRACT_SUIT.beans)
-        if bean_bonus then set_bean_hand_bonus(card, true) end
+        for _, existing in ipairs(self.cards or {}) do
+            if existing == card then return end
+        end
+        sync_bean_card(card)
         local results = HNDS.pack(abstract_emplace_ref(self, card, ...))
-        if bean_bonus and card.area ~= self then set_bean_hand_bonus(card, false) end
-        if abstract_runtime_area(self) then schedule_abstract_area_refresh(self) end
+        if abstract_runtime_area(self) then refresh_abstract_runtime_area(self) end
         return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
@@ -562,12 +676,13 @@ if CardArea and type(CardArea.remove_card) == 'function' and not HNDS._abstract_
     local abstract_remove_ref = CardArea.remove_card
     function CardArea:remove_card(card, ...)
         local was_runtime = abstract_runtime_area(self)
-        local was_hand = self == (G and G.hand) and card and card.ability and card.ability.hnds_bean_hand_bonus
+        local previous = abstract_wraith_state[self]
+        local previous_adjacent = previous and previous.adjacent
         local results = HNDS.pack(abstract_remove_ref(self, card, ...))
-        if was_hand then set_bean_hand_bonus(card, false) end
         if was_runtime then
-            schedule_abstract_area_refresh(self)
-            abstract_recalc_debuff(card)
+            refresh_abstract_runtime_area(self)
+            local removed = results[1] or card
+            if removed and previous_adjacent and previous_adjacent[removed] then abstract_recalc_debuff(removed) end
         end
         return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
@@ -578,10 +693,10 @@ if CardArea and type(CardArea.align_cards) == 'function' and not HNDS._abstract_
     local abstract_align_ref = CardArea.align_cards
     function CardArea:align_cards(...)
         local result = abstract_align_ref(self, ...)
-        if self == (G and G.hand) then
+        if abstract_runtime_area(self) then abstract_flush_debuffs() end
+        if abstract_runtime_area(self) then
             local state = abstract_wraith_state[self]
-            if not state then state = abstract_build_wraith_state(self) end
-            if abstract_wraith_order_changed(self, state) then schedule_abstract_area_refresh(self) end
+            if abstract_wraith_order_changed(self, state) then refresh_abstract_runtime_area(self) end
         end
         return result
     end
@@ -592,8 +707,8 @@ if Card and type(Card.set_base) == 'function' and not HNDS._abstract_set_base_ho
     local abstract_set_base_ref = Card.set_base
     function Card:set_base(base_card, ...)
         local results = HNDS.pack(abstract_set_base_ref(self, base_card, ...))
-        if self.area == (G and G.hand) then sync_bean_hand_bonus(self) end
-        if abstract_runtime_area(self.area) then schedule_abstract_area_refresh(self.area) end
+        sync_bean_card(self)
+        if abstract_runtime_area(self.area) then refresh_abstract_runtime_area(self.area) end
         return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end
@@ -603,10 +718,46 @@ if Card and type(Card.load) == 'function' and not HNDS._abstract_card_load_hook 
     local abstract_card_load_ref = Card.load
     function Card:load(...)
         local results = HNDS.pack(abstract_card_load_ref(self, ...))
-        strip_legacy_bean_limit(self)
-        if self.area == (G and G.hand) then sync_bean_hand_bonus(self) end
-        if abstract_runtime_area(self.area) then schedule_abstract_area_refresh(self.area) end
+        sync_bean_card(self)
+        if abstract_runtime_area(self.area) then refresh_abstract_runtime_area(self.area) end
         return ((table and table.unpack) or unpack)(results, 1, results.n)
+    end
+end
+
+if CardArea and type(CardArea.load) == 'function' and not HNDS._abstract_area_load_hook then
+    HNDS._abstract_area_load_hook = true
+    local abstract_area_load_ref = CardArea.load
+    function CardArea:load(...)
+        abstract_area_loading[self] = true
+        local results = HNDS.pack(abstract_area_load_ref(self, ...))
+        abstract_area_loading[self] = nil
+        abstract_wraith_state[self] = nil
+        refresh_abstract_runtime_area(self)
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
+    end
+end
+
+if Card and type(Card.set_ability) == 'function' then
+    local set_ability_ref = Card.set_ability
+    function Card:set_ability(...)
+        local bean = self.ability and self.ability.hnds_bean_card_limit
+        local result = HNDS.pack(set_ability_ref(self, ...))
+        if self.ability and bean then self.ability.hnds_bean_card_limit = true end
+        sync_bean_card(self)
+        local area = self.area
+        if abstract_runtime_area(area) and abstract_wraith_order_changed(area, abstract_wraith_state[area]) then
+            refresh_abstract_runtime_area(area)
+        end
+        return ((table and table.unpack) or unpack)(result, 1, result.n)
+    end
+end
+
+if Game and type(Game.start_run) == 'function' then
+    local start_run_ref = Game.start_run
+    function Game:start_run(...)
+        local result = HNDS.pack(start_run_ref(self, ...))
+        abstract_flush_debuffs()
+        return ((table and table.unpack) or unpack)(result, 1, result.n)
     end
 end
 
@@ -819,12 +970,17 @@ local function chaos_tarot_apply_sprite(card)
     return 'chaos'
 end
 
-local function chaos_tarot_loc_vars(center, card)
+local function chaos_tarot_loc_vars(center, info_queue, card)
     local def = chaos_tarot_definition(center)
     if not def then return {} end
     local target = def.vanilla
-    if chaos_tarots_enabled() and not chaos_tarot_is_collection_card(card) and card and card.ability then
-        target = card.ability.hnds_chaos_tarot_suit or target
+    if card and chaos_tarots_enabled() and not chaos_tarot_is_collection_card(card) then
+        local rolled = chaos_tarot_target(def, card)
+        if chaos_tarot_valid_target(def, rolled) then target = rolled end
+    end
+    if info_queue and ABSTRACT_SUIT_SET[target] then
+        local suit = SMODS.Suits[target]
+        if suit and type(suit.loc_vars) == 'function' then suit:loc_vars(info_queue, card) end
     end
     local max_highlighted = center.config and center.config.max_highlighted or 3
     local suit_name = localize(target, 'suits_plural')
@@ -860,7 +1016,7 @@ then
                 chaos_tarot_refresh_ability(card, reroll)
             end,
             loc_vars = function(self, info_queue, card)
-                return chaos_tarot_loc_vars(self, card)
+                return chaos_tarot_loc_vars(self, info_queue, card)
             end,
             set_sprites = function(self, card, front)
                 card.hnds_chaos_tarot_visual = chaos_tarot_apply_sprite(card)
@@ -1061,7 +1217,7 @@ end
 
 local function chaos_joker_deck_display_active()
     if not (G and G.GAME) then return false end
-    return HNDS.demented_chaos_active and HNDS.demented_chaos_active() or false
+    return HNDS.krusty_chaos_active and HNDS.krusty_chaos_active() or false
 end
 
 function HNDS.is_abstract_deck()
@@ -1074,7 +1230,7 @@ end
 
 function HNDS.is_abstract_config_view_active(list)
     if selected_abstract_back() then return false end
-    -- A Demented/Chaos deck must use Steamodded's normal, live suit pages. The
+    -- A Krusty/Chaos deck must use Steamodded's normal, live suit pages. The
     -- special config page separates classic and chaos suits, which can hide the
     -- actual replacement suits and leave empty classic rows behind.
     if chaos_joker_deck_display_active() then return false end
@@ -1475,7 +1631,11 @@ function HNDS.cleanup_abstract_runtime()
         for key in pairs(values) do values[key] = nil end
     end
     abstract_wraith_state = setmetatable({}, { __mode = 'k' })
-    abstract_wraith_refresh_pending = setmetatable({}, { __mode = 'k' })
+    abstract_area_refreshing = setmetatable({}, { __mode = 'k' })
+    abstract_area_loading = setmetatable({}, { __mode = 'k' })
+    abstract_pending_debuffs = setmetatable({}, { __mode = 'k' })
+    abstract_external_debuffs = setmetatable({}, { __mode = 'k' })
+    abstract_local_debuff_update = setmetatable({}, { __mode = 'k' })
 end
 
 if Game and type(Game.main_menu) == 'function' and not Game._hnds_abstract_cleanup_wrapped then

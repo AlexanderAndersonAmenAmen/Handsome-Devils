@@ -12,6 +12,7 @@ local NON_TRANSFERABLE_RARES = {
     j_hnds_jack_in_the_box = true,
     j_hnds_meme = true,
     j_hnds_last_laugh = true,
+    j_hnds_handsome = true,
 }
 
 
@@ -167,23 +168,6 @@ local function run_copy_rare(card, key, context)
     return SMODS.blueprint_effect(card, target, context)
 end
 
-local function run_walking_joke(card, context)
-    if not (context.retrigger_joker_check and not context.retrigger_joker
-        and context.other_card and context.other_card ~= card
-        and G and G.jokers and G.jokers.cards)
-    then
-        return nil
-    end
-    local i = joker_index(card)
-    if not i then return nil end
-    local adjacent = (i > 1 and G.jokers.cards[i - 1] == context.other_card)
-        or (i < #G.jokers.cards and G.jokers.cards[i + 1] == context.other_card)
-    local center = context.other_card.config and context.other_card.config.center
-    if adjacent and center and center.rarity == 1 then
-        return { repetitions = 1 }
-    end
-end
-
 local function run_jester_in_yellow(card, context)
     if not (context.setting_blind and G and G.jokers and G.jokers.cards and #G.jokers.cards > 0) then
         return nil
@@ -225,13 +209,13 @@ local function on_borrowed_ability_changed(card, old_key, new_key)
     if old_key == 'j_stuntman' then
         change_stuntman_hand_size(2)
     elseif old_key == 'j_hnds_excommunicado' and HNDS and HNDS.update_excom then
-        HNDS.update_excom()
+        HNDS.update_excom(card, false)
     end
 
     if new_key == 'j_stuntman' then
         change_stuntman_hand_size(-2)
-    elseif new_key == 'j_hnds_excommunicado' and HNDS and HNDS.replace_current_blinds_with_bosses then
-        HNDS.replace_current_blinds_with_bosses()
+    elseif new_key == 'j_hnds_excommunicado' and HNDS and HNDS.update_excom and not card.debuff then
+        HNDS.update_excom(card, true)
     end
 end
 
@@ -467,14 +451,14 @@ local function run_rare_ability(card, extra, context)
         return run_copy_rare(card, key, context)
     end
     if key == 'j_hnds_walking_joke' then
-        return run_walking_joke(card, context)
+        return HNDS.calculate_walking_joke(card, context)
     end
     if key == 'j_hnds_jester_in_yellow' then
         return run_jester_in_yellow(card, context)
     end
 
     local center = key and G and G.P_CENTERS and G.P_CENTERS[key]
-    if not center then return nil end
+    if not center or key == 'j_hnds_handsome' then return nil end
 
 
     return run_borrowed_card_dispatch(card, extra, center, context)
@@ -626,6 +610,12 @@ SMODS.Joker {
     end,
 
     load = function(self, card, card_table, other_card)
+        local saved = card_table and card_table.ability and card_table.ability.extra
+        if type(saved) == 'table' and saved.rare_key == 'j_hnds_handsome' then
+            saved.active = false
+            saved.rare_key, saved.rare_state, saved.hover_x = nil, nil, nil
+            return
+        end
         local extra = jack_extra(card, self)
         if extra.active and extra.rare_key then
 

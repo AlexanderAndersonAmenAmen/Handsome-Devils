@@ -511,6 +511,7 @@ local function hnds_mark_piece(card, piece)
         expired = false,
         completed = false,
     }
+    HNDS.sarmenti_refresh_blueprint_compat(card)
     card.hnds_sarmenti_composite_dirty = true
     HNDS.sarmenti_rebuild_composite(card)
     if type(card.set_cost) == 'function' then card:set_cost() end
@@ -573,6 +574,59 @@ end
 
 local function hnds_component_center(snap)
     return snap and snap.center_key and G and G.P_CENTERS and G.P_CENTERS[snap.center_key]
+end
+
+local function hnds_piece_blueprint_compatible(center, ability)
+    if not (center and center.blueprint_compat) then return false end
+    local extra = ability and ability.extra
+    if center.key == 'j_hnds_jack_in_the_box' and type(extra) == 'table' and extra.active then
+        local borrowed = extra.rare_key and G.P_CENTERS[extra.rare_key]
+        if borrowed and borrowed.blueprint_compat == false then return false end
+    end
+    return true
+end
+
+function HNDS.sarmenti_blueprint_compatible(card)
+    local puzzle = hnds_puzzle(card)
+    local center = card and card.config and card.config.center
+    if not puzzle then return hnds_piece_blueprint_compatible(center, card and card.ability) end
+
+    center = G.P_CENTERS[puzzle.primary_center_key or hnds_center_key(card)]
+        or card.hnds_sarmenti_blueprint_base or center
+    if not hnds_piece_blueprint_compatible(center, card.ability) then return false end
+    for _, snap in ipairs(puzzle.components or {}) do
+        if not hnds_piece_blueprint_compatible(hnds_component_center(snap), snap.ability) then return false end
+    end
+    return true
+end
+
+function HNDS.sarmenti_refresh_blueprint_compat(card)
+    if not (card and card.config) or card.hnds_sarmenti_component_guard then return end
+    local puzzle = hnds_puzzle(card)
+    local proxy = card.hnds_sarmenti_blueprint_center
+    if not puzzle then
+        if proxy and card.config.center == proxy then card.config.center = card.hnds_sarmenti_blueprint_base end
+        card.hnds_sarmenti_blueprint_center = nil
+        card.hnds_sarmenti_blueprint_base = nil
+        return
+    end
+
+    local center = G.P_CENTERS[puzzle.primary_center_key or hnds_center_key(card)]
+        or card.hnds_sarmenti_blueprint_base or card.config.center
+    local compatible = HNDS.sarmenti_blueprint_compatible(card)
+    if compatible then
+        card.config.center = center
+        card.hnds_sarmenti_blueprint_center = nil
+        card.hnds_sarmenti_blueprint_base = nil
+    else
+        if not proxy or card.hnds_sarmenti_blueprint_base ~= center then
+            proxy = setmetatable({blueprint_compat = false}, {__index = center})
+            card.hnds_sarmenti_blueprint_center = proxy
+            card.hnds_sarmenti_blueprint_base = center
+        end
+        card.config.center = proxy
+    end
+    return compatible
 end
 
 local function hnds_hydrate_component_snapshot(snap)
@@ -903,6 +957,7 @@ local function hnds_fuse_two(a, b)
     end)
     survivor_puzzle.rounds_remaining = 2
     survivor_puzzle.expired = false
+    HNDS.sarmenti_refresh_blueprint_compat(survivor)
     HNDS.sarmenti_refresh_visual_edition(survivor)
     if HNDS.sarmenti_refresh_sell_cost then HNDS.sarmenti_refresh_sell_cost(survivor) end
     if SMODS and type(SMODS.recalc_debuff) == 'function' then pcall(SMODS.recalc_debuff, survivor) end
@@ -984,6 +1039,16 @@ local function hnds_append_edition_tooltips(full_UI_table, card)
 end
 
 if Card then
+    if type(Card.load) == 'function' and not Card._hnds_sarmenti_load_wrapped then
+        Card._hnds_sarmenti_load_wrapped = true
+        local load_ref = Card.load
+        function Card:load(...)
+            local results = HNDS.pack(load_ref(self, ...))
+            HNDS.sarmenti_refresh_blueprint_compat(self)
+            return unpack_values(results, 1, results.n)
+        end
+    end
+
     if type(Card.remove) == 'function' and not Card._hnds_sarmenti_remove_wrapped then
         Card._hnds_sarmenti_remove_wrapped = true
         local remove_ref = Card.remove
@@ -1022,6 +1087,7 @@ if Card then
         local set_sprites_ref = Card.set_sprites
         function Card:set_sprites(...)
             local packed = HNDS.pack(set_sprites_ref(self, ...))
+            HNDS.sarmenti_refresh_blueprint_compat(self)
 
             if self.hnds_sarmenti_component_guard then
                 local snap = self.hnds_sarmenti_component_snapshot
@@ -1047,6 +1113,7 @@ if Card then
             if hnds_collection_preview(self) or self.hnds_sarmenti_component_guard or not HNDS.is_sarmenti_piece(self) then
                 return update_ref(self, dt, ...)
             end
+            HNDS.sarmenti_refresh_blueprint_compat(self)
 
             local before_sell = self.sell_cost
             local before_label = self.sell_cost_label
@@ -1071,6 +1138,7 @@ if Card then
                     end)
                 end
             end
+            HNDS.sarmenti_refresh_blueprint_compat(self)
 
             if self.hnds_sarmenti_component_visual_dirty then
                 self.hnds_sarmenti_component_visual_dirty = nil
@@ -1093,6 +1161,8 @@ if Card then
             if self.hnds_sarmenti_component_guard or not HNDS.is_sarmenti_piece(self) then
                 return calculate_ref(self, context, ...)
             end
+            local compatible = HNDS.sarmenti_refresh_blueprint_compat(self)
+            if context and context.blueprint and not compatible then return end
             local args = HNDS.pack(...)
             local result = HNDS.pack(calculate_ref(self, context, unpack_values(args, 1, args.n)))
             local puzzle = hnds_puzzle(self)
@@ -1130,6 +1200,7 @@ if Card then
                 self.hnds_sarmenti_cost_dirty = nil
                 HNDS.sarmenti_refresh_sell_cost(self)
             end
+            HNDS.sarmenti_refresh_blueprint_compat(self)
             return unpack_values(result, 1, result.n)
         end
     end
@@ -1398,6 +1469,15 @@ if Card then
             hnds_append_edition_tooltips(full_UI_table, self)
             return unpack_values(results, 1, results.n)
         end
+    end
+end
+
+if SMODS and type(SMODS.blueprint_effect) == 'function' and not HNDS._billy_blueprint_hook then
+    HNDS._billy_blueprint_hook = true
+    local blueprint_ref = SMODS.blueprint_effect
+    function SMODS.blueprint_effect(copier, copied_card, context, ...)
+        if HNDS.is_sarmenti_piece(copied_card) and not HNDS.sarmenti_refresh_blueprint_compat(copied_card) then return end
+        return blueprint_ref(copier, copied_card, context, ...)
     end
 end
 

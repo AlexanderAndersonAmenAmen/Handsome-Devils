@@ -1,32 +1,65 @@
-G.CURSE_OFFERS = {
+local function curse_round_offer_ready(card, context)
+    if not (context.end_of_round and context.main_eval and not context.repetition
+        and not context.blueprint and G.GAME) then return false end
+    local round = G.GAME.round
+    if round ~= nil and card.ability.hnds_curse_reward_round == round then return false end
+    card.ability.hnds_curse_reward_round = round
+    return true
+end
 
+local function curse_reward_ante(blind)
+    local resets = G.GAME and G.GAME.round_resets
+    return (blind and blind.hnds_crystal_pvp_ante)
+        or (resets and (resets.blind_ante or resets.ante))
+end
+
+local function queue_curse_consumables(card, set, count, key_append, delay, show_copied)
+    local game, area = G.GAME, G.consumeables
+    if not (game and area and area.cards and area.config and G.E_MANAGER) then return end
+
+    local buffer = game.consumeable_buffer or 0
+    local room = area.config.card_limit - #area.cards - buffer
+    local reserved = math.min(count, room)
+    if reserved <= 0 then
+        card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
+        return
+    end
+
+    game.consumeable_buffer = buffer + reserved
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        delay = delay,
+        func = function()
+            game.consumeable_buffer = math.max(0, (game.consumeable_buffer or 0) - reserved)
+            if G.GAME ~= game or G.consumeables ~= area then return true end
+
+            local created = math.min(reserved, area.config.card_limit - #area.cards)
+            for i = 1, created do
+                SMODS.add_card({
+                    set = set,
+                    area = area,
+                    key_append = count == 1 and key_append or key_append .. i,
+                })
+            end
+            if not (card.removed or card.REMOVED) then
+                if created <= 0 then
+                    card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
+                elseif show_copied then
+                    card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_copied_ex'), colour = G.C.CHIPS})
+                end
+            end
+            return true
+        end,
+    }))
+end
+
+G.CURSE_OFFERS = {
 
     [1] = {
         id = 'offer_copy_random_tarot',
         func = function(card, context)
-            if context.end_of_round and context.main_eval and not context.repetition and not context.blueprint then
-                if G and G.E_MANAGER and Event and SMODS and SMODS.add_card then
-                    G.E_MANAGER:add_event(Event({
-                        trigger = 'after',
-                        delay = 0.1,
-                        func = function()
-                            if G.consumeables and G.consumeables.cards and G.consumeables.config and #G.consumeables.cards >= G.consumeables.config.card_limit then
-                                card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
-                                return true
-                            end
-                            G.E_MANAGER:add_event(Event({
-                                trigger = 'after',
-                                delay = 0.3,
-                                func = function()
-                                    SMODS.add_card({set = 'Tarot', area = G.consumeables, key_append = 'hnds_curse_tarot'})
-                                    return true
-                                end
-                            }))
-                            card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_copied_ex'), colour = G.C.CHIPS})
-                            return true
-                        end
-                    }))
-                end
+            if curse_round_offer_ready(card, context) then
+                queue_curse_consumables(card, 'Tarot', 1, 'hnds_curse_tarot', 0.4, true)
             end
         end
     },
@@ -34,46 +67,8 @@ G.CURSE_OFFERS = {
     [2] = {
         id = 'offer_copy_random_planet',
         func = function(card, context)
-            if context.end_of_round and context.main_eval and not context.repetition and not context.blueprint then
-                if G and G.E_MANAGER and G.GAME and Event and SMODS and SMODS.add_card then
-                    G.E_MANAGER:add_event(Event({
-                        trigger = 'after',
-                        delay = 0.1,
-                        func = function()
-                            if not (G.consumeables and G.consumeables.cards and G.consumeables.config) then
-                                return true
-                            end
-
-                            local buffer = tonumber(G.GAME.consumeable_buffer) or 0
-                            local room = (tonumber(G.consumeables.config.card_limit) or 0)
-                                - #G.consumeables.cards - buffer
-                            local to_create = math.min(2, math.max(0, room))
-                            if to_create == 0 then
-                                card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
-                                return true
-                            end
-
-                            G.GAME.consumeable_buffer = buffer + to_create
-                            G.E_MANAGER:add_event(Event({
-                                trigger = 'after',
-                                delay = 0.3,
-                                func = function()
-                                    for i = 1, to_create do
-                                        SMODS.add_card({
-                                            set = 'Planet',
-                                            area = G.consumeables,
-                                            key_append = 'hnds_curse_planet_' .. i,
-                                        })
-                                    end
-                                    G.GAME.consumeable_buffer = math.max(0,
-                                        (tonumber(G.GAME.consumeable_buffer) or to_create) - to_create)
-                                    return true
-                                end
-                            }))
-                            return true
-                        end
-                    }))
-                end
+            if curse_round_offer_ready(card, context) then
+                queue_curse_consumables(card, 'Planet', 2, 'hnds_curse_planet_', 0.4)
             end
         end
     },
@@ -142,36 +137,10 @@ G.CURSE_OFFERS = {
         id = 'offer_interest_cap',
         func = function(card, context)
             if not (context and context.hnds_boss_defeated) then return end
-            if not (G and G.GAME and G.GAME.round_resets and G.consumeables and G.consumeables.cards
-                and G.consumeables.config and SMODS and SMODS.add_card) then return end
-
-            card.ability = card.ability or {}
-            local ante = tonumber(G.GAME.round_resets.ante) or 0
-            if card.ability.hnds_curse_spectral_ante == ante then return end
+            local ante = tonumber(context.hnds_curse_ante or curse_reward_ante(G.GAME and G.GAME.blind))
+            if not ante or card.ability.hnds_curse_spectral_ante == ante then return end
             card.ability.hnds_curse_spectral_ante = ante
-
-            local buffer = tonumber(G.GAME.consumeable_buffer) or 0
-            local limit = tonumber(G.consumeables.config.card_limit) or 0
-            if #G.consumeables.cards + buffer >= limit then
-                card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
-                return
-            end
-
-            G.GAME.consumeable_buffer = buffer + 1
-            G.E_MANAGER:add_event(Event({
-                trigger = 'after', delay = 0.1,
-                func = function()
-                    SMODS.add_card({
-                        set = 'Spectral',
-                        area = G.consumeables,
-                        key_append = 'hnds_curse_boss_spectral_' .. tostring(ante),
-                    })
-                    if G.GAME then
-                        G.GAME.consumeable_buffer = math.max(0, (tonumber(G.GAME.consumeable_buffer) or 1) - 1)
-                    end
-                    return true
-                end
-            }))
+            queue_curse_consumables(card, 'Spectral', 1, 'hnds_curse_boss_spectral_' .. ante, 0.1)
         end
     },
 
@@ -184,7 +153,7 @@ G.CURSE_OFFERS = {
             if context.buying_card or (context.starting_shop and context.main_eval and not context.repetition and not context.blueprint) then
                 local cr = G.GAME.current_round
                 cr.free_rerolls = tonumber(cr.free_rerolls) or 0
-                cr.free_rerolls = math.max(0, cr.free_rerolls + 2)
+                cr.free_rerolls = math.max(0, cr.free_rerolls + 1)
                 if calculate_reroll_cost then calculate_reroll_cost(true) end
             end
         end
@@ -269,17 +238,36 @@ G.CURSE_PRICES = {
         id = 'price_destroy_jokers',
         func = function(card, context)
             if context.buying_card then
-                for i=#G.jokers.cards, 1, -1 do
-                    if G.jokers.cards[i] ~= card and not (G.jokers.cards[i].ability and G.jokers.cards[i].ability.eternal) then
-                        G.jokers.cards[i]:start_dissolve()
+                local jokers = G.jokers and G.jokers.cards or {}
+                local victims = {}
+                for i = #jokers, 1, -1 do
+                    local joker = jokers[i]
+                    if joker ~= card and not (joker.removed or joker.REMOVED or joker.getting_sliced
+                        or joker.destroyed or HNDS.formosana_is_protected(joker))
+                    then
+                        victims[#victims + 1] = joker
                     end
                 end
+                if #victims > 0 then SMODS.destroy_cards(victims, {immediate = true}) end
             end
         end
     },
 
     [2] = {
         id = 'price_destroy_cards',
+        in_pool = function(self)
+            local deck = G.playing_cards or {}
+            if #deck <= 40 then return true end
+            local modified = 0
+            for _, playing_card in ipairs(deck) do
+                local center = playing_card.config and playing_card.config.center
+                if (center and center.set == 'Enhanced') or playing_card.seal or playing_card.edition then
+                    modified = modified + 1
+                    if modified >= 5 then return true end
+                end
+            end
+            return false
+        end,
         func = function(card, context)
             if context.buying_card then
                 context.hnds_curse_taken = context.hnds_curse_taken or {}
@@ -701,6 +689,17 @@ local function hnds_assign_curse_data(card, attach_sticker)
 
     hnds_strip_foreign_stickers(card)
 
+    if card.ability.hnds_curse_offer and card.ability.hnds_curse_price then
+        if attach_sticker and not card.ability.hnds_cursed then card:add_sticker('hnds_cursed', true) end
+        return
+    end
+
+    local price_pool = {}
+    for _, price in ipairs(G.CURSE_PRICES) do
+        if not price.in_pool or price:in_pool() then price_pool[#price_pool + 1] = price end
+    end
+    if #price_pool == 0 then return end
+
     local offer_index
     local price_index
     local attempt_count = 0
@@ -720,10 +719,10 @@ local function hnds_assign_curse_data(card, attach_sticker)
         attempt_count = attempt_count + 1
 
         offer_index = pseudorandom('hnds_curse_offer', 1, #G.CURSE_OFFERS)
-        price_index = pseudorandom('hnds_curse_price', 1, #G.CURSE_PRICES)
+        price_index = pseudorandom('hnds_curse_price', 1, #price_pool)
 
         local offer_entry = G.CURSE_OFFERS[offer_index]
-        local price_entry = G.CURSE_PRICES[price_index]
+        local price_entry = price_pool[price_index]
 
 
         if offer_entry and offer_entry.id == 'offer_retrigger' and not can_be_retriggered then
@@ -929,13 +928,37 @@ function trigger_curse(card, context)
     return acquire_ret or hnds_run_defs(card, context, offer_def, price_def)
 end
 
-function HNDS.trigger_boss_defeat_curse_offers()
+local function curse_offer_card_available(card)
+    return card.ability and not (card.removed or card.REMOVED or card.getting_sliced or card.destroyed)
+end
+
+function HNDS.trigger_boss_defeat_curse_offers(ante)
     for _, card in ipairs((G and G.jokers and G.jokers.cards) or {}) do
-        if card and card.ability
+        if curse_offer_card_available(card)
             and (card.ability.hnds_curse_offer == 'offer_interest_cap'
                 or card.ability.hnds_curse_offer == 'offer_spectral_gen')
         then
-            trigger_curse(card, { hnds_boss_defeated = true, main_eval = true })
+            trigger_curse(card, { hnds_boss_defeated = true, hnds_curse_ante = ante, main_eval = true })
+        end
+    end
+end
+
+function HNDS.trigger_pvp_curse_offers()
+    local game = G.GAME
+    local blind = game and game.blind
+    if not (blind and HNDS.mp_active()) then return end
+    local api = HNDS.mp_backend()
+    local spectator = api and api.SPECTATOR
+    if spectator and (spectator.is_spectating or spectator.is_spectator_role) then return end
+
+    HNDS.trigger_boss_defeat_curse_offers(curse_reward_ante(blind))
+
+    for _, card in ipairs(G.jokers and G.jokers.cards or {}) do
+        if curse_offer_card_available(card) and not card.debuff
+            and (card.ability.hnds_curse_offer == 'offer_copy_random_tarot'
+                or card.ability.hnds_curse_offer == 'offer_copy_random_planet')
+        then
+            trigger_curse(card, { end_of_round = true, main_eval = true })
         end
     end
 end
@@ -944,10 +967,11 @@ if Blind and type(Blind.defeat) == 'function' and not HNDS._curse_boss_defeat_ho
     HNDS._curse_boss_defeat_hook = true
     local hnds_curse_defeat_ref = Blind.defeat
     function Blind:defeat(...)
-        local real_boss = HNDS.active_blind_is_real_ante_boss
+        local real_boss = G.GAME and G.GAME.blind == self and HNDS.active_blind_is_real_ante_boss
             and HNDS.active_blind_is_real_ante_boss()
+        local ante = real_boss and curse_reward_ante(self)
         local results = HNDS.pack(hnds_curse_defeat_ref(self, ...))
-        if real_boss then HNDS.trigger_boss_defeat_curse_offers() end
+        if ante then HNDS.trigger_boss_defeat_curse_offers(ante) end
         return ((table and table.unpack) or unpack)(results, 1, results.n)
     end
 end

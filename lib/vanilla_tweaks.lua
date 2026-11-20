@@ -923,6 +923,7 @@ take_vanilla_ownership(SMODS.Consumable, 'black_hole', {
     can_use = function() return true end,
 })
 
-take_vanilla_ownership(SMODS.PokerHand, 'Full House', { mult = 4, chips = 45, l_mult = 4, l_chips = 30 })
+take_vanilla_ownership(SMODS.PokerHand, 'Full House', { l_mult = 3, l_chips = 25 })
+take_vanilla_ownership(SMODS.PokerHand, 'Four of a Kind', { l_mult = 3, l_chips = 30 })
 take_vanilla_ownership(SMODS.PokerHand, 'Flush House', { l_mult = 5, l_chips = 50 })
 take_vanilla_ownership(SMODS.PokerHand, 'Straight Flush', { l_mult = 6, l_chips = 60 })

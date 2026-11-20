@@ -1,0 +1,46 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "engine/sound_manager.lua"
+pattern = "function PLAY_SOUND(args)"
+position = "at"
+match_indent = true
+payload = '''
+local hnds_blind_upgrade_source
+local function hnds_new_blind_upgrade_source()
+    if not hnds_blind_upgrade_source then
+        local data = love.sound.newSoundData('resources/sounds/negative.ogg')
+        local samples = data:getSampleCount()
+        for channel = 1, data:getChannelCount() do
+            for index = 0, samples - 1 do
+                local sample = data:getSample(index, channel)
+                local magnitude = math.abs(sample) * 1.75
+                if magnitude > 0.8 then magnitude = 0.8 + (magnitude - 0.8) * 0.2 end
+                data:setSample(index, channel, sample < 0 and -magnitude or magnitude)
+            end
+        end
+        hnds_blind_upgrade_source = love.audio.newSource(data)
+    end
+    return hnds_blind_upgrade_source:clone()
+end
+
+function PLAY_SOUND(args)
+    if args.sound_code == 'hnds_blind_upgrade_negative' then
+        SOURCES[args.sound_code] = SOURCES[args.sound_code] or {}
+    end
+'''
+
+[[patches]]
+[patches.pattern]
+target = "engine/sound_manager.lua"
+pattern = '''{sound = love.audio.newSource("resources/sounds/"..args.sound_code..'.ogg', should_stream and "stream" or 'static')}'''
+position = "at"
+match_indent = true
+payload = '''
+{sound = args.sound_code == 'hnds_blind_upgrade_negative' and hnds_new_blind_upgrade_source()
+    or love.audio.newSource("resources/sounds/"..args.sound_code..'.ogg', should_stream and "stream" or 'static')}
+'''

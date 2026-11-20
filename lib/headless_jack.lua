@@ -394,18 +394,20 @@ function HNDS.add_jack_of_lanterns(source_joker, owner)
     return new_card
 end
 
-function HNDS.remove_jack_of_lanterns(owner)
+function HNDS.destroy_jack_of_lanterns(owner)
     if not (owner and G and G.playing_cards) then return end
     local targets = {}
     for _, playing_card in ipairs(G.playing_cards) do
-        if hnds_jol_owner(playing_card) == owner then
+        if hnds_jol_owner(playing_card) == owner
+            and not (playing_card.removed or playing_card.getting_sliced or playing_card.destroyed or playing_card.shattered)
+        then
             targets[#targets + 1] = playing_card
         end
     end
     if #targets == 0 then return end
 
     if SMODS and SMODS.destroy_cards then
-        SMODS.destroy_cards(targets)
+        SMODS.destroy_cards(targets, { bypass_eternal = true })
     else
         for _, playing_card in ipairs(targets) do
             if playing_card.start_dissolve then playing_card:start_dissolve() end

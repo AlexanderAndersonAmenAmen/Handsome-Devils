@@ -33,19 +33,27 @@ SMODS.Joker {
                 souls[#souls + 1] = joker
             end
         end
-        for _, soul in ipairs(souls) do
-            G.E_MANAGER:add_event(Event({
-                trigger = 'after',
-                delay = 0.05,
-                func = function()
-                    if soul and soul.area then soul:start_dissolve() end
-                    return true
+        if #souls == 0 then return end
+        local game = G.GAME
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.05,
+            func = function()
+                if G.GAME ~= game then return true end
+                local targets = {}
+                for _, soul in ipairs(souls) do
+                    if soul.area == G.jokers and not (soul.removed or soul.REMOVED or soul.getting_sliced or soul.destroyed) then
+                        targets[#targets + 1] = soul
+                    end
                 end
-            }))
-        end
+                if #targets > 0 then SMODS.destroy_cards(targets, {immediate = true}) end
+                return true
+            end,
+        }))
     end,
     calculate = function(self, card, context)
         if (context.end_of_round and context.beat_boss and context.main_eval and G.GAME.current_round.hands_played == 1) or (context.forcetrigger and G.GAME.blind) then
+            if HNDS.mp_is_pvp and HNDS.mp_is_pvp() then return end
             local souls = HNDS.get_blind_souls(G.GAME.blind, "hnds_pennywise") or {}
             for i, soul_args in ipairs(souls) do
                 local args = {}

@@ -25,7 +25,7 @@ SMODS.Joker {
         local rank_a, rank_b
         local has_wild_rank = false
         for _, c in ipairs(context.scoring_hand or {}) do
-            if HNDS.imposter_card_is_wild_rank(c, context) then has_wild_rank = true end
+            if HNDS.card_has_wild_rank(c, context) then has_wild_rank = true end
             local r = c:get_id()
             if not rank_a then rank_a = r elseif r ~= rank_a and not rank_b then rank_b = r end
         end

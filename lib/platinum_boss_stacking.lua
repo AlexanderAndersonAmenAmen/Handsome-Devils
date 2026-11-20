@@ -605,14 +605,7 @@ function HNDS.create_platinum_upgrade_effect_boxes(ante)
     return nodes
 end
 
-function HNDS.create_platinum_boss_tooltip(ante)
-    local base = boss_choice()
-
-
-    if is_devil_blind_key(base) and HNDS.create_devil_blind_tooltip then
-        return HNDS.create_devil_blind_tooltip(ante or current_ante())
-    end
-
+function HNDS.create_blind_stack_tooltip(ante, base)
     local nodes = {}
     local base_box = create_effect_box(base)
     if base_box then nodes[#nodes + 1] = base_box end
@@ -625,6 +618,14 @@ function HNDS.create_platinum_boss_tooltip(ante)
         config = { align = "cm", colour = G.C.CLEAR, padding = 0.04 },
         nodes = nodes,
     }
+end
+
+function HNDS.create_platinum_boss_tooltip(ante)
+    local base = boss_choice()
+    if is_devil_blind_key(base) and HNDS.create_devil_blind_tooltip then
+        return HNDS.create_devil_blind_tooltip(ante or current_ante())
+    end
+    return HNDS.create_blind_stack_tooltip(ante, base)
 end
 
 function HNDS.clear_platinum_boss_tooltip(sprite)
@@ -648,13 +649,13 @@ function HNDS.clear_platinum_boss_tooltip(sprite)
     end
 end
 
-function HNDS.attach_platinum_boss_tooltip(sprite, blind_config)
+function HNDS.attach_platinum_boss_tooltip(sprite, blind_config, is_preview)
     if not sprite then return end
 
     local ante = current_ante()
     local key = blind_config and blind_config.key
     local qualifies = blind_raiser_active() and blind_config
-        and not (HNDS.mp_is_pvp and HNDS.mp_is_pvp(blind_config))
+        and (is_preview or not (HNDS.mp_is_pvp and HNDS.mp_is_pvp(blind_config)))
         and G and G.GAME and G.GAME.round_resets
         and key == boss_choice()
         and not is_devil_blind_key(key)
@@ -768,18 +769,9 @@ end
 local STACK_DEBUFF_FIELDS = { "h_size_ge", "h_size_le", "hand" }
 
 local function restore_stacked_hand_debuff_fields(blind)
-    local snapshot = blind and blind.hnds_platinum_debuff_snapshot
-    if not (blind and type(snapshot) == "table") then return end
-    blind.debuff = blind.debuff or {}
-    for _, field in ipairs(STACK_DEBUFF_FIELDS) do
-        local saved = snapshot[field]
-        if saved and saved.present then
-            blind.debuff[field] = saved.value
-        else
-            blind.debuff[field] = nil
-        end
-    end
-    blind.hnds_platinum_debuff_snapshot = nil
+    if not (blind and blind.hnds_platinum_original_debuff) then return end
+    blind.debuff = blind.hnds_platinum_original_debuff
+    blind.hnds_platinum_original_debuff = nil
 end
 
 local function apply_stacked_hand_debuff_fields(blind)
@@ -787,15 +779,9 @@ local function apply_stacked_hand_debuff_fields(blind)
 
 
     restore_stacked_hand_debuff_fields(blind)
-    blind.debuff = blind.debuff or {}
-    local snapshot = {}
-    for _, field in ipairs(STACK_DEBUFF_FIELDS) do
-        snapshot[field] = {
-            present = blind.debuff[field] ~= nil,
-            value = blind.debuff[field],
-        }
-    end
-    blind.hnds_platinum_debuff_snapshot = snapshot
+    blind.hnds_platinum_original_debuff = blind.debuff or {}
+    blind.debuff = {}
+    for field, value in pairs(blind.hnds_platinum_original_debuff) do blind.debuff[field] = value end
 
     for _, hook_key in ipairs(active_effect_hooks()) do
         local component = HNDS.DEVIL_BOSSES and HNDS.DEVIL_BOSSES[hook_key]
@@ -812,17 +798,21 @@ local function live_stack_matches(blind)
     if not (blind_raiser_active() and G and G.GAME and blind) then return false end
     local center = blind.config and blind.config.blind
     local key = center and center.key
-    return G.GAME.hnds_platinum_boss_stack_active == true
+    return blind == G.GAME.blind
+        and G.GAME.hnds_platinum_boss_stack_active == true
         and blind.hnds_platinum_boss_stack_active == true
         and tonumber(G.GAME.hnds_platinum_boss_stack_ante) == current_ante()
+        and (G.GAME.hnds_platinum_boss_stack_slot or "Boss") == G.GAME.blind_on_deck
         and G.GAME.hnds_platinum_boss_stack_key == key
 end
 
 local function boss_stack_active(blind)
-    if HNDS.mp_is_pvp and HNDS.mp_is_pvp(blind) then return false end
-    return blind_raiser_active()
-        and G and G.GAME
-        and G.GAME.blind_on_deck == "Boss"
+    local center = blind and blind.config and blind.config.blind
+    if not (blind_raiser_active() and center and center.key and not blind.disabled and blind == G.GAME.blind) then
+        return false
+    end
+    local slot = G.GAME.blind_on_deck
+    return (slot == "Boss" or (slot and HNDS.mp_is_pvp and HNDS.mp_is_pvp(blind)))
         and HNDS.platinum_boss_upgrade_count_for_ante(current_ante()) > 0
 end
 
@@ -852,6 +842,7 @@ function HNDS.start_platinum_boss_stack(blind)
     local base_key = blind.config and blind.config.blind and blind.config.blind.key
     G.GAME.hnds_platinum_boss_stack_active = true
     G.GAME.hnds_platinum_boss_stack_ante = current_ante()
+    G.GAME.hnds_platinum_boss_stack_slot = G.GAME.blind_on_deck
     G.GAME.hnds_platinum_boss_stack_key = base_key
     blind.hnds_platinum_boss_stack_active = true
     blind.hnds_platinum_boss_stack_ante = current_ante()
@@ -890,6 +881,7 @@ function HNDS.start_platinum_boss_stack(blind)
 
     blind.loc_name = append_plus_to_name(blind.loc_name)
 
+    if HNDS.mp_is_pvp and HNDS.mp_is_pvp(blind) then return end
 
     local function attach_live_tooltip()
         if not (G and G.GAME and G.GAME.blind == blind) then return end
@@ -1028,6 +1020,7 @@ function HNDS.stop_platinum_boss_stack(cleanup_context)
     G.GAME.hnds_platinum_boss_draw_key = nil
     G.GAME.hnds_platinum_boss_draw_original = nil
     G.GAME.hnds_platinum_boss_stack_ante = nil
+    G.GAME.hnds_platinum_boss_stack_slot = nil
     G.GAME.hnds_platinum_boss_stack_key = nil
 end
 
@@ -1066,22 +1059,21 @@ end
 
 local Blind_set_blind_ref = Blind.set_blind
 function Blind:set_blind(blind, reset, silent, ...)
-    local slot_before = G and G.GAME and G.GAME.blind_on_deck
+    if not (G and G.GAME and G.GAME.blind == self) then
+        return Blind_set_blind_ref(self, blind, reset, silent, ...)
+    end
+
+    local slot_before = G.GAME.blind_on_deck
     local ante_before = current_ante()
     local incoming_key = blind and blind.key
-    local stack_key = G and G.GAME and G.GAME.hnds_platinum_boss_stack_key
-    local same_boss_refresh = blind == nil
-        and slot_before == "Boss"
-        and G and G.GAME
-        and G.GAME.hnds_platinum_boss_stack_active == true
-        and tonumber(G.GAME.hnds_platinum_boss_stack_ante) == ante_before
-        and self.hnds_platinum_boss_stack_active == true
+    local stack_key = G.GAME.hnds_platinum_boss_stack_key
+    local same_boss_refresh = reset and (not incoming_key or incoming_key == stack_key)
+        and live_stack_matches(self)
 
-
-    if G and G.GAME and G.GAME.hnds_platinum_boss_stack_active then
-        local stale_scope = slot_before ~= "Boss"
+    if G.GAME.hnds_platinum_boss_stack_active then
+        local stale_scope = slot_before ~= (G.GAME.hnds_platinum_boss_stack_slot or "Boss")
             or tonumber(G.GAME.hnds_platinum_boss_stack_ante) ~= ante_before
-            or (blind ~= nil and stack_key ~= nil and incoming_key ~= stack_key)
+            or not reset or (incoming_key and incoming_key ~= stack_key)
         if stale_scope then
             HNDS.stop_platinum_boss_stack({
                 blind_defeated = true,
@@ -1134,22 +1126,14 @@ function Blind:set_blind(blind, reset, silent, ...)
 
         HNDS.sync_live_platinum_blind_score(self)
 
-        if slot == "Boss" then
-            if same_boss_refresh and live_stack_matches(self) then
-
-
-                apply_stacked_hand_debuff_fields(self)
-                for _, card in ipairs(G.playing_cards or {}) do
-                    self:debuff_card(card)
-                end
-                self.loc_name = append_plus_to_name(self.loc_name)
-            else
-                HNDS.start_platinum_boss_stack(self)
+        if same_boss_refresh and live_stack_matches(self) then
+            apply_stacked_hand_debuff_fields(self)
+            for _, card in ipairs(G.playing_cards or {}) do
+                self:debuff_card(card)
             end
-        else
-            self.hnds_platinum_boss_stack_active = nil
-            self.hnds_platinum_boss_stack_ante = nil
-            restore_stacked_hand_debuff_fields(self)
+            self.loc_name = append_plus_to_name(self.loc_name)
+        elseif blind or reset then
+            HNDS.start_platinum_boss_stack(self)
         end
 
         if G.HUD_blind and G.HUD_blind.recalculate then
@@ -1163,7 +1147,7 @@ local Blind_disable_ref = Blind.disable
 function Blind:disable(...)
 
 
-    if G and G.GAME and G.GAME.hnds_platinum_boss_stack_active then
+    if G and G.GAME and G.GAME.blind == self and G.GAME.hnds_platinum_boss_stack_active then
         HNDS.stop_platinum_boss_stack({ blind_disabled = true })
     end
     return Blind_disable_ref(self, ...)
@@ -1173,8 +1157,14 @@ local Blind_defeat_ref = Blind.defeat
 function Blind:defeat(...)
 
 
-    if G and G.GAME and G.GAME.hnds_platinum_boss_stack_active then
+    if G and G.GAME and G.GAME.blind == self and G.GAME.hnds_platinum_boss_stack_active then
         HNDS.stop_platinum_boss_stack({ blind_defeated = true })
     end
     return Blind_defeat_ref(self, ...)
+end
+
+local delete_run_ref = Game.delete_run
+function Game:delete_run(...)
+    HNDS.stop_platinum_boss_stack({ blind_defeated = true, hnds_scope_cleanup = true })
+    return delete_run_ref(self, ...)
 end

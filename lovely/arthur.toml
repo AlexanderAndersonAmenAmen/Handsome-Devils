@@ -1,0 +1,17 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 40
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if v:get_id() == 9 then self.ability.nine_tally = self.ability.nine_tally+1 end"
+position = "at"
+match_indent = true
+times = 1
+payload = '''
+local is_nine = HNDS and HNDS.card_counts_as_rank and HNDS.card_counts_as_rank(v, 9)
+if is_nine == nil then is_nine = v:get_id() == 9 end
+if is_nine then self.ability.nine_tally = self.ability.nine_tally + 1 end
+'''

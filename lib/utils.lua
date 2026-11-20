@@ -152,7 +152,29 @@ if type(get_current_pool) == 'function' and not HNDS._art_gallery_tag_pool_wrapp
     end
 end
 
-function HNDS.poll_allowed_tag(seed, exclusions)
+function HNDS.get_registered_tag_pool()
+    local pool = {}
+    local tags = G.P_TAGS or {}
+    local remap = HNDS.conjuring_tag_key
+    for key in pairs(tags) do
+        local effective_key = remap and remap(key) or key
+        if tags[effective_key] and not HNDS.is_tag_banned(key) and not HNDS.is_tag_banned(effective_key) then
+            pool[#pool + 1] = key
+        end
+    end
+    table.sort(pool)
+    return pool
+end
+
+function HNDS.poll_registered_tag_key(seed)
+    local pool = HNDS.get_registered_tag_pool()
+    if #pool == 0 then return end
+    local key = pseudorandom_element(pool, pseudoseed(seed))
+    local remap = HNDS.conjuring_tag_key
+    return remap and remap(key) or key
+end
+
+function HNDS.poll_allowed_tag(seed, exclusions, key_only)
     local pool, seen = {}, {}
     for _, key in ipairs(get_current_pool('Tag', nil, nil, seed) or {}) do
         local effective_key = HNDS.conjuring_tag_key and HNDS.conjuring_tag_key(key) or key
@@ -168,6 +190,7 @@ function HNDS.poll_allowed_tag(seed, exclusions)
     if #pool == 0 then return nil end
 
     local key = pseudorandom_element(pool, pseudoseed(seed))
+    if key_only then return key end
     local tag = Tag(key)
     if key == 'tag_orbital' then
         local hands = {}
@@ -182,7 +205,7 @@ function HNDS.poll_allowed_tag(seed, exclusions)
     return tag
 end
 
-function HNDS.poll_tag(seed, options, exclusions)
+function HNDS.poll_tag(seed, options, exclusions, key_only)
 	if not exclusions and not options then exclusions = { 'tag_boss', 'tag_top_up', 'tag_speed' } end
 
 
@@ -206,13 +229,15 @@ function HNDS.poll_tag(seed, options, exclusions)
 
 		-- A banned Handy Tag must not be used as a fallback in Art Gallery.
         if fallback and not HNDS.is_tag_banned(fallback) then
+            if key_only then return fallback end
             return Tag(fallback)
         end
-        return HNDS.poll_allowed_tag(seed .. '_fallback')
+        return HNDS.poll_allowed_tag(seed .. '_fallback', nil, key_only)
 	end
 
 	local tag_key = pseudorandom_element(pool, pseudoseed(seed))
 	if not tag_key then return nil end
+	if key_only then return tag_key end
 	local tag = Tag(tag_key)
 	if not tag then return nil end
 
@@ -385,7 +410,7 @@ HNDS.circus_joker_pool = {
 SMODS.current_mod.reset_game_globals = function(run_start)
 	if run_start then
 		G.GAME.ante_stones_scored = 0
-		G.GAME.art_queue = 0
+		G.GAME.art_queue = {}
 	end
 
 

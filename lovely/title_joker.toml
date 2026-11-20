@@ -13,7 +13,11 @@ local hnds_title_front
 if not hnds_title_joker then hnds_title_front = G.P_CARDS.S_A end
 local replace_card = Card(self.title_top.T.x, self.title_top.T.y, 1.2*G.CARD_W*SC_scale, 1.2*G.CARD_H*SC_scale,
     hnds_title_front, hnds_title_joker or G.P_CENTERS.c_base,
-    hnds_title_joker and { bypass_discovery_center = true, bypass_discovery_ui = true, bypass_lock = true } or nil)
+    hnds_title_joker and { bypass_discovery_center = true, bypass_discovery_ui = true, bypass_lock = true, hnds_title_display = true } or nil)
+if hnds_title_joker then
+    replace_card.edition = nil
+    replace_card.seal = nil
+end
 '''
 match_indent = true
 

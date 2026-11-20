@@ -18,17 +18,12 @@ CardSleeves.Sleeve({
         end
     end,
     calculate = function(self, sleeve, context)
-        if context.end_of_round and context.main_eval
-            and HNDS.active_blind_is_real_ante_boss and HNDS.active_blind_is_real_ante_boss()
-            and G.GAME.round_resets.ante == 4 then
+        if not (context.end_of_round and context.main_eval
+            and not (HNDS.mp_is_pvp and HNDS.mp_is_pvp())
+            and HNDS.active_blind_is_real_ante_boss and HNDS.active_blind_is_real_ante_boss()) then return end
+        local ante = G.GAME.round_resets.ante
+        if ante == 4 or ((ante == 2 or ante == 6) and self.get_current_deck_key() == "b_hnds_crystal") then
             G.GAME.hnds_crystal_queued = true
-        end
-        if self.get_current_deck_key() == "b_hnds_crystal" then
-            if context.end_of_round and context.main_eval
-                and HNDS.active_blind_is_real_ante_boss and HNDS.active_blind_is_real_ante_boss()
-                and (G.GAME.round_resets.ante == 2 or G.GAME.round_resets.ante == 6) then
-                G.GAME.hnds_crystal_queued = true
-            end
         end
     end,
 })

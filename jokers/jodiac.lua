@@ -39,6 +39,7 @@ local function hnds_all_hand_keys()
 end
 
 local function hnds_jodiac_should_show_hand(hand_key, tracked)
+    if type(tracked) == 'table' and tracked[hand_key] then return true end
     local hand_data = G and G.GAME and G.GAME.hands and G.GAME.hands[hand_key]
     if hand_data then
         if hand_data.visible == false then
@@ -62,7 +63,7 @@ local function hnds_jodiac_should_show_hand(hand_key, tracked)
     return true
 end
 
-local function hnds_jodiac_queue_checklist(info_queue, tracked)
+local function hnds_jodiac_queue_checklist(info_queue, tracked, complete)
     if not info_queue or not G or not G.localization then return end
     local descriptions = G.localization.descriptions
     local other = descriptions and descriptions.Other
@@ -71,7 +72,7 @@ local function hnds_jodiac_queue_checklist(info_queue, tracked)
 
     local lines, parsed_lines = {}, {}
     for _, hand_key in ipairs(hnds_all_hand_keys()) do
-        if hnds_jodiac_should_show_hand(hand_key, tracked) then
+        if (not complete or tracked[hand_key]) and hnds_jodiac_should_show_hand(hand_key, tracked) then
             local hand_name = localize(hand_key, 'poker_hands') or hand_key
             local colour = tracked and tracked[hand_key] and 'attention' or 'inactive'
             lines[#lines + 1] = '{C:' .. colour .. '}' .. hand_name .. '{}'
@@ -83,6 +84,15 @@ local function hnds_jodiac_queue_checklist(info_queue, tracked)
     entry.text = lines
     entry.text_parsed = parsed_lines
     info_queue[#info_queue + 1] = { key = 'hnds_jodiac_checklist', set = 'Other', vars = {} }
+end
+
+local function hnds_jodiac_progress(extra)
+    local count = 0
+    for _, played in pairs(extra.unique_hands or {}) do
+        if played then count = count + 1 end
+    end
+    local required = tonumber(extra.required_hands) or 8
+    return math.min(required, math.max(count, tonumber(extra.hands_played) or 0)), required
 end
 
 SMODS.Joker {
@@ -108,19 +118,23 @@ SMODS.Joker {
             unique_hands = {},
         },
     },
+    load = function(self, card)
+        local extra = card.ability.extra
+        local progress, required = hnds_jodiac_progress(extra)
+        extra.hands_played = progress
+        extra.complete = extra.complete or progress >= required
+    end,
     loc_vars = function(self, info_queue, card)
         local extra = card and card.ability and card.ability.extra or self.config.extra
         extra.unique_hands = extra.unique_hands or {}
-        local tracked_count = 0
-        for _ in pairs(extra.unique_hands) do tracked_count = tracked_count + 1 end
-        local required = tonumber(extra.required_hands) or 8
-        local progress = math.min(tracked_count, required)
+        local progress, required = hnds_jodiac_progress(extra)
 
         local in_collection = card and card.area and card.area.config and card.area.config.collection
         if info_queue and card and not in_collection then
-            hnds_jodiac_queue_checklist(info_queue, extra.unique_hands)
+            local complete = extra.complete or progress >= required
+            hnds_jodiac_queue_checklist(info_queue, extra.unique_hands, complete)
         end
-        return { vars = { tonumber(extra.hands_played) or progress, required, tonumber(extra.upgrade_levels) or 2 } }
+        return { vars = { progress, required, tonumber(extra.upgrade_levels) or 2 } }
     end,
     calculate = function(self, card, context)
         local extra = card.ability.extra
@@ -135,6 +149,7 @@ SMODS.Joker {
                         (tonumber(extra.hands_played) or 0) + 1
                     )
                     if extra.hands_played >= (tonumber(extra.required_hands) or 8) then
+                        if extra.complete then return end
                         extra.complete = true
                         juice_card_until(card, function(c) return not c.REMOVED end, true)
                         return { message = 'Complete!', colour = G.C.RED }
@@ -148,12 +163,15 @@ SMODS.Joker {
         end
 
         local selling_this = context.selling_self or (context.selling_card and context.card == card)
-        if selling_this and extra.complete and not extra.reward_given and not context.blueprint then
+        if not selling_this or extra.reward_given or context.blueprint or SMODS.no_resolve then return end
+        local progress, required = hnds_jodiac_progress(extra)
+        if extra.complete or progress >= required then
+            extra.complete = true
             extra.reward_given = true
             local levels = tonumber(extra.upgrade_levels) or 2
             for _, hand in ipairs(hnds_all_hand_keys()) do
                 local hand_data = G.GAME and G.GAME.hands and G.GAME.hands[hand]
-                if hand_data and (tonumber(hand_data.level) or 0) > 0 then
+                if hand_data then
                     SMODS.smart_level_up_hand(card, hand, true, levels)
                 end
             end

@@ -279,55 +279,6 @@ if Card and type(Card.set_base) == 'function' and not HNDS._faceless_set_base_gu
 end
 
 
-local function hnds_creepy_queue_faceless_after_score(scored_card)
-    if not scored_card then return false end
-    scored_card.hnds_creepy_pending_faceless = nil
-
-    local function apply_now()
-        if not scored_card or scored_card.removed or scored_card.destroyed or scored_card.shattered then
-            return true
-        end
-        if HNDS.apply_faceless(scored_card) and scored_card.juice_up then
-            scored_card:juice_up(0.35, 0.35)
-        end
-        return true
-    end
-
-    if G and G.E_MANAGER and Event then
-        G.E_MANAGER:add_event(Event({
-            trigger = 'after',
-            delay = 0,
-            blockable = true,
-            blocking = true,
-            func = apply_now,
-        }))
-        return true
-    end
-
-    return apply_now()
-end
-
-if SMODS and type(SMODS.score_card) == 'function' and not HNDS._creepy_score_card_wrapped then
-    HNDS._creepy_score_card_wrapped = true
-    local hnds_creepy_score_card_ref = SMODS.score_card
-    local unpack_values = (table and table.unpack) or unpack
-
-    function SMODS.score_card(scored_card, context, ...)
-        local trailing = HNDS.pack(...)
-        local results = HNDS.pack(hnds_creepy_score_card_ref(
-            scored_card, context, unpack_values(trailing, 1, trailing.n)
-        ))
-
-
-        if scored_card and scored_card.hnds_creepy_pending_faceless then
-            hnds_creepy_queue_faceless_after_score(scored_card)
-        end
-
-        return unpack_values(results, 1, results.n)
-    end
-end
-
-
 local FACELESS_PERMA_KEYS = {
     'perma_bonus', 'perma_mult', 'perma_x_chips', 'perma_x_mult',
     'perma_h_chips', 'perma_h_mult', 'perma_h_x_chips', 'perma_h_x_mult',
@@ -972,41 +923,85 @@ if Card and type(Card.generate_UIBox_ability_table) == 'function' and not HNDS._
 end
 
 
-local function hnds_creepy_snapshot_targets()
-    local snapshot = {}
-    local highlighted = G and G.hand and G.hand.highlighted
-    if type(highlighted) ~= 'table' then return snapshot end
+local hnds_creepy_emplacing = setmetatable({}, { __mode = 'k' })
 
-    for _, target in ipairs(highlighted) do
-        local eligible = false
-        if target and not target.removed and not target.REMOVED
-            and not target.debuff and not HNDS.is_faceless(target)
-            and type(target.is_face) == 'function'
-        then
-            local ok, is_face = pcall(target.is_face, target)
-            eligible = ok and is_face == true
-        end
-        snapshot[#snapshot + 1] = { card = target, eligible = eligible }
+local function hnds_creepy_can_steal(target)
+    if not (G and G.STAGES and G.STAGE == G.STAGES.RUN and G.GAME)
+        or SMODS.no_resolve or not target or not target.playing_card
+        or not target.base or not target.ability
+        or target.removed or target.REMOVED or target.destroyed or target.shattered or target.getting_sliced
+        or HNDS.is_faceless(target) or target.hnds_creepy_flip_pending
+        or target.area ~= G.hand and target.area ~= G.play
+        or target.area and target.area.config and target.area.config.collection
+        or type(target.is_face) ~= 'function'
+    then
+        return false
     end
-    return snapshot
+    return target:is_face(true) == true
 end
 
-if Card and type(Card.use_consumeable) == 'function' and not HNDS._creepy_consumable_face_hook then
-    HNDS._creepy_consumable_face_hook = true
-    local use_consumeable_ref = Card.use_consumeable
-
-    function Card:use_consumeable(area, copier, ...)
-        local snapshot = hnds_creepy_snapshot_targets()
-        local previous_snapshot = HNDS._creepy_consumable_targets
-        HNDS._creepy_consumable_targets = snapshot
-        self.hnds_creepy_consumable_targets = snapshot
-        self.hnds_creepy_consumable_queued = nil
-
-        local results = HNDS.pack(pcall(use_consumeable_ref, self, area, copier, ...))
-        HNDS._creepy_consumable_targets = previous_snapshot
-        if not results[1] then error(results[2], 0) end
-        return ((table and table.unpack) or unpack)(results, 2, results.n)
+local function hnds_creepy_flip_context(target)
+    if hnds_creepy_can_steal(target) then
+        SMODS.calculate_context({ hnds_card_flipped = true, other_card = target })
     end
+end
+
+local function hnds_creepy_steal_after_flip(target)
+    local pending = { game = G.GAME }
+    target.hnds_creepy_flip_pending = pending
+    local function apply()
+        if target.hnds_creepy_flip_pending ~= pending then return true end
+        target.hnds_creepy_flip_pending = nil
+        if G.GAME == pending.game and not (target.removed or target.REMOVED
+            or target.destroyed or target.shattered or target.getting_sliced)
+        then
+            if HNDS.apply_faceless(target) and target.juice_up then target:juice_up(0.35, 0.35) end
+        end
+        return true
+    end
+    if G.E_MANAGER and Event then
+        G.E_MANAGER:add_event(Event({ trigger = 'after', delay = 0, func = apply }))
+    else
+        apply()
+    end
+end
+
+if Card and type(Card.flip) == 'function' and not HNDS._creepy_flip_hook then
+    HNDS._creepy_flip_hook = true
+    local flip_ref = Card.flip
+    local unpack_values = (table and table.unpack) or unpack
+    function Card:flip(...)
+        local facing = self.facing
+        local results = HNDS.pack(flip_ref(self, ...))
+        if facing ~= self.facing and not hnds_creepy_emplacing[self] then
+            hnds_creepy_flip_context(self)
+        end
+        return unpack_values(results, 1, results.n)
+    end
+end
+
+if CardArea and type(CardArea.emplace) == 'function' and not HNDS._creepy_emplace_hook then
+    HNDS._creepy_emplace_hook = true
+    local emplace_ref = CardArea.emplace
+    local unpack_values = (table and table.unpack) or unpack
+    function CardArea:emplace(target, location, stay_flipped, ...)
+        if not target then return emplace_ref(self, target, location, stay_flipped, ...) end
+        local already_in_hand = target.area == G.hand
+        local previous = hnds_creepy_emplacing[target]
+        hnds_creepy_emplacing[target] = true
+        local results = HNDS.pack(pcall(emplace_ref, self, target, location, stay_flipped, ...))
+        hnds_creepy_emplacing[target] = previous
+        if not results[1] then error(results[2], 0) end
+        if not previous and self == G.hand and not already_in_hand and stay_flipped and target.facing == 'back' then
+            hnds_creepy_flip_context(target)
+        end
+        return unpack_values(results, 2, results.n)
+    end
+end
+
+local function hnds_creepy_odds(card)
+    local extra = card and card.ability and card.ability.extra
+    return type(extra) == 'table' and tonumber(extra.odds) or 3
 end
 
 SMODS.Joker({
@@ -1027,63 +1022,20 @@ SMODS.Joker({
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
+    config = { extra = { odds = 3 } },
     loc_vars = function(self, info_queue, card)
         if info_queue then
             info_queue[#info_queue + 1] = { set = 'Other', key = 'hnds_faceless' }
         end
-        return { vars = {} }
+        local numerator, denominator = SMODS.get_probability_vars(card, 1, hnds_creepy_odds(card), 'hnds_creepy')
+        return { vars = { numerator, denominator } }
     end,
     calculate = function(self, card, context)
-        if not (context and context.using_consumeable) or context.retrigger_joker then return end
-
-        local source = context.consumeable or context.consumable
-        local snapshot = source and source.hnds_creepy_consumable_targets
-            or HNDS._creepy_consumable_targets
-        if type(snapshot) ~= 'table' or #snapshot == 0 then return end
-
-        if source and source.hnds_creepy_consumable_queued then return end
-        if source then source.hnds_creepy_consumable_queued = true end
-
-        local targets = {}
-        for _, entry in ipairs(snapshot) do
-            local target = entry.card
-            if entry.eligible and target and not target.removed and not target.REMOVED
-                and not HNDS.is_faceless(target)
-            then
-                targets[#targets + 1] = target
-            end
-        end
-        if #targets == 0 then
-            if source then source.hnds_creepy_consumable_queued = nil end
-            return
-        end
-
-        local function steal_faces_after_consumable()
-            for _, target in ipairs(targets) do
-                if target and not target.removed and not target.REMOVED and not HNDS.is_faceless(target) then
-                    if HNDS.apply_faceless(target) and target.juice_up then
-                        target:juice_up(0.35, 0.35)
-                    end
-                end
-            end
-            if source then
-                if source.hnds_creepy_consumable_targets == snapshot then
-                    source.hnds_creepy_consumable_targets = nil
-                end
-                source.hnds_creepy_consumable_queued = nil
-            end
-            return true
-        end
-
-        if G and G.E_MANAGER and Event then
-            G.E_MANAGER:add_event(Event({
-                trigger = 'after',
-                delay = 0,
-                func = steal_faces_after_consumable,
-            }))
-        else
-            steal_faces_after_consumable()
+        if not (context and context.hnds_card_flipped and hnds_creepy_can_steal(context.other_card)) then return end
+        if SMODS.pseudorandom_probability(card, 'hnds_creepy', 1, hnds_creepy_odds(card), 'hnds_creepy') then
+            hnds_creepy_steal_after_flip(context.other_card)
+            return { message = localize('k_upgrade_ex'), colour = G.C.FILTER }
         end
     end,
-    attributes = { 'modify_card' },
+    attributes = { 'modify_card', 'chance' },
 })

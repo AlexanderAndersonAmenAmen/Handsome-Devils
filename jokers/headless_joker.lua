@@ -21,6 +21,7 @@ local function hnds_headless_gain_head(card)
         trigger = 'after',
         delay = 0,
         func = function()
+            if extra.owner_id ~= owner then return true end
             local added
             if HNDS and HNDS.add_jack_of_lanterns then
                 added = HNDS.add_jack_of_lanterns(card, owner)
@@ -69,9 +70,12 @@ SMODS.Joker {
 
     remove_from_deck = function(self, card, from_debuff)
         if from_debuff then return end
-        local owner = card and card.ability and card.ability.extra and card.ability.extra.owner_id
-        if owner and HNDS and HNDS.remove_jack_of_lanterns then
-            HNDS.remove_jack_of_lanterns(owner)
+        local extra = card and card.ability and card.ability.extra
+        if extra and extra.owner_id then
+            local owner = extra.owner_id
+            extra.owner_id = nil
+            extra.head_added = false
+            HNDS.destroy_jack_of_lanterns(owner)
         end
     end,
 

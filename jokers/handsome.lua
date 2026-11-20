@@ -13,7 +13,7 @@ SMODS.Joker {
     check_for_unlock = function(self, args)
         return HNDS.joker_unlock_condition_met("handsome", args)
     end,
-    blueprint_compat = true,
+    blueprint_compat = false,
     perishable_compat = true,
     in_pool = function(self, args)
 
@@ -30,11 +30,15 @@ SMODS.Joker {
         return false
     end,
     calculate = function (self, card, context)
-        if type(context) ~= "table" then return end
+        if type(context) ~= "table" or context.blueprint or context.blueprint_card
+            or context.retrigger_joker
+        then
+            return
+        end
         local other = context.other_card
-        if (context.repetition or (context.retrigger_joker_check and not context.retrigger_joker))
+        if (context.repetition or context.retrigger_joker_check)
             and other and other ~= card and other.edition then
-            return { repetitions = 1 }
+            return { repetitions = 1, no_retrigger = true }
         end
     end,
     attributes = { "retrigger", "edition" }

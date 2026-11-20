@@ -5,30 +5,19 @@ end
 
 function HNDS.reset_wild_order_suit()
     local round = G.GAME.current_round
-    local old = HNDS.wild_order_suit()
-    local suits = {}
-    for _, suit in ipairs({ "Spades", "Hearts", "Clubs", "Diamonds" }) do
-        if suit ~= old then suits[#suits + 1] = suit end
-    end
-    round.hnds_wild_order_suit = pseudorandom_element(suits, pseudoseed("hnds_wild_order"))
+    local current = HNDS.wild_order_suit()
+    round.hnds_wild_order_suit = HNDS.poll_abstract_suit('hnds_wild_order', current) or current
 end
 
 function HNDS.wild_order_active()
-    for _, joker in ipairs(G and G.jokers and G.jokers.cards or {}) do
-        if not joker.debuff and not joker.REMOVED and not joker.removed
-            and joker.config.center.key == "j_hnds_wild_order" then return true end
+    if not (G and G.jokers) then return false end
+    for _, joker in ipairs(G.jokers.cards) do
+        local center = joker.config and joker.config.center
+        if center and center.key == "j_hnds_wild_order" and not (joker.debuff or joker.REMOVED or joker.removed) then
+            return true
+        end
     end
     return false
-end
-
-function HNDS.wild_order_next_card(deck, discarded_only)
-    if not HNDS.wild_order_active() then return nil end
-    for i = #deck.cards, 1, -1 do
-        local card = deck.cards[i]
-        if not card.removed and not card.REMOVED
-            and (not discarded_only or card.ability.discarded)
-            and card:is_suit(HNDS.wild_order_suit()) then return card end
-    end
 end
 
 local suit_frames = { Diamonds = 0, Hearts = 1, Clubs = 2, Spades = 3 }
@@ -41,6 +30,26 @@ local function in_collection(card)
     return not (G and G.STAGES and G.STAGE == G.STAGES.RUN)
 end
 
+function HNDS.wild_order_matches(card)
+    if not (card and card.base and G and G.STAGES and G.STAGE == G.STAGES.RUN) then return false end
+    local source = card
+    if HNDS.is_faceless and HNDS.is_faceless(card) then source = HNDS.faceless_copy_target(card) end
+    return source and source.base and source.base.suit == HNDS.wild_order_suit()
+        and HNDS.wild_order_active() and not in_collection(card) and not HNDS.safe_has_no_suit(card)
+end
+
+local has_any_suit_ref = SMODS.has_any_suit
+function SMODS.has_any_suit(card, ...)
+    if HNDS.wild_order_matches(card) then return true end
+    return has_any_suit_ref(card, ...)
+end
+
+local has_enhancement_ref = SMODS.has_enhancement
+function SMODS.has_enhancement(card, key, ...)
+    if key == 'm_wild' and HNDS.wild_order_matches(card) then return true end
+    return has_enhancement_ref(card, key, ...)
+end
+
 local function apply_sprite(card, suit)
     local sprite = card and card.children and card.children.center
     if not (sprite and sprite.set_sprite_pos) then return false end
@@ -48,8 +57,9 @@ local function apply_sprite(card, suit)
     local atlas = SMODS.get_atlas and SMODS.get_atlas(key)
         or G.ASSET_ATLAS and G.ASSET_ATLAS[key]
     if not atlas then return false end
-    local x = suit and (6 + (suit_frames[suit] or 3)) or 7
-    local y = suit and 8 or 6
+    local frame = suit_frames[suit]
+    local x = frame and (6 + frame) or 7
+    local y = frame and 8 or 6
     if sprite.atlas ~= atlas or not sprite.sprite_pos
         or sprite.sprite_pos.x ~= x or sprite.sprite_pos.y ~= y then
         sprite.atlas = atlas
@@ -150,5 +160,5 @@ SMODS.Joker({
         local suit = HNDS.wild_order_suit()
         return { vars = { localize(suit, "suits_singular"), colours = { G.C.SUITS[suit] } } }
     end,
-    attributes = { "draw", "suits" },
+    attributes = { "suit" },
 })

@@ -7,6 +7,11 @@ local function is_joker_card(card)
     return center and center.set == "Joker"
 end
 
+function HNDS.formosana_is_protected(card)
+    local center = card and card.config and card.config.center
+    return center and center.key == "j_hnds_formosana" and not card.hnds_bizarre_destroying
+end
+
 SMODS.Joker({
     key = "formosana",
     atlas = "Jokers",
@@ -27,10 +32,12 @@ SMODS.Joker({
         if context.joker_type_destroyed then
             local target = target_nonplaying_card(context)
             local from_sell = context.trigger and context.trigger.from_sell
-            if target == card and not from_sell and not context.blueprint then return { no_destroy = true } end
+            if target == card and not from_sell and not context.blueprint and not card.hnds_bizarre_destroying then
+                return { no_destroy = true }
+            end
             if not context.blueprint and not from_sell and target ~= card and is_joker_card(target) then
-                local target_key = target.config and target.config.center and target.config.center.key
-                local protected = target_key == "j_hnds_formosana" or target.ability and target.ability.eternal
+                local protected = HNDS.formosana_is_protected(target)
+                    or target.ability and target.ability.eternal
                 if not protected then
                     card.ability.extra.xmult = card.ability.extra.xmult + card.ability.extra.gain
                     return { message = localize("k_upgrade_ex"), colour = G.C.MULT }

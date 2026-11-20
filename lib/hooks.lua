@@ -908,6 +908,21 @@ end
 
 HNDS.strip_other_stickers = hnds_strip_other_stickers
 
+if Card and Card.remove_from_deck then
+    local remove_from_deck_ref = Card.remove_from_deck
+    function Card:remove_from_deck(from_debuff, ...)
+        if not from_debuff and self.debuff and not self.added_to_deck then
+            local center = self.config and self.config.center
+            if center and center.remove_from_deck
+                and (center.key == 'j_hnds_bizzare_joker' or center.key == 'j_hnds_headless_joker')
+            then
+                center:remove_from_deck(self, from_debuff)
+            end
+        end
+        return remove_from_deck_ref(self, from_debuff, ...)
+    end
+end
+
 
 local hnds_contagion_cache_time = nil
 local hnds_contagion_cache_bonus = 0
@@ -1496,7 +1511,10 @@ function Card.set_cost(self, ...)
 
 
 	if key == "j_hnds_coffee_break" then self.sell_cost = 0 end
-	if key == "j_hnds_art" then self.sell_cost = -5 end
+	if key == "j_hnds_art" then
+		self.sell_cost = HNDS.art_sell_value(self)
+		self.sell_cost_label = self.facing == 'back' and '?' or self.sell_cost
+	end
     -- Fun Police now has an ordinary positive sell value. set_cost_ref
     -- recalculates it normally (also repairs older negative-sell saves).
 
@@ -1745,186 +1763,6 @@ if G and G.UIDEF and G.UIDEF.challenge_description_tab and not G.UIDEF._hnds_wra
 
 		patch_node(ret)
 		return ret
-	end
-end
-
-
-function HNDS.excommunicado_effect_active()
-	if not (SMODS and SMODS.find_card) then return false end
-
-	local excom_cards = SMODS.find_card('j_hnds_excommunicado')
-	if excom_cards and next(excom_cards) then return true end
-
-	local jack_cards = SMODS.find_card('j_hnds_jack_in_the_box')
-	if jack_cards then
-		for _, jack in pairs(jack_cards) do
-			local extra = jack and jack.ability and jack.ability.extra
-			if extra and extra.active == true and extra.rare_key == 'j_hnds_excommunicado' then
-				return true
-			end
-		end
-	end
-	return false
-end
-
-local function hnds_excommunicado_active()
-	return HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active() or false
-end
-
-local function hnds_is_showdown_boss(blind_key)
-	local blind = G and G.P_BLINDS and G.P_BLINDS[blind_key]
-	return blind and blind.boss and blind.boss.showdown == true
-end
-
-local function hnds_excommunicado_fallback_boss(seed_key)
-	if not (G and G.GAME and G.P_BLINDS) then return nil end
-
-	local ante = G.GAME.round_resets and G.GAME.round_resets.ante or 1
-	local eligible = {}
-	for key, blind in pairs(G.P_BLINDS) do
-		local boss = blind and blind.boss
-		local min_ante = boss and tonumber(boss.min)
-		local max_ante = boss and tonumber(boss.max)
-		local banned = G.GAME.banned_keys and G.GAME.banned_keys[key]
-		if boss
-			and boss.showdown ~= true
-			and not banned
-			and (not min_ante or ante >= min_ante)
-			and (not max_ante or ante <= max_ante)
-		then
-			eligible[key] = (G.GAME.bosses_used and G.GAME.bosses_used[key]) or 0
-		end
-	end
-
-	local min_use
-	for _, uses in pairs(eligible) do
-		if type(uses) == 'number' and (min_use == nil or uses < min_use) then
-			min_use = uses
-		end
-	end
-	if min_use ~= nil then
-		for key, uses in pairs(eligible) do
-			if type(uses) ~= 'number' or uses ~= min_use then eligible[key] = nil end
-		end
-	end
-
-	local _, picked = pseudorandom_element(eligible, pseudoseed(seed_key or 'hnds_excommunicado_boss'))
-	return picked
-end
-
-
-function HNDS.get_excommunicado_boss(seed_key)
-	if not (G and G.GAME and G.GAME.round_resets) then
-		return get_new_boss()
-	end
-
-	local old_win_ante = G.GAME.win_ante
-	local old_bypass = G.GAME.hnds_bypass_ante_10_force
-	local ante = tonumber(G.GAME.round_resets.ante) or 1
-	local win_ante = tonumber(old_win_ante) or 8
-
-	G.GAME.hnds_bypass_ante_10_force = true
-	G.GAME.win_ante = math.max(win_ante, ante + 1000)
-	local ok, picked = pcall(get_new_boss)
-	G.GAME.win_ante = old_win_ante
-	G.GAME.hnds_bypass_ante_10_force = old_bypass
-
-	if ok and picked and not hnds_is_showdown_boss(picked) then
-		return picked
-	end
-
-
-	if ok and picked and hnds_is_showdown_boss(picked)
-		and G.GAME.bosses_used and type(G.GAME.bosses_used[picked]) == 'number'
-	then
-		G.GAME.bosses_used[picked] = math.max(0, G.GAME.bosses_used[picked] - 1)
-	end
-
-	local fallback = hnds_excommunicado_fallback_boss(
-		(seed_key or 'hnds_excommunicado_boss') .. '_' .. tostring(ante)
-	)
-	if fallback then
-		if G.GAME.bosses_used then
-			local uses = G.GAME.bosses_used[fallback]
-			G.GAME.bosses_used[fallback] = (type(uses) == 'number' and uses or 0) + 1
-		end
-		return fallback
-	end
-
-	if not ok then error(picked) end
-	return picked
-end
-
-
-local Blind_get_type_ref = Blind.get_type
-function Blind:get_type(...)
-	if not hnds_excommunicado_active() then
-		return Blind_get_type_ref(self, ...)
-	end
-
-
-	if G.GAME and G.GAME.blind == self and G.GAME.blind_on_deck then
-		return G.GAME.blind_on_deck
-	end
-
-	return Blind_get_type_ref(self, ...)
-end
-
-
-function HNDS.replace_current_blinds_with_bosses()
-	if not (G.GAME and G.GAME.round_resets and G.GAME.round_resets.blind_choices) then return end
-	local blind_choices = G.GAME.round_resets.blind_choices
-	local blind_states = G.GAME.round_resets.blind_states or {}
-	local used_bosses = {}
-
-	if blind_choices.Boss then
-		table.insert(used_bosses, blind_choices.Boss)
-	end
-
-	local function replace_if_vanilla(blind_type, seed_key)
-        if HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp(blind_type) then return end
-		local choice = blind_choices[blind_type]
-		local state = blind_states[blind_type]
-		if not (choice and state ~= 'Defeated' and choice == 'bl_' .. blind_type:lower()) then return end
-
-		local eligible_bosses = {}
-		for k, v in pairs(G.P_BLINDS) do
-			if v.boss and not v.boss.showdown then
-				local is_used = false
-				for _, used in ipairs(used_bosses) do
-					if used == k then is_used = true break end
-				end
-				if not is_used then
-					eligible_bosses[k] = (G.GAME.bosses_used and G.GAME.bosses_used[k]) or 0
-				end
-			end
-		end
-		local min_use = 100
-		for k, v in pairs(eligible_bosses) do
-			if v < min_use then min_use = v end
-		end
-		for k, v in pairs(eligible_bosses) do
-			if v > min_use then eligible_bosses[k] = nil end
-		end
-		local _, new_boss = pseudorandom_element(eligible_bosses, pseudoseed(seed_key .. '_' .. G.GAME.round_resets.ante))
-		if new_boss then
-			blind_choices[blind_type] = new_boss
-			table.insert(used_bosses, new_boss)
-		end
-	end
-
-	replace_if_vanilla('Small', 'excom_small')
-	replace_if_vanilla('Big', 'excom_big')
-end
-function HNDS.update_excom()
-	if HNDS.excommunicado_effect_active and HNDS.excommunicado_effect_active() then
-		HNDS.replace_current_blinds_with_bosses()
-	elseif G and G.GAME and G.GAME.round_resets and G.GAME.round_resets.blind_choices then
-		for _, slot in ipairs({"Small", "Big"}) do
-            if not (HNDS.mp_slot_is_pvp and HNDS.mp_slot_is_pvp(slot)) then
-                G.GAME.round_resets.blind_choices[slot] = "bl_" .. slot:lower()
-            end
-        end
 	end
 end
 

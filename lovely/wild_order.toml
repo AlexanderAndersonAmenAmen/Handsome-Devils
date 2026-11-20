@@ -6,15 +6,19 @@ priority = 40
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
-pattern = '''
-            if card then
-                if from then card = from:remove_card(card) end
-'''
+pattern = "if from then card = from:remove_card(card) end"
 position = "before"
 payload = '''
-            if from == G.deck and to == G.hand and not (card and card.ability and card.ability.hnds_drawing) and HNDS and HNDS.wild_order_next_card then
-                card = HNDS.wild_order_next_card(from, discarded_only) or card
-            end
+if from then
+    local hnds_in_source = false
+    for _, hnds_source_card in ipairs(from.cards or {}) do
+        if hnds_source_card == card then
+            hnds_in_source = true
+            break
+        end
+    end
+    if not hnds_in_source then return true end
+end
 '''
-match_indent = false
+match_indent = true
 times = 1

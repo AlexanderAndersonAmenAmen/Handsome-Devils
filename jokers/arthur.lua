@@ -1,102 +1,124 @@
-local function arthur_suit(card)
-    local extra = card and card.ability and card.ability.extra
-    if type(extra) ~= "table" then return "Spades" end
-    extra.suit = extra.suit or "Spades"
-    return extra.suit
+local pending_destruction = setmetatable({}, { __mode = 'k' })
+
+function HNDS.card_counts_as_rank(card, rank)
+    return card and type(card.get_id) == 'function' and type(rank) == 'number' and card:get_id() == rank or false
 end
 
-local function change_arthur_suit(card)
-    local current = arthur_suit(card)
-    local choices = HNDS.get_pollable_suit_keys and HNDS.get_pollable_suit_keys('hnds_arthur', current) or {}
-    if #choices == 0 then
-        for _, suit in ipairs({ 'Spades', 'Hearts', 'Clubs', 'Diamonds' }) do
-            if suit ~= current then choices[#choices + 1] = suit end
-        end
-    end
-    local seed = "hnds_arthur_suit_" .. tostring(card and card.sort_id or 0)
-    card.ability.extra.suit = pseudorandom_element(choices, pseudoseed(seed)) or "Spades"
+function HNDS.card_counts_as_face(card)
+    return card and type(card.is_face) == 'function' and card:is_face() or false
 end
 
-local function add_free_rerolls(amount)
-    if not (G and G.GAME and G.GAME.current_round) then return end
-    local current_round = G.GAME.current_round
-    current_round.free_rerolls = math.max(0, (tonumber(current_round.free_rerolls) or 0) + amount)
-    if calculate_reroll_cost then calculate_reroll_cost(true) end
+function HNDS.arthur_suit()
+    local round = G and G.GAME and G.GAME.current_round
+    return round and round.hnds_arthur_suit or 'Spades'
+end
+
+function HNDS.reset_arthur_suit()
+    local round = G.GAME.current_round
+    local current = HNDS.arthur_suit()
+    round.hnds_arthur_suit = HNDS.poll_abstract_suit('hnds_arthur', current) or current
+end
+
+local function arthur_extra(card)
+    if type(card.ability.extra) ~= 'table' then card.ability.extra = {} end
+    local extra = card.ability.extra
+    extra.required = math.max(1, math.floor(tonumber(extra.required) or 4))
+    extra.destroyed = math.max(0, math.floor(tonumber(extra.destroyed) or 0))
+    return extra
+end
+
+local function award_standard_tags(amount)
+    local game = G.GAME
+    G.E_MANAGER:add_event(Event({
+        func = function()
+            if G.GAME ~= game then return true end
+            for i = 1, amount do add_tag(Tag('tag_standard')) end
+            play_sound('generic1')
+            return true
+        end,
+    }))
 end
 
 SMODS.Joker {
-    key = "arthur",
+    key = 'arthur',
     unlocked = false,
-    unlock_condition = { type = "", extra = "", hidden = true },
+    unlock_condition = { type = '', extra = '', hidden = true },
     locked_loc_vars = function(self, info_queue, card)
-        return { key = "joker_locked_legendary", set = "Other", vars = {} }
+        return { key = 'joker_locked_legendary', set = 'Other', vars = {} }
     end,
     discovered = false,
-    blueprint_compat = true,
-    demicoloncompat = true,
+    blueprint_compat = false,
     rarity = 4,
     cost = 20,
-    atlas = "Jokers",
+    atlas = 'Jokers',
     pos = { x = 9, y = 2 },
     soul_pos = { x = 4, y = 3 },
-    config = { extra = { rerolls = 1, suit = "Spades" } },
-
+    config = { extra = { required = 4, destroyed = 0 } },
     loc_vars = function(self, info_queue, card)
-        local extra = card and card.ability and card.ability.extra or self.config.extra
-        local suit = (extra and extra.suit) or "Spades"
-        local free_rerolls = G and G.GAME and G.GAME.current_round
-            and (tonumber(G.GAME.current_round.free_rerolls) or 0)
-            or 0
-        local suit_colour = G and G.C and G.C.SUITS and (G.C.SUITS[suit] or G.C.SUITS[suit:upper()])
-            or (G and G.C and G.C.ORANGE)
-        return {
-            vars = {
-                free_rerolls,
-                (extra and extra.rerolls) or 1,
-                localize(suit, "suits_singular"),
-                colours = { suit_colour },
-            },
-        }
+        local extra = card and card.ability and arthur_extra(card) or self.config.extra
+        local suit = HNDS.arthur_suit()
+        if info_queue then info_queue[#info_queue + 1] = { key = 'tag_standard', set = 'Tag' } end
+        return { vars = {
+            localize(suit, 'suits_singular'), extra.required, extra.required - extra.destroyed % extra.required,
+            colours = { G.C.SUITS[suit] },
+        } }
     end,
-
     calculate = function(self, card, context)
-        local extra = card.ability.extra
+        if context.blueprint or context.retrigger_joker or SMODS.no_resolve then return end
+        local ability = card.ability
+        if context.before or context.after then pending_destruction[ability] = nil end
 
-        if context.destroying_card
-            and context.destroying_card:is_suit(arthur_suit(card))
-            and not SMODS.is_eternal(context.destroying_card, card)
+        local target = context.destroying_card
+        if target and context.cardarea == G.play and not target.debuff
+            and target:is_suit(HNDS.arthur_suit())
+            and not SMODS.is_eternal(target, { destroy_cards = true })
         then
-            add_free_rerolls(tonumber(extra.rerolls) or 1)
-            return {
-                remove = true,
-                message = localize("k_hnds_free_reroll"),
-                colour = G.C.GREEN,
-            }
+            local pending = pending_destruction[ability]
+            if not pending then
+                pending = setmetatable({}, { __mode = 'k' })
+                pending_destruction[ability] = pending
+            end
+            pending[target] = true
+            return { remove = true }
         end
 
-        if context.after and not context.blueprint then
-            change_arthur_suit(card)
-            return {
-                message = localize("k_hnds_arthurs_suit"),
-                colour = G.C.SUITS[arthur_suit(card)] or G.C.ORANGE,
-            }
+        if context.remove_playing_cards and type(context.removed) == 'table' then
+            local pending = pending_destruction[ability]
+            if not pending then return end
+            local gained = 0
+            for _, removed in ipairs(context.removed) do
+                if pending[removed] then
+                    pending[removed] = nil
+                    if removed.destroyed or removed.shattered or removed.getting_sliced then gained = gained + 1 end
+                end
+            end
+            if gained == 0 then return end
+            local extra = arthur_extra(card)
+            local total = extra.destroyed + gained
+            local tags = math.floor(total / extra.required)
+            extra.destroyed = total % extra.required
+            if tags > 0 then
+                award_standard_tags(tags)
+                return { message = localize('k_hnds_plus_tag'), colour = G.C.FILTER }
+            end
+            return { message = extra.destroyed .. '/' .. extra.required, colour = G.C.FILTER }
         end
     end,
-
     joker_display_def = function(JokerDisplay)
         return {
             reminder_text = {
-                { text = "(" },
-                { ref_table = "card.joker_display_values", ref_value = "suit", ref_colour = "suit_colour" },
-                { text = ")" },
+                { text = '(' },
+                { ref_table = 'card.joker_display_values', ref_value = 'suit' },
+                { text = ': ' },
+                { ref_table = 'card.joker_display_values', ref_value = 'remaining' },
+                { text = ')' },
             },
             calc_function = function(card)
-                local suit = arthur_suit(card)
-                card.joker_display_values.suit = localize(suit, "suits_plural")
-                card.joker_display_values.suit_colour = G.C.SUITS[suit] or G.C.ORANGE
+                local extra = arthur_extra(card)
+                card.joker_display_values.suit = localize(HNDS.arthur_suit(), 'suits_singular')
+                card.joker_display_values.remaining = extra.required - extra.destroyed % extra.required
             end,
         }
     end,
-
-    attributes = { "destroy_card", "suit", "economy" },
+    attributes = { 'suit', 'destroy_card', 'tag' },
 }

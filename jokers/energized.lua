@@ -12,7 +12,7 @@ end
 
 SMODS.Joker {
     key = 'energized', atlas = 'Jokers', pos = { x = 2, y = 2 },
-    rarity = 3, cost = 10,
+    rarity = 2, cost = 7,
     config = { extra = { cards_per_charge = 4, cards_drawn = 0, charges = 0 } },
     unlocked = false, discovered = false,
     unlock_condition = { type = 'hnds_joker_unlock', key = 'energized' },

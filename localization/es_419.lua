@@ -84,10 +84,10 @@ local localization = {
             j_hnds_wild_order = {
                 name = "Wild Order",
                 text = {
-                    "Cards with",
-                    "{V:1}#1#{} suit are",
-                    "always drawn first",
-                    "{s:0.8}Suit changes every round",
+                    "Las cartas del palo",
+                    "{V:1}#1#{} cuentan como",
+                    "{C:attention}cartas comodín{}",
+                    "{s:0.8}El palo cambia cada ronda",
                 },
             },
             j_hnds_trump_suit = {
@@ -277,10 +277,11 @@ local localization = {
 			j_hnds_krusty = {
 				name = "Clown Krusty",
 				text = {
-					"Vende esta carta para crear {C:attention}#1#",
-					"{C:attention}#2#{} {C:inactive}(Máximo #3#)",
-					"Mejora por cada",
-					"{C:money}$#4#{} {C:inactive}[#5#]{} gastados",
+					"{C:hnds_chaos_abilities}+9{} palos base",
+					"Convierte las cartas puntuadas",
+					"a {V:1}#1#{} si la mano",
+					"jugada contiene un {C:attention}Color{}",
+					"{s:0.8}El palo cambia cada ronda",
 				}
 			},
 			j_hnds_energized = {
@@ -358,10 +359,10 @@ local localization = {
 			j_hnds_art = {
 				name = "Art el Payaso",
 				text = {
-					"Vende esta carta para",
-					"crear una copia en el siguiente",
-					"{C:attention}Paquete Potenciador{} al abrirlo",
-					"y crear una {C:attention}Etiqueta{}",
+					"Vende u omite esta carta",
+					"para añadir una copia al próximo",
+					"{C:attention}Paquete Potenciador{} que abras",
+					"Crea #1# {C:attention}#2#{} al venderla",
 				}
 			},
 			j_hnds_public_nuisance = {
@@ -376,9 +377,10 @@ local localization = {
 			j_hnds_bizzare_joker = {
 				name = "Comodín Desalinado",
 				text = {
-					"Obtiene {X:mult,C:white} XMulti {}, {C:mult}+Multi{}, {C:chips}+Fichas{} o",
-					"{C:money}Valor de Venta{} según el palo",
-					"elegido que cambia cada ronda",
+					"Al obtenerlo, crea un",
+					"{C:red}Comodín Raro{}",
+					"Destrúyelo cuando pierdas",
+					"{C:attention}Comodín Desalinado{}",
 				},
 				unlock = {
 					"Tener todas las cartas de",
@@ -428,11 +430,10 @@ local localization = {
 			j_hnds_arthur = {
 				name = "Arthur",
 				text = {
-					"Destruye cartas {V:1}#3#{} anotadas",
-					"y gana {C:attention}#2#{} {C:green}Renovación{} gratis",
-					"por cada carta destruida",
-					"{s:0.8}El palo cambia cada mano",
-					"{C:inactive}(Actualmente {C:attention}#1#{C:inactive} Renovaciones gratis)",
+					"Destruye las cartas de {V:1}#1#{}",
+					"anotadas y crea una {C:attention}Etiqueta Estándar{}",
+					"por cada {C:attention}#2#{} {C:inactive}[#3#]{} destruidas",
+					"{s:0.8}El palo cambia cada ronda",
 				}
 			},
 			j_hnds_last_laugh = {
@@ -470,10 +471,10 @@ local localization = {
 			j_hnds_demented = {
 				name = "Comodín Demente",
 				text = {
-					"{C:hnds_chaos_abilities}+9{} palos base",
-					"Si la mano jugada contiene",
-					"un {C:attention}Color{}, cambia el palo",
-					"de las cartas puntuadas",
+					"Al jugar tu {C:attention}primera mano{}",
+					"de cada ronda, cambia al azar",
+					"los {C:attention}valores{} y {C:attention}palos{} de las",
+					"cartas que quedan en la mano",
 				}
 			},
 			j_billy = {
@@ -488,10 +489,9 @@ local localization = {
 			j_hnds_creepy = {
 				name = "Comodín Perturbador",
 				text = {
-					"{X:mult,C:white}X#1#{} Multi",
-					"prob. de {C:green}#2# en #3#{} de convertir",
-					"comodines adyacentes al",
-					"final de la ronda",
+					"{C:green}#1# en #2#{} de probabilidad",
+					"de robar la cara de una",
+					"{C:attention}carta de figura{} al voltearse",
 				}
 			},
 			j_hnds_one_punchline_man = {
@@ -542,12 +542,12 @@ local localization = {
 				},
 			},
 			j_hnds_be_not_afraid = {
-				name = "Be not Afraid",
+				name = "Trinity",
 				text = {
 					"If played hand contains",
 					"a {C:attention}Three of a Kind{}, every",
-					"scoring card permanently gains",
-					"{C:mult}+#1#{} Mult before scoring",
+					"card permanently gains",
+					"{C:mult}+#1#{} Mult when scoring",
 				},
 			},
 			j_jodiac = {
@@ -1071,7 +1071,7 @@ local localization = {
 			},
 			offer_free_rerolls = {
 				text = {
-					"Ganas 2 {C:green}renovaciones{}",
+					"Ganas 1 {C:green}renovación{}",
 					"gratis en la tienda",
 				},
 			},
@@ -1535,6 +1535,9 @@ local localization = {
 	},
 	misc = {
 		dictionary = {
+			k_hnds_art_random_tag = "Etiqueta aleatoria",
+			k_hnds_art_article = "una",
+			k_hnds_art_article_vowel = "una",
             k_hnds_consumed = "Eaten!",
             k_hnds_destroyed = "Eaten!",
             k_hnds_tag = "+1 Tag",
@@ -1543,6 +1546,8 @@ local localization = {
 			k_hnds_krusty_voucher_tag = "Etiqueta de Vale",
 			k_hnds_krusty_voucher_tags = "Etiquetas de Vale",
 			hnds_upgrade_blind = "Mejorar Ciega",
+			hnds_walking_joke_left = "izquierda",
+			hnds_walking_joke_right = "derecha",
 			k_hnds_petrified = "¡Petrificado!",
 			k_hnds_goldfish = "¡Pez Dorado!",
 			k_hnds_jevil_chaos = "Chaos! Chaos!",

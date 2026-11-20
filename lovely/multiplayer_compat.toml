@@ -35,3 +35,103 @@ if HNDS and HNDS.mp_record_result then
     if G.GAME then G.GAME.hnds_mp_authoritative_result = true end
 end
 '''
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = """self.children.back = SMODS.create_sprite(self.T.x, self.T.y, self.T.w, self.T.h, atlas_key, self.params.bypass_back or (self.playing_card and G.GAME[self.back].pos or G.P_CENTERS['b_red'].pos))"""
+position = 'before'
+match_indent = true
+payload = '''
+if HNDS and HNDS.mp_card_back_atlas then
+    atlas_key = HNDS.mp_card_back_atlas(self, atlas_key)
+end
+'''
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS MultiplayerExperimental "multiplayer/runtime/match_runtime.lua"]'
+pattern = 'local is_pvp_blind = ready_blind_kind == "pvp"'
+position = 'after'
+match_indent = true
+payload = '''
+if HNDS and HNDS.mp_prepare_native_blind then HNDS.mp_prepare_native_blind(blind_row, is_pvp_blind) end
+'''
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS MultiplayerExperimental "multiplayer/runtime/match_runtime.lua"]'
+pattern = 'function match_flow_runtime.end_current_pvp_runtime(lost, pvp_timer_lost)'
+position = 'after'
+match_indent = true
+payload = '''
+    if HNDS and HNDS.mp_record_native_result then
+        HNDS.mp_record_native_result(lost, pvp_timer_lost)
+    end
+'''
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS MultiplayerExperimental "multiplayer/ui/main_menu.lua"]'
+pattern = 'local edition = poll_edition("main_menu" .. os.time(), nil, nil, true, editions)'
+position = 'before'
+match_indent = true
+payload = '''
+for _, option in ipairs(editions) do
+    option.key = option.name
+end
+'''
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS MultiplayerExperimental "objects/editions/phantom.lua"]'
+pattern = 'if _type == "jokers" and MP.shared then'
+position = 'at'
+match_indent = true
+times = 1
+payload = 'if _type == "jokers" and MP.shared and type(MP.shared.cards) == "table" then'
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS MultiplayerExperimental "multiplayer/ui/blind_choice.lua"]'
+pattern = 'build_blind_choice_animation(blind_choice.config, pvp_blind_key, is_pvp_blind, is_dual_pvp_boss)'
+position = 'after'
+match_indent = true
+times = 1
+payload = '''
+if type == "Boss" and not is_pvp_blind and HNDS then
+    local badge = blind_choice.boss_animation or blind_choice.animation
+    if HNDS.attach_devil_blind_tooltip then
+        HNDS.attach_devil_blind_tooltip(badge, blind_choice.config)
+    end
+    if HNDS.attach_platinum_boss_tooltip then
+        HNDS.attach_platinum_boss_tooltip(badge, blind_choice.config, true)
+    end
+end
+'''
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS MultiplayerExperimental "multiplayer/runtime/match_runtime.lua"]'
+pattern = '''
+G.STATE_COMPLETE = false
+if states then
+	G.STATE = states.GAME_OVER
+end
+BALATRO.set_paused(true)
+BALATRO.call_ui_function("overlay_endgame_menu")
+'''
+position = 'at'
+match_indent = true
+times = 1
+payload = '''
+local function show_loss()
+    G.STATE_COMPLETE = false
+    if states then G.STATE = states.GAME_OVER end
+    BALATRO.set_paused(true)
+    BALATRO.call_ui_function("overlay_endgame_menu")
+end
+if not (HNDS and HNDS.mp_defer_crystal_match_end and HNDS.mp_defer_crystal_match_end(show_loss)) then
+    show_loss()
+end
+'''

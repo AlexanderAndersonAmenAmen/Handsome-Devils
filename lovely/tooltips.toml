@@ -17,6 +17,9 @@ payload = '''
     if HNDS and HNDS.big_d_filter_stacked_tooltips then
         HNDS.big_d_filter_stacked_tooltips(info_queue, card)
     end
+    if HNDS and HNDS.filter_beans_hand_size_tooltip then
+        HNDS.filter_beans_hand_size_tooltip(info_queue, card)
+    end
 '''
 match_indent = true
 

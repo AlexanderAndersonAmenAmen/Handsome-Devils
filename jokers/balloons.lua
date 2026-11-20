@@ -33,19 +33,20 @@ SMODS.Joker({
             and G and G.GAME and G.GAME.current_round
             and G.GAME.current_round.hands_played == 1
         then
-            local pool = {}
-            for tag_key, _ in pairs(G.P_TAGS) do
-                pool[#pool + 1] = tag_key
-            end
-
             local seed_modifier = 'balloons_seed_' .. tostring(card.ability.extra.balloons)
-            local chosen_tag_key = pseudorandom_element(pool, pseudoseed(seed_modifier))
+            local chosen_tag_key = HNDS.poll_registered_tag_key(seed_modifier)
 
             if chosen_tag_key then
+                local game = G.GAME
                 G.E_MANAGER:add_event(Event({
                     func = function()
-                        add_tag(Tag(chosen_tag_key))
-                        play_sound('generic1')
+                        if G.GAME == game and G.P_TAGS[chosen_tag_key] and not HNDS.is_tag_banned(chosen_tag_key) then
+                            local tag = HNDS.poll_tag(seed_modifier .. '_reward', { chosen_tag_key })
+                            if tag then
+                                add_tag(tag)
+                                play_sound('generic1')
+                            end
+                        end
                         return true
                     end
                 }))
