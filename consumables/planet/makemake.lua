@@ -20,7 +20,7 @@ if hnds_config.enableStoneOcean then
 			local hand = game and game.hands and game.hands[hand_type] or {}
 			local level = tonumber(hand.level) or 1
 			local level_chips = tonumber(hand.l_chips) or 50
-			local scaling = tonumber(hand.l_chips_scaling) or 5
+			local scaling = tonumber(hand.l_chips_scaling) or 50
 			local stones = tonumber(game and game.ante_stones_scored) or 0
 			local level_colour = (G and G.C and level == 1 and G.C.UI and G.C.UI.TEXT_DARK)
 				or (G and G.C and G.C.HAND_LEVELS and G.C.HAND_LEVELS[math.min(7, level)])

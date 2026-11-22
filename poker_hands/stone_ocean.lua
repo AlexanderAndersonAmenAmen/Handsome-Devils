@@ -7,7 +7,7 @@ SMODS.PokerHand({
 	mult = 1,
 	l_chips = 50,
 	l_mult = 0,
-	l_chips_scaling = 5,
+	l_chips_scaling = 50,
 	example = {
 		{ "S_2", true, enhancement = "m_stone" },
 		{ "S_2", true, enhancement = "m_stone" },
