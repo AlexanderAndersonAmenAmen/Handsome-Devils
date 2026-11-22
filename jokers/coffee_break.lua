@@ -2,12 +2,15 @@ local function spend_sip(self, card)
     local extra = card.ability.extra
     if extra.sips <= 0 then return end
     extra.sips = extra.sips - 1
-    if extra.sips == 0 then
-        G.E_MANAGER:add_event(Event({ func = function()
+    if extra.sips == 0 and not card.hnds_coffee_consuming then
+        card.hnds_coffee_consuming = true
+        G.E_MANAGER:add_event(Event({ blocking = false, func = function()
             if not card.getting_sliced and not card.removed and not card.REMOVED then
                 card_eval_status_text(card, "extra", nil, nil, nil,
                     { message = localize("k_hnds_consumed"), colour = G.C.FILTER })
-                SMODS.destroy_cards({ card }, { pinch_anim = true })
+                -- Avoid the version-dependent destroy_cards options signature.
+                -- Dissolve only this spent cup, after its scoring evaluation.
+                card:start_dissolve()
             end
             return true
         end }))

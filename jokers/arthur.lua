@@ -71,11 +71,12 @@ SMODS.Joker {
         } }
     end,
     calculate = function(self, card, context)
+        local drawn_cards = HNDS.progress_drawn_cards(context)
         if context.blueprint or context.retrigger_joker or SMODS.no_resolve or card.debuff then return end
         local extra = arthur_extra(card)
-        if type(context.hand_drawn) == 'table' then
+        if drawn_cards then
             local count = 0
-            for _, drawn in ipairs(context.hand_drawn) do
+            for _, drawn in ipairs(drawn_cards) do
                 if drawn and not drawn.debuff and drawn.is_suit and drawn:is_suit(HNDS.arthur_suit()) then
                     count = count + 1
                 end

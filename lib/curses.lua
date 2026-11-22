@@ -4,12 +4,20 @@ local function curse_blueprint_compatible(card)
     return center and center.blueprint_compat == true or false
 end
 
+function HNDS.curse_pair_conflicts(offer, price)
+    return (offer == 'offer_free_rerolls' and price == 'price_inflation')
+        or (offer == 'offer_random_enhancement' and price == 'price_destroy_cards')
+        or (offer == 'offer_extra_hand' and (price == 'price_lose_hand'
+            or price == 'price_lose_discard' or price == 'price_lose_hand_size'))
+end
+
 local function curse_round_offer_ready(card, context)
     if not (context.end_of_round and context.main_eval and not context.repetition
-        and not context.blueprint and G.GAME) then return false end
-    local round = G.GAME.round
-    if round ~= nil and card.ability.hnds_curse_reward_round == round then return false end
-    card.ability.hnds_curse_reward_round = round
+        and not context.individual and not context.retrigger_joker
+        and not context.blueprint and not context.game_over and G.GAME) then return false end
+    local round = HNDS.round_effect_token()
+    if card.ability.hnds_curse_reward_token == round then return false end
+    card.ability.hnds_curse_reward_token = round
     return true
 end
 
@@ -33,7 +41,9 @@ local function queue_curse_consumables(card, set, count, key_append, delay, show
 
     game.consumeable_buffer = buffer + reserved
     G.E_MANAGER:add_event(Event({
-        trigger = 'after',
+        -- Non-blocking: creation hooks can enqueue their own events.
+        -- Reserving slots synchronously keeps multiple offers independent.
+        trigger = 'after', blocking = false,
         delay = delay,
         func = function()
             game.consumeable_buffer = math.max(0, (game.consumeable_buffer or 0) - reserved)
@@ -52,6 +62,9 @@ local function queue_curse_consumables(card, set, count, key_append, delay, show
                     card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_no_room_ex'), colour = G.C.RED})
                 elseif show_copied then
                     card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_copied_ex'), colour = G.C.CHIPS})
+                else
+                    card_eval_status_text(card, 'extra', nil, nil, nil,
+                        {message = localize('k_plus_planet'), colour = G.C.SECONDARY_SET.Planet})
                 end
             end
             return true
@@ -742,62 +755,36 @@ local function hnds_assign_curse_data(card, attach_sticker)
     end
     if #offer_pool == 0 then return end
 
-    local offer_index
-    local price_index
-    local attempt_count = 0
-
-
+    -- Choose from valid pairs instead of abandoning the curse after ten
+    -- unlucky rejection attempts (more exclusions made that failure common).
+    local pairs_pool = {}
     local has_existing_edition = false
-    if card.edition then
-        for k, _ in pairs(card.edition) do
-            if k ~= 'type' then has_existing_edition = true break end
-        end
+    for k in pairs(card.edition or {}) do
+        if k ~= 'type' then has_existing_edition = true; break end
     end
-
-    while attempt_count < 10 do
-        attempt_count = attempt_count + 1
-
-        offer_index = pseudorandom('hnds_curse_offer', 1, #offer_pool)
-        price_index = pseudorandom('hnds_curse_price', 1, #price_pool)
-
-        local offer_entry = offer_pool[offer_index]
-        local price_entry = price_pool[price_index]
-
-
-        if offer_entry and offer_entry.id == 'offer_self_negative' and has_existing_edition then
-            offer_entry = nil
-        end
-
-
-        if offer_entry and price_entry then
-            local incompatible =
-                (offer_entry.id == 'offer_free_rerolls' and price_entry.id == 'price_inflation')
-                or (offer_entry.id == 'offer_random_enhancement' and price_entry.id == 'price_destroy_cards')
-                or (offer_entry.id == 'offer_extra_hand' and price_entry.id == 'price_lose_hand')
-            if incompatible then
-                offer_entry = nil
-                price_entry = nil
+    for _, offer in ipairs(offer_pool) do
+        if not (offer.id == 'offer_self_negative' and has_existing_edition) then
+            for _, price in ipairs(price_pool) do
+                if not HNDS.curse_pair_conflicts(offer.id, price.id) then
+                    pairs_pool[#pairs_pool + 1] = { offer = offer.id, price = price.id }
+                end
             end
         end
-
-        if offer_entry and price_entry then
-            card.ability.hnds_curse_offer = offer_entry.id
-            card.ability.hnds_curse_price = price_entry.id
-            if attach_sticker and not (card.ability and card.ability.hnds_cursed) then
-                card:add_sticker('hnds_cursed', true)
-            else
-                card.ability.hnds_cursed = true
-            end
-
-
-            hnds_ensure_extra(card)
-            hnds_strip_foreign_stickers(card)
-
-            card.cursed_shake = true
-            HNDS.refresh_curse_adjacency()
-            break
-        end
     end
+    if #pairs_pool == 0 then return end
+    local pair = pseudorandom_element(pairs_pool, pseudoseed('hnds_curse_pair'))
+    card.ability.hnds_curse_offer = pair.offer
+    card.ability.hnds_curse_price = pair.price
+    if attach_sticker and not card.ability.hnds_cursed then
+        card:add_sticker('hnds_cursed', true)
+    else
+        card.ability.hnds_cursed = true
+    end
+    hnds_ensure_extra(card)
+    hnds_strip_foreign_stickers(card)
+    card.cursed_shake = true
+    HNDS.refresh_curse_adjacency()
+
 end
 
 
@@ -889,13 +876,13 @@ function HNDS.refresh_curse_price(card, acquiring)
         or (card.added_to_deck and not acquiring) then return false end
     hnds_build_lookups()
     local current = hnds_price_lookup[ability.hnds_curse_price]
-    if not current or not current.in_pool or current:in_pool(card) then return false end
+    if not current then return false end
+    if not HNDS.curse_pair_conflicts(ability.hnds_curse_offer, current.id)
+        and (not current.in_pool or current:in_pool(card)) then return false end
     local pool = {}
     local offer = ability.hnds_curse_offer
     for _, price in ipairs(G.CURSE_PRICES) do
-        local conflict = (offer == 'offer_free_rerolls' and price.id == 'price_inflation')
-            or (offer == 'offer_random_enhancement' and price.id == 'price_destroy_cards')
-            or (offer == 'offer_extra_hand' and price.id == 'price_lose_hand')
+        local conflict = HNDS.curse_pair_conflicts(offer, price.id)
         if not conflict and (not price.in_pool or price:in_pool(card)) then pool[#pool + 1] = price.id end
     end
     if #pool == 0 then return false end

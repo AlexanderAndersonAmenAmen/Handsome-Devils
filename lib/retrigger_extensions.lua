@@ -5,6 +5,7 @@ local function live(c) return c and not c.debuff and not c.removed and not c.REM
 local pending = setmetatable({}, {__mode = 'k'})
 local snapshots = setmetatable({}, {__mode = 'k'})
 local in_flight = setmetatable({}, {__mode = 'k'})
+local evaluating = setmetatable({}, {__mode = 'k'})
 HNDS.retrigger_charge_managed = true
 
 function HNDS.retrigger_neighbor(source, direction)
@@ -21,6 +22,9 @@ end
 local function blocked(target, ctx)
     local k = key(target)
     if ctx.check or ctx.retrigger_joker or ctx.retrigger_joker_check or ctx.modify_scoring_hand then return true end
+    if ctx.mod_probability or ctx.fix_probability or ctx.check_enhancement
+        or ctx.extra_enhancement or ctx.post_trigger then return true end
+    if SMODS.is_getter_context and SMODS.is_getter_context(ctx) then return true end
     if SMODS.can_context_retrigger and not SMODS.can_context_retrigger(ctx) then return true end
     if k == 'j_rocket' and not ctx.hnds_cashout_payouts then return true end
     if k == 'j_invisible' and not ctx.selling_self then return true end
@@ -42,6 +46,11 @@ function HNDS.request_safe_retriggers(resource, source, context, count, kind)
     if ctx.hnds_acquisition and kind == 'joke' then return end -- acquisition is Coffee-only
     local effect = context.other_ret and context.other_ret.jokers
     if effect and effect.no_retrigger then return end
+    -- A repetition query must actually return playing-card repetitions.
+    -- Re-running scoring/probability effects here can feed invalid entries
+    -- back into Steamodded's red-seal repetition loop.
+    if ctx.repetition and not (effect and type(effect.repetitions) == 'number'
+        and effect.repetitions > 0) then return end
     count = math.max(0, math.floor(count or 0))
     if count == 0 then return end
     local batch = pending[ctx]
@@ -260,6 +269,8 @@ end
 function Card:calculate_joker(ctx,...)
     if type(ctx)~='table' or SMODS.no_resolve then return calculate_ref(self,ctx,...) end
     if not live(self) then return end
+    local active = evaluating[self]
+    if active and active[ctx] then return end
     local batch = pending[ctx]
     local request = batch and batch[self] and batch[self][ctx.retrigger_joker]
     if request then
@@ -275,7 +286,11 @@ function Card:calculate_joker(ctx,...)
     local economy=request and economy_signature()
     local jokers,consumables,playing
     if request then jokers,consumables,playing=#G.jokers.cards,#G.consumeables.cards,#(G.playing_cards or {}) end
+    active = active or setmetatable({}, {__mode = 'k'})
+    evaluating[self] = active
+    active[ctx] = true
     local result=HNDS.pack(pcall(calculate,self,ctx,...))
+    active[ctx] = nil
     if request then in_flight[request.resource]=nil end
     if not result[1] then error(result[2]) end
     if request then

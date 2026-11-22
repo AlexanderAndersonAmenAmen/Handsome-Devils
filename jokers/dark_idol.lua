@@ -52,12 +52,13 @@ SMODS.Joker {
         return { vars = { hnds_dark_idol_article(state.rank), localize(state.rank, 'ranks'), extra.gain, extra.mult } }
     end,
     calculate = function(self, card, context)
+        local drawn_cards = HNDS.progress_drawn_cards(context)
         local extra = hnds_dark_idol_extra(card)
-        if context.hand_drawn and type(context.hand_drawn) == 'table' and not context.blueprint then
+        if drawn_cards and not context.blueprint then
             local state = hnds_dark_idol_state()
             local id = tonumber(state.id) or HNDS_DARK_IDOL_RANK_IDS[state.rank] or 14
             local count = 0
-            for _, drawn in ipairs(context.hand_drawn) do
+            for _, drawn in ipairs(drawn_cards) do
                 if HNDS.card_counts_as_rank(drawn, id) then count = count + 1 end
             end
             if count > 0 then

@@ -1,4 +1,5 @@
 HNDS = HNDS or {}
+local opening = setmetatable({}, {__mode = 'k'})
 
 function HNDS.cursed_booster_is_unskippable(booster)
     if not booster then return false end
@@ -53,6 +54,11 @@ function HNDS.open_cursed_pack(opts)
     booster.hnds_forced_no_skip = opts.forced == true
         and not (HNDS.joker_slots_full_of_unmovables and HNDS.joker_slots_full_of_unmovables())
 
+    -- If another UI transition still owns card use, preserve the reward.
+    if booster.check_use and booster:check_use() then
+        if booster.remove then booster:remove() end
+        return false
+    end
     G.FUNCS.use_card({ config = { ref_table = booster } })
     booster:start_materialize()
     return true
@@ -61,13 +67,18 @@ end
 
 function HNDS.queue_cursed_pack(opts)
     if not (G and G.GAME) then return false end
-    if G.GAME.hnds_cursed_pack_pending then return false end
     opts = opts or {}
-    G.GAME.hnds_cursed_pack_pending = {
+    local pending = {
         forced = opts.forced == true,
         source = opts.source or 'direct',
         from_tag = false,
     }
+    if G.GAME.hnds_cursed_pack_pending then
+        G.GAME.hnds_cursed_pack_queue = G.GAME.hnds_cursed_pack_queue or {}
+        table.insert(G.GAME.hnds_cursed_pack_queue, pending)
+    else
+        G.GAME.hnds_cursed_pack_pending = pending
+    end
     return true
 end
 
@@ -75,18 +86,21 @@ function HNDS.open_pending_cursed_pack_at_shop()
     if not (G and G.GAME and G.E_MANAGER) then return false end
     local game = G.GAME
     local pending = game.hnds_cursed_pack_pending
-    if not pending then return false end
+    if not pending or opening[game] then return false end
 
 
-    game.hnds_cursed_pack_pending = nil
+    opening[game] = true
     G.E_MANAGER:add_event(Event({
         trigger = 'immediate',
         blocking = false,
         func = function()
+            opening[game] = nil
             if G.GAME ~= game then return true end
-            if game.PACK_INTERRUPT then return false end
-            if not HNDS.open_cursed_pack(pending) and not game.hnds_cursed_pack_pending then
-                game.hnds_cursed_pack_pending = pending
+            -- Retry from the next shop update rather than leave a blocking
+            -- event waiting on a pack that needs player input to close.
+            if game.PACK_INTERRUPT or (G.STATES and G.STATE ~= G.STATES.SHOP) then return true end
+            if HNDS.open_cursed_pack(pending) then
+                game.hnds_cursed_pack_pending = table.remove(game.hnds_cursed_pack_queue or {}, 1)
             end
             return true
         end,

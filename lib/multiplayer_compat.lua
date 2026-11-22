@@ -106,13 +106,24 @@ end
 
 function HNDS.mp_record_result(lost, draw)
     if not (HNDS.mp_active() and G.GAME) then return end
+    local api = HNDS.mp_backend()
+    local spectator = api and api.SPECTATOR
+    if spectator and (spectator.is_spectating or spectator.is_spectator_role) then return end
     if draw == nil and G.GAME.hnds_mp_authoritative_result then return end
     if draw then G.GAME.hnds_mp_result = 'draw'
     elseif lost == true or lost == 'true' then G.GAME.hnds_mp_result = 'loss'
     elseif lost == false or lost == 'false' then G.GAME.hnds_mp_result = 'win'
     else return end
+    if HNDS.trigger_pvp_souls then HNDS.trigger_pvp_souls() end
     HNDS.mp_queue_crystal_reward()
     if HNDS.trigger_pvp_curse_offers then HNDS.trigger_pvp_curse_offers() end
+    -- The authoritative result can arrive after end_of_round/Blind:defeat.
+    -- Retry win-gated rewards here; each subsystem owns its deduplication.
+    if HNDS.trigger_real_boss_investment_tags then
+        HNDS.trigger_real_boss_investment_tags(G.GAME.blind)
+    end
+    if HNDS.trigger_cursed_deck_reward then HNDS.trigger_cursed_deck_reward() end
+    if HNDS.decay_juggle_tags then HNDS.decay_juggle_tags({mp_end_of_pvp = true}) end
 end
 
 local function api_lobby()
@@ -509,8 +520,12 @@ assert(SMODS.load_file('lib/multiplayer_crystal.lua'))()
 local context_ref = SMODS.calculate_context
 function SMODS.calculate_context(context, ...)
     if context and context.mp_end_of_pvp then
+        if HNDS.trigger_pvp_souls then HNDS.trigger_pvp_souls() end
         HNDS.mp_queue_crystal_reward()
         if HNDS.trigger_pvp_curse_offers then HNDS.trigger_pvp_curse_offers() end
+        if HNDS.decay_juggle_tags then HNDS.decay_juggle_tags(context) end
+        if HNDS.trigger_real_boss_investment_tags then HNDS.trigger_real_boss_investment_tags(G.GAME.blind) end
+        if HNDS.trigger_cursed_deck_reward then HNDS.trigger_cursed_deck_reward() end
     end
     if context and context.end_of_round and HNDS.mp_is_pvp() then
         local scoped = {}

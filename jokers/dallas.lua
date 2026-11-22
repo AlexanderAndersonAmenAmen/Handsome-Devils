@@ -35,9 +35,10 @@ SMODS.Joker({
         return { vars = { extra.xmult_gain, extra.cards_per_gain, extra.xmult, HNDS.threshold_remaining(extra) } }
     end,
     calculate = function(self, card, context)
+        local drawn_cards = HNDS.progress_drawn_cards(context)
         local extra = hnds_dallas_extra(card, self.config.extra)
-        if context.hand_drawn and not context.blueprint then
-            local gains = HNDS.threshold_gains(extra, HNDS.count_drawn_suit(context.hand_drawn, 'Hearts'))
+        if drawn_cards and not context.blueprint then
+            local gains = HNDS.threshold_gains(extra, HNDS.count_drawn_suit(drawn_cards, 'Hearts'))
             if gains > 0 then
                 local gained = extra.xmult_gain * gains
                 extra.xmult = extra.xmult + gained

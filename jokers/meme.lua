@@ -42,20 +42,17 @@ SMODS.Joker({
 			end
 		elseif context.joker_main or context.forcetrigger then
 			return {
-				xmult = card.ability.extra.chips,
+				chips = card.ability.extra.chips,
 			}
 		end
 	end,
 	joker_display_def = function(JokerDisplay)
 		return {
 			text = {
-				{
-					border_nodes = {
-						{ text = "X" },
-						{ ref_table = "card.joker_display_values", ref_value = "chips", retrigger_type = "exp" }
-					}
-				}
+                { text = "+" },
+                { ref_table = "card.joker_display_values", ref_value = "chips", retrigger_type = "mult" },
 			},
+            text_config = { colour = G.C.CHIPS },
 			calc_function = function(card)
 				card.joker_display_values.chips = card.ability.extra.chips
 			end

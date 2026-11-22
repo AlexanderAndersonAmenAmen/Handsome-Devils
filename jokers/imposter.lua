@@ -269,7 +269,8 @@ if Card and type(Card.calculate_joker) == 'function' and not Card._hnds_imposter
         local target = context.other_card or context.destroy_card or context.destroying_card
         if type(target) ~= 'table' or not target.base then target = nil end
         local cards = ((context.before or context.after or context.joker_main) and context.scoring_hand)
-            or (context.pre_discard and context.full_hand) or context.hand_drawn
+            or (context.pre_discard and context.full_hand)
+            or (HNDS.progress_drawn_cards and HNDS.progress_drawn_cards(context)) or context.hand_drawn
         if type(cards) ~= 'table' then cards = nil end
 
         local check_ranks = (target or cards)

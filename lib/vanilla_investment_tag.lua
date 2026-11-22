@@ -108,7 +108,9 @@ function HNDS.install_investment_blind_hooks()
         local set_blind_ref = Blind.set_blind
         local set_wrapper = function(self, ...)
             local before = current_physical_slot()
+            local ante = G and G.GAME and G.GAME.round_resets and G.GAME.round_resets.ante
             local results = pack(set_blind_ref(self, ...))
+            self.hnds_reward_ante = ante
             self.hnds_investment_physical_slot =
                 normalize_slot(self.hnds_platinum_replacement_slot)
                 or before

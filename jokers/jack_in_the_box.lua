@@ -13,6 +13,14 @@ local NON_TRANSFERABLE_RARES = {
     j_hnds_meme = true,
     j_hnds_last_laugh = true,
     j_hnds_handsome = true,
+    -- These abilities depend on owning the actual center or on acquisition/
+    -- passive hooks. A detached calculation proxy cannot provide their effect.
+    j_hnds_wild_order = true,
+    j_hnds_ancestor = true,
+    j_hnds_fun_police = true,
+    j_hnds_bizzare_joker = true,
+    j_hnds_ms_fortune = true,
+    j_hnds_superstition = true,
 }
 
 
@@ -53,6 +61,8 @@ local function transferable_rare(key, center)
     if NON_TRANSFERABLE_RARES[key] then return false end
     if center.set ~= 'Joker' or center.rarity ~= 3 then return false end
     if center.unlocked == false then return false end
+    if G and G.GAME and G.GAME.banned_keys and G.GAME.banned_keys[key] then return false end
+    if type(center.in_pool) == 'function' and not center:in_pool({source = 'hnds_jack_in_the_box'}) then return false end
     if has_scaling_attribute(center) and not SCALING_WHITELIST[key] then return false end
     return true
 end
@@ -207,13 +217,19 @@ local function on_borrowed_ability_changed(card, old_key, new_key)
     if old_key == new_key then return end
 
     if old_key == 'j_stuntman' then
-        change_stuntman_hand_size(2)
+        if card.hnds_jack_stuntman_applied then
+            change_stuntman_hand_size(2)
+            card.hnds_jack_stuntman_applied = nil
+        end
     elseif old_key == 'j_hnds_excommunicado' and HNDS and HNDS.update_excom then
         HNDS.update_excom(card, false)
     end
 
     if new_key == 'j_stuntman' then
-        change_stuntman_hand_size(-2)
+        if not card.debuff and not card.hnds_jack_stuntman_applied then
+            change_stuntman_hand_size(-2)
+            card.hnds_jack_stuntman_applied = true
+        end
     elseif new_key == 'j_hnds_excommunicado' and HNDS and HNDS.update_excom and not card.debuff then
         HNDS.update_excom(card, true)
     end
@@ -296,6 +312,10 @@ local function run_hit_the_road(card, extra, context)
     end
 
     state.x_mult = tonumber(state.x_mult or state.xmult) or 1
+    if context.end_of_round and context.main_eval and not context.blueprint
+        and not context.retrigger_joker then
+        state.x_mult, state.xmult = 1, 1
+    end
 
 
     if context.discard and context.other_card and not context.blueprint
@@ -405,7 +425,7 @@ local function rebind_proxy_effect_source(value, proxy, jack, seen)
     if seen[value] then return end
     seen[value] = true
     for k, v in pairs(value) do
-        if (k == 'card' or k == 'juice_card') and v == proxy then
+        if (k == 'card' or k == 'juice_card' or k == 'message_card') and v == proxy then
             value[k] = jack
         elseif type(v) == 'table' and v ~= G
             and not (v.config and v.T)
@@ -422,12 +442,18 @@ local function run_borrowed_card_dispatch(card, extra, center, context)
 
     proxy.area = card.area or (G and G.jokers) or proxy.area
     proxy.debuff = card.debuff or false
+    -- Hidden runtime cards never receive Card:update, where vanilla normally
+    -- refreshes this tally. Compute it from the live deck before calculating.
+    if center.key == 'j_drivers_license' then
+        proxy.ability.driver_tally = enhanced_cards_in_full_deck()
+    end
 
     local ok, ret, post = pcall(proxy.calculate_joker, proxy, context)
     extra.rare_state = proxy.ability
     if not ok then
 
 
+        if sendWarnMessage then sendWarnMessage('Jack-in-the-Box '..tostring(center.key)..': '..tostring(ret), 'HandsomeDevils') end
         clear_proxy(card)
         return nil
     end
@@ -611,13 +637,17 @@ SMODS.Joker {
 
     load = function(self, card, card_table, other_card)
         local saved = card_table and card_table.ability and card_table.ability.extra
-        if type(saved) == 'table' and saved.rare_key == 'j_hnds_handsome' then
+        if type(saved) == 'table' and NON_TRANSFERABLE_RARES[saved.rare_key] then
             saved.active = false
             saved.rare_key, saved.rare_state, saved.hover_x = nil, nil, nil
             return
         end
-        local extra = jack_extra(card, self)
+        -- Card:load invokes this hook before assigning saved ability/debuff.
+        local extra = type(saved) == 'table' and saved or jack_extra(card, self)
         if extra.active and extra.rare_key then
+            if extra.rare_key == 'j_stuntman' then
+                card.hnds_jack_stuntman_applied = not (card_table and card_table.debuff) or nil
+            end
 
 
             G.E_MANAGER:add_event(Event({
@@ -626,7 +656,10 @@ SMODS.Joker {
                     if card and card.area and card.ability and card.ability.extra
                         and card.ability.extra.active
                     then
-                        on_borrowed_ability_changed(card, nil, card.ability.extra.rare_key)
+                        -- Hand size was already saved with Stuntman's penalty.
+                        if card.ability.extra.rare_key ~= 'j_stuntman' then
+                            on_borrowed_ability_changed(card, nil, card.ability.extra.rare_key)
+                        end
                     end
                     return true
                 end,
@@ -634,9 +667,20 @@ SMODS.Joker {
         end
     end,
 
-    remove_from_deck = function(self, card, from_debuff)
-        if from_debuff then return end
+    add_to_deck = function(self, card, from_debuff)
         local extra = jack_extra(card, self)
+        if from_debuff and extra.active and extra.rare_key == 'j_stuntman' then
+            on_borrowed_ability_changed(card, nil, 'j_stuntman')
+        end
+    end,
+    remove_from_deck = function(self, card, from_debuff)
+        local extra = jack_extra(card, self)
+        if from_debuff then
+            if extra.active and extra.rare_key == 'j_stuntman' then
+                on_borrowed_ability_changed(card, 'j_stuntman', nil)
+            end
+            return
+        end
         if extra.active and extra.rare_key then
             on_borrowed_ability_changed(card, extra.rare_key, nil)
         end

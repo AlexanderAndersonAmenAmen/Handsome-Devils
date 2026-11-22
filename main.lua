@@ -57,6 +57,18 @@ function HNDS.pack(...)
     return { n = select('#', ...), ... }
 end
 
+-- Unlike G.GAME.round, this serial changes for each actual blind, including
+-- PvP rounds whose HUD round number is reused. It survives saving/loading.
+function HNDS.round_effect_token()
+    local game = G and G.GAME or {}
+    if (tonumber(game.hnds_aura_blind_serial) or 0) > 0 then
+        return 'blind:' .. tostring(game.hnds_aura_blind_serial)
+    end
+    return tostring(game.hnds_aura_blind_serial or 0) .. ':' ..
+        tostring(game.round_resets and game.round_resets.ante or 0) .. ':' ..
+        tostring(game.blind_on_deck or '')
+end
+
 
 local hnds_query_guards = {
     no_rank = setmetatable({}, { __mode = 'k' }),
@@ -552,6 +564,8 @@ SMODS.current_mod.calculate = function(self, context)
     if context.setting_blind and HNDS.advance_aura_blind_round then
         HNDS.advance_aura_blind_round()
     end
+    if (context.setting_blind or context.before or context.after or context.end_of_round)
+        and HNDS.capture_pvp_soul_round then HNDS.capture_pvp_soul_round(context) end
     if context.end_of_round and context.main_eval and not context.individual and not context.repetition and not context.game_over then
         HNDS.reset_wild_order_suit()
         HNDS.reset_trump_suit()
@@ -1170,3 +1184,5 @@ end
 assert(SMODS.load_file('lib/ui_element_cleanup.lua'))()
 assert(SMODS.load_file('lib/tooltip_alignment.lua'))()
 assert(SMODS.load_file('lib/retrigger_extensions.lua'))()
+assert(SMODS.load_file('lib/generated_tag_dispatch.lua'))()
+assert(SMODS.load_file('lib/pvp_souls.lua'))()

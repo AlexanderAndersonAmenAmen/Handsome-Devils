@@ -5,6 +5,25 @@
 -- in sync without pretending a booster card entered the player's hand.
 HNDS = HNDS or {}
 
+-- Arcana/Spectral (and modded draw_hand) packs use other_drawn rather than
+-- hand_drawn while outside a blind. Select one batch without emitting another
+-- global context: this preserves Blueprint/retrigger handling and prevents
+-- unrelated first-hand/round-start effects from firing during packs.
+function HNDS.progress_drawn_cards(context)
+    if type(context) ~= 'table' then return nil end
+    if type(context.hand_drawn) == 'table' then return context.hand_drawn end
+    if type(context.other_drawn) ~= 'table' then return nil end
+    local game = G and G.GAME
+    if not game then return nil end
+    if game.PACK_INTERRUPT then return context.other_drawn end
+    local states = G.STATES or {}
+    for _, name in ipairs({'TAROT_PACK', 'SPECTRAL_PACK', 'STANDARD_PACK',
+        'PLANET_PACK', 'BUFFOON_PACK', 'SMODS_BOOSTER_OPENED'}) do
+        if states[name] ~= nil and G.STATE == states[name] then return context.other_drawn end
+    end
+    return nil
+end
+
 -- Keyed by CardArea, not by a global list: old pack sessions can be garbage
 -- collected, and a second pack doesn't inherit the previous pack's counters.
 local pack_sessions = setmetatable({}, { __mode = 'k' })
@@ -20,7 +39,7 @@ end
 
 local function flush_booster_draws(area, game)
     local session = pack_sessions[area]
-    if not session then return true end
+    if not session or session.game ~= game then return true end
     session.scheduled = false
     local batch = session.pending
     session.pending = {}
@@ -51,8 +70,8 @@ function HNDS.note_booster_playing_card(card, area)
         return
     end
     local session = pack_sessions[area]
-    if not session then
-        session = { seen = setmetatable({}, { __mode = 'k' }), pending = {}, scheduled = false }
+    if not session or session.game ~= G.GAME then
+        session = { game = G.GAME, seen = setmetatable({}, { __mode = 'k' }), pending = {}, scheduled = false }
         pack_sessions[area] = session
     end
     if session.seen[card] then return end
@@ -64,7 +83,7 @@ function HNDS.note_booster_playing_card(card, area)
     local game = G.GAME
     if G.E_MANAGER and Event then
         G.E_MANAGER:add_event(Event({
-            trigger = 'after', delay = 0, blockable = false,
+            trigger = 'after', delay = 0, blockable = false, blocking = false,
             func = function() return flush_booster_draws(area, game) end,
         }))
     else

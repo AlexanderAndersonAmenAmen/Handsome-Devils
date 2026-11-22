@@ -56,6 +56,9 @@ function copy_card(...)
     if card and card.ability then
         card.ability.hnds_curse_hands_applied = nil
         card.ability.hnds_curse_slots_applied = nil
+        -- Copies get an independent end-of-blind consumable allowance.
+        card.ability.hnds_curse_reward_token = nil
+        card.ability.hnds_curse_reward_round = nil
     end
     return card
 end

@@ -254,13 +254,15 @@ end
 take_vanilla_ownership(SMODS.Tag, 'juggle', {
     config = { type = 'round_start_bonus', h_size = 3 },
     apply = function(self, tag, context)
-        if context.type == 'round_start_bonus' then
+        if context.type == 'round_start_bonus' and not tag.triggered then
             G.GAME.hnds_juggle_bonuses = G.GAME.hnds_juggle_bonuses or {}
             G.GAME.hnds_juggle_bonuses[#G.GAME.hnds_juggle_bonuses + 1] = 3
+            -- Apply gameplay state now, not inside a delayed pop animation.
+            -- PvP can finish/reset a round before an animation callback runs.
+            if G.hand and G.hand.change_size then G.hand:change_size(3) end
             local lock = tag.ID
             if G.CONTROLLER and G.CONTROLLER.locks then G.CONTROLLER.locks[lock] = true end
             tag:yep('+3', G.C.BLUE, function()
-                if G.hand and G.hand.change_size then G.hand:change_size(3) end
                 if G.CONTROLLER and G.CONTROLLER.locks then G.CONTROLLER.locks[lock] = nil end
                 return true
             end)
@@ -297,12 +299,12 @@ end
 
 HNDS.cleanup_removed_reroll_tag_rework()
 
-local function decay_juggle_tags(context)
-    if not (context.end_of_round and not context.individual and not context.repetition) then return end
+function HNDS.decay_juggle_tags(context)
+    if not (((context.end_of_round and context.main_eval) or context.mp_end_of_pvp) and not context.individual
+        and not context.repetition and not context.retrigger_joker and not context.blueprint) then return end
     if not (G and G.GAME and G.GAME.hnds_juggle_bonuses) then return end
 
-    local token = tostring(G.GAME.round or 0) .. ':' ..
-        tostring(G.GAME.round_resets and G.GAME.round_resets.ante or 0)
+    local token = HNDS.round_effect_token()
     if G.GAME.hnds_juggle_decay_token == token then return end
     G.GAME.hnds_juggle_decay_token = token
 
@@ -529,7 +531,7 @@ local function migrate_old_planet_voucher_rate()
 end
 
 HNDS.calculate_vanilla_tweaks = function(context)
-    decay_juggle_tags(context)
+    HNDS.decay_juggle_tags(context)
     migrate_old_planet_voucher_rate()
     if context.modify_shop_card and context.card then
         modify_voucher_shop_playing_card(context.card)

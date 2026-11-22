@@ -990,6 +990,7 @@ end
 
 function HNDS.stop_platinum_boss_stack(cleanup_context)
     if not (G and G.GAME and G.GAME.hnds_platinum_boss_stack_active) then return end
+    if HNDS.capture_pvp_soul_round then HNDS.capture_pvp_soul_round() end
 
     local blind = G.GAME.blind
     local hooks = active_effect_hooks()

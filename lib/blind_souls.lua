@@ -43,7 +43,7 @@ HNDS.blind_souls = {
 
     bl_head = { "j_lusty_joker", "j_bloodstone" },
 
-    bl_tooth = { "j_hnds_coffee_break" },
+    bl_tooth = { "j_rough_gem" },
 
     bl_flint = { "j_campfire", "j_campfire", "j_campfire", "j_hiker" },
 
@@ -195,7 +195,7 @@ HNDS.get_blind_soul = function (blind, seed)
         return {
             attributes = {"hearts"}
         }
-    elseif k == "bl_tooth" then return { key = "j_hnds_coffee_break" }
+    elseif k == "bl_tooth" then return { key = "j_rough_gem" }
     elseif k == "bl_flint" then
         if pseudorandom(seed)<0.75 then
             return { key = "j_campfire" }

@@ -1127,6 +1127,11 @@ if Game and Game.update and not Game._hnds_wrapped_update_runtime then
         if HNDS.update_humor_clash_colour then HNDS.update_humor_clash_colour() end
         hnds_update_ante_10_runtime()
         local now = G and G.TIMERS and G.TIMERS.REAL
+        if G and G.GAME and G.STATES and G.STATE == G.STATES.SHOP
+            and not G.GAME.PACK_INTERRUPT and G.GAME.hnds_cursed_pack_pending
+            and HNDS.open_pending_cursed_pack_at_shop then
+            HNDS.open_pending_cursed_pack_at_shop()
+        end
         if type(now) == 'number' and now >= hnds_next_atlas_cleanup then
             hnds_next_atlas_cleanup = now + 3
             if HNDS and HNDS.sarmenti_cleanup_orphaned_runtime_atlases then

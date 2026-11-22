@@ -52,9 +52,14 @@ SMODS.Joker {
         }))
     end,
     calculate = function(self, card, context)
-        if (context.end_of_round and context.beat_boss and context.main_eval and G.GAME.current_round.hands_played == 1) or (context.forcetrigger and G.GAME.blind) then
-            if HNDS.mp_is_pvp and HNDS.mp_is_pvp() then return end
-            local souls = HNDS.get_blind_souls(G.GAME.blind, "hnds_pennywise") or {}
+        local pvp_reward = context.hnds_pvp_soul_reward
+        if pvp_reward and (G.GAME.hnds_mp_result ~= 'win' or pvp_reward.hands > 1) then return end
+        if pvp_reward or (context.end_of_round and context.beat_boss and context.main_eval and G.GAME.current_round.hands_played == 1) or (context.forcetrigger and G.GAME.blind) then
+            if not pvp_reward and HNDS.mp_is_pvp and HNDS.mp_is_pvp() then return end
+            local souls = pvp_reward and { HNDS.pvp_soul_reward(pvp_reward,
+                'hnds_pennywise_pvp_' .. tostring(card.sort_id or 0)) }
+                or HNDS.get_blind_souls(G.GAME.blind, "hnds_pennywise") or {}
+            local game = G.GAME
             for i, soul_args in ipairs(souls) do
                 local args = {}
                 for k, v in pairs(soul_args) do args[k] = v end
@@ -63,6 +68,7 @@ SMODS.Joker {
                 args.set = "Joker"
                 G.E_MANAGER:add_event(Event({
                     func = function()
+                        if G.GAME ~= game or card.removed or card.REMOVED then return true end
                         local c = SMODS.add_card(args)
                         if c then
                             c.ability = c.ability or {}
