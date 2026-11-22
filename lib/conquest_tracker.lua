@@ -118,6 +118,7 @@ function HNDS.install_conquest_defeat_hook()
             G.GAME.hnds_conquest_bosses_defeated =
                 G.GAME.hnds_conquest_bosses_defeated + 1
             self.hnds_conquest_defeat_counted = true
+            if HNDS.emit_conquest_retrigger then HNDS.emit_conquest_retrigger(self) end
         end
 
         return unpack_values(results, 1, results.n)

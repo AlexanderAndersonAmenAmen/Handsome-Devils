@@ -310,7 +310,8 @@ local function hnds_wasted_wish_apply_adjustments(adjustments, direction)
 
     if G.hand and hand_size ~= 0 then G.hand:change_size(hand_size) end
     if shop_size ~= 0 and type(change_shop_size) == "function" then
-        change_shop_size(shop_size)
+        if HNDS.change_voucher_shop_size then HNDS.change_voucher_shop_size(shop_size)
+        else change_shop_size(shop_size) end
     end
     if G.GAME.current_round and G.GAME.current_round.reroll_cost ~= nil then
         G.GAME.current_round.reroll_cost = math.max(0,
@@ -366,20 +367,20 @@ local function hnds_wasted_wish_restore_slot_bonuses()
     local state = G.GAME.hnds_wasted_wish_slot_state or {}
 
     local consumable_bonus = tonumber(state.consumable_bonus) or 0
-    if consumable_bonus > 0 and G.consumeables and G.consumeables.config then
+    if consumable_bonus > 0 and state.consumable_processed and G.consumeables and G.consumeables.config then
         local limit = tonumber(G.consumeables.config.card_limit)
         if limit then
-            G.consumeables.config.card_limit = math.max(1,
-                limit + consumable_bonus)
+            G.consumeables:change_size(consumable_bonus)
+            if G.consumeables.handle_card_limit then G.consumeables:handle_card_limit() end
         end
     end
 
     local joker_bonus = tonumber(state.joker_bonus) or 0
-    if joker_bonus > 0 and G.jokers and G.jokers.config then
+    if joker_bonus > 0 and state.joker_processed and G.jokers and G.jokers.config then
         local limit = tonumber(G.jokers.config.card_limit)
         if limit then
-            G.jokers.config.card_limit = math.max(1,
-                limit + joker_bonus)
+            G.jokers:change_size(joker_bonus)
+            if G.jokers.handle_card_limit then G.jokers:handle_card_limit() end
         end
     end
 
@@ -515,8 +516,10 @@ local function hnds_update_ante_10_runtime()
         if ante ~= G.GAME.hnds_wasted_wish_ante then
             HNDS.set_wasted_wish_active(false)
         else
-
-
+            if HNDS.refresh_wasted_wish then
+                HNDS.refresh_wasted_wish()
+                return
+            end
             local mt = type(G.GAME.used_vouchers) == "table"
                 and getmetatable(G.GAME.used_vouchers)
             if not (mt and mt.__newindex) then
@@ -924,18 +927,12 @@ if Card and Card.remove_from_deck then
 end
 
 
-local hnds_contagion_cache_time = nil
-local hnds_contagion_cache_bonus = 0
 local function hnds_contagion_bonus()
-    local now = G and G.TIMERS and (G.TIMERS.REAL or G.TIMERS.TOTAL)
-    if now ~= nil and now == hnds_contagion_cache_time then
-        return hnds_contagion_cache_bonus
-    end
-
     local bonus = 0
     if G and G.jokers and G.jokers.cards then
         for _, joker in ipairs(G.jokers.cards) do
-            if joker and not joker.debuff and joker.config and joker.config.center then
+            if joker and not joker.debuff and not joker.removed and not joker.REMOVED
+                and not joker.getting_sliced and joker.config and joker.config.center then
                 local key = joker.config.center.key
                 local jack_contagion = key == 'j_hnds_jack_in_the_box'
                     and joker.ability and joker.ability.extra
@@ -947,13 +944,24 @@ local function hnds_contagion_bonus()
             end
         end
     end
-    hnds_contagion_cache_time = now
-    hnds_contagion_cache_bonus = bonus
     return bonus
 end
 
 
 HNDS.get_contagion_bonus = hnds_contagion_bonus
+
+-- Custom consumables can query the current limit before Card:update runs.
+-- Subtract the applied bonus first, so repeated queries never accumulate it.
+function HNDS.contagion_target_limit(card, fallback)
+    local ability = card and card.ability or {}
+    local container = ability
+    if type(container.max_highlighted) ~= 'number' then
+        container = ability.consumeable or ability.consumable or ability
+    end
+    local maximum = tonumber(container.max_highlighted)
+    local base = maximum and maximum - (tonumber(container.hnds_contagion_bonus) or 0) or fallback or 1
+    return math.max(1, base + hnds_contagion_bonus())
+end
 
 local function hnds_sync_contagion_container(container, bonus, forced_base)
     if type(container) ~= 'table' then return false end
@@ -994,6 +1002,9 @@ local function hnds_sync_contagion_container(container, bonus, forced_base)
     if type(container.mod_num) == 'number' then
         local base_mod = math.max(0, container.mod_num - previous_bonus)
         container.mod_num = base_mod + bonus
+    else
+        -- Vanilla fills this in Card:update, but can_use may run first.
+        container.mod_num = container.max_highlighted
     end
 
     container.hnds_contagion_bonus = bonus
@@ -1032,6 +1043,8 @@ local function hnds_sync_contagion_selection(card)
 
     hnds_sync_contagion_container(card.ability, bonus)
 end
+
+HNDS.sync_contagion_selection = hnds_sync_contagion_selection
 
 local function hnds_card_needs_contagion_sync(card)
     if not (card and card.ability) then return false end
@@ -1111,6 +1124,7 @@ if Game and Game.update and not Game._hnds_wrapped_update_runtime then
     local hnds_next_atlas_cleanup = 0
     function Game:update(dt, ...)
         local ret = game_update_runtime_ref(self, dt, ...)
+        if HNDS.update_humor_clash_colour then HNDS.update_humor_clash_colour() end
         hnds_update_ante_10_runtime()
         local now = G and G.TIMERS and G.TIMERS.REAL
         if type(now) == 'number' and now >= hnds_next_atlas_cleanup then
@@ -1182,13 +1196,14 @@ if Card and Card.use_consumeable and not Card._hnds_wrapped_contagion_use then
     local use_consumeable_contagion_ref = Card.use_consumeable
 
     function Card:use_consumeable(area, copier, ...)
+        hnds_sync_contagion_selection(self)
         local center_key = hnds_contagion_center_key(self)
         local bonus = hnds_contagion_bonus()
         local supported = hnds_contagion_seal_spectrals[center_key]
             or center_key == 'c_aura'
             or center_key == 'c_cryptid'
             or center_key == 'c_death'
-        local selected = (bonus > 0 and supported) and hnds_copy_highlighted_cards() or nil
+        local selected = (bonus > 0 and supported and not self.debuff) and hnds_copy_highlighted_cards() or nil
         local death_source = center_key == 'c_death' and selected and hnds_rightmost_selected_card(selected) or nil
 
         local results = HNDS.pack(use_consumeable_contagion_ref(self, area, copier, ...))
@@ -1278,6 +1293,7 @@ if Card and Card.can_use_consumeable and not Card._hnds_wrapped_contagion_can_us
     local can_use_consumeable_contagion_ref = Card.can_use_consumeable
 
     function Card:can_use_consumeable(any_state, skip_check, ...)
+        hnds_sync_contagion_selection(self)
         local vanilla_result = can_use_consumeable_contagion_ref(self, any_state, skip_check, ...)
         if hnds_contagion_center_key(self) == 'c_aura' and hnds_contagion_bonus() > 0
             and G and G.hand and G.hand.highlighted and #G.hand.highlighted > 0
@@ -1443,21 +1459,45 @@ if SMODS and SMODS.destroy_cards and not SMODS._hnds_wrapped_destroy_cards_stat_
 end
 
 
+-- Freeze the selected card once per scoring hand. Later rank changes or
+-- destruction must not make a second held card become Energized's target.
+local hnds_energized_scored_card
+local calculate_main_scoring_ref = SMODS.calculate_main_scoring
+function SMODS.calculate_main_scoring(context, scoring_hand, ...)
+    if context and context.cardarea == G.play then
+        hnds_energized_scored_card = HNDS.energized_highest_card()
+        local hand = context.scoring_hand
+        if hnds_energized_scored_card and type(hand) == 'table' then
+            local present = false
+            for _, scored in ipairs(hand) do
+                if scored == hnds_energized_scored_card then present = true; break end
+            end
+            if not present then hand[#hand + 1] = hnds_energized_scored_card end
+        end
+    end
+    return calculate_main_scoring_ref(context, scoring_hand, ...)
+end
+
 HNDS.should_hand_destroy = function(card)
 	if not (card and type(card.get_seal) == 'function' and G and G.GAME) then return false end
 	local vouchers = G.GAME.used_vouchers or {}
 	local hand_cards = G.hand and G.hand.cards or {}
 	return (vouchers.v_hnds_soaked and card == hand_cards[1])
 		or (vouchers.v_hnds_beyond and card == hand_cards[#hand_cards])
+        or card == hnds_energized_scored_card
 end
 
 local destroy_cards_ref = SMODS.calculate_destroying_cards
 
 function SMODS.calculate_destroying_cards(context, cards_destroyed, scoring_hand, ...)
+    local evaluate_held = type(context) == 'table' and G and context.cardarea == G.play
 	local result = destroy_cards_ref(context, cards_destroyed, scoring_hand, ...)
-	if type(context) ~= 'table' or type(cards_destroyed) ~= 'table' then return result end
+	if not evaluate_held or type(cards_destroyed) ~= 'table' then return result end
+    local already_destroyed = {}
+    for _, card in ipairs(cards_destroyed) do already_destroyed[card] = true end
 	for _, card in ipairs((G and G.hand and G.hand.cards) or {}) do
-		if HNDS.should_hand_destroy(card) then
+		if HNDS.should_hand_destroy(card) and not already_destroyed[card]
+            and not card.destroyed and not card.shattered and not card.getting_sliced then
 			local destroyed = nil
 			local new_context = {}
 			for k, v in pairs(context) do
@@ -1489,13 +1529,19 @@ local score_card_ref = SMODS.score_card
 function SMODS.score_card(card, context, ...)
 	if type(context) ~= 'table' then return score_card_ref(card, context, ...) end
 	if (not (G and G.scorehand)) and HNDS.should_hand_destroy(card) and G and context.cardarea == G.hand then
-		local original_area = context.cardarea
+        local scoring_context = {}
+        for key, value in pairs(context) do scoring_context[key] = value end
+        scoring_context.cardarea = G.play
+        scoring_context.hnds_hand_trigger = true
+        local previous_scorehand = G.scorehand
 		G.scorehand = true
-		context.cardarea = G.play
-		local ok, err = pcall(score_card_ref, card, context, ...)
-		context.cardarea = original_area
-		G.scorehand = nil
+		local ok, err = pcall(score_card_ref, card, scoring_context, ...)
+		G.scorehand = previous_scorehand
 		if not ok then error(err) end
+        if card == hnds_energized_scored_card and not card.debuff
+            and HNDS.emit_energized_retriggers and not HNDS.energized_retrigger_scoring then
+            HNDS.emit_energized_retriggers(card, scoring_context)
+        end
 	end
 	return score_card_ref(card, context, ...)
 end
@@ -1510,7 +1556,6 @@ function Card.set_cost(self, ...)
 	local set = self.config and self.config.center and self.config.center.set
 
 
-	if key == "j_hnds_coffee_break" then self.sell_cost = 0 end
 	if key == "j_hnds_art" then
 		self.sell_cost = HNDS.art_sell_value(self)
 		self.sell_cost_label = self.facing == 'back' and '?' or self.sell_cost
@@ -1520,6 +1565,7 @@ function Card.set_cost(self, ...)
 
 
 	if set == "Joker"
+		and not (self.ability and self.ability.couponed)
 		and G.GAME and G.GAME.selected_back
 		and G.GAME.selected_back.effect and G.GAME.selected_back.effect.center
 		and G.GAME.selected_back.effect.center.key == "b_hnds_premiumdeck"
@@ -1781,75 +1827,4 @@ function get_blind_amount(ante, ...)
 		if ok then amount = type(scaled) == 'number' and math.floor(scaled) or scaled end
 	end
 	return amount
-end
-
-
-
-if Card and Card.align_h_popup and not HNDS._stable_hnds_tooltip_align_v3 then
-    HNDS._stable_hnds_tooltip_align_v3 = true
-
-    local function hnds_uses_custom_tooltip(card)
-        if not card then return false end
-        -- Collection pages contain many temporary preview cards. Preserve
-        -- vanilla positioning and skip this per-hover custom ability scan.
-        if card.area and card.area.config and card.area.config.collection then return false end
-        local center = card.config and card.config.center
-        if center and center.mod and center.mod.id == 'HandsomeDevils' then return true end
-        local key = center and tostring(center.key or '') or ''
-        if key:find('hnds_', 1, true) then return true end
-        if card.seal and tostring(card.seal):find('hnds_', 1, true) then return true end
-        if card.edition then
-            for k, v in pairs(card.edition) do
-                if v and tostring(k):find('hnds_', 1, true) then return true end
-            end
-        end
-        if card.ability then
-            for k, v in pairs(card.ability) do
-                if v and tostring(k):find('hnds_', 1, true) then return true end
-            end
-            if type(card.ability.stickers) == 'table' then
-                for k, v in pairs(card.ability.stickers) do
-                    if v and tostring(k):find('hnds_', 1, true) then return true end
-                end
-            end
-        end
-        if card.stickers then
-            for k, v in pairs(card.stickers) do
-                if v and tostring(k):find('hnds_', 1, true) then return true end
-            end
-        end
-        return false
-    end
-
-    local hnds_align_h_popup_ref = Card.align_h_popup
-    function Card:align_h_popup(...)
-        local native = hnds_align_h_popup_ref(self, ...)
-        if not hnds_uses_custom_tooltip(self) or type(native) ~= 'table' then
-            return native
-        end
-
-
-        local area = self.area
-        local cache = self.hnds_tooltip_alignment_cache
-        if type(cache) ~= 'table' or cache.area ~= area then
-            cache = {
-                area = area,
-                type = native.type,
-                align = native.align,
-                offset_x = native.offset and native.offset.x or nil,
-                offset_y = native.offset and native.offset.y or nil,
-                lr_clamp = native.lr_clamp,
-            }
-            self.hnds_tooltip_alignment_cache = cache
-        end
-
-        if cache.type ~= nil then native.type = cache.type end
-        if cache.align ~= nil then native.align = cache.align end
-        if native.offset then
-            if cache.offset_x ~= nil then native.offset.x = cache.offset_x end
-            if cache.offset_y ~= nil then native.offset.y = cache.offset_y end
-        end
-        if cache.lr_clamp ~= nil then native.lr_clamp = cache.lr_clamp end
-        return native
-    end
 end

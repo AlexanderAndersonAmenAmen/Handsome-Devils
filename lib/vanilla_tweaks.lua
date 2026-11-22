@@ -553,6 +553,24 @@ take_vanilla_ownership(SMODS.Voucher, 'planet_tycoon', {
 })
 
 
+-- Keep the standard Glass scoring/destruction callbacks (including all
+-- probability modifiers); only change their base values.
+take_vanilla_ownership(SMODS.Enhancement, 'glass', {
+    config = { Xmult = 1.5, extra = 5 },
+})
+
+if Card and type(Card.load) == 'function' then
+    local load_ref = Card.load
+    function Card:load(...)
+        local results = HNDS.pack(load_ref(self, ...))
+        if self.config and self.config.center and self.config.center.key == 'm_glass' and self.ability then
+            if self.ability.x_mult == 2 then self.ability.x_mult = 1.5 end
+            if self.ability.extra == 4 then self.ability.extra = 5 end
+        end
+        return ((table and table.unpack) or unpack)(results, 1, results.n)
+    end
+end
+
 take_vanilla_ownership(SMODS.Enhancement, 'wild', {
     any_suit = true,
     calculate = function(self, card, context)
@@ -562,6 +580,25 @@ take_vanilla_ownership(SMODS.Enhancement, 'wild', {
     end,
 })
 
+
+take_vanilla_ownership(SMODS.Joker, 'photograph', {
+    config = { extra = 1.5 },
+    loc_vars = function(self, info_queue, card)
+        return { vars = { 1.5 } }
+    end,
+    calculate = function(self, card, context)
+        -- Also migrate Photographs in existing saves, not just newly created ones.
+        card.ability.extra = 1.5
+        if context.individual and context.cardarea == G.play then
+            for _, scored in ipairs(context.scoring_hand or {}) do
+                if scored:is_face() then
+                    if scored == context.other_card then return { xmult = 1.5 } end
+                    break
+                end
+            end
+        end
+    end,
+})
 
 take_vanilla_ownership(SMODS.Joker, 'matador', {
     blueprint_compat = true,

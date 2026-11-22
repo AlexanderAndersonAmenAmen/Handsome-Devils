@@ -3,6 +3,73 @@ return {
 
 
 		Joker = {
+            j_hnds_dallas = {
+				name = "Dallas",
+				text = {
+					"Gains {X:mult,C:white}X#1#{} Mult every",
+					"{C:attention}#2#{} {C:inactive}[#4#]{} {C:hearts}Heart{} cards drawn,",
+					"reset Mult every round",
+					"{C:inactive}(Currently {X:mult,C:white}X#3#{C:inactive} Mult)",
+				},
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} cards",
+			    "with {C:hearts}Heart{} suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+            j_hnds_wolf = {
+			    name = "Wolf",
+			    text = {
+			    	"Gains {C:mult}+#1#{} Mult every",
+			    	"{C:attention}#2#{} {C:inactive}[#4#]{} {C:clubs}Club{} cards drawn",
+			    	"{C:inactive}(Currently {C:mult}+#3#{C:inactive} Mult)",
+			    },
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} {C:clubs}Club{} cards",
+			    "with Club suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+            j_hnds_chains = {
+			    name = "Chains",
+			    text = {
+			    	"Gains {C:chips}+#1#{} Chips every",
+			    	"{C:attention}#2#{} {C:inactive}[#4#]{} {C:spades}Spade{} cards drawn",
+			    	"{C:inactive}(Currently {C:chips}+#3#{C:inactive} Chips)",
+			    },
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} {C:spades}Spade{} cards",
+			    "with Spade suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+            j_hnds_hoxton = {
+			    name = "Hoxton",
+			    text = {
+			    	"Joker to the right",
+			    	"gains {C:money}$#1#{} of {C:money}sell value{}",
+			    	"every {C:attention}#2#{} {C:inactive}[#3#]{} cards with",
+			    	"{C:diamonds}Diamond{} suit drawn",
+			    },
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} {C:diamonds}Diamond{} cards",
+			    "with Diamond suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+            j_hnds_humor_clash = {
+                name = "Humor Clash",
+                text = {
+                    "{V:1}Balances{} played hand",
+                    "every {C:attention}#1#{} {C:inactive}[#2#]{} cards with",
+                    "{C:attention}#3#{} rank scored, then",
+                    "swap to {C:attention}#4#{} rank",
+                },
+            },
 			j_hnds_head_of_medusa = {
 				name = "美杜莎之首",
 				text = {
@@ -97,7 +164,7 @@ return {
                 },
             },
             j_hnds_trump_suit = {
-                name = "Trump Suit",
+                name = "Supersuit",
                 text = {
                     "Retrigger all cards",
                     "with {V:1}#1#{} suit",
@@ -303,9 +370,9 @@ return {
 				c_hnds_void = {
 					name = "Void",
 					text = {
-						"使{C:attention}1{}张选中的牌获得",
-						"{C:dark_edition}负片{}效果，",
-						"{C:red}摧毁所有其他卡牌{}",
+					"为最多{C:attention}#1#{}张选中的牌",
+					"添加{C:dark_edition}负片{}效果，",
+					"摧毁所有其他牌",
 					},
 				},
 			c_hnds_hallows = {

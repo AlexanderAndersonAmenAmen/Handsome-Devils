@@ -153,6 +153,8 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
             if center and hnds_legendary_collection_lookup[center.key] then
                 legendary_by_key[center.key] = center
             else
+                -- Only Handsome Devils' own Legendary Jokers are moved.
+                -- Vanilla and other mods' Legendaries remain in normal pages.
                 pool[#pool + 1] = center
             end
         end
@@ -166,18 +168,19 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
         end
 
 
-        for _ = 1, 5 do pool[#pool + 1] = hnds_collection_blank end
+        local legendaries = {}
         for _, key in ipairs(hnds_legendary_collection_order) do
             local center = legendary_by_key[key]
             if center then
-                pool[#pool + 1] = center
-            else
-
-
-                pool[#pool + 1] = hnds_collection_blank
+                legendaries[#legendaries + 1] = center
             end
         end
-        for _ = 1, 5 do pool[#pool + 1] = hnds_collection_blank end
+        -- Filtered collections with no Handsome Devils Legendaries get no extra page.
+        if #legendaries == 0 then return nil end
+        -- `pool` is padded to a complete page above.  Keep the legendary
+        -- collection on one additional, final page and use an integer page
+        -- count for Steamodded's option cycle.
+        local total_pages = math.max(1, math.floor(#pool / cards_per_page) + 1)
 
 
         if type(G.your_collection) == 'table' then
@@ -208,7 +211,10 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
                 G.ROOM.T.h,
                 (args.w_mod * rows[j] + 0.25) * G.CARD_W,
                 args.h_mod * G.CARD_H,
-                { card_limit = rows[j], type = args.area_type or 'title', highlight_limit = 0, collection = true }
+                -- CardArea uses this limit to space cards, even on ordinary pages.
+                -- The five Handsome Devils Legendaries fit the same five slots.
+                { card_limit = rows[j],
+                    type = args.area_type or 'title', highlight_limit = 0, collection = true }
             )
             table.insert(deck_tables, {
                 n = G.UIT.R,
@@ -219,7 +225,6 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
             })
         end
 
-        local total_pages = math.max(1, math.ceil(#pool / cards_per_page))
         local options = {}
         for i = 1, total_pages do
             table.insert(options, localize('k_page') .. ' ' .. tostring(i) .. '/' .. tostring(total_pages))
@@ -235,11 +240,14 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
                 end
             end
 
-            local page = e.cycle_config.current_option or 1
+            local page = math.max(1, math.min(total_pages, e.cycle_config.current_option or 1))
             for j = 1, #rows do
-                for i = 1, rows[j] do
+                local legendary_page = page == total_pages
+                local count = legendary_page and (j == 2 and #legendaries or 0) or rows[j]
+                local scale = args.card_scale
+                for i = 1, count do
                     local index = i + row_totals[j] + (cards_per_page * (page - 1))
-                    local center = pool[index]
+                    local center = legendary_page and legendaries[i] or pool[index]
                     if not center then break end
 
 
@@ -247,8 +255,8 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
                         local card = Card(
                             G.your_collection[j].T.x + G.your_collection[j].T.w / 2,
                             G.your_collection[j].T.y,
-                            G.CARD_W * args.card_scale,
-                            G.CARD_H * args.card_scale,
+                            G.CARD_W * scale,
+                            G.CARD_H * scale,
                             G.P_CARDS.empty,
                             (args.center and G.P_CENTERS[args.center]) or center
                         )
@@ -273,7 +281,7 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
             infotip = args.infotip,
             contents = {
                 { n = G.UIT.R, config = { align = 'cm', r = 0.1, colour = G.C.BLACK, emboss = 0.05 }, nodes = deck_tables },
-                (not args.hide_single_page or cards_per_page < #pool) and {
+                (not args.hide_single_page or total_pages > 1) and {
                     n = G.UIT.R,
                     config = { align = 'cm' },
                     nodes = {
@@ -308,6 +316,8 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
             rows = { 4, 4 }
         elseif pools then
             if pool == pools.Joker then
+                local legendary_ui = hnds_legendary_joker_collection_UIBox(pool, args)
+                if legendary_ui then return legendary_ui end
                 rows = { 5, 5, 5 }
             elseif pool == pools.Seal then
                 rows = { 3, 3, 3 }
@@ -755,20 +765,27 @@ local files = {
 			"angry_mob",
 			"public_nuisance",
 			"error",
+			
+			"dallas",
+            "wolf",
+			"fun_police",
+            "chains",
+            "hoxton",
 
+			"jokes_aside",
 			"laugh_preserver",
 			"pluck_of_the_draw",
 			"loaded_die",
 			"handicap_placard",
-			"jokes_aside",
+			
 
 		    "cursed_doll",
 			"headless_joker",
 			"meme",
 			"fun_pilled",
-			"be_not_afraid",
+			"imposter",
 
-			"time_fcked_joker",
+			"fregoli",
 			"stone_mask",
 			"jodiac",
 		    "seismic_activity",
@@ -781,26 +798,26 @@ local files = {
 			"death",
 
 			"water_slide",
-			"imposter",
-			"dark_pact",
+			"be_not_afraid",
+			"trump_suit",
 			"color_of_madness",
 			"dark_idol",
 		    
 			"digital_circus",
-		    "deep_pockets",
-			"trump_suit",
-			"fregoli",
+            "energized",
+			"dark_pact",
+			"time_fcked_joker",
 			"miner_joker",
 
 			"handsome",
 			"head_of_medusa",
-			"energized",
+	        "deep_pockets",
 			"spaghettified_joker",
 			"formosana",
 			
 			"artistic_joker",
 			"jester_in_yellow",
-			"fun_police",
+            "humor_clash",
 			"ancestor",
 			"ms_fortune",
 			
@@ -1075,6 +1092,7 @@ function Game:init_game_object(...)
 	ret.hnds_ms_fortune_shop_active = ret.hnds_ms_fortune_shop_active or false
 	ret.hnds_ms_fortune_obtained = ret.hnds_ms_fortune_obtained or {}
 	ret.hnds_big_d_name_serial = ret.hnds_big_d_name_serial or 0
+	ret.hnds_curse_slot_version = 2
 	return ret
 end
 
@@ -1097,6 +1115,7 @@ for _, set_key in ipairs(hnds_content_load_order) do
 end
 assert(SMODS.load_file("lib/hooks.lua"))()
 assert(SMODS.load_file("lib/excommunicado.lua"))()
+assert(SMODS.load_file("lib/arthur_vanilla.lua"))()
 if hnds_config.enableVanillaTweaks then assert(SMODS.load_file("lib/vanilla_tweaks.lua"))() end
 assert(SMODS.load_file("lib/blind_upgrade_stakes.lua"))()
 if hnds_config.enableBlindUpgradeButton then
@@ -1121,12 +1140,16 @@ if CardSleeves then
     assert(SMODS.load_file("sleeves/conjuring_sleeve.lua"))()
     assert(SMODS.load_file("sleeves/ol_sleeve.lua"))()
 end
+assert(SMODS.load_file("lib/curse_effects.lua"))()
+assert(SMODS.load_file("lib/curse_vouchers.lua"))()
+assert(SMODS.load_file("lib/voucher_debuffs.lua"))()
 assert(SMODS.load_file("lib/curses.lua"))()
 assert(SMODS.load_file("lib/challenge_rules.lua"))()
 
 
 assert(SMODS.load_file("lib/time_fcked.lua"))()
 assert(SMODS.load_file("lib/billy_puzzle.lua"))()
+assert(SMODS.load_file("lib/puzzle_stickers.lua"))()
 assert(SMODS.load_file("lib/slot_aura_resource_guard.lua"))()
 assert(SMODS.load_file("lib/booster_draw_bridge.lua"))()
 if HNDS.install_big_d_hooks then HNDS.install_big_d_hooks() end
@@ -1145,3 +1168,5 @@ for _, method in ipairs({'set_edition', 'set_seal'}) do
 end
 
 assert(SMODS.load_file('lib/ui_element_cleanup.lua'))()
+assert(SMODS.load_file('lib/tooltip_alignment.lua'))()
+assert(SMODS.load_file('lib/retrigger_extensions.lua'))()

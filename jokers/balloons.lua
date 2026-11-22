@@ -24,16 +24,19 @@ SMODS.Joker({
     eternal_compat = false,
 
     calculate = function(self, card, context)
-
-
         if context.end_of_round and context.main_eval
             and not context.game_over
+            and not context.check
+            and not SMODS.no_resolve
             and not context.blueprint
             and not card.ability.hnds_balloons_popped
             and G and G.GAME and G.GAME.current_round
             and G.GAME.current_round.hands_played == 1
         then
-            local seed_modifier = 'balloons_seed_' .. tostring(card.ability.extra.balloons)
+            local remaining = math.floor(tonumber(card.ability.extra.balloons) or 0)
+            if remaining <= 0 then return end
+
+            local seed_modifier = 'balloons_seed_' .. tostring(remaining)
             local chosen_tag_key = HNDS.poll_registered_tag_key(seed_modifier)
 
             if chosen_tag_key then
@@ -52,9 +55,13 @@ SMODS.Joker({
                 }))
             end
 
-            card.ability.extra.balloons = card.ability.extra.balloons - 1
+            remaining = remaining - 1
+            card.ability.extra.balloons = remaining
+            if context.retrigger_joker then
+                HNDS.spend_limited_joker_retrigger(context.retrigger_joker)
+            end
 
-            if card.ability.extra.balloons <= 0 then
+            if remaining == 0 then
                 card.ability.hnds_balloons_popped = true
                 G.E_MANAGER:add_event(Event({
                     func = function()
@@ -65,15 +72,12 @@ SMODS.Joker({
                         return true
                     end
                 }))
-                return {
-                    message = "Popped!",
-                    colour = G.C.FILTER
-                }
             end
 
             return {
-                message = "Pop!",
-                colour = G.C.FILTER
+                message = remaining == 0 and "Popped!" or "Pop!",
+                colour = G.C.FILTER,
+                hnds_retrigger_limit = remaining,
             }
         end
     end

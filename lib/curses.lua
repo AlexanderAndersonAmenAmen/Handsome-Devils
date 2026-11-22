@@ -1,3 +1,9 @@
+local function curse_blueprint_compatible(card)
+    if HNDS.sarmenti_blueprint_compatible then return HNDS.sarmenti_blueprint_compatible(card) end
+    local center = card and card.config and card.config.center
+    return center and center.blueprint_compat == true or false
+end
+
 local function curse_round_offer_ready(card, context)
     if not (context.end_of_round and context.main_eval and not context.repetition
         and not context.blueprint and G.GAME) then return false end
@@ -124,8 +130,9 @@ G.CURSE_OFFERS = {
 
     [5] = {
         id = 'offer_retrigger',
+        in_pool = function(self, card) return curse_blueprint_compatible(card) end,
         func = function(card, context)
-            if not (card and card.config and card.config.center and card.config.center.calculate) then return end
+            if not curse_blueprint_compatible(card) then return end
             if context.retrigger_joker_check and not context.retrigger_joker and context.other_card == card then
                 return { message = localize('k_again_ex'), repetitions = 1, card = card }
             end
@@ -140,7 +147,7 @@ G.CURSE_OFFERS = {
             local ante = tonumber(context.hnds_curse_ante or curse_reward_ante(G.GAME and G.GAME.blind))
             if not ante or card.ability.hnds_curse_spectral_ante == ante then return end
             card.ability.hnds_curse_spectral_ante = ante
-            queue_curse_consumables(card, 'Spectral', 1, 'hnds_curse_boss_spectral_' .. ante, 0.1)
+            queue_curse_consumables(card, 'Spectral', 2, 'hnds_curse_boss_spectral_' .. ante .. '_', 0.1)
         end
     },
 
@@ -160,6 +167,7 @@ G.CURSE_OFFERS = {
     },
     [8] = {
         id = 'offer_joker_copy',
+        in_pool = function(self, card) return not curse_blueprint_compatible(card) end,
         func = function(card, context)
             if context.buying_card then
                 if not (G and G.E_MANAGER and Event and G.jokers and G.GAME and G.jokers.config) then return end
@@ -228,7 +236,15 @@ G.CURSE_OFFERS = {
                 }))
             end
         end
-    }
+    },
+    [9] = {
+        id = 'offer_extra_hand',
+        func = function(card, context) HNDS.sync_curse_bonuses(card, context) end,
+    },
+    [10] = {
+        id = 'offer_consumable_slots',
+        func = function(card, context) HNDS.sync_curse_bonuses(card, context) end,
+    },
 }
 
 G.CURSE_PRICES = {
@@ -332,12 +348,12 @@ G.CURSE_PRICES = {
             if not (context and context.buying_card and G and G.GAME) then return end
             G.GAME.round_resets = G.GAME.round_resets or {}
             G.GAME.round_resets.reroll_cost = math.max(0,
-                (tonumber(G.GAME.round_resets.reroll_cost) or 0) + 2)
+                (tonumber(G.GAME.round_resets.reroll_cost) or 0) + 1)
             if calculate_reroll_cost then
                 calculate_reroll_cost(true)
             elseif G.GAME.current_round then
                 G.GAME.current_round.reroll_cost = math.max(0,
-                    (tonumber(G.GAME.current_round.reroll_cost) or 0) + 2)
+                    (tonumber(G.GAME.current_round.reroll_cost) or 0) + 1)
             end
         end
     },
@@ -383,7 +399,26 @@ G.CURSE_PRICES = {
             if not (context and context.buying_card and G and G.GAME and G.GAME.modifiers) then return end
             G.GAME.modifiers.hnds_base_blind_increase = (G.GAME.modifiers.hnds_base_blind_increase or 0) + 1
         end
-    }
+    },
+    [9] = {
+        id = 'price_debuff_voucher',
+        in_pool = function(self) return #HNDS.curse_voucher_pool() > 0 end,
+        func = function(card, context)
+            if not context.buying_card then return end
+            local pool = HNDS.curse_voucher_pool()
+            if #pool == 0 then return end
+            local key = pseudorandom_element(pool, pseudoseed('hnds_curse_debuff_voucher'))
+            HNDS.permanently_debuff_voucher(key)
+        end,
+    },
+    [10] = {
+        id = 'price_debuff_adjacent',
+        func = function(card, context)
+            if context.buying_card or context.add_to_deck or context.remove_from_deck then
+                HNDS.refresh_curse_adjacency()
+            end
+        end,
+    },
 }
 
 
@@ -508,8 +543,7 @@ SMODS.Sticker {
 
 
     loc_vars = function(self, info_queue, card)
-
-
+        if HNDS.refresh_curse_price then HNDS.refresh_curse_price(card) end
         if card and card.ability and card.ability.hnds_curse_offer == 'offer_spectral_gen' then
             card.ability.hnds_curse_offer = 'offer_interest_cap'
         end
@@ -595,7 +629,7 @@ if not _G.HNDS_curse_collections then
     end
 
     create_UIBox_your_collection_hnds_curse_offers = function()
-        return SMODS.card_collection_UIBox(HNDS.CURSE_OFFERS_COLLECTION, {4,4}, {
+        return SMODS.card_collection_UIBox(HNDS.CURSE_OFFERS_COLLECTION, {5,5}, {
             snap_back = true,
             no_materialize = true,
             hide_single_page = true,
@@ -619,7 +653,7 @@ if not _G.HNDS_curse_collections then
     end
 
     create_UIBox_your_collection_hnds_curse_prices = function()
-        return SMODS.card_collection_UIBox(HNDS.CURSE_PRICES_COLLECTION, {4,4}, {
+        return SMODS.card_collection_UIBox(HNDS.CURSE_PRICES_COLLECTION, {5,5}, {
             snap_back = true,
             no_materialize = true,
             hide_single_page = true,
@@ -677,6 +711,7 @@ local function hnds_assign_curse_data(card, attach_sticker)
 
 
     if not (card and card.config and card.config.center and card.config.center.set == 'Joker') then return end
+    if card.hnds_sarmenti_component_guard or (HNDS.is_sarmenti_piece and HNDS.is_sarmenti_piece(card)) then return end
     if card.config.center.key then
         local center_key = card.config.center.key
         if center_key == 'c_hnds_dream' or center_key == 'j_hnds_art' then
@@ -690,22 +725,26 @@ local function hnds_assign_curse_data(card, attach_sticker)
     hnds_strip_foreign_stickers(card)
 
     if card.ability.hnds_curse_offer and card.ability.hnds_curse_price then
+        if HNDS.refresh_curse_price then HNDS.refresh_curse_price(card) end
         if attach_sticker and not card.ability.hnds_cursed then card:add_sticker('hnds_cursed', true) end
         return
     end
 
     local price_pool = {}
     for _, price in ipairs(G.CURSE_PRICES) do
-        if not price.in_pool or price:in_pool() then price_pool[#price_pool + 1] = price end
+        if not price.in_pool or price:in_pool(card) then price_pool[#price_pool + 1] = price end
     end
     if #price_pool == 0 then return end
+
+    local offer_pool = {}
+    for _, offer in ipairs(G.CURSE_OFFERS) do
+        if not offer.in_pool or offer:in_pool(card) then offer_pool[#offer_pool + 1] = offer end
+    end
+    if #offer_pool == 0 then return end
 
     local offer_index
     local price_index
     local attempt_count = 0
-
-
-    local can_be_retriggered = card.config and card.config.center and card.config.center.calculate ~= nil
 
 
     local has_existing_edition = false
@@ -718,16 +757,11 @@ local function hnds_assign_curse_data(card, attach_sticker)
     while attempt_count < 10 do
         attempt_count = attempt_count + 1
 
-        offer_index = pseudorandom('hnds_curse_offer', 1, #G.CURSE_OFFERS)
+        offer_index = pseudorandom('hnds_curse_offer', 1, #offer_pool)
         price_index = pseudorandom('hnds_curse_price', 1, #price_pool)
 
-        local offer_entry = G.CURSE_OFFERS[offer_index]
+        local offer_entry = offer_pool[offer_index]
         local price_entry = price_pool[price_index]
-
-
-        if offer_entry and offer_entry.id == 'offer_retrigger' and not can_be_retriggered then
-            offer_entry = nil
-        end
 
 
         if offer_entry and offer_entry.id == 'offer_self_negative' and has_existing_edition then
@@ -739,6 +773,7 @@ local function hnds_assign_curse_data(card, attach_sticker)
             local incompatible =
                 (offer_entry.id == 'offer_free_rerolls' and price_entry.id == 'price_inflation')
                 or (offer_entry.id == 'offer_random_enhancement' and price_entry.id == 'price_destroy_cards')
+                or (offer_entry.id == 'offer_extra_hand' and price_entry.id == 'price_lose_hand')
             if incompatible then
                 offer_entry = nil
                 price_entry = nil
@@ -759,6 +794,7 @@ local function hnds_assign_curse_data(card, attach_sticker)
             hnds_strip_foreign_stickers(card)
 
             card.cursed_shake = true
+            HNDS.refresh_curse_adjacency()
             break
         end
     end
@@ -846,6 +882,34 @@ local function hnds_build_lookups()
 end
 
 
+function HNDS.refresh_curse_price(card, acquiring)
+    local ability = card and card.ability
+    if not ability or ability.hnds_curse_preview or ability.hnds_curse_acquire_triggered
+        or card.hnds_curse_acquire_triggered or ability.hnds_eternal_copy_created
+        or (card.added_to_deck and not acquiring) then return false end
+    hnds_build_lookups()
+    local current = hnds_price_lookup[ability.hnds_curse_price]
+    if not current or not current.in_pool or current:in_pool(card) then return false end
+    local pool = {}
+    local offer = ability.hnds_curse_offer
+    for _, price in ipairs(G.CURSE_PRICES) do
+        local conflict = (offer == 'offer_free_rerolls' and price.id == 'price_inflation')
+            or (offer == 'offer_random_enhancement' and price.id == 'price_destroy_cards')
+            or (offer == 'offer_extra_hand' and price.id == 'price_lose_hand')
+        if not conflict and (not price.in_pool or price:in_pool(card)) then pool[#pool + 1] = price.id end
+    end
+    if #pool == 0 then return false end
+    ability.hnds_curse_price = pseudorandom_element(pool, pseudoseed('hnds_curse_price'))
+    return true
+end
+
+function HNDS.refresh_unbought_curse_prices()
+    for _, name in ipairs({'shop_jokers', 'pack_cards'}) do
+        local area = G[name]
+        for _, card in ipairs(area and area.cards or {}) do HNDS.refresh_curse_price(card) end
+    end
+end
+
 local function hnds_run_defs(card, ctx, offer_def, price_def)
     local offer_ret, price_ret
 
@@ -885,6 +949,9 @@ function trigger_curse(card, context)
 
 
     if card.ability.hnds_eternal_copy_created then return end
+    if context and ((context.buying_card and context.card == card) or context.add_to_deck) then
+        HNDS.refresh_curse_price(card, true)
+    end
 
 
     if context and context.buying_card and context.card and context.card.ability and context.card.ability.set == 'Voucher' then

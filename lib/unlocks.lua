@@ -58,6 +58,10 @@ local TARGETS = {
     conquest = 50,
     war = 25,
     water_slide = 88,
+    dallas = 1000,
+    hoxton = 1000,
+    wolf = 1000,
+    chains = 1000,
 }
 
 
@@ -562,7 +566,11 @@ end
 function HNDS.joker_unlock_progress(key)
     local state = run_state()
 
-    if key == "wait_what" then return HNDS.unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT), TARGETS[key]
+    if key == "dallas" then return HNDS.unlock_career_stat(STAT_HEART_CARDS_SCORED), TARGETS[key]
+    elseif key == "hoxton" then return HNDS.unlock_career_stat(STAT_DIAMOND_CARDS_SCORED), TARGETS[key]
+    elseif key == "wolf" then return HNDS.unlock_career_stat(STAT_CLUB_CARDS_SCORED), TARGETS[key]
+    elseif key == "chains" then return HNDS.unlock_career_stat(STAT_SPADE_CARDS_SCORED), TARGETS[key]
+    elseif key == "wait_what" then return HNDS.unlock_career_stat(STAT_BASIC_JOKERS_BOUGHT), TARGETS[key]
     elseif key == "jester_in_yellow" then return HNDS.unlock_career_stat(STAT_NEGATIVE_JOKERS), TARGETS[key]
     elseif key == "demented" then return HNDS.unlock_career_stat(STAT_CARD_IDENTITY_CHANGES), TARGETS[key]
     elseif key == "imposter" then return state and state.imposter_streak or 0, TARGETS[key]
@@ -687,6 +695,10 @@ function HNDS.joker_unlock_condition_met(key, args)
     elseif key == "jevil" then return state and state.jevil_wild_flush or false
     elseif key == "headless_joker" then return HNDS.unlock_career_stat(STAT_HEADLESS_FACE_CARDS) >= TARGETS[key]
     elseif key == "time_fcked_joker" then return HNDS.unlock_career_stat(STAT_RUN_RESTARTS) >= TARGETS[key]
+    elseif key == "dallas" then return HNDS.unlock_career_stat(STAT_HEART_CARDS_SCORED) >= TARGETS[key]
+    elseif key == "hoxton" then return HNDS.unlock_career_stat(STAT_DIAMOND_CARDS_SCORED) >= TARGETS[key]
+    elseif key == "wolf" then return HNDS.unlock_career_stat(STAT_CLUB_CARDS_SCORED) >= TARGETS[key]
+    elseif key == "chains" then return HNDS.unlock_career_stat(STAT_SPADE_CARDS_SCORED) >= TARGETS[key]
     elseif key == "dynamic_duos" then return state and state.flags.dynamic_duos or false
     elseif key == "energized" or key == "last_laugh" then return HNDS.unlock_career_stat(STAT_CARDS_DESTROYED) >= TARGETS[key]
     end
@@ -1425,6 +1437,7 @@ local CONDITION_LOCK_KEYS = {
     "v_hnds_top_shelf", "v_hnds_wholesale", "v_hnds_hashtag_skip", "v_hnds_beyond",
 }
 local JOKER_CONDITION_LOCK_KEYS = {
+    "j_hnds_dallas", "j_hnds_hoxton", "j_hnds_wolf", "j_hnds_chains",
     "j_hnds_jester_in_yellow", "j_hnds_demented", "j_hnds_imposter", "j_hnds_contagion",
     "j_hnds_fregoli", "j_hnds_excommunicado", "j_hnds_meme", "j_hnds_one_punchline_man",
     "j_hnds_digital_circus", "j_hnds_handsome", "j_hnds_dark_idol",

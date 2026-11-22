@@ -1,3 +1,19 @@
+local function spend_sip(self, card)
+    local extra = card.ability.extra
+    if extra.sips <= 0 then return end
+    extra.sips = extra.sips - 1
+    if extra.sips == 0 then
+        G.E_MANAGER:add_event(Event({ func = function()
+            if not card.getting_sliced and not card.removed and not card.REMOVED then
+                card_eval_status_text(card, "extra", nil, nil, nil,
+                    { message = localize("k_hnds_consumed"), colour = G.C.FILTER })
+                SMODS.destroy_cards({ card }, { pinch_anim = true })
+            end
+            return true
+        end }))
+    end
+end
+
 SMODS.Joker({
     key = "coffee_break",
     atlas = "Jokers", pos = { x = 3, y = 2 },
@@ -5,34 +21,23 @@ SMODS.Joker({
     blueprint_compat = true, eternal_compat = false, perishable_compat = true,
     pools = { Food = true },
     config = { extra = { sips = 5, total = 5 } },
+    hnds_spend_limited_retrigger = spend_sip,
     loc_vars = function(self, info_queue, card)
         local extra = card.ability.extra
         return { vars = { extra.sips, extra.total } }
     end,
     calculate = function(self, card, context)
         if not context.retrigger_joker_check or context.retrigger_joker
-            or card.ability.extra.sips <= 0 or not context.other_ret
-            or not next(context.other_ret) then return end
+            or card.debuff or SMODS.no_resolve or card.ability.extra.sips <= 0
+            or type(context.other_ret) ~= 'table'
+            or (not next(context.other_ret) and type(context.other_context) ~= 'table') then return end
         local source = context.blueprint_card or card
         local target
-        for i, joker in ipairs(G.jokers.cards) do
-            if joker == source then target = G.jokers.cards[i + 1]; break end
-        end
+        target = HNDS.retrigger_neighbor(source, 1)
         if not target or target == card or target ~= context.other_card then return end
-        if not context.blueprint then
-            card.ability.extra.sips = card.ability.extra.sips - 1
-            if card.ability.extra.sips == 0 then
-                G.E_MANAGER:add_event(Event({ func = function()
-                    if not card.getting_sliced and not card.removed and not card.REMOVED then
-                        card_eval_status_text(card, "extra", nil, nil, nil,
-                            { message = localize("k_hnds_consumed"), colour = G.C.FILTER })
-                        SMODS.destroy_cards({ card }, { pinch_anim = true })
-                    end
-                    return true
-                end }))
-            end
-        end
-        return { repetitions = 1, message = localize("k_again_ex"), card = source }
+        local limit = HNDS.joker_retrigger_limit(context)
+        if limit and limit <= 0 then return end
+        return HNDS.request_safe_retriggers(card, source, context, 1, context.blueprint and 'free' or 'sip')
     end,
     attributes = { "retrigger", "food" },
 })

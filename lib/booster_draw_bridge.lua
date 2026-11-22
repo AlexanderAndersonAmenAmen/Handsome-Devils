@@ -1,7 +1,7 @@
 -- Cards revealed in Standard/playing-card booster packs are draws for Joker
 -- progress, even though they enter G.pack_cards rather than G.hand.
 -- Emit a single hand_drawn context per group of revealed cards. This keeps
--- Survey, False Idol, Energized, Be Not Afraid and compatible draw effects
+-- Survey, False Idol, Arthur, Be Not Afraid and compatible draw effects
 -- in sync without pretending a booster card entered the player's hand.
 HNDS = HNDS or {}
 

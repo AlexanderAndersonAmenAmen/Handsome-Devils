@@ -1,5 +1,3 @@
-local pending_destruction = setmetatable({}, { __mode = 'k' })
-
 function HNDS.card_counts_as_rank(card, rank)
     return card and type(card.get_id) == 'function' and type(rank) == 'number' and card:get_id() == rank or false
 end
@@ -22,21 +20,24 @@ end
 local function arthur_extra(card)
     if type(card.ability.extra) ~= 'table' then card.ability.extra = {} end
     local extra = card.ability.extra
-    extra.required = math.max(1, math.floor(tonumber(extra.required) or 4))
-    extra.destroyed = math.max(0, math.floor(tonumber(extra.destroyed) or 0))
+    extra.cards_per_joke = 4
+    extra.cards_drawn = math.max(0, math.floor(tonumber(extra.cards_drawn) or 0))
+    extra.jokes = math.max(0, math.floor(tonumber(extra.jokes) or 0))
     return extra
 end
 
-local function award_standard_tags(amount)
-    local game = G.GAME
-    G.E_MANAGER:add_event(Event({
-        func = function()
-            if G.GAME ~= game then return true end
-            for i = 1, amount do add_tag(Tag('tag_standard')) end
-            play_sound('generic1')
-            return true
-        end,
-    }))
+function HNDS.joker_retrigger_limit(context)
+    local effect = context.other_ret and context.other_ret.jokers
+    return effect and effect.hnds_retrigger_limit
+end
+
+function HNDS.spend_limited_joker_retrigger(source)
+    if HNDS.retrigger_charge_managed then return end
+    -- Steamodded passes the Joker that requested this particular repetition.
+    local center = type(source) == 'table' and source.config and source.config.center
+    if center and center.hnds_spend_limited_retrigger then
+        center:hnds_spend_limited_retrigger(source)
+    end
 end
 
 SMODS.Joker {
@@ -53,55 +54,61 @@ SMODS.Joker {
     atlas = 'Jokers',
     pos = { x = 9, y = 2 },
     soul_pos = { x = 4, y = 3 },
-    config = { extra = { required = 4, destroyed = 0 } },
+    eternal_compat = true,
+    perishable_compat = true,
+    config = { extra = { cards_per_joke = 4, cards_drawn = 0, jokes = 0 } },
+    hnds_spend_limited_retrigger = function(self, card)
+        local extra = arthur_extra(card)
+        extra.jokes = math.max(0, extra.jokes - 1)
+    end,
     loc_vars = function(self, info_queue, card)
         local extra = card and card.ability and arthur_extra(card) or self.config.extra
         local suit = HNDS.arthur_suit()
-        if info_queue then info_queue[#info_queue + 1] = { key = 'tag_standard', set = 'Tag' } end
         return { vars = {
-            localize(suit, 'suits_singular'), extra.required, extra.required - extra.destroyed % extra.required,
+            localize(suit, 'suits_singular'), extra.cards_per_joke,
+            extra.cards_per_joke - extra.cards_drawn % extra.cards_per_joke, extra.jokes,
             colours = { G.C.SUITS[suit] },
         } }
     end,
     calculate = function(self, card, context)
-        if context.blueprint or context.retrigger_joker or SMODS.no_resolve then return end
-        local ability = card.ability
-        if context.before or context.after then pending_destruction[ability] = nil end
-
-        local target = context.destroying_card
-        if target and context.cardarea == G.play and not target.debuff
-            and target:is_suit(HNDS.arthur_suit())
-            and not SMODS.is_eternal(target, { destroy_cards = true })
-        then
-            local pending = pending_destruction[ability]
-            if not pending then
-                pending = setmetatable({}, { __mode = 'k' })
-                pending_destruction[ability] = pending
-            end
-            pending[target] = true
-            return { remove = true }
-        end
-
-        if context.remove_playing_cards and type(context.removed) == 'table' then
-            local pending = pending_destruction[ability]
-            if not pending then return end
-            local gained = 0
-            for _, removed in ipairs(context.removed) do
-                if pending[removed] then
-                    pending[removed] = nil
-                    if removed.destroyed or removed.shattered or removed.getting_sliced then gained = gained + 1 end
+        if context.blueprint or context.retrigger_joker or SMODS.no_resolve or card.debuff then return end
+        local extra = arthur_extra(card)
+        if type(context.hand_drawn) == 'table' then
+            local count = 0
+            for _, drawn in ipairs(context.hand_drawn) do
+                if drawn and not drawn.debuff and drawn.is_suit and drawn:is_suit(HNDS.arthur_suit()) then
+                    count = count + 1
                 end
             end
-            if gained == 0 then return end
-            local extra = arthur_extra(card)
-            local total = extra.destroyed + gained
-            local tags = math.floor(total / extra.required)
-            extra.destroyed = total % extra.required
-            if tags > 0 then
-                award_standard_tags(tags)
-                return { message = localize('k_hnds_plus_tag'), colour = G.C.FILTER }
+            local total = extra.cards_drawn + count
+            local gained = math.floor(total / extra.cards_per_joke)
+            extra.cards_drawn = total % extra.cards_per_joke
+            extra.jokes = extra.jokes + gained
+            if gained > 0 then
+                return { message = localize({ type = 'variable', key = 'a_hnds_jokes', vars = { gained } }), colour = G.C.FILTER }
             end
-            return { message = extra.destroyed .. '/' .. extra.required, colour = G.C.FILTER }
+        end
+
+        if context.retrigger_joker_check and extra.jokes > 0
+            and card.area == G.jokers and context.other_card and not context.other_card.debuff
+            and type(context.other_ret) == 'table'
+            and (next(context.other_ret) or type(context.other_context) == 'table')
+        then
+            local target_context = context.other_context or {}
+            if target_context.check or target_context.retrigger_joker or target_context.retrigger_joker_check
+                or target_context.modify_scoring_hand then return end
+            if SMODS.can_context_retrigger and not SMODS.can_context_retrigger(target_context) then return end
+            -- Steamodded also asks after a genuine "return nil, true"
+            -- activation. Its other_ret can be empty, but it is still a trigger.
+            for i = 1, #G.jokers.cards do
+                if G.jokers.cards[i] == card and HNDS.retrigger_neighbor(card, -1) == context.other_card then
+                    local limit = HNDS.joker_retrigger_limit(context)
+                    local jokes = limit and math.min(extra.jokes, limit) or extra.jokes
+                    if jokes <= 0 then return end
+                    -- A limited target spends each joke only when its effect succeeds.
+                    return HNDS.request_safe_retriggers(card, card, context, jokes, 'joke')
+                end
+            end
         end
     end,
     joker_display_def = function(JokerDisplay)
@@ -111,14 +118,17 @@ SMODS.Joker {
                 { ref_table = 'card.joker_display_values', ref_value = 'suit' },
                 { text = ': ' },
                 { ref_table = 'card.joker_display_values', ref_value = 'remaining' },
+                { text = '; ' },
+                { ref_table = 'card.joker_display_values', ref_value = 'jokes' },
                 { text = ')' },
             },
             calc_function = function(card)
                 local extra = arthur_extra(card)
                 card.joker_display_values.suit = localize(HNDS.arthur_suit(), 'suits_singular')
-                card.joker_display_values.remaining = extra.required - extra.destroyed % extra.required
+                card.joker_display_values.remaining = extra.cards_per_joke - extra.cards_drawn % extra.cards_per_joke
+                card.joker_display_values.jokes = extra.jokes
             end,
         }
     end,
-    attributes = { 'suit', 'destroy_card', 'tag' },
+    attributes = { 'suit', 'retrigger', 'scaling' },
 }

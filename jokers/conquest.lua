@@ -12,6 +12,7 @@ local function conquest_xmult(card)
     local gain = tonumber(card and card.ability and card.ability.extra
         and card.ability.extra.xmult_gain) or 0.25
     return 1 + conquest_defeated_count() * gain
+        + (tonumber(card.ability.extra.hnds_retrigger_xmult) or 0)
 end
 
 SMODS.Joker {
@@ -44,7 +45,7 @@ SMODS.Joker {
         local extra = card and card.ability and card.ability.extra or self.config.extra
         local gain = tonumber(extra and extra.xmult_gain) or 0.25
         local count = conquest_defeated_count()
-        return { vars = { gain, 1 + count * gain, count } }
+        return { vars = { gain, conquest_xmult(card), count } }
     end,
 
     calculate = function(self, card, context)

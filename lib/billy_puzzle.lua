@@ -511,6 +511,7 @@ local function hnds_mark_piece(card, piece)
         expired = false,
         completed = false,
     }
+    if HNDS.sarmenti_clear_piece_stickers then HNDS.sarmenti_clear_piece_stickers(card) end
     HNDS.sarmenti_refresh_blueprint_compat(card)
     card.hnds_sarmenti_composite_dirty = true
     HNDS.sarmenti_rebuild_composite(card)

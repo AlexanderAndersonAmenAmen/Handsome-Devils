@@ -11,7 +11,7 @@ pattern = "if G.GAME.used_vouchers[v.key] then"
 position = "at"
 payload = '''
 local hnds_visible_vouchers = (G.GAME.hnds_wasted_wish_active and G.GAME.hnds_wasted_wish_used_vouchers) or G.GAME.used_vouchers
-if hnds_visible_vouchers[v.key] then
+if hnds_visible_vouchers[v.key] or (G.GAME.hnds_debuffed_vouchers and G.GAME.hnds_debuffed_vouchers[v.key]) then
 '''
 match_indent = true
 times = 1
@@ -22,7 +22,7 @@ target = "functions/UI_definitions.lua"
 pattern = "card.ability.order = vv.order"
 position = "after"
 payload = '''
-if G.GAME.hnds_wasted_wish_active then
+if G.GAME.hnds_wasted_wish_active or (G.GAME.hnds_debuffed_vouchers and G.GAME.hnds_debuffed_vouchers[vv.key]) then
     card.debuff = true
     card.debuffed_by_blind = true
 end

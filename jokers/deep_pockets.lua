@@ -48,10 +48,10 @@ SMODS.Joker({
 		end
 	end,
 	add_to_deck = function(self, card, from_debuff)
-		G.consumeables.config.card_limit = G.consumeables.config.card_limit + card.ability.extra.slots
+		HNDS.change_consumable_slots(card.ability.extra.slots)
 	end,
 	remove_from_deck = function(self, card, from_debuff)
-		G.consumeables.config.card_limit = G.consumeables.config.card_limit - card.ability.extra.slots
+		HNDS.change_consumable_slots(-card.ability.extra.slots)
 	end,
 	joker_display_def = function(JokerDisplay)
 		return {

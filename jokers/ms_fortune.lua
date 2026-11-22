@@ -90,6 +90,7 @@ function HNDS.ms_fortune_obtained(card, from_debuff)
     end
 
     HNDS.ms_fortune_sync_all()
+    if not already_claimed and HNDS.queue_acquisition_retrigger then HNDS.queue_acquisition_retrigger(card) end
     return not already_claimed
 end
 

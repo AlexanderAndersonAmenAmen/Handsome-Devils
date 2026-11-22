@@ -11,9 +11,10 @@ function HNDS.reset_trump_suit()
     G.GAME.current_round.hnds_trump_suit = pseudorandom_element(choices, pseudoseed("hnds_trump_suit"))
 end
 
-local suit_frames = { Spades = 0, Hearts = 1, Clubs = 2, Diamonds = 3 }
+local suit_frames = { Clubs = 4, Diamonds = 5, Hearts = 6, Spades = 7 }
 
 local function in_collection(card)
+    if not card then return true end
     if card.area and card.area.config and card.area.config.collection then return true end
     for _, area in pairs(G and G.your_collection or {}) do
         if card.area == area then return true end
@@ -28,8 +29,8 @@ local function apply_sprite(card, suit)
     local atlas = SMODS.get_atlas and SMODS.get_atlas(key)
         or G.ASSET_ATLAS and G.ASSET_ATLAS[key]
     if not atlas then return false end
-    local x = 5 + (suit and (suit_frames[suit] or 0) or 0)
-    local y = 7
+    local x = suit_frames[suit or "Hearts"] or suit_frames.Hearts
+    local y = 9
     if sprite.atlas ~= atlas or not sprite.sprite_pos
         or sprite.sprite_pos.x ~= x or sprite.sprite_pos.y ~= y then
         sprite.atlas = atlas
@@ -111,13 +112,13 @@ end
 
 SMODS.Joker({
     key = "trump_suit",
-    atlas = "Jokers", pos = { x = 5, y = 7 },
+    atlas = "Jokers", pos = { x = 6, y = 9 },
     rarity = 2, cost = 6, unlocked = true, discovered = false,
     blueprint_compat = true, eternal_compat = true, perishable_compat = true,
     set_sprites = function(self, card) update_trump_suit_sprite(card, true) end,
     update = function(self, card) update_trump_suit_sprite(card) end,
     loc_vars = function(self, info_queue, card)
-        local suit = HNDS.trump_suit()
+        local suit = in_collection(card) and "Hearts" or HNDS.trump_suit()
         return { vars = { localize(suit, "suits_singular"), colours = { G.C.SUITS[suit] } } }
     end,
     calculate = function(self, card, context)

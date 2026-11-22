@@ -27,6 +27,7 @@ local function hnds_headless_gain_head(card)
                 added = HNDS.add_jack_of_lanterns(card, owner)
             end
             if added and card_eval_status_text and card and not card.removed then
+                if HNDS.queue_acquisition_retrigger then HNDS.queue_acquisition_retrigger(card) end
                 card_eval_status_text(card, 'extra', nil, nil, nil, {
                     message = localize('k_hnds_head_added'),
                     colour = (G.C and (G.C.ORANGE or G.C.ATTENTION)) or {1, 0.5, 0, 1},

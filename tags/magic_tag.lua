@@ -21,7 +21,7 @@ SMODS.Tag {
                         magic_keys[#magic_keys + 1] = candidate
                     end
                 end
-                local key = (#magic_keys > 0) and magic_keys[math.random(#magic_keys)] or nil
+                local key = (#magic_keys > 0) and pseudorandom_element(magic_keys, pseudoseed('hnds_magic_tag_pack')) or nil
                 local center = key and G.P_CENTERS[key] or G.P_CENTERS.p_hnds_magic_1
                 if not center then
                     G.CONTROLLER.locks[lock] = nil

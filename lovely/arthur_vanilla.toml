@@ -1,0 +1,38 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 40
+
+# Sixth Sense can only destroy the six on its original activation.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Sixth Sense' and #context.full_hand == 1 and context.full_hand[1]:get_id() == 6 and not context.full_hand[1].sixth_sense and G.GAME.current_round.hands_played == 0 then"
+position = "before"
+match_indent = true
+times = 1
+payload = '''
+if self.config.center.key == 'j_sixth_sense' and HNDS and HNDS.calculate_sixth_sense then
+    return HNDS.calculate_sixth_sense(self, context)
+end
+'''
+
+# Trading Card already pays through its native effect on each activation.
+[[patches]]
+[patches.regex]
+target = "card.lua"
+pattern = '''if self\.ability\.name == 'Trading Card' and not context\.blueprint and\s+G\.GAME\.current_round\.discards_used <= 0 and #context\.full_hand == 1 then\s+ease_dollars\(self\.ability\.extra\)\s+return \{[^}]*?remove = (?<remove>true),'''
+root_capture = "remove"
+position = "at"
+times = 1
+payload = "not context.retrigger_joker"
+
+# Egg's value message comes from SMODS.scale_card. Return an effect for Coffee Break as well.
+[[patches]]
+[patches.regex]
+target = "card.lua"
+pattern = '''if self\.ability\.name == 'Egg' then\s+SMODS\.scale_card\(self, \{[^}]+ref_value = "extra_value",\s+scalar_value = "extra",\s+scaling_message = \{[^}]+\}\s+\}\)\s+self:set_cost\(\)\s+(?<egg_return>return nil, true)'''
+root_capture = "egg_return"
+position = "at"
+times = 1
+payload = "return {}, true"

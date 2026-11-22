@@ -1,0 +1,149 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 40
+
+# Collect the native bonus amounts before Steamodded adds cash-out rows.
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "G.FUNCS.evaluate_round = function()"
+position = "after"
+match_indent = true
+payload = '''
+    local hnds_cashout_payouts = {}
+    local hnds_cashout_moons = {}
+    local hnds_cashout_jokers = {
+        j_golden = true,
+        j_cloud_9 = true,
+        j_rocket = true,
+        j_satellite = true,
+        j_delayed_grat = true,
+    }
+'''
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "-- TARGET: calc_dollar_bonus per card"
+position = "after"
+match_indent = true
+payload = '''
+if HNDS then
+    local key = _card.config.center.key
+    if hnds_cashout_jokers[key] then
+        if ret and ret ~= 0 then hnds_cashout_payouts[_card] = ret end
+        ret = nil
+    elseif key == 'j_to_the_moon' and _card.added_to_deck and not _card.debuff then
+        hnds_cashout_moons[#hnds_cashout_moons + 1] = _card
+    end
+end
+'''
+
+# To the Moon adds to the interest rate while in the deck. Split out that
+# contribution at the point where the game sets the interest for this round.
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "add_round_eval_row({bonus = true, name='interest', pitch = pitch, dollars = G.GAME.interest_amount*math.min(math.floor(G.GAME.dollars/5), G.GAME.interest_cap/5)})"
+position = "at"
+match_indent = true
+payload = '''
+local hnds_interest_rate = G.GAME.interest_amount
+local hnds_interest_units = math.min(math.floor(G.GAME.dollars / 5), G.GAME.interest_cap / 5)
+for _, moon in ipairs(hnds_cashout_moons) do
+    local extra_rate = moon.ability.extra
+    hnds_interest_rate = hnds_interest_rate - extra_rate
+    hnds_cashout_payouts[moon] = extra_rate * hnds_interest_units
+end
+local hnds_interest = hnds_interest_rate * hnds_interest_units
+add_round_eval_row({
+    bonus = true, name = 'interest', pitch = pitch, dollars = hnds_interest,
+    hnds_interest_rate = hnds_interest_rate,
+})
+'''
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "dollars = dollars + G.GAME.interest_amount*math.min(math.floor(G.GAME.dollars/5), G.GAME.interest_cap/5)"
+position = "at"
+match_indent = true
+payload = "dollars = dollars + hnds_interest"
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+table.insert(left_text,{n=G.UIT.O, config={object = DynaText({string = {" "..localize{type = 'variable', key = 'interest', vars = {G.GAME.interest_amount, 5, G.GAME.interest_amount*G.GAME.interest_cap/5}}}, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 0.4*scale, silent = true})}})
+'''
+position = "at"
+match_indent = true
+payload = '''
+local interest_rate = config.hnds_interest_rate or G.GAME.interest_amount
+table.insert(left_text,{n=G.UIT.O, config={object = DynaText({string = {" "..localize{type = 'variable', key = 'interest', vars = {interest_rate, 5, interest_rate*G.GAME.interest_cap/5}}}, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 0.4*scale, silent = true})}})
+'''
+
+# The native dollar effect pays through the HUD and animates the Joker.
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "add_round_eval_row({name = 'bottom', dollars = dollars})"
+position = "before"
+match_indent = true
+payload = '''
+if next(hnds_cashout_payouts) then
+    local previous_cashout = SMODS.money_from_cashout
+    SMODS.money_from_cashout = true
+    SMODS.calculate_context({hnds_cashout_payouts = hnds_cashout_payouts})
+    SMODS.money_from_cashout = previous_cashout
+end
+'''
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "function Card:calculate_joker(context)"
+position = "after"
+match_indent = true
+payload = '''
+    if context.hnds_cashout_payouts then
+        local payout = context.hnds_cashout_payouts[self]
+        if payout and payout ~= 0 and not self.debuff and not context.blueprint
+            and not self.hnds_sarmenti_component_guard
+        then
+            return { dollars = payout, card = self }
+        end
+        return
+    end
+'''
+
+# Rocket grows at the end of a Boss Blind, before it pays out.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''
+if self.ability.name == 'Rocket' and G.GAME.blind.boss then
+    SMODS.scale_card(self, {
+        ref_table = self.ability.extra,
+        ref_value = "dollars",
+        scalar_value = "increase",
+        message_colour = G.C.MONEY
+    })
+    return nil, true
+end
+'''
+position = "at"
+match_indent = true
+payload = '''
+if self.ability.name == 'Rocket' and G.GAME.blind.boss and not (HNDS and context.retrigger_joker) then
+    SMODS.scale_card(self, {
+        ref_table = self.ability.extra,
+        ref_value = "dollars",
+        scalar_value = "increase",
+        message_colour = G.C.MONEY
+    })
+    if HNDS then return { no_retrigger = true } end
+    return nil, true
+end
+'''

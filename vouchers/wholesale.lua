@@ -22,5 +22,12 @@ SMODS.Voucher({
 	end,
 	unredeem = function(self, voucher)
 		SMODS.change_booster_limit(-voucher.ability.extra.boosters)
+		if G.shop and G.shop_booster then
+			local limit = (G.GAME.starting_params.boosters_in_shop or 2) + (G.GAME.modifiers.extra_boosters or 0)
+			for i = #G.shop_booster.cards, 1, -1 do
+				local card = G.shop_booster.cards[i]
+				if (card.ability.booster_pos or i) > limit then card:remove() end
+			end
+		end
 	end,
 })

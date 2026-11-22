@@ -141,7 +141,8 @@ end
 
 local function hnds_bizarre_is_live_child(joker, owner_token)
     return joker.ability and joker.ability.hnds_bizarre_owner == owner_token
-        and not (joker.removed or joker.getting_sliced or joker.destroyed or joker.shattered)
+        and not (joker.removed or joker.REMOVED or joker.getting_sliced or joker.destroyed
+            or joker.shattered or joker.hnds_bizarre_destroying)
 end
 
 local function hnds_bizarre_find_child(owner_token)
@@ -156,14 +157,54 @@ end
 
 local function hnds_bizarre_destroy_children(children)
     if #children == 0 then return end
-    if SMODS and type(SMODS.destroy_cards) == 'function' then
-        for _, child in ipairs(children) do child.hnds_bizarre_destroying = true end
-        SMODS.destroy_cards(children, { immediate = true, bypass_eternal = true })
-        for _, child in ipairs(children) do child.hnds_bizarre_destroying = nil end
-    else
-        for _, child in ipairs(children) do
-            if child.start_dissolve then child:start_dissolve() end
+    local game, area = G.GAME, G.jokers
+    local pending = {}
+    for _, child in ipairs(children) do
+        if child and child.area == area and not (child.removed or child.REMOVED
+            or child.getting_sliced or child.destroyed or child.shattered or child.hnds_bizarre_destroying)
+        then
+            child.hnds_bizarre_destroying = true
+            pending[#pending + 1] = child
         end
+    end
+    if #pending == 0 then return end
+
+    local function destroy()
+        if G.GAME ~= game or G.jokers ~= area then
+            for _, child in ipairs(pending) do child.hnds_bizarre_destroying = nil end
+            return true
+        end
+        local targets = {}
+        for _, child in ipairs(pending) do
+            if child.area == area and not (child.removed or child.REMOVED
+                or child.getting_sliced or child.destroyed or child.shattered)
+            then
+                targets[#targets + 1] = child
+            end
+        end
+        if #targets > 0 then
+            if SMODS and type(SMODS.destroy_cards) == 'function' then
+                if type(SMODS.is_playing_card) == 'function' then
+                    SMODS.destroy_cards(targets, { immediate = true, bypass_eternal = true })
+                else
+                    SMODS.destroy_cards(targets, true, true)
+                end
+            else
+                for _, child in ipairs(targets) do
+                    child.getting_sliced, child.destroyed = true, true
+                    if child.start_dissolve then child:start_dissolve() end
+                end
+            end
+        end
+        return true
+    end
+
+    if G.E_MANAGER and Event then
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after', delay = 0, blocking = false, blockable = false, func = destroy,
+        }))
+    else
+        destroy()
     end
 end
 
@@ -183,7 +224,7 @@ local function hnds_bizarre_owner_token(card)
     return extra.owner_token
 end
 
-local function hnds_bizarre_create_child(card)
+local function hnds_bizarre_create_child(card, additional)
     if not (card and card.ability and card.ability.extra and G and G.jokers and SMODS and SMODS.add_card) then
         return nil
     end
@@ -191,7 +232,7 @@ local function hnds_bizarre_create_child(card)
     local extra = card.ability.extra
     if extra.dismissed then return nil end
     local owner_token = hnds_bizarre_owner_token(card)
-    local existing = hnds_bizarre_find_child(owner_token)
+    local existing = not additional and hnds_bizarre_find_child(owner_token)
     if existing then
         local existing_key = existing.config and existing.config.center and existing.config.center.key
         if hnds_bizarre_key_allowed(existing_key) then
@@ -230,9 +271,14 @@ local function hnds_bizarre_create_child(card)
     return child
 end
 
+HNDS.bizarre_extra_child = function(card)
+    if #G.jokers.cards + (G.GAME.joker_buffer or 0) >= G.jokers.config.card_limit then return end
+    return hnds_bizarre_create_child(card, true)
+end
+
 local function hnds_bizarre_on_removed(card)
     local extra = card and card.ability and card.ability.extra
-    if not extra then return end
+    if not extra or extra.dismissed then return end
     extra.dismissed = true
     extra.child_id = nil
     local owner_token = extra.owner_token
@@ -299,13 +345,15 @@ SMODS.Joker({
                         and card.ability and card.ability.extra
                         and not card.ability.extra.dismissed
                     then
-                        hnds_bizarre_create_child(card)
+                        local child = hnds_bizarre_create_child(card)
+                        if child and HNDS.queue_acquisition_retrigger then HNDS.queue_acquisition_retrigger(card) end
                     end
                     return true
                 end,
             }))
         else
-            hnds_bizarre_create_child(card)
+            local child = hnds_bizarre_create_child(card)
+            if child and HNDS.queue_acquisition_retrigger then HNDS.queue_acquisition_retrigger(card) end
         end
     end,
 

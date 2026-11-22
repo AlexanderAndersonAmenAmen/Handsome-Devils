@@ -1,6 +1,76 @@
 local localization = {
 	descriptions = {
 		Joker = {
+            j_hnds_dallas = {
+				name = "Dallas",
+				text = {
+					"Gains {X:mult,C:white}X#1#{} Mult",
+					"every {C:attention}#2#{} {C:inactive}[#4#]{} cards",
+					"with {C:hearts}Heart{} suit drawn,",
+					"reset Mult every round",
+					"{C:inactive}(Currently {X:mult,C:white}X#3#{C:inactive} Mult)",
+				},
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} cards",
+			    "with {C:hearts}Heart{} suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+            j_hnds_wolf = {
+			    name = "Wolf",
+			    text = {
+			    	"Gains {C:mult}+#1#{} Mult",
+			    	"every {C:attention}#2#{} {C:inactive}[#4#]{} cards",
+					"with {C:clubs}Club{} suit drawn",
+			    	"{C:inactive}(Currently {C:mult}+#3#{C:inactive} Mult)",
+			    },
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} {C:clubs}Club{} cards",
+			    "with Club suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+            j_hnds_chains = {
+			    name = "Chains",
+			    text = {
+			    	"Gains {C:chips}+#1#{} Chips",
+			    	"every {C:attention}#2#{} {C:inactive}[#4#]{} cards",
+					"with {C:spades}Spade{} suit drawn",
+			    	"{C:inactive}(Currently {C:chips}+#3#{C:inactive} Chips)",
+			    },
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} {C:spades}Spade{} cards",
+			    "with Spade suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+            j_hnds_hoxton = {
+			    name = "Hoxton",
+			    text = {
+			    	"Joker to the right",
+			    	"gains {C:money}$#1#{} of {C:money}sell value{}",
+			    	"every {C:attention}#2#{} {C:inactive}[#3#]{} cards with",
+			    	"{C:diamonds}Diamond{} suit drawn",
+			    },
+			unlock = {
+			    "Score a total",
+			    "of {C:attention}1000{} {C:diamonds}Diamond{} cards",
+			    "with Diamond suit",
+				"{C:inactive}(#1#){}",
+			},
+			},
+            j_hnds_humor_clash = {
+                name = "Humor Clash",
+                text = {
+                    "{V:1}Balances{} played hand",
+                    "every {C:attention}#1#{} {C:inactive}[#2#]{} cards with",
+                    "{C:attention}#3#{} rank scored, then",
+                    "swap to {C:attention}#4#{} rank",
+                },
+            },
 			j_hnds_head_of_medusa = {
 				name = "Head of Medusa",
 				text = {
@@ -94,14 +164,13 @@ local localization = {
             j_hnds_wild_order = {
                 name = "Wild Order",
                 text = {
-                    "Cards with",
-                    "{V:1}#1#{} suit",
-                    "count as {C:attention}Wild{}",
+                    "Cards with {V:1}#1#{}",
+                    "suit count as {C:attention}Wild{}",
                     "{s:0.8}Suit changes every round",
                 },
             },
             j_hnds_trump_suit = {
-                name = "Trump Suit",
+                name = "Supersuit",
                 text = {
                     "Retrigger all cards",
                     "with {V:1}#1#{} suit",
@@ -460,11 +529,9 @@ local localization = {
 			j_hnds_energized = {
 				name = "Energized",
 				text = {
-				    "Every {C:attention}4{} {C:inactive}[#1#]{} {C:diamonds}Diamond{} cards",
-				    "you draw, store a charge",
-				    "Spends each to retrigger",
-				    "Joker to the right",
-				    "{C:inactive}(Charges stored: {C:attention}#2#{C:inactive})",
+				    "{C:attention}Highest{} ranked",
+				    "card held in hand",
+				    "counts in scoring",
 				},
 				unlock = {
 					"Destroy a total",
@@ -1041,9 +1108,10 @@ local localization = {
 			j_hnds_arthur = {
 				name = "Arthur",
 				text = {
-					"Destroy scored {V:1}#1#{} cards",
-					"and create a {C:attention}Standard Tag{}",
-					"for every {C:attention}#2#{} {C:inactive}[#3#]{} destroyed",
+					"Every {C:attention}#2#{} {C:inactive}[#3#]{} {V:1}#1#{} cards",
+					"you draw, store a joke {C:inactive}({C:attention}#4#{}{C:inactive}){}",
+					"Spends each to retrigger",
+					"{C:attention}Joker{} to the left",
 					"{s:0.8}Suit changes every round",
 				},
 			},
@@ -1411,8 +1479,8 @@ local localization = {
 				name = "Cycle",
 				text = {
 					"Add a {V:1}Green Seal{}",
-					"to {C:attention}#1#{} selected",
-					"card in your hand",
+					"to up to {C:attention}#1#{} selected",
+					"cards in your hand",
 				},
 			},
 			c_hnds_gaze = {
@@ -1428,7 +1496,7 @@ local localization = {
 					name = "Void",
 					text = {
 						"Add {C:dark_edition}Negative{} effect to",
-						"{C:attention}1{} selected card in hand,",
+						"up to {C:attention}#1#{} selected cards,",
 						"destroy all other cards",
 					},
 				},
@@ -1460,8 +1528,8 @@ local localization = {
 					name = "Gateway",
 					text = {
 						"Add {C:dark_edition}Bound{}",
-						"to {C:attention}1{} selected",
-						"card in your hand",
+						"to up to {C:attention}#1#{} selected",
+						"cards in your hand",
 					},
 				},
 			c_hnds_spectrum = {
@@ -1981,8 +2049,8 @@ local localization = {
 			},
 			offer_interest_cap = {
 				text = {
-					"Creates a {C:spectral}Spectral{}",
-					"card each Ante",
+					"Creates {C:attention}2{} {C:spectral}Spectral{}",
+					"cards each Ante",
 				},
 			},
 			offer_free_rerolls = {
@@ -1997,6 +2065,18 @@ local localization = {
 					"of this {C:attention}Joker{}",
 				},
 			},
+
+            offer_extra_hand = {
+                text = {
+                    "{C:blue}+1{} hand",
+                    "each round",
+                },
+            },
+            offer_consumable_slots = {
+                text = {
+                    "{C:attention}+2{} consumable slots",
+                },
+            },
 
 			price_destroy_jokers = {
 				text = {
@@ -2017,7 +2097,7 @@ local localization = {
 			},
 			price_inflation = {
 				text = {
-					"{C:green}Rerolls{} cost {C:red}$2{}",
+					"{C:green}Rerolls{} cost {C:red}$1{}",
 					"more permanently",
 				},
 			},
@@ -2045,6 +2125,19 @@ local localization = {
 					"size permanently",
 				},
 			},
+
+            price_debuff_voucher = {
+                text = {
+                    "Permanently debuff",
+                    "a random {C:attention}Voucher{}",
+                },
+            },
+            price_debuff_adjacent = {
+                text = {
+                    "Debuffs Jokers",
+                    "{C:attention}adjacent{} to this",
+                },
+            },
 
             hnds_jodiac_ranks_empty = {
                 name = "Scored Ranks",
@@ -2518,6 +2611,9 @@ local localization = {
 		},
 	},
 	misc = {
+        v_dictionary = {
+            a_hnds_jokes = "+#1# Joke(s)",
+        },
 		dictionary = {
 			k_hnds_art_random_tag = "random Tag",
 			k_hnds_art_article = "a",
