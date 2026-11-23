@@ -422,6 +422,7 @@ end
 
 HD = SMODS.current_mod
 hnds_config = SMODS.current_mod.config
+assert(SMODS.load_file("lib/vanilla_tweak_settings.lua"))()
 
 
 local function config_toggle_row(label, config_key, subtitle)
@@ -597,7 +598,10 @@ SMODS.current_mod.calculate = function(self, context)
 	if context.before and context.full_hand and HNDS.queue_green_seal_cards then HNDS.queue_green_seal_cards(context.full_hand, false) end
 	if context.pre_discard and context.full_hand and HNDS.queue_green_seal_cards then HNDS.queue_green_seal_cards(context.full_hand, false) end
 	if HNDS.process_black_seal_context then HNDS.process_black_seal_context(context) end
-	if HNDS.calculate_vanilla_tweaks then HNDS.calculate_vanilla_tweaks(context) end
+	if HNDS.calculate_vanilla_tweaks then
+        local effect = HNDS.calculate_vanilla_tweaks(context)
+        if effect then return effect end
+    end
 	if HNDS.calculate_aberrant then HNDS.calculate_aberrant(context) end
 
 
@@ -1144,6 +1148,7 @@ assert(SMODS.load_file("lib/hooks.lua"))()
 assert(SMODS.load_file("lib/excommunicado.lua"))()
 assert(SMODS.load_file("lib/arthur_vanilla.lua"))()
 if hnds_config.enableVanillaTweaks then assert(SMODS.load_file("lib/vanilla_tweaks.lua"))() end
+assert(SMODS.load_file("lib/vanilla_tweaks_tab.lua"))()
 assert(SMODS.load_file("lib/blind_upgrade_stakes.lua"))()
 if hnds_config.enableBlindUpgradeButton then
 	assert(SMODS.load_file("lib/platinum_blind_upgrades.lua"))()

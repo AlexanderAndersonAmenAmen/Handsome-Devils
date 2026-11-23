@@ -211,7 +211,7 @@ SMODS.Sticker {
 
 
     calculate = function(self, card, context)
-        if hnds_config and hnds_config.enableVanillaTweaks
+        if HNDS.vanilla_tweak_enabled and HNDS.vanilla_tweak_enabled('m_wild')
             and context and context.stay_flipped
             and context.other_card == card
             and hnds_jevil_marked(card)

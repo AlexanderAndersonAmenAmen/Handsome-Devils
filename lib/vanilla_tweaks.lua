@@ -3,9 +3,16 @@
 
 HNDS = HNDS or {}
 local MOD = SMODS.current_mod
+local enabled = HNDS.vanilla_tweak_enabled
 
 
 local function take_vanilla_ownership(class, key, definition)
+    local prefixes = {
+        [SMODS.Stake] = 'stake_', [SMODS.Back] = 'b_', [SMODS.Tag] = 'tag_',
+        [SMODS.Voucher] = 'v_', [SMODS.Enhancement] = 'm_', [SMODS.Joker] = 'j_',
+        [SMODS.Blind] = 'bl_', [SMODS.Consumable] = 'c_', [SMODS.PokerHand] = '',
+    }
+    if not enabled((prefixes[class] or '') .. key) then return end
     return class:take_ownership(key, definition, true)
 end
 
@@ -123,8 +130,17 @@ local function extra_value(card, key, fallback)
     return fallback
 end
 
+local wild_query = setmetatable({}, { __mode = 'k' })
 local function is_wild(card)
     if not card then return false end
+    -- Use the enhancement API, not only the printed center: Superstition,
+    -- Wild Order and other providers can grant Wild without replacing it.
+    if SMODS.has_enhancement and not wild_query[card] then
+        wild_query[card] = true
+        local ok, result = pcall(SMODS.has_enhancement, card, 'm_wild')
+        wild_query[card] = nil
+        if ok and result then return true end
+    end
     if HNDS.is_faceless and HNDS.is_faceless(card) and HNDS.faceless_copy_target then
         local target = HNDS.faceless_copy_target(card)
         if target then return is_wild(target) end
@@ -149,7 +165,8 @@ MOD.set_debuff = function(card)
         local result = old_set_debuff(card)
         if result ~= nil then return result end
     end
-    if is_playing_card(card) and (is_wild(card) or active_splash()) then
+    if is_playing_card(card) and ((enabled('m_wild') and is_wild(card))
+        or (enabled('j_splash') and active_splash())) then
         return 'prevent_debuff'
     end
 end
@@ -532,12 +549,12 @@ end
 local function modify_voucher_shop_playing_card(card)
     if not card or card.hnds_voucher_shop_processed or not is_playing_card(card) then return end
     if not used_voucher('v_magic_trick') then return end
+    local magic = enabled('v_magic_trick')
+    local has_illusion = enabled('v_illusion') and used_voucher('v_illusion')
+    if not magic and not has_illusion then return end
     card.hnds_voucher_shop_processed = true
 
-    local has_illusion = used_voucher('v_illusion')
-
-
-    if card.config and card.config.center
+    if magic and card.config and card.config.center
         and card.config.center.key == 'c_base'
     then
         local enhancement = SMODS.poll_enhancement({
@@ -614,10 +631,10 @@ local function planet_voucher_purchase(context)
     if context.card.hnds_planet_voucher_purchase_processed then return end
     context.card.hnds_planet_voucher_purchase_processed = true
 
-    if used_voucher('v_planet_merchant') then
+    if enabled('v_planet_merchant') and used_voucher('v_planet_merchant') then
         create_planet_copy(context.card, false, true)
     end
-    if used_voucher('v_planet_tycoon') then
+    if enabled('v_planet_tycoon') and used_voucher('v_planet_tycoon') then
         create_planet_copy(context.card, true, false)
     end
 end
@@ -628,6 +645,9 @@ local function migrate_old_planet_voucher_rate()
     then
         return
     end
+    -- The legacy migration assumes both vouchers use the replacement effect.
+    -- Do not undo the vanilla shop rate of an individually disabled voucher.
+    if not enabled('v_planet_merchant') or not enabled('v_planet_tycoon') then return end
     if not used_voucher('v_planet_merchant') and not used_voucher('v_planet_tycoon') then return end
 
     local factor = 1
@@ -644,6 +664,12 @@ local function migrate_old_planet_voucher_rate()
 end
 
 HNDS.calculate_vanilla_tweaks = function(context)
+    -- Virtual enhancements do not necessarily run the center's calculate
+    -- callback. Apply Wild's protection at mod level as well.
+    if enabled('m_wild') and context.stay_flipped
+        and is_playing_card(context.other_card) and is_wild(context.other_card) then
+        return { prevent_stay_flipped = true }
+    end
     HNDS.decay_juggle_tags(context)
     migrate_old_planet_voucher_rate()
     if context.modify_shop_card and context.card then
@@ -674,7 +700,7 @@ take_vanilla_ownership(SMODS.Enhancement, 'glass', {
     config = { Xmult = 1.5, extra = 5 },
 })
 
-if Card and type(Card.load) == 'function' then
+if enabled('m_glass') and Card and type(Card.load) == 'function' then
     local load_ref = Card.load
     function Card:load(...)
         local results = HNDS.pack(load_ref(self, ...))
@@ -768,6 +794,7 @@ take_vanilla_ownership(SMODS.Joker, 'idol', {
 })
 
 function HNDS.serpent_hand_space(requested)
+    if not enabled('bl_serpent') then return requested end
     local amount = math.max(0, tonumber(requested) or 0)
     if not (G and G.hand and G.hand.config) then return amount end
     local hand_limit = tonumber(G.hand.config.card_limit) or 0
@@ -797,10 +824,10 @@ local function hnds_is_glass_card(card)
 end
 
 function HNDS.glass_joker_removed_card_counts(card)
-    return hnds_is_glass_card(card)
+    return enabled('j_glass') and hnds_is_glass_card(card)
 end
 
-if Card and type(Card.calculate_joker) == 'function' and not HNDS._glass_joker_removal_hooked then
+if enabled('j_glass') and Card and type(Card.calculate_joker) == 'function' and not HNDS._glass_joker_removal_hooked then
     HNDS._glass_joker_removal_hooked = true
     local hnds_calculate_joker_ref = Card.calculate_joker
     Card.calculate_joker = function(self, context, ...)
@@ -933,7 +960,7 @@ local suit_joker_center_suits = {
 local function normalize_suit_joker_extra(card)
     local center_key = card and card.config and card.config.center and card.config.center.key
     local suit = suit_joker_center_suits[center_key]
-    if not suit or not card.ability then return end
+    if not suit or not card.ability or not enabled(center_key) then return end
 
     if type(card.ability.extra) ~= 'table' then
         card.ability.extra = {
@@ -1080,7 +1107,7 @@ take_vanilla_ownership(SMODS.Consumable, 'black_hole', {
 local black_hole_use_ref = Card.use_consumeable
 function Card:use_consumeable(area, copier, ...)
     local center = self.config and self.config.center
-    if center and center.key == 'c_black_hole' then
+    if enabled('c_black_hole') and center and center.key == 'c_black_hole' then
         center.use = HNDS.use_double_black_hole
     end
     return black_hole_use_ref(self, area, copier, ...)

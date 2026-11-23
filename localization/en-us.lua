@@ -2830,7 +2830,7 @@ end
 local vanilla_tweaks_config = hnds_config
 	or (SMODS and SMODS.Mods and SMODS.Mods.HandsomeDevils and SMODS.Mods.HandsomeDevils.config)
 	or (SMODS and SMODS.current_mod and SMODS.current_mod.config)
-if vanilla_tweaks_config and vanilla_tweaks_config.enableVanillaTweaks == false then
+if HNDS and HNDS.vanilla_tweaks_loaded == false then
 	local joker_keys = {
 		"j_matador", "j_superposition", "j_splash", "j_flower_pot",
 		"j_mail", "j_stone", "j_greedy_joker", "j_lusty_joker",
@@ -2847,4 +2847,4 @@ if vanilla_tweaks_config and vanilla_tweaks_config.enableVanillaTweaks == false 
 end
 
 
-return localization
+return HNDS and HNDS.filter_vanilla_tweak_localization and HNDS.filter_vanilla_tweak_localization(localization) or localization

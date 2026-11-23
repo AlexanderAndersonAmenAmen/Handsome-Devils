@@ -7,6 +7,7 @@ local configDefinition = {
 	["enableCustomSounds"] = true,
 	["enablePeakMainMenuOST"] = true,
 	["enableVanillaTweaks"] = true,
+	["vanillaTweaks"] = {},
 	["enableBlindUpgradeButton"] = true,
 	["enableCustomMenu"] = true,
 	["enableChaosSuits"] = false,
