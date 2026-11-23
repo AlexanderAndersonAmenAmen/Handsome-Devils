@@ -1,0 +1,25 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 10010
+
+# Amulet levels are LuaJIT cdata; other big-number mods use tables.
+# Preserve those numeric amounts through BOTH Steamodded type checks.
+# Do not convert to a Lua number (which would overflow at high levels).
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+pattern = "level_up_hand(card, hand, instant, (type(amount) == 'number' or type(amount) == 'table') and amount or 1, statustext)"
+position = "at"
+payload = "level_up_hand(card, hand, instant, (type(amount) == 'number' or type(amount) == 'table' or (type(is_number) == 'function' and is_number(amount))) and amount or 1, statustext)"
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+pattern = "G.GAME.hands[hand].level = G.GAME.hands[hand].level + (type(args.level_up) == 'number' and args.level_up or 1)"
+position = "at"
+payload = "G.GAME.hands[hand].level = G.GAME.hands[hand].level + ((type(args.level_up) == 'number' or (type(is_number) == 'function' and is_number(args.level_up))) and args.level_up or 1)"
+match_indent = true
+times = 1
