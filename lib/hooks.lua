@@ -893,7 +893,7 @@ if Card and Card.add_sticker and not _G._hnds_wrapped_add_sticker_cursed then
 	_G._hnds_wrapped_add_sticker_cursed = true
 	local add_sticker_ref = Card.add_sticker
 	function Card:add_sticker(key, ...)
-
+        if self.hnds_clean_reroll or HNDS.creating_stickerless_joker then return end
 
 		if self.ability and self.ability.hnds_bizarre_owner
 			and key ~= 'hnds_fighting_spirit'

@@ -49,7 +49,7 @@ SMODS.Sticker {
 	key = "jester_temp_negative",
 	atlas = "Stickers",
 	pos = { x = 0, y = 1 },
-	badge_colour = G.C.HNDS_CARCOSA,
+	badge_colour = HEX('545454'),
 	rate = 0,
 	sets = { Joker = true },
 	should_apply = function(self, card, center, area, bypass_roll)

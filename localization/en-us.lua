@@ -1475,14 +1475,22 @@ local localization = {
 					"card in your hand",
 				},
 			},
-			c_hnds_cycle = {
-				name = "Cycle",
-				text = {
-					"Add a {V:1}Green Seal{}",
-					"to up to {C:attention}#1#{} selected",
-					"cards in your hand",
-				},
-			},
+			c_hnds_cycle_plural = {
+                name = "Cycle",
+                text = {
+                    "Add a {V:1}Green Seal{}",
+                    "to up to {C:attention}#1#{} selected",
+                    "cards in your hand",
+                },
+            },
+            c_hnds_cycle = {
+                name = "Cycle",
+                text = {
+                    "Add a {V:1}Green Seal{}",
+                    "to {C:attention}#1#{} selected",
+                    "card in your hand",
+                },
+            },
 			c_hnds_gaze = {
 				name = "Gaze",
 				text = {
@@ -1492,21 +1500,30 @@ local localization = {
 					"petrified card"
 				},
 			},
-				c_hnds_void = {
-					name = "Void",
-					text = {
-						"Add {C:dark_edition}Negative{} effect to",
-						"up to {C:attention}#1#{} selected cards,",
-						"destroy all other cards",
-					},
-				},
+				c_hnds_void_plural = {
+                name = "Void",
+                text = {
+                    "Add {C:dark_edition}Negative{} effect to",
+                    "up to {C:attention}#1#{} selected cards,",
+                    "destroy all other cards",
+                },
+            },
+            c_hnds_void = {
+                name = "Void",
+                text = {
+                    "Add {C:dark_edition}Negative{} effect",
+                    "to {C:attention}#1#{} selected card,",
+                    "destroy all other cards",
+                },
+            },
 			c_hnds_rebirth = {
 				name = "Rebirth",
 				text = {
 					"Replace your {C:attention}Jokers{}",
 					"with new ones of",
 					"the {C:attention}same rarity{}",
-				},
+                    "Removes all {C:attention}stickers{}",
+                },
 			},
 			c_hnds_dream = {
 				name = "Dream",
@@ -1524,14 +1541,22 @@ local localization = {
 					"{C:dark_edition}#2#s",
 				},
 			},
-				c_hnds_gateway = {
-					name = "Gateway",
-					text = {
-						"Add {C:dark_edition}Bound{}",
-						"to up to {C:attention}#1#{} selected",
-						"cards in your hand",
-					},
-				},
+				c_hnds_gateway_plural = {
+                name = "Gateway",
+                text = {
+                    "Add {C:dark_edition}Bound{}",
+                    "to up to {C:attention}#1#{} selected",
+                    "cards in your hand",
+                },
+            },
+            c_hnds_gateway = {
+                name = "Gateway",
+                text = {
+                    "Add {C:dark_edition}Bound{}",
+                    "to {C:attention}#1#{} selected",
+                    "card in your hand",
+                },
+            },
 			c_hnds_spectrum = {
 				name = "Spectrum",
 				text = {
@@ -2518,7 +2543,7 @@ local localization = {
 					"Replace your {C:attention}Jokers{}",
 					"with new ones of",
 					"the {C:attention}same rarity{}",
-				},
+                },
 			},
 		},
 		Stake = {

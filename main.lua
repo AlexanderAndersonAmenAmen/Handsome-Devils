@@ -336,7 +336,20 @@ if SMODS.card_collection_UIBox and not HNDS._collection_layout_wrapper then
             elseif pool == pools.Edition then
                 rows = { 3, 3, 3 }
             elseif pool == pools.Enhanced then
-                rows = { 5, 5 }
+                rows = { 4, 5 }
+                -- Reorder only the visible collection, never the gameplay pool.
+                local display_pool = {}
+                for _, center in ipairs(SMODS.collection_pool(pool)) do
+                    display_pool[#display_pool + 1] = center
+                end
+                for i, center in ipairs(display_pool) do
+                    if center.key == 'm_hnds_aberrant' then
+                        table.remove(display_pool, i)
+                        table.insert(display_pool, math.min(4, #display_pool + 1), center)
+                        break
+                    end
+                end
+                pool = display_pool
             elseif pool == pools.Planet then
                 rows = { 6, 7 }
             end

@@ -721,7 +721,7 @@ function set_enhancement(card, key)
 end
 
 local function hnds_assign_curse_data(card, attach_sticker)
-
+    if (card and card.hnds_clean_reroll) or HNDS.creating_stickerless_joker then return end
 
     if not (card and card.config and card.config.center and card.config.center.set == 'Joker') then return end
     if card.hnds_sarmenti_component_guard or (HNDS.is_sarmenti_piece and HNDS.is_sarmenti_piece(card)) then return end
@@ -927,7 +927,7 @@ local function hnds_run_defs(card, ctx, offer_def, price_def)
 end
 
 function trigger_curse(card, context)
-
+    if (card and card.hnds_clean_reroll) or HNDS.creating_stickerless_joker then return end
 
     if not card.ability or not (card.ability.hnds_curse_offer or card.ability.hnds_curse_price) then return end
     if card.ability.hnds_curse_offer == 'offer_spectral_gen' then

@@ -251,6 +251,119 @@ local function current_mail_rank()
 end
 
 
+take_vanilla_ownership(SMODS.Tag, 'handy', {
+    min_ante = 4,
+})
+
+take_vanilla_ownership(SMODS.Tag, 'garbage', {
+    min_ante = 4,
+    config = { type = 'immediate', dollars_per_discard = 2 },
+    loc_txt = {
+        name = 'Garbage Tag',
+        text = {
+            'Gives {C:money}$#1#{} per unused',
+            '{C:red}discard{} this run',
+            '{C:inactive}(Will give {C:money}$#2#{C:inactive})',
+        },
+    },
+    loc_vars = function()
+        return { vars = { 2, 2 * (G and G.GAME and G.GAME.unused_discards or 0) } }
+    end,
+    apply = function(self, tag, context)
+        if context.type ~= 'immediate' or tag.triggered then return end
+        -- Use the new rate even for an untriggered tag loaded from an older save.
+        local payout, game = 2 * (G.GAME.unused_discards or 0), G.GAME
+        tag.triggered = true
+        tag:yep('+$' .. tostring(payout), G.C.MONEY, function()
+            if G.GAME == game then ease_dollars(payout) end
+            return true
+        end)
+        return true
+    end,
+})
+
+take_vanilla_ownership(SMODS.Tag, 'top_up', {
+    config = { type = 'immediate' },
+    loc_txt = {
+        name = 'Top-up Tag',
+        text = {
+            'Fill Joker Slots with',
+            'random {C:blue}Common{} Jokers',
+            '{C:inactive}(Must have room)',
+        },
+    },
+    loc_vars = function() return { vars = {} } end,
+    apply = function(self, tag, context)
+        if context.type ~= 'immediate' or tag.triggered then return end
+        local game, area = G.GAME, G.jokers
+        if area.handle_card_limit then area:handle_card_limit() end
+        -- Snapshot capacity: Negative editions must not produce an unbounded
+        -- generation loop. Other queued generators already own their slots.
+        local slots = math.max(0, math.floor(area.config.card_limit - #area.cards - (game.joker_buffer or 0)))
+        tag.triggered = true
+        game.joker_buffer = (game.joker_buffer or 0) + slots
+        tag:yep('+', G.C.BLUE, function()
+            game.joker_buffer = math.max(0, (game.joker_buffer or 0) - slots)
+            if G.GAME ~= game or G.jokers ~= area then return true end
+            for _ = 1, slots do
+                if area.handle_card_limit then area:handle_card_limit() end
+                if #area.cards + (game.joker_buffer or 0) >= area.config.card_limit then break end
+                local prior = HNDS.creating_stickerless_joker
+                HNDS.creating_stickerless_joker = true
+                local result = HNDS.pack(pcall(function()
+                    -- Rarity 0 is vanilla create_card's guaranteed Common roll.
+                    -- Do not set no_edition: normal edition rolls remain enabled.
+                    local card = SMODS.create_card({set = 'Joker', area = area, rarity = 0,
+                        key_append = 'hnds_top_up'})
+                    if not card then return end
+                    card.hnds_clean_reroll = true
+                    HNDS.clear_rerolled_stickers(card)
+                    card:add_to_deck()
+                    area:emplace(card)
+                    HNDS.clear_rerolled_stickers(card)
+                    card.hnds_clean_reroll = nil
+                    if card.set_cost then card:set_cost() end
+                    card:start_materialize()
+                end))
+                HNDS.creating_stickerless_joker = prior
+                if not result[1] then error(result[2], 0) end
+            end
+            return true
+        end)
+        return true
+    end,
+})
+
+local function speed_tag_payments()
+    return 1 + math.max(0, math.floor(tonumber(G and G.GAME and G.GAME.skips) or 0))
+end
+
+take_vanilla_ownership(SMODS.Tag, 'skip', {
+    config = { type = 'immediate', skip_bonus = 5 },
+    loc_txt = {
+        name = 'Speed Tag',
+        text = {
+            'Gives {C:money}$#1#{}, plus {C:money}$#1#{} per',
+            'skipped {C:attention}Blind{} this run',
+            '{C:inactive}(Will give {C:money}$#2#{C:inactive})',
+        },
+    },
+    loc_vars = function(self, info_queue, tag)
+        return { vars = { 5, 5 * speed_tag_payments() } }
+    end,
+    apply = function(self, tag, context)
+        if context.type ~= 'immediate' or tag.triggered then return end
+        local payments, game = speed_tag_payments(), G.GAME
+        tag.triggered = true
+        tag:yep('+$5', G.C.MONEY, function()
+            if G.GAME ~= game then return true end
+            for _ = 1, payments do ease_dollars(5) end
+            return true
+        end)
+        return true
+    end,
+})
+
 take_vanilla_ownership(SMODS.Tag, 'juggle', {
     config = { type = 'round_start_bonus', h_size = 3 },
     apply = function(self, tag, context)
@@ -930,37 +1043,48 @@ take_vanilla_ownership(SMODS.Joker, 'hiker', {
 })
 
 
-take_vanilla_ownership(SMODS.Consumable, 'black_hole', {
-    use = function(self, card, area, copier)
-        update_hand_text(
-            { sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3 },
-            { handname = localize('k_all_hands'), chips = '...', mult = '...', level = '' }
-        )
-        G.E_MANAGER:add_event(Event({
-            trigger = 'after', delay = 0.2,
-            func = function()
-                play_sound('tarot1')
-                card:juice_up(0.8, 0.5)
-                G.TAROT_INTERRUPT_PULSE = true
-                return true
-            end,
-        }))
-        update_hand_text({ delay = 0 }, { mult = 'X2', chips = 'X2', StatusText = true })
-        delay(1.0)
-        for _, hand in ipairs(G.handlist or {}) do
-            local data = G.GAME.hands[hand]
-            if data and data.level and data.level > 0 then
-                SMODS.smart_level_up_hand(card, hand, true, data.level)
-            end
+function HNDS.use_double_black_hole(self, card, area, copier)
+    local source = copier or card
+    -- Include hidden/modded hands and freeze every starting level so level-up
+    -- callbacks on an earlier hand cannot change a later hand's increment.
+    local levels, order = {}, {}
+    for hand, data in pairs(G.GAME.hands or {}) do
+        if data.level ~= nil then levels[hand] = data.level; order[#order + 1] = hand end
+    end
+    table.sort(order)
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3},
+        {handname = localize('k_all_hands'), chips = '...', mult = '...', level = ''})
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
+        play_sound('tarot1')
+        if source and source.juice_up then source:juice_up(0.8, 0.5) end
+        return true
+    end}))
+    update_hand_text({delay = 0}, {level = 'X2', StatusText = true})
+    for _, hand in ipairs(order) do
+        if levels[hand] > 0 then
+            SMODS.smart_level_up_hand(source, hand, true, levels[hand])
         end
-        G.TAROT_INTERRUPT_PULSE = nil
-        update_hand_text(
-            { sound = 'button', volume = 0.7, pitch = 1.1, delay = 0 },
-            { mult = 0, chips = 0, handname = '', level = '' }
-        )
-    end,
+    end
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0},
+        {mult = 0, chips = 0, handname = '', level = ''})
+end
+
+take_vanilla_ownership(SMODS.Consumable, 'black_hole', {
+    use = HNDS.use_double_black_hole,
     can_use = function() return true end,
 })
+
+-- Rebind on actual use as well: a stale center or a later ownership pass must
+-- not fall through to vanilla's hardcoded +1 branch. Keep the ordinary use
+-- pipeline (statistics, copying, etc.) rather than bypassing it.
+local black_hole_use_ref = Card.use_consumeable
+function Card:use_consumeable(area, copier, ...)
+    local center = self.config and self.config.center
+    if center and center.key == 'c_black_hole' then
+        center.use = HNDS.use_double_black_hole
+    end
+    return black_hole_use_ref(self, area, copier, ...)
+end
 
 take_vanilla_ownership(SMODS.PokerHand, 'Full House', { l_mult = 3, l_chips = 25 })
 take_vanilla_ownership(SMODS.PokerHand, 'Four of a Kind', { l_mult = 3, l_chips = 30 })

@@ -8,7 +8,8 @@ SMODS.Consumable({
     cost = 4,
     loc_vars = function(self, info_queue, card)
         if info_queue then info_queue[#info_queue + 1] = { key = 'hnds_bound', set = 'Other' } end
-        return { vars = { HNDS.contagion_target_limit(card, 1) } }
+        local count = HNDS.contagion_target_limit(card, 1)
+        return { key = count > 1 and 'c_hnds_gateway_plural' or 'c_hnds_gateway', vars = { count } }
     end,
     can_use = function(self, card)
         return G and G.hand and G.hand.highlighted and #G.hand.highlighted > 0

@@ -10,7 +10,8 @@ SMODS.Consumable({
     loc_vars = function(self, info_queue, card)
         if info_queue and G and G.P_SEALS and G.P_SEALS.hnds_green then info_queue[#info_queue + 1] = G.P_SEALS.hnds_green end
         local max_highlighted = HNDS.contagion_target_limit(card, self.config.max_highlighted)
-        return { vars = { max_highlighted, colours = { HEX('55a383') } } }
+        return { key = max_highlighted > 1 and 'c_hnds_cycle_plural' or 'c_hnds_cycle',
+            vars = { max_highlighted, colours = { HEX('55a383') } } }
     end,
     can_use = function(self, card)
         return G and G.hand and G.hand.highlighted and #G.hand.highlighted > 0

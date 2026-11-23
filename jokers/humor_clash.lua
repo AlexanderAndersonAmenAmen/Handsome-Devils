@@ -33,7 +33,7 @@ local function clash_extra(card)
 end
 
 local function target(extra)
-    return extra.parity == 'odd' and 9 or 8
+    return extra.parity == 'odd' and 5 or 4
 end
 
 local function matches_rank(card, parity)

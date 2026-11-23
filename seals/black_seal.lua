@@ -201,6 +201,9 @@ SMODS.Seal({
     pos = { x = 3, y = 1 },
     unlocked = true,
     loc_vars = function(self, info_queue, card)
+        if info_queue then
+            info_queue[#info_queue + 1] = { set = 'Other', key = 'hnds_shadow' }
+        end
         local ability = card and card.ability or {}
         local drawn = math.max(0, tonumber(ability.hnds_black_drawn) or 0)
         return { vars = { BLACK_DRAW_THRESHOLD, math.max(0, BLACK_DRAW_THRESHOLD - drawn) } }

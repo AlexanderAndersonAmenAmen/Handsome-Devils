@@ -539,97 +539,94 @@ function HNDS.ban_non_magic_boosters()
 end
 
 
-function replace_jokers_keep_rarity(jokers, sticker_removal_chance)
-	if not jokers or #jokers == 0 then return end
+-- Remove both visible sticker flags and their hidden curse/copy state.
+function HNDS.clear_rerolled_stickers(card)
+    card.ability = card.ability or {}
+    local keys = { eternal = true, perishable = true, rental = true, pinned = true }
+    for key in pairs(SMODS.Stickers or {}) do keys[key] = true end
+    for _, key in ipairs(SMODS.Sticker and SMODS.Sticker.obj_buffer or {}) do keys[key] = true end
+    for key in pairs(card.stickers or {}) do keys[key] = true end
+    for key in pairs(card.ability.stickers or {}) do keys[key] = true end
+    for key in pairs(keys) do
+        if card.remove_sticker and SMODS.Stickers and SMODS.Stickers[key] then
+            card:remove_sticker(key)
+        end
+        card.ability[key] = nil
+    end
+    local clear = {}
+    for key in pairs(card.ability) do
+        if type(key) == 'string' and (key:match('^hnds_curse') or key:match('^hnds_soul')
+            or key:match('^hnds_ancestor_') or key:match('^hnds_jester_')
+            or key == 'hnds_eternal_copy_created' or key == 'hnds_bizarre_owner'
+            or key == 'hnds_copies_to_create') then clear[#clear + 1] = key end
+    end
+    for _, key in ipairs(clear) do card.ability[key] = nil end
+    card.ability.stickers, card.stickers, card.pinned = nil, nil, nil
+    card.ability.perish_tally = nil
+    card.hnds_curse_acquire_triggered, card.hnds_cursed_cost_current = nil, nil
+    card.cursed_shake = nil
+    if card.set_sticker_display then card:set_sticker_display() end
+end
 
-	local replacements = {}
+local function clean_reroll_center(center, original)
+    if not center or center.key == original.key or center.rarity ~= original.rarity then return false end
+    -- Ms. Fortune reapplies its intrinsic Curse every update: it cannot be a
+    -- sticker-free result. Do not grant permanent immunity to future stickers.
+    if center.key == 'j_hnds_ms_fortune' then return false end
+    if G.GAME.banned_keys and G.GAME.banned_keys[center.key] then return false end
+    if center.in_pool and not center:in_pool({source = 'hnds_clean_reroll'}) then return false end
+    for _, key in ipairs({'eternal', 'perishable', 'rental', 'pinned'}) do
+        if center.config and center.config[key] then return false end
+    end
+    for key in pairs(SMODS.Stickers or {}) do
+        if center.config and center.config[key] then return false end
+    end
+    return true
+end
 
-
-	for i, card in ipairs(jokers) do
-		local rarity = card.config.center.rarity
-		local pool = {}
-		local src = G.P_JOKER_RARITY_POOLS and G.P_JOKER_RARITY_POOLS[rarity] or G.P_CENTER_POOLS['Joker']
-
-
-		for _, center in ipairs(src) do
-			if center.key ~= card.config.center.key then
-				pool[#pool + 1] = center
-			end
-		end
-
-		local new_center = nil
-		if #pool > 0 then
-			new_center = pseudorandom_element(pool, pseudoseed('replace_joker' .. i))
-		end
-
-
-		local remove_stickers = pseudorandom('replace_sticker' .. i) < sticker_removal_chance
-
-
-		local has_cursed = card.ability and card.ability.hnds_cursed
-		local curse_data = has_cursed and card.ability.hnds_curse and copy_table(card.ability.hnds_curse) or nil
-
-		replacements[i] = {
-			card = card,
-			center = new_center,
-			remove_stickers = remove_stickers,
-			has_cursed = has_cursed,
-			curse_data = curse_data,
-		}
-	end
-
-
-	for i, rep in ipairs(replacements) do
-		if rep.center then
-			G.E_MANAGER:add_event(Event({
-				trigger = 'after',
-				delay = i == 1 and 0 or 0.45,
-				func = function()
-					local card = rep.card
-
-
-					G.E_MANAGER:add_event(Event({
-						trigger = 'after',
-						delay = i == 1 and 0.2 or 0.4,
-						func = function()
-
-							if card.remove_from_deck and type(card.remove_from_deck) == 'function' then
-								pcall(card.remove_from_deck, card)
-							end
-
-
-							card:set_ability(rep.center, true)
-
-
-							card:add_to_deck()
-
-
-							if rep.remove_stickers then
-
-								if card.ability then
-									card.ability.perishable = nil
-									card.ability.rental = nil
-								end
-
-								if SMODS and SMODS.Sticker and SMODS.Sticker.obj_buffer then
-									for _, k in ipairs(SMODS.Sticker.obj_buffer) do
-										if card.ability and card.ability[k] then
-											card.ability[k] = nil
-										end
-									end
-								end
-							end
-
-
-							card:start_materialize()
-							card:juice_up(0.5, 0.3)
-							play_sound('card1', 1 + (i - 1) * 0.05, 0.6)
-							return true
-						end
-					}))
-					return true
-				end
-			}))
-		end
-	end
+function replace_jokers_keep_rarity(jokers)
+    if not jokers or #jokers == 0 then return end
+    local game, replacements = G.GAME, {}
+    -- Snapshot first: acquisition/removal hooks may modify the Joker area.
+    for i, card in ipairs(jokers) do
+        local original = card.config.center
+        local pool = {}
+        local src = G.P_JOKER_RARITY_POOLS and G.P_JOKER_RARITY_POOLS[original.rarity]
+            or G.P_CENTER_POOLS.Joker or {}
+        for _, center in ipairs(src) do
+            if clean_reroll_center(center, original) then pool[#pool + 1] = center end
+        end
+        replacements[#replacements + 1] = { card = card,
+            center = #pool > 0 and pseudorandom_element(pool, pseudoseed('replace_joker' .. i)) or nil }
+    end
+    for i, rep in ipairs(replacements) do
+        G.E_MANAGER:add_event(Event({ trigger = 'after', delay = i == 1 and 0.2 or 0.4,
+            func = function()
+                local card = rep.card
+                if G.GAME ~= game or card.removed or card.REMOVED or card.getting_sliced then return true end
+                local owned = card.added_to_deck
+                if owned then card:remove_from_deck() end
+                -- Remove passive curse bonuses before erasing their bookkeeping.
+                if HNDS.sync_curse_bonuses then HNDS.sync_curse_bonuses(card, {remove_from_deck = true}) end
+                local prior = card.hnds_clean_reroll
+                card.hnds_clean_reroll = true
+                local result = HNDS.pack(pcall(function()
+                    HNDS.clear_rerolled_stickers(card)
+                    if rep.center then card:set_ability(rep.center, true) end
+                    HNDS.clear_rerolled_stickers(card)
+                    if owned then card:add_to_deck() end
+                    HNDS.clear_rerolled_stickers(card)
+                end))
+                card.hnds_clean_reroll = prior
+                if not result[1] then error(result[2], 0) end
+                if HNDS.refresh_curse_adjacency then HNDS.refresh_curse_adjacency() end
+                if SMODS.recalc_debuff then SMODS.recalc_debuff(card) end
+                if card.set_cost then card:set_cost() end
+                card:start_materialize()
+                card:juice_up(0.5, 0.3)
+                play_sound('card1', 1 + (i - 1) * 0.05, 0.6)
+                return true
+            end,
+        }))
+    end
 end
