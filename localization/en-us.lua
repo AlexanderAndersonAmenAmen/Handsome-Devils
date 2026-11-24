@@ -1522,7 +1522,6 @@ local localization = {
 					"Replace your {C:attention}Jokers{}",
 					"with new ones of",
 					"the {C:attention}same rarity{}",
-                    "Removes all {C:attention}stickers{}",
                 },
 			},
 			c_hnds_dream = {

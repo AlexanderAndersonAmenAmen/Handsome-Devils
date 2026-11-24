@@ -28,7 +28,11 @@ function HNDS.vanilla_tweak_native_popup(sprite, entry, modded)
     vars.colours = { G.C.SUITS.Spades }
     if data.set == 'Planet' then
         vars[2] = localize(entry.key, 'poker_hands')
-        vars.colours = { G.C.HAND_LEVELS[1] }
+        -- Level 1 is white in the hand HUD, but needs dark text on a
+        -- tooltip's white description panel, just like native Planet cards.
+        vars.colours = {
+            vars[1] == 1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, vars[1])],
+        }
     elseif entry.key == 'j_idol' then
         vars[2], vars[3] = localize('Ace', 'ranks'), localize('Spades', 'suits_plural')
     elseif entry.key == 'j_mail' then
@@ -48,8 +52,15 @@ function HNDS.vanilla_tweak_native_popup(sprite, entry, modded)
     end
 
     local aut = { main = {}, info = {}, type = {}, card_type = data.set,
-        badges = { card_type = data.set ~= 'Back' and data.set ~= 'Stake' } }
-    aut.name = localize { type = 'name', set = data.set, key = alias, nodes = {} }
+        -- Native Tag popups have a name, not a card-type badge. There is no
+        -- k_tag dictionary entry for the generic card popup to localize.
+        badges = { card_type = data.set ~= 'Back' and data.set ~= 'Stake' and data.set ~= 'Tag' } }
+    aut.name = localize {
+        type = 'name', set = data.set, key = alias, nodes = {},
+        -- Enhanced/Default popup titles sit on white, unlike other sets.
+        text_colour = data.set == 'Enhanced' and G.C.UI.TEXT_DARK or nil,
+        no_shadow = data.set == 'Enhanced',
+    }
     localize { type = 'descriptions', set = data.set, key = alias, nodes = aut.main, vars = vars, AUT = aut }
     -- Native subsidiary description boxes for referenced cards.
     local related = {
