@@ -1,6 +1,15 @@
 local localization = {
 	descriptions = {
 		Joker = {
+            j_hanging_chad = {
+                name = "Hanging Chad",
+                text = {
+                    "Retrigger {C:attention}first{} and",
+                    "{C:attention}second{} played card",
+                    "used in scoring {C:attention}#1#{}",
+                    "additional time",
+                },
+            },
             j_hnds_dallas = {
 				name = "Dallas",
 				text = {
@@ -2834,7 +2843,7 @@ if HNDS and HNDS.vanilla_tweaks_loaded == false then
 		"j_matador", "j_superposition", "j_splash", "j_flower_pot",
 		"j_mail", "j_stone", "j_greedy_joker", "j_lusty_joker",
 		"j_wrathful_joker", "j_gluttenous_joker", "j_throwback",
-		"j_ring_master", "j_hiker",
+		"j_ring_master", "j_hiker", "j_hanging_chad",
 	}
 	for _, key in ipairs(joker_keys) do
 		localization.descriptions.Joker[key] = nil

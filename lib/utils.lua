@@ -256,6 +256,15 @@ function HNDS.poll_tag(seed, options, exclusions, key_only)
 end
 
 
+-- A challenge/other mod can ban every candidate, including fallbacks.
+-- Never pass nil to the engine's add_tag().
+function HNDS.add_polled_tag(seed, options, exclusions)
+    local tag = HNDS.poll_tag(seed, options, exclusions)
+    if not tag then return false end
+    add_tag(tag)
+    return true
+end
+
 function HNDS.joker_slots_full_of_unmovables()
 	if not (G and G.jokers and G.jokers.cards and G.jokers.config and G.jokers.config.card_limit) then return false end
 	if #G.jokers.cards < G.jokers.config.card_limit then return false end

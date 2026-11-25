@@ -722,24 +722,38 @@ take_vanilla_ownership(SMODS.Enhancement, 'wild', {
 })
 
 
-take_vanilla_ownership(SMODS.Joker, 'photograph', {
-    config = { extra = 1.5 },
+take_vanilla_ownership(SMODS.Joker, 'hanging_chad', {
+    config = { extra = 1 },
     loc_vars = function(self, info_queue, card)
-        return { vars = { 1.5 } }
+        return { vars = { 1 } }
     end,
     calculate = function(self, card, context)
-        -- Also migrate Photographs in existing saves, not just newly created ones.
-        card.ability.extra = 1.5
-        if context.individual and context.cardarea == G.play then
-            for _, scored in ipairs(context.scoring_hand or {}) do
-                if scored:is_face() then
-                    if scored == context.other_card then return { xmult = 1.5 } end
-                    break
-                end
-            end
+        local scoring_hand = context.scoring_hand
+        if context.repetition and context.cardarea == G.play
+            and context.other_card and type(scoring_hand) == 'table'
+            and (context.other_card == scoring_hand[1] or context.other_card == scoring_hand[2])
+        then
+            return { message = localize('k_again_ex'), repetitions = 1, card = card }
         end
     end,
 })
+
+-- Old saves may contain the removed Photograph tweak's X1.5 value.
+-- Restore only that legacy value; never take ownership of Photograph or
+-- overwrite a different mod's configuration.
+if Card and type(Card.load) == 'function' then
+    local photograph_load_ref = Card.load
+    function Card:load(...)
+        local results = HNDS.pack(photograph_load_ref(self, ...))
+        local center = self.config and self.config.center
+        if center and center.key == 'j_photograph' and center.config
+            and center.config.extra == 2 and self.ability and self.ability.extra == 1.5
+        then
+            self.ability.extra = 2
+        end
+        return (table.unpack or unpack)(results, 1, results.n)
+    end
+end
 
 take_vanilla_ownership(SMODS.Joker, 'matador', {
     blueprint_compat = true,

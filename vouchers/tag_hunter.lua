@@ -6,12 +6,12 @@ SMODS.Voucher({
 	requires = {},
 	calculate = function(self, card, context)
 		if context.end_of_round and context.main_eval and (not HNDS.mp_boss_reward_allowed or HNDS.mp_boss_reward_allowed()) and G.GAME.blind.boss then
-			add_tag(HNDS.poll_tag("tag_hunter_hnds", nil, {
+			HNDS.add_polled_tag("tag_hunter_hnds", nil, {
 
 				"tag_top_up",
 				"tag_juggle",
 				"tag_boss",
-			}))
+			})
 		end
 	end,
 })

@@ -219,6 +219,72 @@ HNDS.attach_devil_blind_tooltip = function(sprite, blind_config)
 end
 
 
+-- Keep these helpers local and defined before the encounter/tooltip callbacks.
+-- The original implementations were accidentally removed from this file.
+local devil_name_keys = {
+    "hnds_devil_name_default",
+    "hnds_devil_name_legion",
+    "hnds_devil_name_old_nick",
+    "hnds_devil_name_deceiver",
+    "hnds_devil_name_tempter",
+    "hnds_devil_name_adversary",
+    "hnds_devil_name_prince_of_darkness",
+    "hnds_devil_name_belial",
+    "hnds_devil_name_apollyon",
+    "hnds_devil_name_lucifer",
+    "hnds_devil_name_abaddon",
+    "hnds_devil_name_leviathan",
+}
+
+local function devil_localized_name(key)
+    return (G and G.localization
+        and G.localization.misc
+        and G.localization.misc.dictionary
+        and G.localization.misc.dictionary[key])
+        or "The Devil"
+end
+
+local function apply_devil_name(key)
+    if not (G and key) then return end
+    local name = devil_localized_name(key)
+
+    if G.localization and G.localization.descriptions and G.localization.descriptions.Blind then
+        for _, k in ipairs(DEVIL_KEYS) do
+            if G.localization.descriptions.Blind[k] then
+                G.localization.descriptions.Blind[k].name = name
+            end
+        end
+    end
+    if G.P_BLINDS then
+        for _, k in ipairs(DEVIL_KEYS) do
+            if G.P_BLINDS[k] then G.P_BLINDS[k].name = name end
+        end
+    end
+    local blind = G.GAME and G.GAME.blind
+    local active_key = blind and blind.config and blind.config.blind and blind.config.blind.key
+    if is_devil_key(active_key) then blind.loc_name = name end
+end
+
+local function ensure_devil_name()
+    if not (G and G.GAME) then return devil_localized_name("hnds_devil_name_default") end
+    if not G.GAME.hnds_devil_name_key then
+        local ante = G.GAME.round_resets and G.GAME.round_resets.ante or 0
+        G.GAME.hnds_devil_name_key = pseudorandom_element(
+            devil_name_keys,
+            pseudoseed("hnds_devil_name_" .. tostring(ante))
+        ) or "hnds_devil_name_default"
+    end
+    apply_devil_name(G.GAME.hnds_devil_name_key)
+    return devil_localized_name(G.GAME.hnds_devil_name_key)
+end
+
+local function ensure_devil_roll()
+    if not (G and G.GAME) then return end
+    if not G.GAME.hnds_devil_bosses then
+        G.GAME.hnds_devil_bosses = HNDS.roll_devil_bosses()
+    end
+end
+
 HNDS.prepare_devil_encounter = function()
     ensure_devil_roll()
     return ensure_devil_name()

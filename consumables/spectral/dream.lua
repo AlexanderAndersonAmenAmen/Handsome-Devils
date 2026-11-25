@@ -35,7 +35,7 @@ SMODS.Consumable({
 				func = function()
 					card:juice_up()
 					play_sound("generic1", 0.9 + math.random() * 0.1, 0.8)
-					add_tag(HNDS.poll_tag("dream_", HNDS.get_shop_joker_tags()))
+					HNDS.add_polled_tag("dream_", HNDS.get_shop_joker_tags())
 					return true
 				end,
 			}))
@@ -61,7 +61,7 @@ SMODS.Consumable({
 				func = function()
 					card:juice_up()
 					play_sound("generic1", 0.9 + math.random() * 0.1, 0.8)
-					add_tag(HNDS.poll_tag("dream_", HNDS.get_shop_joker_tags()))
+					HNDS.add_polled_tag("dream_", HNDS.get_shop_joker_tags())
 					return true
 				end,
 			}))
@@ -85,7 +85,7 @@ SMODS.Consumable({
 				func = function()
 					card:juice_up()
 					play_sound("generic1", 0.9 + math.random() * 0.1, 0.8)
-					add_tag(HNDS.poll_tag("dream_", HNDS.get_shop_joker_tags()))
+					HNDS.add_polled_tag("dream_", HNDS.get_shop_joker_tags())
 					return true
 				end,
 			}))

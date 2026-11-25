@@ -11,10 +11,14 @@ SMODS.Joker {
                 end
             end
             if not copied then copied = card end
+            -- Steamodded also requests info-queue tooltips with an ability-only
+            -- fake card, which has no config/center or runtime copy target.
+            local center = copied and copied.config and copied.config.center or self
             local name, compat
-            name = localize { key = copied.config.center.key, type = "name_text", set = copied.ability.set } or
+            name = localize { key = center.key, type = "name_text",
+                set = copied and copied.ability and copied.ability.set or center.set or "Joker" } or
             localize("k_none")
-            compat = copied.config.center.blueprint_compat and copied ~= card
+            compat = copied and center.blueprint_compat and copied ~= card
             local colour = compat and G.C.GREEN or G.C.MULT
             local comp_txt = compat and localize("k_compatible") or localize("k_incompatible")
             main_end = {

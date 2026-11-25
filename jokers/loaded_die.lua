@@ -27,6 +27,22 @@ local probability_jokers = {
     j_lucky_cat = true, j_bloodstone = true, j_oops = true,
 }
 
+local function probability_text(value, seen)
+    if type(value) == 'string' then
+        local line = value:lower()
+        return line:find("chance", 1, true) or line:find("probabilit", 1, true)
+    end
+    if type(value) ~= 'table' then return false end
+    seen = seen or {}
+    if seen[value] then return false end
+    seen[value] = true
+    -- Steamodded also supports multiple description boxes (nested arrays).
+    for _, part in ipairs(value) do
+        if probability_text(part, seen) then return true end
+    end
+    return false
+end
+
 function HNDS.joker_has_probability(card)
     local center = card.config and card.config.center
     if not center then return false end
@@ -36,9 +52,7 @@ function HNDS.joker_has_probability(card)
     end
     local entry = G.localization and G.localization.descriptions and G.localization.descriptions.Joker
         and G.localization.descriptions.Joker[center.key]
-    for _, line in ipairs(entry and entry.text or {}) do
-        if line:lower():find("chance", 1, true) or line:lower():find("probabilit", 1, true) then return true end
-    end
+    if probability_text(entry and entry.text) then return true end
     local extra = card.ability and card.ability.extra
     return type(extra) == "table" and (extra.odds ~= nil or extra.base_chance ~= nil
         or extra.probability ~= nil or extra.chance ~= nil) or false

@@ -1,6 +1,6 @@
 -- Read-only comparisons for this build. Keep in sync with gameplay patches.
 return {
-{category = "Jokers", key = "j_photograph", name = "Photograph", vanilla = "First scored face card gives X2 Mult.", modded = "First scored face card gives X1.5 Mult.", scope = "setting"},
+{category = "Jokers", key = "j_hanging_chad", name = "Hanging Chad", vanilla = "Retrigger the first played card used in scoring 2 additional times.", modded = "Retrigger the first and second played cards used in scoring 1 additional time each.", scope = "setting"},
 {category = "Jokers", key = "j_matador", name = "Matador", vanilla = "Earn $8 when a played hand triggers the Boss Blind ability.", modded = "Earn $8 for every hand played against a Boss Blind.", scope = "setting"},
 {category = "Jokers", key = "j_idol", name = "The Idol", vanilla = "Each scored card matching the chosen rank and suit gives X2 Mult.", modded = "Permanently gains +X0.25 Mult per matching card scored, starting at X1.", scope = "setting"},
 {category = "Jokers", key = "j_superposition", name = "Superposition", vanilla = "Creates a random Tarot.", modded = "Creates The Fool instead.", scope = "setting"},

@@ -59,20 +59,28 @@ end
 
 local function superstition_card_id(card)
     if not card then return nil end
+    -- Enhancement queries must never call get_id()/is_face(): those getters
+    -- ask SMODS.has_no_rank(), which calls get_enhancements() again. pcall
+    -- only catches the eventual stack overflow and can turn it into a very
+    -- large recursive search (we check both 6 and 7 on every query).
+    -- Resolve Faceless copies structurally, then read their underlying rank.
+    local seen = {}
+    while HNDS.is_faceless and HNDS.is_faceless(card) do
+        if seen[card] or not HNDS.faceless_copy_target then return nil end
+        seen[card] = true
+        card = HNDS.faceless_copy_target(card)
+        if not card then return nil end
+    end
+    if HNDS.card_has_stone and HNDS.card_has_stone(card, false) then return nil end
+    local center = card.config and card.config.center
+    if center and center.no_rank then return nil end
+    for _, key in ipairs(card.ability and card.ability.hnds_aberrant_fusions or {}) do
+        local fusion = G and G.P_CENTERS and G.P_CENTERS[key]
+        if fusion and fusion.no_rank then return nil end
+    end
     local real_id = type(card) == 'table' and rawget(card, '_hnds_imposter_real_id') or nil
     if type(real_id) == 'number' then return real_id end
-
-    if HNDS.is_faceless and HNDS.is_faceless(card) and type(card.get_id) == 'function' then
-        local ok, value = pcall(card.get_id, card)
-        if ok and type(value) == 'number' then return value end
-    end
-
-    local base_id = card.base and tonumber(card.base.id) or nil
-    if base_id then return base_id end
-    if type(card.get_id) == 'function' then
-        local ok, value = pcall(card.get_id, card)
-        if ok and type(value) == 'number' then return value end
-    end
+    return card.base and tonumber(card.base.id) or nil
 end
 
 local function superstition_rank_matches(card, rank)
@@ -94,9 +102,31 @@ if SMODS and type(SMODS.get_enhancements) == 'function'
 then
     HNDS._superstition_get_enhancements_hook = true
     local get_enhancements_ref = SMODS.get_enhancements
+    local querying = setmetatable({}, { __mode = 'k' })
 
-    function SMODS.get_enhancements(card, ...)
-        local enhancements = get_enhancements_ref(card, ...)
+    function SMODS.get_enhancements(card, extra_only, ...)
+        if not card then return {} end
+        local enhancements
+        if querying[card] then
+            -- A check_enhancement callback can itself ask about this card's
+            -- rank/suit before SMODS has populated its enhancement cache.
+            -- Answer the nested query from printed/fused state; do not
+            -- re-enter callbacks or cache this provisional result.
+            enhancements = {}
+            local center = card.config and card.config.center
+            if center and center.key ~= 'c_base' and not extra_only then
+                enhancements[center.key] = true
+            end
+            for _, key in ipairs(card.ability and card.ability.hnds_aberrant_fusions or {}) do
+                if not (extra_only and center and center.key == key) then enhancements[key] = true end
+            end
+        else
+            querying[card] = true
+            local ok, result = pcall(get_enhancements_ref, card, extra_only, ...)
+            querying[card] = nil
+            if not ok then error(result, 0) end
+            enhancements = result
+        end
         if not HNDS.superstition_effect_active() then return enhancements end
 
         local wild = superstition_rank_matches(card, 6)
@@ -107,8 +137,11 @@ then
         if type(enhancements) == 'table' then
             for key, value in pairs(enhancements) do result[key] = value end
         end
-        if wild then result.m_wild = true end
-        if lucky then result.m_lucky = true end
+        -- The primary enhancement is already scored by the native engine.
+        -- Do not return it as an extra enhancement and score it twice.
+        local primary = card and card.config and card.config.center
+        if wild and not (extra_only and primary and primary.key == 'm_wild') then result.m_wild = true end
+        if lucky and not (extra_only and primary and primary.key == 'm_lucky') then result.m_lucky = true end
         return result
     end
 end

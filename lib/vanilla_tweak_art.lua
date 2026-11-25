@@ -1,6 +1,6 @@
 -- Vanilla art coordinates; previews never execute gameplay objects.
 return {
-    ["j_photograph"] = { key = "j_photograph", atlas = "Joker", pos = { x = 2, y = 13 } },
+    ["j_hanging_chad"] = { key = "j_hanging_chad", atlas = "Joker", pos = { x = 9, y = 6 } },
     ["j_matador"] = { key = "j_matador", atlas = "Joker", pos = { x = 4, y = 5 } },
     ["j_idol"] = { key = "j_idol", atlas = "Joker", pos = { x = 6, y = 7 } },
     ["j_superposition"] = { key = "j_superposition", atlas = "Joker", pos = { x = 3, y = 11 } },

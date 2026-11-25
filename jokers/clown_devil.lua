@@ -1,3 +1,18 @@
+local function clown_extra(card)
+    local extra = card.ability.extra
+    if type(extra) ~= 'table' then extra = {}; card.ability.extra = extra end
+    local per_tag, eaten = tonumber(extra.per_tag), tonumber(extra.eaten)
+    -- Legacy/modified saves must not turn the reward loop into subtraction
+    -- by zero (or infinity), which never makes progress.
+    if not per_tag or per_tag ~= per_tag or per_tag == math.huge or per_tag < 1 then per_tag = 2 end
+    if not eaten or eaten ~= eaten or eaten == math.huge or eaten < 0 then eaten = 0 end
+    extra.per_tag = math.floor(per_tag)
+    -- This field stores a remainder, not a lifetime total. Normalizing it
+    -- also bounds work for corrupted saves with enormous finite counters.
+    extra.eaten = math.floor(eaten) % extra.per_tag
+    return extra
+end
+
 SMODS.Joker({
 	key = "clown_devil",
 	atlas = "Jokers",
@@ -19,13 +34,14 @@ SMODS.Joker({
 	perishable_compat = true,
 	config = { extra = { eaten = 0, per_tag = 2 } },
 	loc_vars = function(self, info_queue, card)
-		local extra = card.ability.extra
+		local extra = clown_extra(card)
 		local remaining = extra.per_tag - (extra.eaten % extra.per_tag)
 		return { vars = { remaining, extra.per_tag } }
 	end,
 	calculate = function(self, card, context)
 
 		if context.setting_blind and G.consumeables and G.consumeables.cards then
+            local extra = clown_extra(card)
 			local to_remove = {}
 			for _, c in ipairs(G.consumeables.cards) do
 				to_remove[#to_remove + 1] = c
@@ -42,11 +58,12 @@ SMODS.Joker({
 						end,
 					}))
 				end
-				card.ability.extra.eaten = card.ability.extra.eaten + eaten
+				extra.eaten = extra.eaten + eaten
 
-				while card.ability.extra.eaten >= card.ability.extra.per_tag do
-					card.ability.extra.eaten = card.ability.extra.eaten - card.ability.extra.per_tag
-					add_tag(HNDS.poll_tag('hnds_clown_devil'))
+                local rewards = math.floor(extra.eaten / extra.per_tag)
+                extra.eaten = extra.eaten % extra.per_tag
+				for _ = 1, rewards do
+					HNDS.add_polled_tag('hnds_clown_devil')
 				end
 				return { message = localize('k_hnds_clown_eat'), colour = G.C.RED }
 			end
@@ -60,7 +77,7 @@ SMODS.Joker({
                 { text = "]" }
             },
             calc_function = function(card)
-                local extra = card.ability.extra
+                local extra = clown_extra(card)
                 card.joker_display_values.remaining = extra.per_tag - (extra.eaten % extra.per_tag)
             end
         }

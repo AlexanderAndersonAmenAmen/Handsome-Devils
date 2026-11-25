@@ -25,21 +25,35 @@ SMODS.Joker({
 	end,
 	calculate = function(self, card, context)
 		if (context.selling_self or context.forcetrigger) and G.hand and G.hand.cards and #G.hand.cards > 0 then
+			local game, hand = G.GAME, G.hand
+			local destroy = tonumber(card.ability.extra.destroy) or 9999
+			if destroy ~= destroy then destroy = 9999 end
 			SMODS.draw_cards(card.ability.extra.draw)
 			G.E_MANAGER:add_event(Event({
 				func = function()
+					-- A queued sale can outlive the hand/run that created it.
+					if G.GAME ~= game or G.hand ~= hand or not hand.cards then return true end
 					local destroyed_cards = {}
 					local temp_hand = {}
-					for _, playing_card in ipairs(G.hand.cards) do temp_hand[#temp_hand + 1] = playing_card end
+					local hand_order = {}
+					for i, playing_card in ipairs(hand.cards) do
+						temp_hand[#temp_hand + 1] = playing_card
+						hand_order[playing_card] = i
+					end
 					table.sort(temp_hand,
 						function(a, b)
-							return not a.playing_card or not b.playing_card or a.playing_card < b.playing_card
+							local a_id, b_id = tonumber(a.playing_card), tonumber(b.playing_card)
+							if not a_id or a_id ~= a_id then a_id = math.huge end
+							if not b_id or b_id ~= b_id then b_id = math.huge end
+							if a_id ~= b_id then return a_id < b_id end
+							return hand_order[a] < hand_order[b]
 						end
 					)
 					pseudoshuffle(temp_hand, 'lastlaugh')
-					for i = 1, card.ability.extra.destroy do destroyed_cards[#destroyed_cards + 1] = temp_hand[i] end
+					local count = math.max(0, math.min(#temp_hand, math.floor(destroy)))
+					for i = 1, count do destroyed_cards[#destroyed_cards + 1] = temp_hand[i] end
 					SMODS.destroy_cards(destroyed_cards)
-					card:juice_up()
+					if not (card.REMOVED or card.removed) then card:juice_up() end
 					return true
 				end,
 			}))
